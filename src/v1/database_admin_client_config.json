@@ -128,6 +128,31 @@
           "timeout_millis": 3600000,
           "retry_codes_name": "idempotent",
           "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
+        "CreateBackupSchedule": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
+        "GetBackupSchedule": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
+        "UpdateBackupSchedule": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
+        "DeleteBackupSchedule": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
+        "ListBackupSchedules": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
         }
       }
     }

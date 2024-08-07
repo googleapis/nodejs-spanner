@@ -424,6 +424,83 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
+    describe('backupSchedule', () => {
+      const fakePath = '/rendered/path/backupSchedule';
+      const expectedParameters = {
+        project: 'projectValue',
+        instance: 'instanceValue',
+        database: 'databaseValue',
+        schedule: 'scheduleValue',
+      };
+      const client =
+        new spannerexecutorproxyModule.v1.SpannerExecutorProxyClient({
+          credentials: {client_email: 'bogus', private_key: 'bogus'},
+          projectId: 'bogus',
+        });
+      client.initialize();
+      client.pathTemplates.backupSchedulePathTemplate.render = sinon
+        .stub()
+        .returns(fakePath);
+      client.pathTemplates.backupSchedulePathTemplate.match = sinon
+        .stub()
+        .returns(expectedParameters);
+
+      it('backupSchedulePath', () => {
+        const result = client.backupSchedulePath(
+          'projectValue',
+          'instanceValue',
+          'databaseValue',
+          'scheduleValue'
+        );
+        assert.strictEqual(result, fakePath);
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.render as SinonStub)
+            .getCall(-1)
+            .calledWith(expectedParameters)
+        );
+      });
+
+      it('matchProjectFromBackupScheduleName', () => {
+        const result = client.matchProjectFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'projectValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchInstanceFromBackupScheduleName', () => {
+        const result = client.matchInstanceFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'instanceValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchDatabaseFromBackupScheduleName', () => {
+        const result = client.matchDatabaseFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'databaseValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchScheduleFromBackupScheduleName', () => {
+        const result = client.matchScheduleFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'scheduleValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+    });
+
     describe('database', () => {
       const fakePath = '/rendered/path/database';
       const expectedParameters = {

@@ -6549,6 +6549,12 @@ export namespace google {
                         /** Backup sizeBytes */
                         sizeBytes?: (number|Long|string|null);
 
+                        /** Backup freeableSizeBytes */
+                        freeableSizeBytes?: (number|Long|string|null);
+
+                        /** Backup exclusiveSizeBytes */
+                        exclusiveSizeBytes?: (number|Long|string|null);
+
                         /** Backup state */
                         state?: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State|null);
 
@@ -6569,6 +6575,15 @@ export namespace google {
 
                         /** Backup maxExpireTime */
                         maxExpireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup backupSchedules */
+                        backupSchedules?: (string[]|null);
+
+                        /** Backup incrementalBackupChainId */
+                        incrementalBackupChainId?: (string|null);
+
+                        /** Backup oldestVersionTime */
+                        oldestVersionTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Backup. */
@@ -6598,6 +6613,12 @@ export namespace google {
                         /** Backup sizeBytes. */
                         public sizeBytes: (number|Long|string);
 
+                        /** Backup freeableSizeBytes. */
+                        public freeableSizeBytes: (number|Long|string);
+
+                        /** Backup exclusiveSizeBytes. */
+                        public exclusiveSizeBytes: (number|Long|string);
+
                         /** Backup state. */
                         public state: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State);
 
@@ -6618,6 +6639,15 @@ export namespace google {
 
                         /** Backup maxExpireTime. */
                         public maxExpireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup backupSchedules. */
+                        public backupSchedules: string[];
+
+                        /** Backup incrementalBackupChainId. */
+                        public incrementalBackupChainId: string;
+
+                        /** Backup oldestVersionTime. */
+                        public oldestVersionTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -8261,6 +8291,188 @@ export namespace google {
                         }
                     }
 
+                    /** Properties of a FullBackupSpec. */
+                    interface IFullBackupSpec {
+                    }
+
+                    /** Represents a FullBackupSpec. */
+                    class FullBackupSpec implements IFullBackupSpec {
+
+                        /**
+                         * Constructs a new FullBackupSpec.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IFullBackupSpec);
+
+                        /**
+                         * Creates a new FullBackupSpec instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns FullBackupSpec instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IFullBackupSpec): google.spanner.admin.database.v1.FullBackupSpec;
+
+                        /**
+                         * Encodes the specified FullBackupSpec message. Does not implicitly {@link google.spanner.admin.database.v1.FullBackupSpec.verify|verify} messages.
+                         * @param message FullBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IFullBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified FullBackupSpec message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.FullBackupSpec.verify|verify} messages.
+                         * @param message FullBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IFullBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a FullBackupSpec message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns FullBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.FullBackupSpec;
+
+                        /**
+                         * Decodes a FullBackupSpec message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns FullBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.FullBackupSpec;
+
+                        /**
+                         * Verifies a FullBackupSpec message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a FullBackupSpec message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns FullBackupSpec
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.FullBackupSpec;
+
+                        /**
+                         * Creates a plain object from a FullBackupSpec message. Also converts values to other types if specified.
+                         * @param message FullBackupSpec
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.FullBackupSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this FullBackupSpec to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for FullBackupSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an IncrementalBackupSpec. */
+                    interface IIncrementalBackupSpec {
+                    }
+
+                    /** Represents an IncrementalBackupSpec. */
+                    class IncrementalBackupSpec implements IIncrementalBackupSpec {
+
+                        /**
+                         * Constructs a new IncrementalBackupSpec.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IIncrementalBackupSpec);
+
+                        /**
+                         * Creates a new IncrementalBackupSpec instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns IncrementalBackupSpec instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IIncrementalBackupSpec): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Encodes the specified IncrementalBackupSpec message. Does not implicitly {@link google.spanner.admin.database.v1.IncrementalBackupSpec.verify|verify} messages.
+                         * @param message IncrementalBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IIncrementalBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified IncrementalBackupSpec message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.IncrementalBackupSpec.verify|verify} messages.
+                         * @param message IncrementalBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IIncrementalBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an IncrementalBackupSpec message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns IncrementalBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Decodes an IncrementalBackupSpec message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns IncrementalBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Verifies an IncrementalBackupSpec message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an IncrementalBackupSpec message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns IncrementalBackupSpec
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Creates a plain object from an IncrementalBackupSpec message. Also converts values to other types if specified.
+                         * @param message IncrementalBackupSpec
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.IncrementalBackupSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this IncrementalBackupSpec to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for IncrementalBackupSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -8599,6 +8811,969 @@ export namespace google {
                         POSTGRESQL = 2
                     }
 
+                    /** Properties of a BackupScheduleSpec. */
+                    interface IBackupScheduleSpec {
+
+                        /** BackupScheduleSpec cronSpec */
+                        cronSpec?: (google.spanner.admin.database.v1.ICrontabSpec|null);
+                    }
+
+                    /** Represents a BackupScheduleSpec. */
+                    class BackupScheduleSpec implements IBackupScheduleSpec {
+
+                        /**
+                         * Constructs a new BackupScheduleSpec.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IBackupScheduleSpec);
+
+                        /** BackupScheduleSpec cronSpec. */
+                        public cronSpec?: (google.spanner.admin.database.v1.ICrontabSpec|null);
+
+                        /** BackupScheduleSpec scheduleSpec. */
+                        public scheduleSpec?: "cronSpec";
+
+                        /**
+                         * Creates a new BackupScheduleSpec instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns BackupScheduleSpec instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IBackupScheduleSpec): google.spanner.admin.database.v1.BackupScheduleSpec;
+
+                        /**
+                         * Encodes the specified BackupScheduleSpec message. Does not implicitly {@link google.spanner.admin.database.v1.BackupScheduleSpec.verify|verify} messages.
+                         * @param message BackupScheduleSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IBackupScheduleSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified BackupScheduleSpec message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupScheduleSpec.verify|verify} messages.
+                         * @param message BackupScheduleSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IBackupScheduleSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a BackupScheduleSpec message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns BackupScheduleSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.BackupScheduleSpec;
+
+                        /**
+                         * Decodes a BackupScheduleSpec message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns BackupScheduleSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.BackupScheduleSpec;
+
+                        /**
+                         * Verifies a BackupScheduleSpec message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a BackupScheduleSpec message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns BackupScheduleSpec
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.BackupScheduleSpec;
+
+                        /**
+                         * Creates a plain object from a BackupScheduleSpec message. Also converts values to other types if specified.
+                         * @param message BackupScheduleSpec
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.BackupScheduleSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this BackupScheduleSpec to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for BackupScheduleSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a BackupSchedule. */
+                    interface IBackupSchedule {
+
+                        /** BackupSchedule name */
+                        name?: (string|null);
+
+                        /** BackupSchedule spec */
+                        spec?: (google.spanner.admin.database.v1.IBackupScheduleSpec|null);
+
+                        /** BackupSchedule retentionDuration */
+                        retentionDuration?: (google.protobuf.IDuration|null);
+
+                        /** BackupSchedule encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null);
+
+                        /** BackupSchedule fullBackupSpec */
+                        fullBackupSpec?: (google.spanner.admin.database.v1.IFullBackupSpec|null);
+
+                        /** BackupSchedule incrementalBackupSpec */
+                        incrementalBackupSpec?: (google.spanner.admin.database.v1.IIncrementalBackupSpec|null);
+
+                        /** BackupSchedule updateTime */
+                        updateTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a BackupSchedule. */
+                    class BackupSchedule implements IBackupSchedule {
+
+                        /**
+                         * Constructs a new BackupSchedule.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IBackupSchedule);
+
+                        /** BackupSchedule name. */
+                        public name: string;
+
+                        /** BackupSchedule spec. */
+                        public spec?: (google.spanner.admin.database.v1.IBackupScheduleSpec|null);
+
+                        /** BackupSchedule retentionDuration. */
+                        public retentionDuration?: (google.protobuf.IDuration|null);
+
+                        /** BackupSchedule encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null);
+
+                        /** BackupSchedule fullBackupSpec. */
+                        public fullBackupSpec?: (google.spanner.admin.database.v1.IFullBackupSpec|null);
+
+                        /** BackupSchedule incrementalBackupSpec. */
+                        public incrementalBackupSpec?: (google.spanner.admin.database.v1.IIncrementalBackupSpec|null);
+
+                        /** BackupSchedule updateTime. */
+                        public updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** BackupSchedule backupTypeSpec. */
+                        public backupTypeSpec?: ("fullBackupSpec"|"incrementalBackupSpec");
+
+                        /**
+                         * Creates a new BackupSchedule instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns BackupSchedule instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IBackupSchedule): google.spanner.admin.database.v1.BackupSchedule;
+
+                        /**
+                         * Encodes the specified BackupSchedule message. Does not implicitly {@link google.spanner.admin.database.v1.BackupSchedule.verify|verify} messages.
+                         * @param message BackupSchedule message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IBackupSchedule, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified BackupSchedule message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupSchedule.verify|verify} messages.
+                         * @param message BackupSchedule message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IBackupSchedule, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a BackupSchedule message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns BackupSchedule
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.BackupSchedule;
+
+                        /**
+                         * Decodes a BackupSchedule message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns BackupSchedule
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.BackupSchedule;
+
+                        /**
+                         * Verifies a BackupSchedule message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a BackupSchedule message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns BackupSchedule
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.BackupSchedule;
+
+                        /**
+                         * Creates a plain object from a BackupSchedule message. Also converts values to other types if specified.
+                         * @param message BackupSchedule
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.BackupSchedule, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this BackupSchedule to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for BackupSchedule
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a CrontabSpec. */
+                    interface ICrontabSpec {
+
+                        /** CrontabSpec text */
+                        text?: (string|null);
+
+                        /** CrontabSpec timeZone */
+                        timeZone?: (string|null);
+
+                        /** CrontabSpec creationWindow */
+                        creationWindow?: (google.protobuf.IDuration|null);
+                    }
+
+                    /** Represents a CrontabSpec. */
+                    class CrontabSpec implements ICrontabSpec {
+
+                        /**
+                         * Constructs a new CrontabSpec.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICrontabSpec);
+
+                        /** CrontabSpec text. */
+                        public text: string;
+
+                        /** CrontabSpec timeZone. */
+                        public timeZone: string;
+
+                        /** CrontabSpec creationWindow. */
+                        public creationWindow?: (google.protobuf.IDuration|null);
+
+                        /**
+                         * Creates a new CrontabSpec instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CrontabSpec instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICrontabSpec): google.spanner.admin.database.v1.CrontabSpec;
+
+                        /**
+                         * Encodes the specified CrontabSpec message. Does not implicitly {@link google.spanner.admin.database.v1.CrontabSpec.verify|verify} messages.
+                         * @param message CrontabSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICrontabSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CrontabSpec message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CrontabSpec.verify|verify} messages.
+                         * @param message CrontabSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICrontabSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CrontabSpec message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CrontabSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CrontabSpec;
+
+                        /**
+                         * Decodes a CrontabSpec message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CrontabSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CrontabSpec;
+
+                        /**
+                         * Verifies a CrontabSpec message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CrontabSpec message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CrontabSpec
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CrontabSpec;
+
+                        /**
+                         * Creates a plain object from a CrontabSpec message. Also converts values to other types if specified.
+                         * @param message CrontabSpec
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CrontabSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CrontabSpec to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CrontabSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a CreateBackupScheduleRequest. */
+                    interface ICreateBackupScheduleRequest {
+
+                        /** CreateBackupScheduleRequest parent */
+                        parent?: (string|null);
+
+                        /** CreateBackupScheduleRequest backupScheduleId */
+                        backupScheduleId?: (string|null);
+
+                        /** CreateBackupScheduleRequest backupSchedule */
+                        backupSchedule?: (google.spanner.admin.database.v1.IBackupSchedule|null);
+                    }
+
+                    /** Represents a CreateBackupScheduleRequest. */
+                    class CreateBackupScheduleRequest implements ICreateBackupScheduleRequest {
+
+                        /**
+                         * Constructs a new CreateBackupScheduleRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICreateBackupScheduleRequest);
+
+                        /** CreateBackupScheduleRequest parent. */
+                        public parent: string;
+
+                        /** CreateBackupScheduleRequest backupScheduleId. */
+                        public backupScheduleId: string;
+
+                        /** CreateBackupScheduleRequest backupSchedule. */
+                        public backupSchedule?: (google.spanner.admin.database.v1.IBackupSchedule|null);
+
+                        /**
+                         * Creates a new CreateBackupScheduleRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateBackupScheduleRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICreateBackupScheduleRequest): google.spanner.admin.database.v1.CreateBackupScheduleRequest;
+
+                        /**
+                         * Encodes the specified CreateBackupScheduleRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupScheduleRequest.verify|verify} messages.
+                         * @param message CreateBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICreateBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateBackupScheduleRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupScheduleRequest.verify|verify} messages.
+                         * @param message CreateBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICreateBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateBackupScheduleRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CreateBackupScheduleRequest;
+
+                        /**
+                         * Decodes a CreateBackupScheduleRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CreateBackupScheduleRequest;
+
+                        /**
+                         * Verifies a CreateBackupScheduleRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateBackupScheduleRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateBackupScheduleRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CreateBackupScheduleRequest;
+
+                        /**
+                         * Creates a plain object from a CreateBackupScheduleRequest message. Also converts values to other types if specified.
+                         * @param message CreateBackupScheduleRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CreateBackupScheduleRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateBackupScheduleRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CreateBackupScheduleRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a GetBackupScheduleRequest. */
+                    interface IGetBackupScheduleRequest {
+
+                        /** GetBackupScheduleRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a GetBackupScheduleRequest. */
+                    class GetBackupScheduleRequest implements IGetBackupScheduleRequest {
+
+                        /**
+                         * Constructs a new GetBackupScheduleRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IGetBackupScheduleRequest);
+
+                        /** GetBackupScheduleRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new GetBackupScheduleRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetBackupScheduleRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IGetBackupScheduleRequest): google.spanner.admin.database.v1.GetBackupScheduleRequest;
+
+                        /**
+                         * Encodes the specified GetBackupScheduleRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupScheduleRequest.verify|verify} messages.
+                         * @param message GetBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IGetBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetBackupScheduleRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupScheduleRequest.verify|verify} messages.
+                         * @param message GetBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IGetBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetBackupScheduleRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.GetBackupScheduleRequest;
+
+                        /**
+                         * Decodes a GetBackupScheduleRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.GetBackupScheduleRequest;
+
+                        /**
+                         * Verifies a GetBackupScheduleRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetBackupScheduleRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetBackupScheduleRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.GetBackupScheduleRequest;
+
+                        /**
+                         * Creates a plain object from a GetBackupScheduleRequest message. Also converts values to other types if specified.
+                         * @param message GetBackupScheduleRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.GetBackupScheduleRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetBackupScheduleRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for GetBackupScheduleRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a DeleteBackupScheduleRequest. */
+                    interface IDeleteBackupScheduleRequest {
+
+                        /** DeleteBackupScheduleRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a DeleteBackupScheduleRequest. */
+                    class DeleteBackupScheduleRequest implements IDeleteBackupScheduleRequest {
+
+                        /**
+                         * Constructs a new DeleteBackupScheduleRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest);
+
+                        /** DeleteBackupScheduleRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new DeleteBackupScheduleRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DeleteBackupScheduleRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest): google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
+
+                        /**
+                         * Encodes the specified DeleteBackupScheduleRequest message. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupScheduleRequest.verify|verify} messages.
+                         * @param message DeleteBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DeleteBackupScheduleRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupScheduleRequest.verify|verify} messages.
+                         * @param message DeleteBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DeleteBackupScheduleRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DeleteBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
+
+                        /**
+                         * Decodes a DeleteBackupScheduleRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DeleteBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
+
+                        /**
+                         * Verifies a DeleteBackupScheduleRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DeleteBackupScheduleRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DeleteBackupScheduleRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
+
+                        /**
+                         * Creates a plain object from a DeleteBackupScheduleRequest message. Also converts values to other types if specified.
+                         * @param message DeleteBackupScheduleRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.DeleteBackupScheduleRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DeleteBackupScheduleRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for DeleteBackupScheduleRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListBackupSchedulesRequest. */
+                    interface IListBackupSchedulesRequest {
+
+                        /** ListBackupSchedulesRequest parent */
+                        parent?: (string|null);
+
+                        /** ListBackupSchedulesRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListBackupSchedulesRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListBackupSchedulesRequest. */
+                    class ListBackupSchedulesRequest implements IListBackupSchedulesRequest {
+
+                        /**
+                         * Constructs a new ListBackupSchedulesRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListBackupSchedulesRequest);
+
+                        /** ListBackupSchedulesRequest parent. */
+                        public parent: string;
+
+                        /** ListBackupSchedulesRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListBackupSchedulesRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListBackupSchedulesRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListBackupSchedulesRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListBackupSchedulesRequest): google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+
+                        /**
+                         * Encodes the specified ListBackupSchedulesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupSchedulesRequest.verify|verify} messages.
+                         * @param message ListBackupSchedulesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListBackupSchedulesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListBackupSchedulesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupSchedulesRequest.verify|verify} messages.
+                         * @param message ListBackupSchedulesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListBackupSchedulesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListBackupSchedulesRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListBackupSchedulesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+
+                        /**
+                         * Decodes a ListBackupSchedulesRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListBackupSchedulesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+
+                        /**
+                         * Verifies a ListBackupSchedulesRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListBackupSchedulesRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListBackupSchedulesRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+
+                        /**
+                         * Creates a plain object from a ListBackupSchedulesRequest message. Also converts values to other types if specified.
+                         * @param message ListBackupSchedulesRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListBackupSchedulesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListBackupSchedulesRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListBackupSchedulesRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListBackupSchedulesResponse. */
+                    interface IListBackupSchedulesResponse {
+
+                        /** ListBackupSchedulesResponse backupSchedules */
+                        backupSchedules?: (google.spanner.admin.database.v1.IBackupSchedule[]|null);
+
+                        /** ListBackupSchedulesResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListBackupSchedulesResponse. */
+                    class ListBackupSchedulesResponse implements IListBackupSchedulesResponse {
+
+                        /**
+                         * Constructs a new ListBackupSchedulesResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListBackupSchedulesResponse);
+
+                        /** ListBackupSchedulesResponse backupSchedules. */
+                        public backupSchedules: google.spanner.admin.database.v1.IBackupSchedule[];
+
+                        /** ListBackupSchedulesResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListBackupSchedulesResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListBackupSchedulesResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListBackupSchedulesResponse): google.spanner.admin.database.v1.ListBackupSchedulesResponse;
+
+                        /**
+                         * Encodes the specified ListBackupSchedulesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupSchedulesResponse.verify|verify} messages.
+                         * @param message ListBackupSchedulesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListBackupSchedulesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListBackupSchedulesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupSchedulesResponse.verify|verify} messages.
+                         * @param message ListBackupSchedulesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListBackupSchedulesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListBackupSchedulesResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListBackupSchedulesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListBackupSchedulesResponse;
+
+                        /**
+                         * Decodes a ListBackupSchedulesResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListBackupSchedulesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListBackupSchedulesResponse;
+
+                        /**
+                         * Verifies a ListBackupSchedulesResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListBackupSchedulesResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListBackupSchedulesResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListBackupSchedulesResponse;
+
+                        /**
+                         * Creates a plain object from a ListBackupSchedulesResponse message. Also converts values to other types if specified.
+                         * @param message ListBackupSchedulesResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListBackupSchedulesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListBackupSchedulesResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListBackupSchedulesResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateBackupScheduleRequest. */
+                    interface IUpdateBackupScheduleRequest {
+
+                        /** UpdateBackupScheduleRequest backupSchedule */
+                        backupSchedule?: (google.spanner.admin.database.v1.IBackupSchedule|null);
+
+                        /** UpdateBackupScheduleRequest updateMask */
+                        updateMask?: (google.protobuf.IFieldMask|null);
+                    }
+
+                    /** Represents an UpdateBackupScheduleRequest. */
+                    class UpdateBackupScheduleRequest implements IUpdateBackupScheduleRequest {
+
+                        /**
+                         * Constructs a new UpdateBackupScheduleRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest);
+
+                        /** UpdateBackupScheduleRequest backupSchedule. */
+                        public backupSchedule?: (google.spanner.admin.database.v1.IBackupSchedule|null);
+
+                        /** UpdateBackupScheduleRequest updateMask. */
+                        public updateMask?: (google.protobuf.IFieldMask|null);
+
+                        /**
+                         * Creates a new UpdateBackupScheduleRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateBackupScheduleRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest): google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
+
+                        /**
+                         * Encodes the specified UpdateBackupScheduleRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupScheduleRequest.verify|verify} messages.
+                         * @param message UpdateBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateBackupScheduleRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupScheduleRequest.verify|verify} messages.
+                         * @param message UpdateBackupScheduleRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateBackupScheduleRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
+
+                        /**
+                         * Decodes an UpdateBackupScheduleRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateBackupScheduleRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
+
+                        /**
+                         * Verifies an UpdateBackupScheduleRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateBackupScheduleRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateBackupScheduleRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateBackupScheduleRequest message. Also converts values to other types if specified.
+                         * @param message UpdateBackupScheduleRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.UpdateBackupScheduleRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateBackupScheduleRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateBackupScheduleRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Represents a DatabaseAdmin */
                     class DatabaseAdmin extends $protobuf.rpc.Service {
 
@@ -8898,6 +10073,76 @@ export namespace google {
                          * @returns Promise
                          */
                         public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest): Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>;
+
+                        /**
+                         * Calls CreateBackupSchedule.
+                         * @param request CreateBackupScheduleRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and BackupSchedule
+                         */
+                        public createBackupSchedule(request: google.spanner.admin.database.v1.ICreateBackupScheduleRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.CreateBackupScheduleCallback): void;
+
+                        /**
+                         * Calls CreateBackupSchedule.
+                         * @param request CreateBackupScheduleRequest message or plain object
+                         * @returns Promise
+                         */
+                        public createBackupSchedule(request: google.spanner.admin.database.v1.ICreateBackupScheduleRequest): Promise<google.spanner.admin.database.v1.BackupSchedule>;
+
+                        /**
+                         * Calls GetBackupSchedule.
+                         * @param request GetBackupScheduleRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and BackupSchedule
+                         */
+                        public getBackupSchedule(request: google.spanner.admin.database.v1.IGetBackupScheduleRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.GetBackupScheduleCallback): void;
+
+                        /**
+                         * Calls GetBackupSchedule.
+                         * @param request GetBackupScheduleRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getBackupSchedule(request: google.spanner.admin.database.v1.IGetBackupScheduleRequest): Promise<google.spanner.admin.database.v1.BackupSchedule>;
+
+                        /**
+                         * Calls UpdateBackupSchedule.
+                         * @param request UpdateBackupScheduleRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and BackupSchedule
+                         */
+                        public updateBackupSchedule(request: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.UpdateBackupScheduleCallback): void;
+
+                        /**
+                         * Calls UpdateBackupSchedule.
+                         * @param request UpdateBackupScheduleRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateBackupSchedule(request: google.spanner.admin.database.v1.IUpdateBackupScheduleRequest): Promise<google.spanner.admin.database.v1.BackupSchedule>;
+
+                        /**
+                         * Calls DeleteBackupSchedule.
+                         * @param request DeleteBackupScheduleRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Empty
+                         */
+                        public deleteBackupSchedule(request: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.DeleteBackupScheduleCallback): void;
+
+                        /**
+                         * Calls DeleteBackupSchedule.
+                         * @param request DeleteBackupScheduleRequest message or plain object
+                         * @returns Promise
+                         */
+                        public deleteBackupSchedule(request: google.spanner.admin.database.v1.IDeleteBackupScheduleRequest): Promise<google.protobuf.Empty>;
+
+                        /**
+                         * Calls ListBackupSchedules.
+                         * @param request ListBackupSchedulesRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListBackupSchedulesResponse
+                         */
+                        public listBackupSchedules(request: google.spanner.admin.database.v1.IListBackupSchedulesRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.ListBackupSchedulesCallback): void;
+
+                        /**
+                         * Calls ListBackupSchedules.
+                         * @param request ListBackupSchedulesRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listBackupSchedules(request: google.spanner.admin.database.v1.IListBackupSchedulesRequest): Promise<google.spanner.admin.database.v1.ListBackupSchedulesResponse>;
                     }
 
                     namespace DatabaseAdmin {
@@ -9041,6 +10286,41 @@ export namespace google {
                          * @param [response] ListDatabaseRolesResponse
                          */
                         type ListDatabaseRolesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseRolesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackupSchedule}.
+                         * @param error Error, if any
+                         * @param [response] BackupSchedule
+                         */
+                        type CreateBackupScheduleCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.BackupSchedule) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getBackupSchedule}.
+                         * @param error Error, if any
+                         * @param [response] BackupSchedule
+                         */
+                        type GetBackupScheduleCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.BackupSchedule) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateBackupSchedule}.
+                         * @param error Error, if any
+                         * @param [response] BackupSchedule
+                         */
+                        type UpdateBackupScheduleCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.BackupSchedule) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|deleteBackupSchedule}.
+                         * @param error Error, if any
+                         * @param [response] Empty
+                         */
+                        type DeleteBackupScheduleCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listBackupSchedules}.
+                         * @param error Error, if any
+                         * @param [response] ListBackupSchedulesResponse
+                         */
+                        type ListBackupSchedulesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupSchedulesResponse) => void;
                     }
 
                     /** Properties of a RestoreInfo. */
@@ -16623,6 +17903,9 @@ export namespace google {
 
                     /** SpannerAction executeChangeStreamQuery */
                     executeChangeStreamQuery?: (google.spanner.executor.v1.IExecuteChangeStreamQuery|null);
+
+                    /** SpannerAction queryCancellation */
+                    queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
                 }
 
                 /** Represents a SpannerAction. */
@@ -16688,8 +17971,11 @@ export namespace google {
                     /** SpannerAction executeChangeStreamQuery. */
                     public executeChangeStreamQuery?: (google.spanner.executor.v1.IExecuteChangeStreamQuery|null);
 
+                    /** SpannerAction queryCancellation. */
+                    public queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
+
                     /** SpannerAction action. */
-                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery");
+                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery"|"queryCancellation");
 
                     /**
                      * Creates a new SpannerAction instance using the specified properties.
@@ -22688,6 +23974,109 @@ export namespace google {
                     public static getTypeUrl(typeUrlPrefix?: string): string;
                 }
 
+                /** Properties of a QueryCancellationAction. */
+                interface IQueryCancellationAction {
+
+                    /** QueryCancellationAction longRunningSql */
+                    longRunningSql?: (string|null);
+
+                    /** QueryCancellationAction cancelQuery */
+                    cancelQuery?: (string|null);
+                }
+
+                /** Represents a QueryCancellationAction. */
+                class QueryCancellationAction implements IQueryCancellationAction {
+
+                    /**
+                     * Constructs a new QueryCancellationAction.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.IQueryCancellationAction);
+
+                    /** QueryCancellationAction longRunningSql. */
+                    public longRunningSql: string;
+
+                    /** QueryCancellationAction cancelQuery. */
+                    public cancelQuery: string;
+
+                    /**
+                     * Creates a new QueryCancellationAction instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns QueryCancellationAction instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.IQueryCancellationAction): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Encodes the specified QueryCancellationAction message. Does not implicitly {@link google.spanner.executor.v1.QueryCancellationAction.verify|verify} messages.
+                     * @param message QueryCancellationAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.IQueryCancellationAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryCancellationAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.QueryCancellationAction.verify|verify} messages.
+                     * @param message QueryCancellationAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.IQueryCancellationAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryCancellationAction message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryCancellationAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Decodes a QueryCancellationAction message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryCancellationAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Verifies a QueryCancellationAction message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryCancellationAction message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryCancellationAction
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Creates a plain object from a QueryCancellationAction message. Also converts values to other types if specified.
+                     * @param message QueryCancellationAction
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.QueryCancellationAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryCancellationAction to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for QueryCancellationAction
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
                 /** Properties of a CancelOperationAction. */
                 interface ICancelOperationAction {
 
@@ -28667,6 +30056,12 @@ export namespace google {
 
                 /** ReadRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
+
+                /** ReadRequest orderBy */
+                orderBy?: (google.spanner.v1.ReadRequest.OrderBy|keyof typeof google.spanner.v1.ReadRequest.OrderBy|null);
+
+                /** ReadRequest lockHint */
+                lockHint?: (google.spanner.v1.ReadRequest.LockHint|keyof typeof google.spanner.v1.ReadRequest.LockHint|null);
             }
 
             /** Represents a ReadRequest. */
@@ -28713,6 +30108,12 @@ export namespace google {
 
                 /** ReadRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;
+
+                /** ReadRequest orderBy. */
+                public orderBy: (google.spanner.v1.ReadRequest.OrderBy|keyof typeof google.spanner.v1.ReadRequest.OrderBy);
+
+                /** ReadRequest lockHint. */
+                public lockHint: (google.spanner.v1.ReadRequest.LockHint|keyof typeof google.spanner.v1.ReadRequest.LockHint);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -28790,6 +30191,23 @@ export namespace google {
                  * @returns The default type url
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace ReadRequest {
+
+                /** OrderBy enum. */
+                enum OrderBy {
+                    ORDER_BY_UNSPECIFIED = 0,
+                    ORDER_BY_PRIMARY_KEY = 1,
+                    ORDER_BY_NO_ORDER = 2
+                }
+
+                /** LockHint enum. */
+                enum LockHint {
+                    LOCK_HINT_UNSPECIFIED = 0,
+                    LOCK_HINT_SHARED = 1,
+                    LOCK_HINT_EXCLUSIVE = 2
+                }
             }
 
             /** Properties of a BeginTransactionRequest. */

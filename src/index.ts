@@ -72,6 +72,7 @@ import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {
   MutationGroup,
+  MutationSet,
   PartitionedDml,
   Snapshot,
   Transaction,
@@ -304,6 +305,9 @@ class Spanner extends GrpcService {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
         scopes,
+        // Add grpc keep alive setting
+        'grpc.keepalive_time_ms': 30000,
+        'grpc.keepalive_timeout_ms': 10000,
         // Enable grpc-gcp support
         'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
         'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
@@ -2024,6 +2028,15 @@ export {Transaction};
  * @type {Constructor}
  */
 export {MutationGroup};
+
+/**
+ * {@link MutationSet} class.
+ *
+ * @name Spanner.MutationSet
+ * @see MutationSet
+ * @type {Constructor}
+ */
+export {MutationSet};
 
 /**
  * @type {object}

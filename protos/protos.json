@@ -1667,6 +1667,20 @@
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
+                            "freeableSizeBytes": {
+                              "type": "int64",
+                              "id": 15,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "exclusiveSizeBytes": {
+                              "type": "int64",
+                              "id": 16,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "state": {
                               "type": "State",
                               "id": 6,
@@ -1717,6 +1731,28 @@
                             "maxExpireTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "backupSchedules": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 14,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "incrementalBackupChainId": {
+                              "type": "string",
+                              "id": 17,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "oldestVersionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 18,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -2076,6 +2112,12 @@
                             }
                           }
                         },
+                        "FullBackupSpec": {
+                          "fields": {}
+                        },
+                        "IncrementalBackupSpec": {
+                          "fields": {}
+                        },
                         "OperationProgress": {
                           "fields": {
                             "progressPercent": {
@@ -2151,6 +2193,214 @@
                             "DATABASE_DIALECT_UNSPECIFIED": 0,
                             "GOOGLE_STANDARD_SQL": 1,
                             "POSTGRESQL": 2
+                          }
+                        },
+                        "BackupScheduleSpec": {
+                          "oneofs": {
+                            "scheduleSpec": {
+                              "oneof": [
+                                "cronSpec"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "cronSpec": {
+                              "type": "CrontabSpec",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "BackupSchedule": {
+                          "options": {
+                            "(google.api.resource).type": "spanner.googleapis.com/BackupSchedule",
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}",
+                            "(google.api.resource).plural": "backupSchedules",
+                            "(google.api.resource).singular": "backupSchedule"
+                          },
+                          "oneofs": {
+                            "backupTypeSpec": {
+                              "oneof": [
+                                "fullBackupSpec",
+                                "incrementalBackupSpec"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "IDENTIFIER"
+                              }
+                            },
+                            "spec": {
+                              "type": "BackupScheduleSpec",
+                              "id": 6,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "retentionDuration": {
+                              "type": "google.protobuf.Duration",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "encryptionConfig": {
+                              "type": "CreateBackupEncryptionConfig",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "fullBackupSpec": {
+                              "type": "FullBackupSpec",
+                              "id": 7
+                            },
+                            "incrementalBackupSpec": {
+                              "type": "IncrementalBackupSpec",
+                              "id": 8
+                            },
+                            "updateTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 9,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            }
+                          }
+                        },
+                        "CrontabSpec": {
+                          "fields": {
+                            "text": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "timeZone": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "creationWindow": {
+                              "type": "google.protobuf.Duration",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            }
+                          }
+                        },
+                        "CreateBackupScheduleRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "backupScheduleId": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "backupSchedule": {
+                              "type": "BackupSchedule",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
+                        "GetBackupScheduleRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/BackupSchedule"
+                              }
+                            }
+                          }
+                        },
+                        "DeleteBackupScheduleRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/BackupSchedule"
+                              }
+                            }
+                          }
+                        },
+                        "ListBackupSchedulesRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "ListBackupSchedulesResponse": {
+                          "fields": {
+                            "backupSchedules": {
+                              "rule": "repeated",
+                              "type": "BackupSchedule",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "UpdateBackupScheduleRequest": {
+                          "fields": {
+                            "backupSchedule": {
+                              "type": "BackupSchedule",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "updateMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
                           }
                         },
                         "DatabaseAdmin": {
@@ -2321,7 +2571,7 @@
                               "options": {
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:setIamPolicy",
                                 "(google.api.http).body": "*",
-                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
+                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:setIamPolicy",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource,policy"
                               },
@@ -2330,10 +2580,16 @@
                                   "(google.api.http)": {
                                     "post": "/v1/{resource=projects/*/instances/*/databases/*}:setIamPolicy",
                                     "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
-                                      "body": "*"
-                                    }
+                                    "additional_bindings": [
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
+                                        "body": "*"
+                                      },
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:setIamPolicy",
+                                        "body": "*"
+                                      }
+                                    ]
                                   }
                                 },
                                 {
@@ -2347,7 +2603,7 @@
                               "options": {
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:getIamPolicy",
                                 "(google.api.http).body": "*",
-                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
+                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:getIamPolicy",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource"
                               },
@@ -2356,10 +2612,16 @@
                                   "(google.api.http)": {
                                     "post": "/v1/{resource=projects/*/instances/*/databases/*}:getIamPolicy",
                                     "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
-                                      "body": "*"
-                                    }
+                                    "additional_bindings": [
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
+                                        "body": "*"
+                                      },
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:getIamPolicy",
+                                        "body": "*"
+                                      }
+                                    ]
                                   }
                                 },
                                 {
@@ -2385,6 +2647,10 @@
                                     "additional_bindings": [
                                       {
                                         "post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
+                                        "body": "*"
+                                      },
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:testIamPermissions",
                                         "body": "*"
                                       },
                                       {
@@ -2604,6 +2870,100 @@
                                 {
                                   "(google.api.http)": {
                                     "get": "/v1/{parent=projects/*/instances/*/databases/*}/databaseRoles"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent"
+                                }
+                              ]
+                            },
+                            "CreateBackupSchedule": {
+                              "requestType": "CreateBackupScheduleRequest",
+                              "responseType": "BackupSchedule",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules",
+                                "(google.api.http).body": "backup_schedule",
+                                "(google.api.method_signature)": "parent,backup_schedule,backup_schedule_id"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules",
+                                    "body": "backup_schedule"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent,backup_schedule,backup_schedule_id"
+                                }
+                              ]
+                            },
+                            "GetBackupSchedule": {
+                              "requestType": "GetBackupScheduleRequest",
+                              "responseType": "BackupSchedule",
+                              "options": {
+                                "(google.api.http).get": "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                                "(google.api.method_signature)": "name"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "UpdateBackupSchedule": {
+                              "requestType": "UpdateBackupScheduleRequest",
+                              "responseType": "BackupSchedule",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{backup_schedule.name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                                "(google.api.http).body": "backup_schedule",
+                                "(google.api.method_signature)": "backup_schedule,update_mask"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "patch": "/v1/{backup_schedule.name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                                    "body": "backup_schedule"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "backup_schedule,update_mask"
+                                }
+                              ]
+                            },
+                            "DeleteBackupSchedule": {
+                              "requestType": "DeleteBackupScheduleRequest",
+                              "responseType": "google.protobuf.Empty",
+                              "options": {
+                                "(google.api.http).delete": "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                                "(google.api.method_signature)": "name"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "delete": "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "ListBackupSchedules": {
+                              "requestType": "ListBackupSchedulesRequest",
+                              "responseType": "ListBackupSchedulesResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules",
+                                "(google.api.method_signature)": "parent"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules"
                                   }
                                 },
                                 {
@@ -4694,7 +5054,8 @@
                             "generateDbPartitionsRead",
                             "generateDbPartitionsQuery",
                             "executePartition",
-                            "executeChangeStreamQuery"
+                            "executeChangeStreamQuery",
+                            "queryCancellation"
                           ]
                         }
                       },
@@ -4770,6 +5131,10 @@
                         "executeChangeStreamQuery": {
                           "type": "ExecuteChangeStreamQuery",
                           "id": 50
+                        },
+                        "queryCancellation": {
+                          "type": "QueryCancellationAction",
+                          "id": 51
                         }
                       }
                     },
@@ -6169,6 +6534,18 @@
                         "operation": {
                           "type": "string",
                           "id": 1
+                        }
+                      }
+                    },
+                    "QueryCancellationAction": {
+                      "fields": {
+                        "longRunningSql": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "cancelQuery": {
+                          "type": "string",
+                          "id": 2
                         }
                       }
                     },
@@ -7772,6 +8149,36 @@
                     "dataBoostEnabled": {
                       "type": "bool",
                       "id": 15
+                    },
+                    "orderBy": {
+                      "type": "OrderBy",
+                      "id": 16,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    },
+                    "lockHint": {
+                      "type": "LockHint",
+                      "id": 17,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    }
+                  },
+                  "nested": {
+                    "OrderBy": {
+                      "values": {
+                        "ORDER_BY_UNSPECIFIED": 0,
+                        "ORDER_BY_PRIMARY_KEY": 1,
+                        "ORDER_BY_NO_ORDER": 2
+                      }
+                    },
+                    "LockHint": {
+                      "values": {
+                        "LOCK_HINT_UNSPECIFIED": 0,
+                        "LOCK_HINT_SHARED": 1,
+                        "LOCK_HINT_EXCLUSIVE": 2
+                      }
                     }
                   }
                 },
