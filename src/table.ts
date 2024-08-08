@@ -31,6 +31,7 @@ import {
 import {google as databaseAdmin} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
+import {startTrace, setSpanError} from './instrument';
 
 export type Key = string | string[];
 
@@ -1072,29 +1073,34 @@ class Table {
     options: MutateRowsOptions | CallOptions = {},
     callback: CommitCallback
   ): void {
-    const requestOptions =
-      'requestOptions' in options ? options.requestOptions : {};
+    startTrace('Table.' + method, {}, span => {
+      const requestOptions =
+        'requestOptions' in options ? options.requestOptions : {};
 
-    const excludeTxnFromChangeStreams =
-      'excludeTxnFromChangeStreams' in options
-        ? options.excludeTxnFromChangeStreams
-        : false;
+      const excludeTxnFromChangeStreams =
+        'excludeTxnFromChangeStreams' in options
+          ? options.excludeTxnFromChangeStreams
+          : false;
 
-    this.database.runTransaction(
-      {
-        requestOptions: requestOptions,
-        excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
-      },
-      (err, transaction) => {
-        if (err) {
-          callback(err);
-          return;
+      this.database.runTransaction(
+        {
+          requestOptions: requestOptions,
+          excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+        },
+        (err, transaction) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback(err);
+            return;
+          }
+
+          span.end();
+          transaction![method](this.name, rows as Key[]);
+          transaction!.commit(options, callback);
         }
-
-        transaction![method](this.name, rows as Key[]);
-        transaction!.commit(options, callback);
-      }
-    );
+      );
+    });
   }
 }
 

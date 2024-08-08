@@ -34,6 +34,7 @@ Google APIs Client Libraries, in [Client Libraries Explained][explained].
   * [Before you begin](#before-you-begin)
   * [Installing the client library](#installing-the-client-library)
   * [Using the client library](#using-the-client-library)
+* [Observability](#observability)
 * [Samples](#samples)
 * [Versioning](#versioning)
 * [Contributing](#contributing)
@@ -82,6 +83,101 @@ rows.forEach(row => console.log(row));
 ```
 
 
+## Observability
+
+This package has been instrumented with [OpenTelemetry](https://opentelemetry.io/docs/languages/js/) for tracing. Make sure to firstly import and enable
+OpenTelemetry before importing this Spanner library.
+
+Please use a tracer named "nodejs-spanner".
+
+> :warning: **Make sure that the OpenTelemetry imports are the first, before importing the Spanner library**
+
+> :warning: **In order for your spans to be annotated with SQL, you MUST opt-in by setting environment variable
+`SPANNER_ENABLE_EXTENDED_TRACING=true`, this is because SQL statements can be
+sensitive personally-identifiable-information (PII).**
+
+To test out trace examination, you can use Google Cloud Trace like this.
+
+```javascript
+function exportSpans(instanceId, databaseId, projectId) {
+  // Firstly initiate OpenTelemetry
+  const {Resource} = require('@opentelemetry/resources');
+  const {NodeSDK} = require('@opentelemetry/sdk-node');
+  const {trace} = require('@opentelemetry/api');
+  const {
+    NodeTracerProvider,
+    TraceIdRatioBasedSampler,
+  } = require('@opentelemetry/sdk-trace-node');
+  const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+  const {
+    SEMRESATTRS_SERVICE_NAME,
+    SEMRESATTRS_SERVICE_VERSION,
+  } = require('@opentelemetry/semantic-conventions');
+
+  const resource = Resource.default().merge(
+    new Resource({
+      [SEMRESATTRS_SERVICE_NAME]: 'spanner-sample',
+      [SEMRESATTRS_SERVICE_VERSION]: 'v1.0.0', // Whatever version of your app is running.,
+    })
+  );
+
+  const {TraceExporter} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
+  const exporter = new TraceExporter({});
+
+  const sdk = new NodeSDK({
+    resource: resource,
+    traceExporter: exporter,
+    // Trace every single request to ensure that we generate
+    // enough traffic for proper examination of traces.
+    sampler: new TraceIdRatioBasedSampler(1.0),
+  });
+  sdk.start();
+
+  const provider = new NodeTracerProvider({resource: resource});
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+  provider.register();
+
+  // OpenTelemetry MUST be imported much earlier than the cloud-spanner package.
+  const tracer = trace.getTracer('nodejs-spanner');
+
+  const {Spanner} = require('@google-cloud/spanner');
+
+  tracer.startActiveSpan('deleteAndCreateDatabase', span => {
+    // Creates a client
+    const spanner = new Spanner({
+      projectId: projectId,
+    });
+
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
+
+    const databasePath = databaseAdminClient.databasePath(
+      projectId,
+      instanceId,
+      databaseId
+    );
+
+    deleteDatabase(databaseAdminClient, databasePath, () => {
+      createDatabase(
+        databaseAdminClient,
+        projectId,
+        instanceId,
+        databaseId,
+        () => {
+          span.end();
+          console.log('main span.end');
+          setTimeout(() => {
+            console.log('finished delete and creation of the database');
+          }, 5000);
+        }
+      );
+    });
+  });
+}
+```
+
 
 ## Samples
 
@@ -90,6 +186,7 @@ Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tre
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
 | Add and drop new database role | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/add-and-drop-new-database-role.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/add-and-drop-new-database-role.js,samples/README.md) |
+| Export traces & observability from this library | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md) |
 | Backups-cancel | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-cancel.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-cancel.js,samples/README.md) |
 | Copies a source backup | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md) |
 | Backups-create-with-encryption-key | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create-with-encryption-key.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-encryption-key.js,samples/README.md) |
