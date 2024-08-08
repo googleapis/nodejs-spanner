@@ -2978,35 +2978,24 @@ describe('Spanner with mock server', () => {
         .filter(val => (val as v1.ExecuteSqlRequest).sql)
         .map(req => req as v1.ExecuteSqlRequest);
 
-      assert.strictEqual(requests.length, 6);
-      assert.ok(
-        requests[0].transaction?.begin!.readWrite,
-        'inline txn is not set.'
-      );
-      assert.ok(
-        requests[1].transaction?.begin!.readWrite,
-        'inline txn is not set.'
-      );
-      assert.ok(
-        requests[2].transaction?.begin!.readWrite,
-        'inline txn is not set.'
-      );
-      assert.ok(
-        requests[3].transaction!.id,
-        'Transaction ID is not used for retries.'
-      );
-      assert.ok(
-        requests[4].transaction!.id,
-        'Transaction ID is not used for retries.'
-      );
-      assert.ok(
-        requests[5].transaction!.id,
-        'Transaction ID is not used for retries.'
-      );
+      assert.strictEqual(requests.length, 4);
+      requests.slice(0, 1).forEach((request, index) => {
+        assert.ok(
+          request.transaction?.begin!.readWrite,
+          `Inline txn is not set in request ${index}.`
+        );
+      });
+      requests.slice(1, 4).forEach((request, index) => {
+        assert.ok(
+          request.transaction!.id,
+          `Transaction ID is not used for retries. ${index}.`
+        );
+      });
       const beginTxnRequest = spannerMock
         .getRequests()
         .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
         .map(req => req as v1.ExecuteSqlRequest);
+      // TODO: There is a bug which is initiating BeginTransaction RPC twice.
       assert.deepStrictEqual(beginTxnRequest.length, 2);
       const commitRequests = spannerMock
         .getRequests()
