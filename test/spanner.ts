@@ -1327,7 +1327,10 @@ describe('Spanner with mock server', () => {
           const database = newTestDatabase();
 
           await database.runTransactionAsync(async tx => {
-            const [rows1, rows2] = await Promise.all([tx!.run(selectSql), tx!.run(selectSql)]);
+            const [rows1, rows2] = await Promise.all([
+              tx!.run(selectSql),
+              tx!.run(selectSql),
+            ]);
             assert.equal(rows1.length, 3);
             assert.equal(rows2.length, 3);
             await tx.commit();
@@ -1356,11 +1359,19 @@ describe('Spanner with mock server', () => {
             .filter(val => (val as v1.CommitRequest).mutations)
             .map(req => req as v1.CommitRequest);
           assert.strictEqual(commitRequests.length, 1);
-          assert.deepStrictEqual(requests[1].transaction!.id,requests[2].transaction!.id);
-          assert.deepStrictEqual(requests[1].transaction!.id, commitRequests[0].transactionId);
+          assert.deepStrictEqual(
+            requests[1].transaction!.id,
+            requests[2].transaction!.id
+          );
+          assert.deepStrictEqual(
+            requests[1].transaction!.id,
+            commitRequests[0].transactionId
+          );
           const beginTxnRequests = spannerMock
             .getRequests()
-            .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+            .filter(
+              val => (val as v1.BeginTransactionRequest).options?.readWrite
+            )
             .map(req => req as v1.BeginTransactionRequest);
           assert.deepStrictEqual(beginTxnRequests.length, 0);
         });
@@ -2953,10 +2964,9 @@ describe('Spanner with mock server', () => {
           return Promise.all([
             transaction!.run(selectSql),
             transaction!.run(selectSql),
-          ])
-          .then(([rows1, rows2]) => {
-            assert.strictEqual(rows1.length, 3)
-            assert.strictEqual(rows2.length, 3)
+          ]).then(([rows1, rows2]) => {
+            assert.strictEqual(rows1.length, 3);
+            assert.strictEqual(rows2.length, 3);
             return transaction.commit().then(() => rows1.length + rows2.length);
           });
         }
@@ -2964,9 +2974,9 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(rowCount, 6);
       assert.strictEqual(attempts, 2);
       const requests = spannerMock
-          .getRequests()
-          .filter(val => (val as v1.ExecuteSqlRequest).sql)
-          .map(req => req as v1.ExecuteSqlRequest);
+        .getRequests()
+        .filter(val => (val as v1.ExecuteSqlRequest).sql)
+        .map(req => req as v1.ExecuteSqlRequest);
 
       assert.strictEqual(requests.length, 6);
       assert.ok(
@@ -2994,14 +3004,14 @@ describe('Spanner with mock server', () => {
         'Transaction ID is not used for retries.'
       );
       const beginTxnRequest = spannerMock
-          .getRequests()
-          .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-          .map(req => req as v1.ExecuteSqlRequest);
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.ExecuteSqlRequest);
       assert.deepStrictEqual(beginTxnRequest.length, 2);
       const commitRequests = spannerMock
-            .getRequests()
-            .filter(val => (val as v1.CommitRequest).mutations)
-            .map(req => req as v1.CommitRequest);
+        .getRequests()
+        .filter(val => (val as v1.CommitRequest).mutations)
+        .map(req => req as v1.CommitRequest);
       assert.strictEqual(commitRequests.length, 1);
       await database.close();
     });
