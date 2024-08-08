@@ -1327,7 +1327,9 @@ describe('Spanner with mock server', () => {
           const database = newTestDatabase();
 
           await database.runTransactionAsync(async tx => {
-            await Promise.all([tx!.run(selectSql), tx!.run(selectSql)]);
+            const [rows1, rows2] = await Promise.all([tx!.run(selectSql), tx!.run(selectSql)]);
+            assert.equal(rows1.length, 3);
+            assert.equal(rows2.length, 3);
             await tx.commit();
           });
           await database.close();
@@ -1349,6 +1351,18 @@ describe('Spanner with mock server', () => {
             requests[1].resumeToken,
             'Resume token is not set for the retried'
           );
+          const commitRequests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.CommitRequest).mutations)
+            .map(req => req as v1.CommitRequest);
+          assert.strictEqual(commitRequests.length, 1);
+          assert.deepStrictEqual(requests[1].transaction!.id,requests[2].transaction!.id);
+          assert.deepStrictEqual(requests[1].transaction!.id, commitRequests[0].transactionId);
+          const beginTxnRequests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+            .map(req => req as v1.BeginTransactionRequest);
+          assert.deepStrictEqual(beginTxnRequests.length, 0);
         });
 
         it('should not retry non-retryable error during streaming', async () => {
@@ -2939,15 +2953,56 @@ describe('Spanner with mock server', () => {
           return Promise.all([
             transaction!.run(selectSql),
             transaction!.run(selectSql),
-          ]).then(([rows]) => {
-            let count = 0;
-            rows.forEach(() => count++);
-            return transaction.commit().then(() => count);
+          ])
+          .then(([rows1, rows2]) => {
+            assert.strictEqual(rows1.length, 3)
+            assert.strictEqual(rows2.length, 3)
+            return transaction.commit().then(() => rows1.length + rows2.length);
           });
         }
       );
-      assert.strictEqual(rowCount, 3);
+      assert.strictEqual(rowCount, 6);
       assert.strictEqual(attempts, 2);
+      const requests = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.ExecuteSqlRequest).sql)
+          .map(req => req as v1.ExecuteSqlRequest);
+
+      assert.strictEqual(requests.length, 6);
+      assert.ok(
+        requests[0].transaction?.begin!.readWrite,
+        'inline txn is not set.'
+      );
+      assert.ok(
+        requests[1].transaction?.begin!.readWrite,
+        'inline txn is not set.'
+      );
+      assert.ok(
+        requests[2].transaction?.begin!.readWrite,
+        'inline txn is not set.'
+      );
+      assert.ok(
+        requests[3].transaction!.id,
+        'Transaction ID is not used for retries.'
+      );
+      assert.ok(
+        requests[4].transaction!.id,
+        'Transaction ID is not used for retries.'
+      );
+      assert.ok(
+        requests[5].transaction!.id,
+        'Transaction ID is not used for retries.'
+      );
+      const beginTxnRequest = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+          .map(req => req as v1.ExecuteSqlRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 2);
+      const commitRequests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.CommitRequest).mutations)
+            .map(req => req as v1.CommitRequest);
+      assert.strictEqual(commitRequests.length, 1);
       await database.close();
     });
 
@@ -3616,6 +3671,25 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction on retry for parallel queries', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        await Promise.all([tx!.run(selectSql), tx!.run(selectSql)]);
+        if (!attempts) {
+          spannerMock.abortTransaction(tx);
+        }
+        attempts++;
+        await Promise.all([tx!.run(insertSql), tx!.run(insertSql)]);
+        await tx.commit();
+      });
+      await database.close();
       const beginTxnRequest = spannerMock.getRequests().find(val => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
