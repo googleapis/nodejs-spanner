@@ -2975,17 +2975,18 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(attempts, 2);
       const requests = spannerMock
         .getRequests()
-        .filter(val => (val as v1.ExecuteSqlRequest).sql)
+        .filter(val => {
+          return (val as v1.ExecuteSqlRequest).sql === selectSql;
+        })
         .map(req => req as v1.ExecuteSqlRequest);
 
-      assert.strictEqual(requests.length, 4);
-      requests.slice(0, 1).forEach((request, index) => {
-        assert.ok(
-          request.transaction?.begin!.readWrite,
-          `Inline txn is not set in request ${index}.`
-        );
-      });
-      requests.slice(1, 4).forEach((request, index) => {
+      // First request will fail and second blocked request will get discarded, once Abort error is received.
+      assert.strictEqual(requests.length, 3);
+      assert.ok(
+        requests[0].transaction?.begin!.readWrite,
+        'Inline txn is not set in request.'
+      );
+      requests.slice(1, 3).forEach((request, index) => {
         assert.ok(
           request.transaction!.id,
           `Transaction ID is not used for retries. ${index}.`
@@ -2994,9 +2995,8 @@ describe('Spanner with mock server', () => {
       const beginTxnRequest = spannerMock
         .getRequests()
         .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-        .map(req => req as v1.ExecuteSqlRequest);
-      // TODO: There is a bug which is initiating BeginTransaction RPC twice.
-      assert.deepStrictEqual(beginTxnRequest.length, 2);
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       const commitRequests = spannerMock
         .getRequests()
         .filter(val => (val as v1.CommitRequest).mutations)
@@ -3371,10 +3371,11 @@ describe('Spanner with mock server', () => {
       }) as v1.ExecuteSqlRequest;
       assert.ok(secondExecuteSqlRequest.transaction?.id);
       // Verify that we have a BeginTransaction request for the retry.
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequests = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequests.length, 1);
       // Verify that we have a single Commit request, and that the Commit request contains only one mutation.
       assert.strictEqual(
         1,
@@ -3669,11 +3670,11 @@ describe('Spanner with mock server', () => {
         await tx.commit();
       });
       await database.close();
-
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
     });
 
     it('should use beginTransaction on retry for parallel queries', async () => {
@@ -3689,10 +3690,11 @@ describe('Spanner with mock server', () => {
         await tx.commit();
       });
       await database.close();
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
     });
 
     it('should use beginTransaction on retry with excludeTxnFromChangeStreams', async () => {
@@ -3712,12 +3714,13 @@ describe('Spanner with mock server', () => {
       );
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
     });
@@ -3736,12 +3739,13 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options!.readWrite!.readLockMode,
+        beginTxnRequest[0].options!.readWrite!.readLockMode,
         'OPTIMISTIC'
       );
     });
@@ -3763,10 +3767,11 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
     });
 
     it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
@@ -3791,12 +3796,13 @@ describe('Spanner with mock server', () => {
       );
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
     });
@@ -3818,10 +3824,11 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
     });
 
     it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
@@ -3846,12 +3853,13 @@ describe('Spanner with mock server', () => {
       );
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
     });
@@ -3916,10 +3924,11 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
     });
 
     it('should run begin transaction on blind commit with excludeTxnFromChangeStreams', async () => {
@@ -3935,11 +3944,13 @@ describe('Spanner with mock server', () => {
       );
       await database.close();
 
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
     });
@@ -3988,12 +3999,13 @@ describe('Spanner with mock server', () => {
           }
         );
       } catch (e) {
-        const beginTxnRequest = spannerMock.getRequests().find(val => {
-          return (val as v1.BeginTransactionRequest).options?.readWrite;
-        }) as v1.BeginTransactionRequest;
-
+        const beginTxnRequest = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+          .map(req => req as v1.BeginTransactionRequest);
+        assert.deepStrictEqual(beginTxnRequest.length, 1);
         assert.strictEqual(
-          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
           true
         );
         assert.strictEqual(
@@ -4044,11 +4056,13 @@ describe('Spanner with mock server', () => {
           excludeTxnFromChangeStreams: true,
         }
       );
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
-        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
       await database.close();

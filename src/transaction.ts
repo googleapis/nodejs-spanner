@@ -712,8 +712,16 @@ export class Snapshot extends EventEmitter {
           this._update(response.metadata!.transaction);
         }
       })
-      .on('error', () => {
-        if (!this.id && this._useInRunner) {
+      .on('error', err => {
+        const isServiceError = err && typeof err === 'object' && 'code' in err;
+        if (
+          !this.id &&
+          this._useInRunner &&
+          !(
+            isServiceError &&
+            (err as grpc.ServiceError).code === grpc.status.ABORTED
+          )
+        ) {
           this.begin();
         }
       });
@@ -1219,8 +1227,16 @@ export class Snapshot extends EventEmitter {
           this._update(response.metadata!.transaction);
         }
       })
-      .on('error', () => {
-        if (!this.id && this._useInRunner) {
+      .on('error', err => {
+        const isServiceError = err && typeof err === 'object' && 'code' in err;
+        if (
+          !this.id &&
+          this._useInRunner &&
+          !(
+            isServiceError &&
+            (err as grpc.ServiceError).code === grpc.status.ABORTED
+          )
+        ) {
           this.begin();
         }
       });
