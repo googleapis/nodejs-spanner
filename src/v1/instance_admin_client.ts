@@ -347,6 +347,12 @@ export class InstanceAdminClient {
     const updateInstancePartitionMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata'
     ) as gax.protobuf.Type;
+    const moveInstanceResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.MoveInstanceResponse'
+    ) as gax.protobuf.Type;
+    const moveInstanceMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.MoveInstanceMetadata'
+    ) as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
       createInstanceConfig: new this._gaxModule.LongrunningDescriptor(
@@ -386,6 +392,11 @@ export class InstanceAdminClient {
         updateInstancePartitionMetadata.decode.bind(
           updateInstancePartitionMetadata
         )
+      ),
+      moveInstance: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        moveInstanceResponse.decode.bind(moveInstanceResponse),
+        moveInstanceMetadata.decode.bind(moveInstanceMetadata)
       ),
     };
 
@@ -459,6 +470,7 @@ export class InstanceAdminClient {
       'deleteInstancePartition',
       'updateInstancePartition',
       'listInstancePartitionOperations',
+      'moveInstance',
     ];
     for (const methodName of instanceAdminStubMethods) {
       const callPromise = this.instanceAdminStub.then(
@@ -675,11 +687,11 @@ export class InstanceAdminClient {
     return this.innerApiCalls.getInstanceConfig(request, options, callback);
   }
   /**
-   * Deletes the instance config. Deletion is only allowed when no
+   * Deletes the instance configuration. Deletion is only allowed when no
    * instances are using the configuration. If any instances are using
-   * the config, returns `FAILED_PRECONDITION`.
+   * the configuration, returns `FAILED_PRECONDITION`.
    *
-   * Only user managed configurations can be deleted.
+   * Only user-managed configurations can be deleted.
    *
    * Authorization requires `spanner.instanceConfigs.delete` permission on
    * the resource {@link protos.google.spanner.admin.instance.v1.InstanceConfig.name|name}.
@@ -692,12 +704,12 @@ export class InstanceAdminClient {
    *   `projects/<project>/instanceConfigs/<instance_config>`
    * @param {string} request.etag
    *   Used for optimistic concurrency control as a way to help prevent
-   *   simultaneous deletes of an instance config from overwriting each
+   *   simultaneous deletes of an instance configuration from overwriting each
    *   other. If not empty, the API
-   *   only deletes the instance config when the etag provided matches the current
-   *   status of the requested instance config. Otherwise, deletes the instance
-   *   config without checking the current status of the requested instance
-   *   config.
+   *   only deletes the instance configuration when the etag provided matches the
+   *   current status of the requested instance configuration. Otherwise, deletes
+   *   the instance configuration without checking the current status of the
+   *   requested instance configuration.
    * @param {boolean} request.validateOnly
    *   An option to validate, but not actually execute, a request,
    *   and provide the same response.
@@ -1471,38 +1483,38 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Creates an instance config and begins preparing it to be used. The
+   * Creates an instance configuration and begins preparing it to be used. The
    * returned {@link protos.google.longrunning.Operation|long-running operation}
    * can be used to track the progress of preparing the new
-   * instance config. The instance config name is assigned by the caller. If the
-   * named instance config already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
+   * instance configuration. The instance configuration name is assigned by the
+   * caller. If the named instance configuration already exists,
+   * `CreateInstanceConfig` returns `ALREADY_EXISTS`.
    *
    * Immediately after the request returns:
    *
-   *   * The instance config is readable via the API, with all requested
-   *     attributes. The instance config's
+   *   * The instance configuration is readable via the API, with all requested
+   *     attributes. The instance configuration's
    *     {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *     field is set to true. Its state is `CREATING`.
    *
    * While the operation is pending:
    *
-   *   * Cancelling the operation renders the instance config immediately
+   *   * Cancelling the operation renders the instance configuration immediately
    *     unreadable via the API.
    *   * Except for deleting the creating resource, all other attempts to modify
-   *     the instance config are rejected.
+   *     the instance configuration are rejected.
    *
    * Upon completion of the returned operation:
    *
    *   * Instances can be created using the instance configuration.
-   *   * The instance config's
+   *   * The instance configuration's
    *   {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *   field becomes false. Its state becomes `READY`.
    *
    * The returned {@link protos.google.longrunning.Operation|long-running operation} will
    * have a name of the format
    * `<instance_config_name>/operations/<operation_id>` and can be used to track
-   * creation of the instance config. The
+   * creation of the instance configuration. The
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
    * {@link protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
    * The {@link protos.google.longrunning.Operation.response|response} field type is
@@ -1516,13 +1528,13 @@ export class InstanceAdminClient {
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
-   *   Required. The name of the project in which to create the instance config.
-   *   Values are of the form `projects/<project>`.
+   *   Required. The name of the project in which to create the instance
+   *   configuration. Values are of the form `projects/<project>`.
    * @param {string} request.instanceConfigId
-   *   Required. The ID of the instance config to create.  Valid identifiers are
-   *   of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
+   *   Required. The ID of the instance configuration to create. Valid identifiers
+   *   are of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
    *   characters in length. The `custom-` prefix is required to avoid name
-   *   conflicts with Google managed configurations.
+   *   conflicts with Google-managed configurations.
    * @param {google.spanner.admin.instance.v1.InstanceConfig} request.instanceConfig
    *   Required. The InstanceConfig proto of the configuration to create.
    *   instance_config.name must be
@@ -1658,16 +1670,16 @@ export class InstanceAdminClient {
     >;
   }
   /**
-   * Updates an instance config. The returned
+   * Updates an instance configuration. The returned
    * {@link protos.google.longrunning.Operation|long-running operation} can be used to track
-   * the progress of updating the instance. If the named instance config does
-   * not exist, returns `NOT_FOUND`.
+   * the progress of updating the instance. If the named instance configuration
+   * does not exist, returns `NOT_FOUND`.
    *
-   * Only user managed configurations can be updated.
+   * Only user-managed configurations can be updated.
    *
    * Immediately after the request returns:
    *
-   *   * The instance config's
+   *   * The instance configuration's
    *     {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *     field is set to true.
    *
@@ -1677,23 +1689,23 @@ export class InstanceAdminClient {
    *     {@link protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time|cancel_time}.
    *     The operation is guaranteed to succeed at undoing all changes, after
    *     which point it terminates with a `CANCELLED` status.
-   *   * All other attempts to modify the instance config are rejected.
-   *   * Reading the instance config via the API continues to give the
+   *   * All other attempts to modify the instance configuration are rejected.
+   *   * Reading the instance configuration via the API continues to give the
    *     pre-request values.
    *
    * Upon completion of the returned operation:
    *
    *   * Creating instances using the instance configuration uses the new
    *     values.
-   *   * The instance config's new values are readable via the API.
-   *   * The instance config's
+   *   * The new values of the instance configuration are readable via the API.
+   *   * The instance configuration's
    *   {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *   field becomes false.
    *
    * The returned {@link protos.google.longrunning.Operation|long-running operation} will
    * have a name of the format
    * `<instance_config_name>/operations/<operation_id>` and can be used to track
-   * the instance config modification.  The
+   * the instance configuration modification.  The
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
    * {@link protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata|UpdateInstanceConfigMetadata}.
    * The {@link protos.google.longrunning.Operation.response|response} field type is
@@ -1706,8 +1718,9 @@ export class InstanceAdminClient {
    * @param {Object} request
    *   The request object that will be sent.
    * @param {google.spanner.admin.instance.v1.InstanceConfig} request.instanceConfig
-   *   Required. The user instance config to update, which must always include the
-   *   instance config name. Otherwise, only fields mentioned in
+   *   Required. The user instance configuration to update, which must always
+   *   include the instance configuration name. Otherwise, only fields mentioned
+   *   in
    *   {@link protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.update_mask|update_mask}
    *   need be included. To prevent conflicts of concurrent updates,
    *   {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|etag} can
@@ -2572,6 +2585,202 @@ export class InstanceAdminClient {
     >;
   }
   /**
+   * Moves an instance to the target instance configuration. You can use the
+   * returned {@link protos.google.longrunning.Operation|long-running operation} to track
+   * the progress of moving the instance.
+   *
+   * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
+   * the following criteria:
+   *
+   *   * Is undergoing a move to a different instance configuration
+   *   * Has backups
+   *   * Has an ongoing update
+   *   * Contains any CMEK-enabled databases
+   *   * Is a free trial instance
+   *
+   * While the operation is pending:
+   *
+   *   * All other attempts to modify the instance, including changes to its
+   *     compute capacity, are rejected.
+   *   * The following database and backup admin operations are rejected:
+   *
+   *     * `DatabaseAdmin.CreateDatabase`
+   *     * `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is
+   *        specified in the request.)
+   *     * `DatabaseAdmin.RestoreDatabase`
+   *     * `DatabaseAdmin.CreateBackup`
+   *     * `DatabaseAdmin.CopyBackup`
+   *
+   *   * Both the source and target instance configurations are subject to
+   *     hourly compute and storage charges.
+   *   * The instance might experience higher read-write latencies and a higher
+   *     transaction abort rate. However, moving an instance doesn't cause any
+   *     downtime.
+   *
+   * The returned {@link protos.google.longrunning.Operation|long-running operation} has
+   * a name of the format
+   * `<instance_name>/operations/<operation_id>` and can be used to track
+   * the move instance operation. The
+   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * {@link protos.google.spanner.admin.instance.v1.MoveInstanceMetadata|MoveInstanceMetadata}.
+   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * {@link protos.google.spanner.admin.instance.v1.Instance|Instance},
+   * if successful.
+   * Cancelling the operation sets its metadata's
+   * {@link protos.google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time|cancel_time}.
+   * Cancellation is not immediate because it involves moving any data
+   * previously moved to the target instance configuration back to the original
+   * instance configuration. You can use this operation to track the progress of
+   * the cancellation. Upon successful completion of the cancellation, the
+   * operation terminates with `CANCELLED` status.
+   *
+   * If not cancelled, upon completion of the returned operation:
+   *
+   *   * The instance successfully moves to the target instance
+   *     configuration.
+   *   * You are billed for compute and storage in target instance
+   *   configuration.
+   *
+   * Authorization requires the `spanner.instances.update` permission on
+   * the resource {@link protos.google.spanner.admin.instance.v1.Instance|instance}.
+   *
+   * For more details, see
+   * [Move an instance](https://cloud.google.com/spanner/docs/move-instance).
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The instance to move.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} request.targetConfig
+   *   Required. The target instance configuration where to move the instance.
+   *   Values are of the form `projects/<project>/instanceConfigs/<config>`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  moveInstance(
+    request?: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+        protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  >;
+  moveInstance(
+    request: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+        protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  moveInstance(
+    request: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+        protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  moveInstance(
+    request?: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+            protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+        protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+        protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.moveInstance(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by `moveInstance()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  async checkMoveInstanceProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.instance.v1.MoveInstanceResponse,
+      protos.google.spanner.admin.instance.v1.MoveInstanceMetadata
+    >
+  > {
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(
+      operation,
+      this.descriptors.longrunning.moveInstance,
+      this._gaxModule.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.instance.v1.MoveInstanceResponse,
+      protos.google.spanner.admin.instance.v1.MoveInstanceMetadata
+    >;
+  }
+  /**
    * Lists the supported instance configurations for a given project.
    *
    * @param {Object} request
@@ -2774,9 +2983,9 @@ export class InstanceAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
   /**
-   * Lists the user-managed instance config [long-running
+   * Lists the user-managed instance configuration [long-running
    * operations][google.longrunning.Operation] in the given project. An instance
-   * config operation has a name of the form
+   * configuration operation has a name of the form
    * `projects/<project>/instanceConfigs/<instance_config>/operations/<operation>`.
    * The long-running operation
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type
@@ -2789,7 +2998,7 @@ export class InstanceAdminClient {
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
-   *   Required. The project of the instance config operations.
+   *   Required. The project of the instance configuration operations.
    *   Values are of the form `projects/<project>`.
    * @param {string} request.filter
    *   An expression that filters the list of returned operations.
@@ -2832,7 +3041,7 @@ export class InstanceAdminClient {
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is
    *       {@link protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
+   *       * The instance configuration name contains "custom-config".
    *       * The operation started before 2021-03-28T14:50:00Z.
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
@@ -2940,7 +3149,7 @@ export class InstanceAdminClient {
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
-   *   Required. The project of the instance config operations.
+   *   Required. The project of the instance configuration operations.
    *   Values are of the form `projects/<project>`.
    * @param {string} request.filter
    *   An expression that filters the list of returned operations.
@@ -2983,7 +3192,7 @@ export class InstanceAdminClient {
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is
    *       {@link protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
+   *       * The instance configuration name contains "custom-config".
    *       * The operation started before 2021-03-28T14:50:00Z.
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
@@ -3035,7 +3244,7 @@ export class InstanceAdminClient {
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
-   *   Required. The project of the instance config operations.
+   *   Required. The project of the instance configuration operations.
    *   Values are of the form `projects/<project>`.
    * @param {string} request.filter
    *   An expression that filters the list of returned operations.
@@ -3078,7 +3287,7 @@ export class InstanceAdminClient {
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is
    *       {@link protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
+   *       * The instance configuration name contains "custom-config".
    *       * The operation started before 2021-03-28T14:50:00Z.
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
