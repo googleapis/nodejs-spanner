@@ -1740,7 +1740,8 @@
                               "type": "string",
                               "id": 14,
                               "options": {
-                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/BackupSchedule"
                               }
                             },
                             "incrementalBackupChainId": {
