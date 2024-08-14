@@ -712,8 +712,16 @@ export class Snapshot extends EventEmitter {
           this._update(response.metadata!.transaction);
         }
       })
-      .on('error', () => {
-        if (!this.id && this._useInRunner) {
+      .on('error', err => {
+        const isServiceError = err && typeof err === 'object' && 'code' in err;
+        if (
+          !this.id &&
+          this._useInRunner &&
+          !(
+            isServiceError &&
+            (err as grpc.ServiceError).code === grpc.status.ABORTED
+          )
+        ) {
           this.begin();
         }
       });
@@ -1219,8 +1227,16 @@ export class Snapshot extends EventEmitter {
           this._update(response.metadata!.transaction);
         }
       })
-      .on('error', () => {
-        if (!this.id && this._useInRunner) {
+      .on('error', err => {
+        const isServiceError = err && typeof err === 'object' && 'code' in err;
+        if (
+          !this.id &&
+          this._useInRunner &&
+          !(
+            isServiceError &&
+            (err as grpc.ServiceError).code === grpc.status.ABORTED
+          )
+        ) {
           this.begin();
         }
       });
@@ -1437,6 +1453,7 @@ export class Snapshot extends EventEmitter {
       this._waitingRequests.push(() => {
         makeRequest(resumeToken)
           .on('data', chunk => streamProxy.emit('data', chunk))
+          .on('error', err => streamProxy.emit('error', err))
           .on('end', () => streamProxy.emit('end'));
       });
 

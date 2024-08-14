@@ -3073,6 +3073,7 @@ export class DatabaseAdminClient {
    *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
+   *     * `backup_schedules`
    *
    *   You can combine multiple expressions by enclosing each expression in
    *   parentheses. By default, expressions are combined with AND logic, but
@@ -3091,6 +3092,8 @@ export class DatabaseAdminClient {
    *     * `expire_time < \"2018-03-28T14:50:00Z\"`
    *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
    *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   *     * `backup_schedules:daily`
+   *            - The backup is created from a schedule with "daily" in its name.
    * @param {number} request.pageSize
    *   Number of backups to be returned in the response. If 0 or
    *   less, defaults to the server's maximum allowed page size.
@@ -3214,6 +3217,7 @@ export class DatabaseAdminClient {
    *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
+   *     * `backup_schedules`
    *
    *   You can combine multiple expressions by enclosing each expression in
    *   parentheses. By default, expressions are combined with AND logic, but
@@ -3232,6 +3236,8 @@ export class DatabaseAdminClient {
    *     * `expire_time < \"2018-03-28T14:50:00Z\"`
    *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
    *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   *     * `backup_schedules:daily`
+   *            - The backup is created from a schedule with "daily" in its name.
    * @param {number} request.pageSize
    *   Number of backups to be returned in the response. If 0 or
    *   less, defaults to the server's maximum allowed page size.
@@ -3303,6 +3309,7 @@ export class DatabaseAdminClient {
    *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
+   *     * `backup_schedules`
    *
    *   You can combine multiple expressions by enclosing each expression in
    *   parentheses. By default, expressions are combined with AND logic, but
@@ -3321,6 +3328,8 @@ export class DatabaseAdminClient {
    *     * `expire_time < \"2018-03-28T14:50:00Z\"`
    *            - The backup `expire_time` is before 2018-03-28T14:50:00Z.
    *     * `size_bytes > 10000000000` - The backup's size is greater than 10GB
+   *     * `backup_schedules:daily`
+   *            - The backup is created from a schedule with "daily" in its name.
    * @param {number} request.pageSize
    *   Number of backups to be returned in the response. If 0 or
    *   less, defaults to the server's maximum allowed page size.

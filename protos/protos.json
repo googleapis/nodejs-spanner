@@ -1667,6 +1667,20 @@
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
+                            "freeableSizeBytes": {
+                              "type": "int64",
+                              "id": 15,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "exclusiveSizeBytes": {
+                              "type": "int64",
+                              "id": 16,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "state": {
                               "type": "State",
                               "id": 6,
@@ -1725,6 +1739,21 @@
                               "rule": "repeated",
                               "type": "string",
                               "id": 14,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/BackupSchedule"
+                              }
+                            },
+                            "incrementalBackupChainId": {
+                              "type": "string",
+                              "id": 17,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "oldestVersionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 18,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -2087,6 +2116,9 @@
                         "FullBackupSpec": {
                           "fields": {}
                         },
+                        "IncrementalBackupSpec": {
+                          "fields": {}
+                        },
                         "OperationProgress": {
                           "fields": {
                             "progressPercent": {
@@ -2189,7 +2221,8 @@
                           "oneofs": {
                             "backupTypeSpec": {
                               "oneof": [
-                                "fullBackupSpec"
+                                "fullBackupSpec",
+                                "incrementalBackupSpec"
                               ]
                             }
                           },
@@ -2225,6 +2258,10 @@
                             "fullBackupSpec": {
                               "type": "FullBackupSpec",
                               "id": 7
+                            },
+                            "incrementalBackupSpec": {
+                              "type": "IncrementalBackupSpec",
+                              "id": 8
                             },
                             "updateTime": {
                               "type": "google.protobuf.Timestamp",
@@ -4010,6 +4047,30 @@
                                   "(google.api.method_signature)": "parent"
                                 }
                               ]
+                            },
+                            "MoveInstance": {
+                              "requestType": "MoveInstanceRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{name=projects/*/instances/*}:move",
+                                "(google.api.http).body": "*",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.MoveInstanceResponse",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.MoveInstanceMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{name=projects/*/instances/*}:move",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.instance.v1.MoveInstanceResponse",
+                                    "metadata_type": "google.spanner.admin.instance.v1.MoveInstanceMetadata"
+                                  }
+                                }
+                              ]
                             }
                           }
                         },
@@ -4271,6 +4332,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "edition": {
+                              "type": "Edition",
+                              "id": 20,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
                             }
                           },
                           "nested": {
@@ -4279,6 +4347,14 @@
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
                                 "READY": 2
+                              }
+                            },
+                            "Edition": {
+                              "values": {
+                                "EDITION_UNSPECIFIED": 0,
+                                "STANDARD": 1,
+                                "ENTERPRISE": 2,
+                                "ENTERPRISE_PLUS": 3
                               }
                             }
                           }
@@ -4942,6 +5018,45 @@
                             "unreachableInstancePartitions": {
                               "rule": "repeated",
                               "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "MoveInstanceRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
+                              }
+                            },
+                            "targetConfig": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
+                              }
+                            }
+                          }
+                        },
+                        "MoveInstanceResponse": {
+                          "fields": {}
+                        },
+                        "MoveInstanceMetadata": {
+                          "fields": {
+                            "targetConfig": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
                               "id": 3
                             }
                           }

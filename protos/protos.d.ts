@@ -6549,6 +6549,12 @@ export namespace google {
                         /** Backup sizeBytes */
                         sizeBytes?: (number|Long|string|null);
 
+                        /** Backup freeableSizeBytes */
+                        freeableSizeBytes?: (number|Long|string|null);
+
+                        /** Backup exclusiveSizeBytes */
+                        exclusiveSizeBytes?: (number|Long|string|null);
+
                         /** Backup state */
                         state?: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State|null);
 
@@ -6572,6 +6578,12 @@ export namespace google {
 
                         /** Backup backupSchedules */
                         backupSchedules?: (string[]|null);
+
+                        /** Backup incrementalBackupChainId */
+                        incrementalBackupChainId?: (string|null);
+
+                        /** Backup oldestVersionTime */
+                        oldestVersionTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Backup. */
@@ -6601,6 +6613,12 @@ export namespace google {
                         /** Backup sizeBytes. */
                         public sizeBytes: (number|Long|string);
 
+                        /** Backup freeableSizeBytes. */
+                        public freeableSizeBytes: (number|Long|string);
+
+                        /** Backup exclusiveSizeBytes. */
+                        public exclusiveSizeBytes: (number|Long|string);
+
                         /** Backup state. */
                         public state: (google.spanner.admin.database.v1.Backup.State|keyof typeof google.spanner.admin.database.v1.Backup.State);
 
@@ -6624,6 +6642,12 @@ export namespace google {
 
                         /** Backup backupSchedules. */
                         public backupSchedules: string[];
+
+                        /** Backup incrementalBackupChainId. */
+                        public incrementalBackupChainId: string;
+
+                        /** Backup oldestVersionTime. */
+                        public oldestVersionTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -8358,6 +8382,97 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** Properties of an IncrementalBackupSpec. */
+                    interface IIncrementalBackupSpec {
+                    }
+
+                    /** Represents an IncrementalBackupSpec. */
+                    class IncrementalBackupSpec implements IIncrementalBackupSpec {
+
+                        /**
+                         * Constructs a new IncrementalBackupSpec.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IIncrementalBackupSpec);
+
+                        /**
+                         * Creates a new IncrementalBackupSpec instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns IncrementalBackupSpec instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IIncrementalBackupSpec): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Encodes the specified IncrementalBackupSpec message. Does not implicitly {@link google.spanner.admin.database.v1.IncrementalBackupSpec.verify|verify} messages.
+                         * @param message IncrementalBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IIncrementalBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified IncrementalBackupSpec message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.IncrementalBackupSpec.verify|verify} messages.
+                         * @param message IncrementalBackupSpec message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IIncrementalBackupSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an IncrementalBackupSpec message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns IncrementalBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Decodes an IncrementalBackupSpec message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns IncrementalBackupSpec
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Verifies an IncrementalBackupSpec message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an IncrementalBackupSpec message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns IncrementalBackupSpec
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.IncrementalBackupSpec;
+
+                        /**
+                         * Creates a plain object from an IncrementalBackupSpec message. Also converts values to other types if specified.
+                         * @param message IncrementalBackupSpec
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.IncrementalBackupSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this IncrementalBackupSpec to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for IncrementalBackupSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -8814,6 +8929,9 @@ export namespace google {
                         /** BackupSchedule fullBackupSpec */
                         fullBackupSpec?: (google.spanner.admin.database.v1.IFullBackupSpec|null);
 
+                        /** BackupSchedule incrementalBackupSpec */
+                        incrementalBackupSpec?: (google.spanner.admin.database.v1.IIncrementalBackupSpec|null);
+
                         /** BackupSchedule updateTime */
                         updateTime?: (google.protobuf.ITimestamp|null);
                     }
@@ -8842,11 +8960,14 @@ export namespace google {
                         /** BackupSchedule fullBackupSpec. */
                         public fullBackupSpec?: (google.spanner.admin.database.v1.IFullBackupSpec|null);
 
+                        /** BackupSchedule incrementalBackupSpec. */
+                        public incrementalBackupSpec?: (google.spanner.admin.database.v1.IIncrementalBackupSpec|null);
+
                         /** BackupSchedule updateTime. */
                         public updateTime?: (google.protobuf.ITimestamp|null);
 
                         /** BackupSchedule backupTypeSpec. */
-                        public backupTypeSpec?: "fullBackupSpec";
+                        public backupTypeSpec?: ("fullBackupSpec"|"incrementalBackupSpec");
 
                         /**
                          * Creates a new BackupSchedule instance using the specified properties.
@@ -13302,6 +13423,20 @@ export namespace google {
                          * @returns Promise
                          */
                         public listInstancePartitionOperations(request: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest): Promise<google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>;
+
+                        /**
+                         * Calls MoveInstance.
+                         * @param request MoveInstanceRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public moveInstance(request: google.spanner.admin.instance.v1.IMoveInstanceRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.MoveInstanceCallback): void;
+
+                        /**
+                         * Calls MoveInstance.
+                         * @param request MoveInstanceRequest message or plain object
+                         * @returns Promise
+                         */
+                        public moveInstance(request: google.spanner.admin.instance.v1.IMoveInstanceRequest): Promise<google.longrunning.Operation>;
                     }
 
                     namespace InstanceAdmin {
@@ -13445,6 +13580,13 @@ export namespace google {
                          * @param [response] ListInstancePartitionOperationsResponse
                          */
                         type ListInstancePartitionOperationsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|moveInstance}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type MoveInstanceCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
                     }
 
                     /** Properties of a ReplicaInfo. */
@@ -14106,6 +14248,9 @@ export namespace google {
 
                         /** Instance updateTime */
                         updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance edition */
+                        edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
                     }
 
                     /** Represents an Instance. */
@@ -14149,6 +14294,9 @@ export namespace google {
 
                         /** Instance updateTime. */
                         public updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance edition. */
+                        public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
 
                         /**
                          * Creates a new Instance instance using the specified properties.
@@ -14235,6 +14383,14 @@ export namespace google {
                             STATE_UNSPECIFIED = 0,
                             CREATING = 1,
                             READY = 2
+                        }
+
+                        /** Edition enum. */
+                        enum Edition {
+                            EDITION_UNSPECIFIED = 0,
+                            STANDARD = 1,
+                            ENTERPRISE = 2,
+                            ENTERPRISE_PLUS = 3
                         }
                     }
 
@@ -17460,6 +17616,309 @@ export namespace google {
 
                         /**
                          * Gets the default type url for ListInstancePartitionOperationsResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a MoveInstanceRequest. */
+                    interface IMoveInstanceRequest {
+
+                        /** MoveInstanceRequest name */
+                        name?: (string|null);
+
+                        /** MoveInstanceRequest targetConfig */
+                        targetConfig?: (string|null);
+                    }
+
+                    /** Represents a MoveInstanceRequest. */
+                    class MoveInstanceRequest implements IMoveInstanceRequest {
+
+                        /**
+                         * Constructs a new MoveInstanceRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IMoveInstanceRequest);
+
+                        /** MoveInstanceRequest name. */
+                        public name: string;
+
+                        /** MoveInstanceRequest targetConfig. */
+                        public targetConfig: string;
+
+                        /**
+                         * Creates a new MoveInstanceRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns MoveInstanceRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IMoveInstanceRequest): google.spanner.admin.instance.v1.MoveInstanceRequest;
+
+                        /**
+                         * Encodes the specified MoveInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceRequest.verify|verify} messages.
+                         * @param message MoveInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IMoveInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MoveInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceRequest.verify|verify} messages.
+                         * @param message MoveInstanceRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IMoveInstanceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MoveInstanceRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MoveInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.MoveInstanceRequest;
+
+                        /**
+                         * Decodes a MoveInstanceRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MoveInstanceRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.MoveInstanceRequest;
+
+                        /**
+                         * Verifies a MoveInstanceRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MoveInstanceRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MoveInstanceRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.MoveInstanceRequest;
+
+                        /**
+                         * Creates a plain object from a MoveInstanceRequest message. Also converts values to other types if specified.
+                         * @param message MoveInstanceRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.MoveInstanceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MoveInstanceRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for MoveInstanceRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a MoveInstanceResponse. */
+                    interface IMoveInstanceResponse {
+                    }
+
+                    /** Represents a MoveInstanceResponse. */
+                    class MoveInstanceResponse implements IMoveInstanceResponse {
+
+                        /**
+                         * Constructs a new MoveInstanceResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IMoveInstanceResponse);
+
+                        /**
+                         * Creates a new MoveInstanceResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns MoveInstanceResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IMoveInstanceResponse): google.spanner.admin.instance.v1.MoveInstanceResponse;
+
+                        /**
+                         * Encodes the specified MoveInstanceResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceResponse.verify|verify} messages.
+                         * @param message MoveInstanceResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IMoveInstanceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MoveInstanceResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceResponse.verify|verify} messages.
+                         * @param message MoveInstanceResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IMoveInstanceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MoveInstanceResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MoveInstanceResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.MoveInstanceResponse;
+
+                        /**
+                         * Decodes a MoveInstanceResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MoveInstanceResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.MoveInstanceResponse;
+
+                        /**
+                         * Verifies a MoveInstanceResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MoveInstanceResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MoveInstanceResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.MoveInstanceResponse;
+
+                        /**
+                         * Creates a plain object from a MoveInstanceResponse message. Also converts values to other types if specified.
+                         * @param message MoveInstanceResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.MoveInstanceResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MoveInstanceResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for MoveInstanceResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a MoveInstanceMetadata. */
+                    interface IMoveInstanceMetadata {
+
+                        /** MoveInstanceMetadata targetConfig */
+                        targetConfig?: (string|null);
+
+                        /** MoveInstanceMetadata progress */
+                        progress?: (google.spanner.admin.instance.v1.IOperationProgress|null);
+
+                        /** MoveInstanceMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a MoveInstanceMetadata. */
+                    class MoveInstanceMetadata implements IMoveInstanceMetadata {
+
+                        /**
+                         * Constructs a new MoveInstanceMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IMoveInstanceMetadata);
+
+                        /** MoveInstanceMetadata targetConfig. */
+                        public targetConfig: string;
+
+                        /** MoveInstanceMetadata progress. */
+                        public progress?: (google.spanner.admin.instance.v1.IOperationProgress|null);
+
+                        /** MoveInstanceMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new MoveInstanceMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns MoveInstanceMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IMoveInstanceMetadata): google.spanner.admin.instance.v1.MoveInstanceMetadata;
+
+                        /**
+                         * Encodes the specified MoveInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceMetadata.verify|verify} messages.
+                         * @param message MoveInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IMoveInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MoveInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.MoveInstanceMetadata.verify|verify} messages.
+                         * @param message MoveInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IMoveInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MoveInstanceMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MoveInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.MoveInstanceMetadata;
+
+                        /**
+                         * Decodes a MoveInstanceMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MoveInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.MoveInstanceMetadata;
+
+                        /**
+                         * Verifies a MoveInstanceMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MoveInstanceMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MoveInstanceMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.MoveInstanceMetadata;
+
+                        /**
+                         * Creates a plain object from a MoveInstanceMetadata message. Also converts values to other types if specified.
+                         * @param message MoveInstanceMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.MoveInstanceMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MoveInstanceMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for MoveInstanceMetadata
                          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                          * @returns The default type url
                          */
