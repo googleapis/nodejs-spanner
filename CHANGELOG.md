@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.14.0](https://github.com/googleapis/nodejs-spanner/compare/v7.13.0...v7.14.0) (2024-08-14)
+
+
+### Features
+
+* **spanner:** Add resource reference annotation to backup schedules ([#2093](https://github.com/googleapis/nodejs-spanner/issues/2093)) ([df539e6](https://github.com/googleapis/nodejs-spanner/commit/df539e665fe5d8fe01084b8d8cf6094c89b13d48))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.9 ([#2094](https://github.com/googleapis/nodejs-spanner/issues/2094)) ([487efc0](https://github.com/googleapis/nodejs-spanner/commit/487efc091e0e143d3c59ac63d66005133b1ef2e5))
+
 ## [7.13.0](https://github.com/googleapis/nodejs-spanner/compare/v7.12.0...v7.13.0) (2024-08-09)
 
 
