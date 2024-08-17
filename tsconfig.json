@@ -19,6 +19,7 @@
     "test/*.ts",
     "test/**/*.ts",
     "system-test/*.ts",
-    "benchmark/*.ts"
+    "benchmark/*.ts",
+    "observability-test/*.ts"
   ]
 }
