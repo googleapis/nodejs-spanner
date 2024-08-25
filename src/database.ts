@@ -92,6 +92,11 @@ import {
   Schema,
   addLeaderAwareRoutingHeader,
 } from './common';
+import {
+  MultiplexedSession,
+  MultiplexedSessionInterface,
+  MultiplexedSessionOptions,
+} from './multiplexed-session';
 import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
@@ -141,6 +146,10 @@ export interface SessionPoolConstructor {
 export type GetDatabaseDialectCallback = NormalCallback<
   EnumKey<typeof google.spanner.admin.database.v1.DatabaseDialect>
 >;
+
+export interface MultiplexedSessionConstructor {
+  new (database: Database): MultiplexedSessionInterface;
+}
 
 export interface SetIamPolicyRequest {
   policy: Policy | null;
@@ -329,6 +338,7 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  multiplexedSession_?: MultiplexedSessionInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
@@ -340,7 +350,10 @@ class Database extends common.GrpcServiceObject {
     instance: Instance,
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    multiplexedSessionOptions?:
+      | MultiplexedSessionOptions
+      | MultiplexedSessionConstructor
   ) {
     const methods = {
       /**
@@ -441,6 +454,11 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+
+    this.multiplexedSession_ =
+      typeof multiplexedSessionOptions === 'function'
+        ? new (multiplexedSessionOptions as MultiplexedSessionConstructor)(this)
+        : new MultiplexedSession(this, multiplexedSessionOptions);
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
     }
@@ -454,6 +472,7 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
+    this.multiplexedSession_.createMultiplexedSession();
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
@@ -832,6 +851,65 @@ class Database extends common.GrpcServiceObject {
       });
     });
   }
+
+  createMultiplexedSession(
+    options: CreateSessionOptions
+  ): Promise<CreateSessionResponse>;
+  createMultiplexedSession(callback: CreateSessionCallback): void;
+  createMultiplexedSession(
+    options: CreateSessionOptions,
+    callback: CreateSessionCallback
+  ): void;
+  createMultiplexedSession(
+    optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
+    cb?: CreateSessionCallback
+  ): void | Promise<CreateSessionResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? extend({}, optionsOrCallback)
+        : ({} as CreateSessionOptions);
+
+    const reqOpts: google.spanner.v1.ICreateSessionRequest = {
+      database: this.formattedName_,
+    };
+
+    reqOpts.session = {};
+
+    if (options.labels) {
+      reqOpts.session.labels = options.labels;
+    }
+
+    reqOpts.session.creatorRole =
+      options.databaseRole || this.databaseRole || null;
+
+    reqOpts.session.multiplexed = true;
+
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
+    this.request<google.spanner.v1.ISession>(
+      {
+        client: 'SpannerClient',
+        method: 'createSession',
+        reqOpts,
+        headers: headers,
+      },
+      (err, resp) => {
+        if (err) {
+          callback(err, null, resp!);
+          return;
+        }
+        const session = this.session(resp!.name!);
+        session.metadata = resp;
+        callback(null, session, resp!);
+      }
+    );
+  }
+
   /**
    * Create a new session.
    *
@@ -2022,31 +2100,59 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        callback!(err as ServiceError);
-        return;
-      }
-
-      const snapshot = session!.snapshot(options, this.queryOptions_);
-
-      snapshot.begin(err => {
+    if (process.env.IS_MULTIPLEXED) {
+      this.multiplexedSession_?.getMultiplexedSession((err, session) => {
         if (err) {
-          if (isSessionNotFoundError(err)) {
-            session!.lastError = err;
-            this.pool_.release(session!);
-            this.getSnapshot(options, callback!);
-          } else {
-            this.pool_.release(session!);
-            callback!(err);
-          }
+          callback!(err as ServiceError);
           return;
         }
 
-        this._releaseOnEnd(session!, snapshot);
-        callback!(err, snapshot);
+        const snapshot = session!.snapshot(options, this.queryOptions_);
+
+        snapshot.begin(err => {
+          if (err) {
+            if (isSessionNotFoundError(err)) {
+              session!.lastError = err;
+              this.pool_.release(session!);
+              this.getSnapshot(options, callback!);
+            } else {
+              this.pool_.release(session!);
+              callback!(err);
+            }
+            return;
+          }
+
+          this._releaseOnEnd(session!, snapshot);
+          callback!(err, snapshot);
+        });
       });
-    });
+    } else {
+      this.pool_.getSession((err, session) => {
+        if (err) {
+          callback!(err as ServiceError);
+          return;
+        }
+
+        const snapshot = session!.snapshot(options, this.queryOptions_);
+
+        snapshot.begin(err => {
+          if (err) {
+            if (isSessionNotFoundError(err)) {
+              session!.lastError = err;
+              this.pool_.release(session!);
+              this.getSnapshot(options, callback!);
+            } else {
+              this.pool_.release(session!);
+              callback!(err);
+            }
+            return;
+          }
+
+          this._releaseOnEnd(session!, snapshot);
+          callback!(err, snapshot);
+        });
+      });
+    }
   }
   /**
    * @typedef {array} GetTransactionResponse
@@ -2925,50 +3031,91 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        proxyStream.destroy(err);
-        return;
-      }
-
-      const snapshot = session!.snapshot(options, this.queryOptions_);
-
-      this._releaseOnEnd(session!, snapshot);
-
-      let dataReceived = false;
-      let dataStream = snapshot.runStream(query);
-      const endListener = () => snapshot.end();
-      dataStream
-        .once('data', () => (dataReceived = true))
-        .once('error', err => {
-          if (
-            !dataReceived &&
-            isSessionNotFoundError(err as grpc.ServiceError)
-          ) {
-            // If it is a 'Session not found' error and we have not yet received
-            // any data, we can safely retry the query on a new session.
-            // Register the error on the session so the pool can discard it.
-            if (session) {
-              session.lastError = err as grpc.ServiceError;
+    if (process.env.IS_MULTIPLEXED) {
+      this.multiplexedSession_?.getMultiplexedSession((err, session) => {
+        console.log('SESSION: ', session?.formattedName_);
+        if (err) {
+          proxyStream.destroy(err);
+          return;
+        }
+        const snapshot = session!.snapshot(options, this.queryOptions_);
+        let dataReceived = false;
+        let dataStream = snapshot.runStream(query);
+        const endListener = () => snapshot.end();
+        dataStream
+          .once('data', () => (dataReceived = true))
+          .once('error', err => {
+            if (
+              !dataReceived &&
+              isSessionNotFoundError(err as grpc.ServiceError)
+            ) {
+              if (session) {
+                session.lastError = err as grpc.ServiceError;
+              }
+              dataStream.unpipe(proxyStream);
+              dataStream.removeListener('end', endListener);
+              dataStream.end();
+              snapshot.end();
+              dataStream = this.runStream(query, options);
+              dataStream.pipe(proxyStream);
+            } else {
+              proxyStream.destroy(err);
+              snapshot.end();
             }
-            // Remove the current data stream from the end user stream.
-            dataStream.unpipe(proxyStream);
-            dataStream.removeListener('end', endListener);
-            dataStream.end();
-            snapshot.end();
-            // Create a new data stream and add it to the end user stream.
-            dataStream = this.runStream(query, options);
-            dataStream.pipe(proxyStream);
-          } else {
-            proxyStream.destroy(err);
-            snapshot.end();
-          }
-        })
-        .on('stats', stats => proxyStream.emit('stats', stats))
-        .on('response', response => proxyStream.emit('response', response))
-        .once('end', endListener)
-        .pipe(proxyStream);
-    });
+          })
+          .on('stats', stats => proxyStream.emit('stats', stats))
+          .on('response', response => proxyStream.emit('response', response))
+          .once('end', endListener)
+          .pipe(proxyStream);
+        // console.log("ERROR: ", err);
+        // console.log("SESSION: ", session?.formattedName_);
+      });
+    } else {
+      this.pool_.getSession((err, session) => {
+        if (err) {
+          proxyStream.destroy(err);
+          return;
+        }
+
+        const snapshot = session!.snapshot(options, this.queryOptions_);
+
+        this._releaseOnEnd(session!, snapshot);
+
+        let dataReceived = false;
+        let dataStream = snapshot.runStream(query);
+        const endListener = () => snapshot.end();
+        dataStream
+          .once('data', () => (dataReceived = true))
+          .once('error', err => {
+            if (
+              !dataReceived &&
+              isSessionNotFoundError(err as grpc.ServiceError)
+            ) {
+              // If it is a 'Session not found' error and we have not yet received
+              // any data, we can safely retry the query on a new session.
+              // Register the error on the session so the pool can discard it.
+              if (session) {
+                session.lastError = err as grpc.ServiceError;
+              }
+              // Remove the current data stream from the end user stream.
+              dataStream.unpipe(proxyStream);
+              dataStream.removeListener('end', endListener);
+              dataStream.end();
+              snapshot.end();
+              // Create a new data stream and add it to the end user stream.
+              dataStream = this.runStream(query, options);
+              dataStream.pipe(proxyStream);
+            } else {
+              proxyStream.destroy(err);
+              snapshot.end();
+            }
+          })
+          .on('stats', stats => proxyStream.emit('stats', stats))
+          .on('response', response => proxyStream.emit('response', response))
+          .once('end', endListener)
+          .pipe(proxyStream);
+      });
+    }
 
     return proxyStream as PartialResultStream;
   }
@@ -3423,19 +3570,37 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object' && optionsOrCallback
         ? (optionsOrCallback as CallOptions)
         : {};
-    this.pool_.getSession((err, session?, transaction?) => {
-      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
-        this.writeAtLeastOnce(mutations, options, cb!);
-        return;
-      }
-      if (err) {
-        cb!(err as grpc.ServiceError);
-        return;
-      }
-      this._releaseOnEnd(session!, transaction!);
-      transaction?.setQueuedMutations(mutations.proto());
-      return transaction?.commit(options, cb!);
-    });
+    if (process.env.IS_MULTIPLEXED) {
+      this.multiplexedSession_?.getMultiplexedSession(
+        (err, session?, transaction?) => {
+          if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+            this.writeAtLeastOnce(mutations, options, cb!);
+            return;
+          }
+          if (err) {
+            cb!(err as grpc.ServiceError);
+            return;
+          }
+          this._releaseOnEnd(session!, transaction!);
+          transaction?.setQueuedMutations(mutations.proto());
+          return transaction?.commit(options, cb!);
+        }
+      );
+    } else {
+      this.pool_.getSession((err, session?, transaction?) => {
+        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+          this.writeAtLeastOnce(mutations, options, cb!);
+          return;
+        }
+        if (err) {
+          cb!(err as grpc.ServiceError);
+          return;
+        }
+        this._releaseOnEnd(session!, transaction!);
+        transaction?.setQueuedMutations(mutations.proto());
+        return transaction?.commit(options, cb!);
+      });
+    }
   }
 
   /**
@@ -3766,6 +3931,7 @@ callbackifyAll(Database, {
     'batchCreateSessions',
     'batchTransaction',
     'batchWriteAtLeastOnce',
+    'createMultiplexedSession',
     'writeAtLeastOnce',
     'close',
     'createBatchTransaction',

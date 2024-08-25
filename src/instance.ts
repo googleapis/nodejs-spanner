@@ -21,7 +21,11 @@ const common = require('./common-grpc/service-object');
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
-import {Database, SessionPoolConstructor} from './database';
+import {
+  Database,
+  MultiplexedSessionConstructor,
+  SessionPoolConstructor,
+} from './database';
 import {Spanner, RequestConfig} from '.';
 import {
   RequestCallback,
@@ -51,7 +55,7 @@ import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
-
+import {MultiplexedSessionOptions} from './multiplexed-session';
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
 export type IInstance = instanceAdmin.spanner.admin.instance.v1.IInstance;
@@ -87,6 +91,7 @@ export type GetDatabaseOperationsResponse = PagedResponse<
 export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
   poolOptions?: SessionPoolOptions;
+  multiplexedSessionOptions?: MultiplexedSessionOptions;
   poolCtor?: SessionPool;
   schema?: string | string[];
   gaxOptions?: CallOptions;
@@ -887,6 +892,7 @@ class Instance extends common.GrpcServiceObject {
         : ({} as CreateDatabaseOptions);
 
     const poolOptions = options.poolOptions;
+    const multiplexedSessionOptions = options.multiplexedSessionOptions;
     const poolCtor = options.poolCtor;
     let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
     if (
@@ -904,6 +910,7 @@ class Instance extends common.GrpcServiceObject {
     );
 
     delete reqOpts.poolOptions;
+    delete reqOpts.multiplexedSessionOptions;
     delete reqOpts.poolCtor;
     delete reqOpts.gaxOptions;
 
@@ -924,7 +931,12 @@ class Instance extends common.GrpcServiceObject {
           callback(err, null, null, resp);
           return;
         }
-        const database = this.database(name, poolOptions || poolCtor);
+        const database = this.database(
+          name,
+          poolOptions || poolCtor,
+          undefined,
+          multiplexedSessionOptions
+        );
         callback(null, database, operation, resp);
       }
     );
@@ -956,7 +968,10 @@ class Instance extends common.GrpcServiceObject {
   database(
     name: string,
     poolOptions?: SessionPoolOptions | SessionPoolConstructor,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    multiplexedSessionOptions?:
+      | MultiplexedSessionOptions
+      | MultiplexedSessionConstructor
   ): Database {
     if (!name) {
       throw new GoogleError('A name is required to access a Database object.');
@@ -975,7 +990,13 @@ class Instance extends common.GrpcServiceObject {
     if (!this.databases_.has(key!)) {
       this.databases_.set(
         key!,
-        new Database(this, name, poolOptions, queryOptions)
+        new Database(
+          this,
+          name,
+          poolOptions,
+          queryOptions,
+          multiplexedSessionOptions
+        )
       );
     }
     return this.databases_.get(key!)!;

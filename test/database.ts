@@ -2082,6 +2082,167 @@ describe('Database', () => {
     });
   });
 
+  describe('createMultiplexedSession', () => {
+    const gaxOptions = {};
+    const OPTIONS = {gaxOptions};
+
+    it('should make the correct request', done => {
+      database.request = config => {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'createSession');
+        assert.deepStrictEqual(config.reqOpts, {
+          database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
+        });
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(
+          config.headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            database.resourceHeader_
+          )
+        );
+
+        done();
+      };
+
+      database.createMultiplexedSession(OPTIONS, assert.ifError);
+    });
+
+    it('should not require options', done => {
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
+        });
+
+        assert.strictEqual(config.gaxOpts, undefined);
+        done();
+      };
+
+      database.createMultiplexedSession(assert.ifError);
+    });
+
+    it('should send labels correctly', done => {
+      const labels = {a: 'b'};
+      const options = {a: 'b', labels};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts.session.labels, labels);
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createMultiplexedSession({labels}, assert.ifError);
+    });
+
+    it('should send databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'child_role'};
+      const options = {a: 'b', databaseRole: databaseRole};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createMultiplexedSession(databaseRole, assert.ifError);
+    });
+
+    it('should send default databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'parent_role'};
+      const options = {a: 'b'};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createMultiplexedSession(databaseRole, assert.ifError);
+    });
+
+    it('should send multiplexed correctly', done => {
+      const multiplexed = true;
+      const options = {a: 'b', databaseRole: multiplexed};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts.session.multiplexed, multiplexed);
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createMultiplexedSession(multiplexed, assert.ifError);
+    });
+
+    describe('error', () => {
+      const ERROR = new Error('Error.');
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        database.request = (config, callback) => {
+          callback(ERROR, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with error & API response', done => {
+        database.createMultiplexedSession((err, session, apiResponse) => {
+          assert.strictEqual(err, ERROR);
+          assert.strictEqual(session, null);
+          assert.strictEqual(apiResponse, API_RESPONSE);
+          done();
+        });
+      });
+    });
+
+    describe('success', () => {
+      const API_RESPONSE = {
+        name: 'session-name',
+      };
+
+      beforeEach(() => {
+        database.request = (config, callback) => {
+          callback(null, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with session & API response', done => {
+        const sessionInstance = {};
+
+        database.session = name => {
+          assert.strictEqual(name, API_RESPONSE.name);
+          return sessionInstance;
+        };
+
+        database.createMultiplexedSession((err, session, apiResponse) => {
+          assert.ifError(err);
+
+          assert.strictEqual(session, sessionInstance);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          assert.strictEqual((session as any).metadata, API_RESPONSE);
+
+          assert.strictEqual(apiResponse, API_RESPONSE);
+
+          done();
+        });
+      });
+    });
+  });
+
   describe('createSession', () => {
     const gaxOptions = {};
     const OPTIONS = {gaxOptions};
