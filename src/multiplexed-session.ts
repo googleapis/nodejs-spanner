@@ -61,7 +61,7 @@ export class MultiplexedSession {
   /*New
    **/
   async createMultiplexedSession(): Promise<void> {
-    this._startHouseKeeping();
+    // this._startHouseKeeping();
     await this._createMultiplexedSessions();
     this._startRefreshingSession();
   }
@@ -173,10 +173,9 @@ export class MultiplexedSession {
     }
     this._multiplexedSessionLock = new Promise(resolve => {
       this.database.createMultiplexedSession({}).then(createSessionResponse => {
-        this._multiplexedInventory.multiplexedSession =
-          createSessionResponse[0];
+        this._multiplexedInventory.multiplexedSession = createSessionResponse[0];
+        resolve();
       });
-      resolve();
     });
     await this._multiplexedSessionLock;
     this._multiplexedSessionLock = null;
