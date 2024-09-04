@@ -57,7 +57,7 @@ async function createInstance(instanceId, projectId) {
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
         edition:
-          protos.google.spanner.admin.instance.v1.Instance.Edition.STANDARD,
+          protos.google.spanner.admin.instance.v1.Instance.Edition.STANDARD, //optional
       },
     });
 
@@ -75,8 +75,6 @@ const {
   createInstanceWithProcessingUnits,
 } = require('./instance-with-processing-units');
 
-const {updateInstance} = require('./instance-update');
-
 require('yargs')
   .demand(1)
   .command(
@@ -91,15 +89,6 @@ require('yargs')
     'Creates an example instance in a Cloud Spanner instance with processing units.',
     {},
     opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
-  )
-  .example(
-    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
-  )
-  .command(
-    'updateInstance <instanceName> <projectId>',
-    'Updates an example instance in a Cloud Spanner instance.',
-    {},
-    opts => updateInstance(opts.instanceName, opts.projectId)
   )
   .example(
     'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
