@@ -20,7 +20,7 @@ async function createInstance(instanceId, projectId) {
   // [START spanner_create_instance]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Creates a client
   const spanner = new Spanner({
@@ -56,6 +56,8 @@ async function createInstance(instanceId, projectId) {
           cloud_spanner_samples: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
+        edition:
+          protos.google.spanner.admin.instance.v1.Instance.Edition.STANDARD,
       },
     });
 
@@ -73,6 +75,8 @@ const {
   createInstanceWithProcessingUnits,
 } = require('./instance-with-processing-units');
 
+const {updateInstance} = require('./instance-update');
+
 require('yargs')
   .demand(1)
   .command(
@@ -87,6 +91,15 @@ require('yargs')
     'Creates an example instance in a Cloud Spanner instance with processing units.',
     {},
     opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
+  )
+  .example(
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+  )
+  .command(
+    'updateInstance <instanceName> <projectId>',
+    'Updates an example instance in a Cloud Spanner instance.',
+    {},
+    opts => updateInstance(opts.instanceName, opts.projectId)
   )
   .example(
     'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
