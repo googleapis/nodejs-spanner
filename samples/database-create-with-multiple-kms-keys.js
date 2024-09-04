@@ -14,59 +14,65 @@
 
 'use strict';
 
-async function createDatabaseWithMultipleKmsKeys(
-  instanceId,
-  databaseId,
-  projectId,
-  kmsKeyNames
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project',
+  kmsKeyNames = []
 ) {
-  // [START spanner_create_database_with_MR_CMEK]
+  async function createDatabaseWithMultipleKmsKeys() {
+    // [START spanner_create_database_with_MR_CMEK]
 
-  // Imports the Google Cloud client library
-  const {Spanner, protos} = require('@google-cloud/spanner');
+    // Imports the Google Cloud client library
+    const {Spanner, protos} = require('@google-cloud/spanner');
 
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-  // const keyName =
-  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
+    /**
+     * TODO(developer): Uncomment the following lines before running the sample.
+     */
+    // const projectId = 'my-project-id';
+    // const instanceId = 'my-instance';
+    // const databaseId = 'my-database';
+    // const keyName =
+    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
-  // creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
+    // creates a client
+    const spanner = new Spanner({
+      projectId: projectId,
+    });
 
-  // Gets a reference to a Cloud Spanner Database Admin Client object
-  const databaseAdminClient = spanner.getDatabaseAdminClient();
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
-  // Creates a database
-  const [operation] = await databaseAdminClient.createDatabase({
-    createStatement: 'CREATE DATABASE `' + databaseId + '`',
-    parent: databaseAdminClient.instancePath(projectId, instanceId),
-    encryptionConfig:
-      (protos.google.spanner.admin.database.v1.EncryptionConfig = {
-        kmsKeyNames: kmsKeyNames,
-      }),
-  });
+    // Creates a database
+    const [operation] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE `' + databaseId + '`',
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      encryptionConfig:
+        (protos.google.spanner.admin.database.v1.EncryptionConfig = {
+          kmsKeyNames: kmsKeyNames,
+        }),
+    });
 
-  console.log(`Waiting for operation on ${databaseId} to complete...`);
-  await operation.promise();
+    console.log(`Waiting for operation on ${databaseId} to complete...`);
+    await operation.promise();
 
-  console.log(`Created database ${databaseId} on instance ${instanceId}.`);
+    console.log(`Created database ${databaseId} on instance ${instanceId}.`);
 
-  // Get encryption key
-  const [metadata] = await databaseAdminClient.getDatabase({
-    name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
-  });
+    // Get encryption key
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+    });
 
-  console.log(
-    `Database encrypted with key ${metadata.encryptionConfig.kmsKeyNames}.`
-  );
-  // [END spanner_create_database_with_MR_CMEK]
+    console.log(
+      `Database encrypted with key ${metadata.encryptionConfig.kmsKeyNames}.`
+    );
+    // [END spanner_create_database_with_MR_CMEK]
+  }
+  createDatabaseWithMultipleKmsKeys();
 }
 
-module.exports.createDatabaseWithMultipleKmsKeys =
-  createDatabaseWithMultipleKmsKeys;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

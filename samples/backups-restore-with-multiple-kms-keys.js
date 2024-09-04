@@ -15,70 +15,75 @@
 
 'use strict';
 
-async function restoreBackupWithMultipleKmsKeys(
-  instanceId,
-  databaseId,
-  backupId,
-  projectId,
-  kmsKeyNames
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  backupId = 'my-backup',
+  projectId = 'my-project',
+  kmsKeyNames = []
 ) {
-  // [START spanner_restore_backup_with_MR_CMEK]
+  async function restoreBackupWithMultipleKmsKeys() {
+    // [START spanner_restore_backup_with_MR_CMEK]
+    // Imports the Google Cloud client library and precise date library
+    const {Spanner} = require('@google-cloud/spanner');
 
-  // Imports the Google Cloud client library and precise date library
-  const {Spanner} = require('@google-cloud/spanner');
+    /**
+     * TODO(developer): Uncomment the following lines before running the sample.
+     */
+    // const projectId = 'my-project-id';
+    // const instanceId = 'my-instance';
+    // const databaseId = 'my-database';
+    // const backupId = 'my-backup';
+    // const kmsKeyNames = [
+    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1',
+    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2'];
 
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-  // const backupId = 'my-backup';
-  // const kmsKeyNames = [
-  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1',
-  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2'];
+    // Creates a client
+    const spanner = new Spanner({
+      projectId: projectId,
+    });
 
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
-  // Gets a reference to a Cloud Spanner Database Admin Client object
-  const databaseAdminClient = spanner.getDatabaseAdminClient();
+    // Restore the database
+    console.log(
+      `Restoring database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )} from backup ${backupId}.`
+    );
+    const [restoreOperation] = await databaseAdminClient.restoreDatabase({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      databaseId: databaseId,
+      backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      encryptionConfig: {
+        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+        kmsKeyNames: kmsKeyNames,
+      },
+    });
 
-  // Restore the database
-  console.log(
-    `Restoring database ${databaseAdminClient.databasePath(
-      projectId,
-      instanceId,
-      databaseId
-    )} from backup ${backupId}.`
-  );
-  const [restoreOperation] = await databaseAdminClient.restoreDatabase({
-    parent: databaseAdminClient.instancePath(projectId, instanceId),
-    databaseId: databaseId,
-    backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    encryptionConfig: {
-      encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-      kmsKeyNames: kmsKeyNames,
-    },
-  });
+    // Wait for restore to complete
+    console.log('Waiting for database restore to complete...');
+    await restoreOperation.promise();
 
-  // Wait for restore to complete
-  console.log('Waiting for database restore to complete...');
-  await restoreOperation.promise();
-
-  console.log('Database restored from backup.');
-  const [metadata] = await databaseAdminClient.getDatabase({
-    name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
-  });
-  console.log(
-    `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
-      `using encryption key ${metadata.encryptionConfig.kmsKeyNames}.`
-  );
-  // [END spanner_restore_backup_with_MR_CMEK]
+    console.log('Database restored from backup.');
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+    });
+    console.log(
+      `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
+        `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
+        `using encryption key ${metadata.encryptionConfig.kmsKeyNames}.`
+    );
+    // [END spanner_restore_backup_with_MR_CMEK]
+  }
+  restoreBackupWithMultipleKmsKeys();
 }
 
-module.exports.restoreBackupWithMultipleKmsKeys =
-  restoreBackupWithMultipleKmsKeys;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
