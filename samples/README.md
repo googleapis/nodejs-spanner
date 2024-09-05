@@ -58,7 +58,7 @@ and automatic, synchronous replication for high availability.
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
-  * [Instance-update](#instance-update)
+  * [Updates an instance.](#updates-an-instance.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
@@ -884,7 +884,7 @@ __Usage:__
 
 
 
-### Instance-update
+### Updates an instance.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-update.js).
 
@@ -893,7 +893,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node samples/instance-update.js`
+`node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 -----
