@@ -16,37 +16,36 @@
 'use strict';
 
 function main(
-  projectId = 'my-project-id',
   instanceId = 'my-instance',
   databaseId = 'my-database',
   backupId = 'my-backup',
-  kmsKeyNames = []
+  projectId = 'my-project-id',
+  kmsKeyNames = 'key1,key2'
 ) {
+  // [START spanner_create_backup_with_MR_CMEK]
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
+  // const kmsKeyNames =
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1,
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2';
+
+  // Imports the Google Cloud client library
+  const {Spanner, protos} = require('@google-cloud/spanner');
+  const {PreciseDate} = require('@google-cloud/precise-date');
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
   async function createBackupWithMultipleKmsKeys() {
-    // [START spanner_create_backup_with_MR_CMEK]
-    // Imports the Google Cloud client library
-    const {Spanner, protos} = require('@google-cloud/spanner');
-    const {PreciseDate} = require('@google-cloud/precise-date');
-
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample.
-     */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance';
-    // const databaseId = 'my-database';
-    // const backupId = 'my-backup';
-    // const kmsKeyNames = [
-    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1',
-    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2'];
-
-    // Creates a client
-    const spanner = new Spanner({
-      projectId: projectId,
-    });
-
-    // Gets a reference to a Cloud Spanner Database Admin Client object
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
-
     // Creates a new backup of the database
     try {
       console.log(
@@ -75,7 +74,7 @@ function main(
         }),
         encryptionConfig: {
           encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-          kmsKeyNames: kmsKeyNames,
+          kmsKeyNames: kmsKeyNames.split(','),
         },
       });
 
@@ -114,9 +113,9 @@ function main(
       // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
       spanner.close();
     }
-    // [END spanner_create_backup_with_MR_CMEK]
   }
   createBackupWithMultipleKmsKeys();
+  // [END spanner_create_backup_with_MR_CMEK]
 }
 
 process.on('unhandledRejection', err => {

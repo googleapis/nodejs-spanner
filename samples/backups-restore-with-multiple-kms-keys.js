@@ -20,32 +20,32 @@ function main(
   databaseId = 'my-database',
   backupId = 'my-backup',
   projectId = 'my-project',
-  kmsKeyNames = []
+  kmsKeyNames = 'key1,key2'
 ) {
+  // [START spanner_restore_backup_with_MR_CMEK]
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
+  // const kmsKeyNames =
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1,
+  //   projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2';
+
+  // Imports the Google Cloud client library and precise date library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
+
   async function restoreBackupWithMultipleKmsKeys() {
-    // [START spanner_restore_backup_with_MR_CMEK]
-    // Imports the Google Cloud client library and precise date library
-    const {Spanner} = require('@google-cloud/spanner');
-
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample.
-     */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance';
-    // const databaseId = 'my-database';
-    // const backupId = 'my-backup';
-    // const kmsKeyNames = [
-    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key1',
-    //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key2'];
-
-    // Creates a client
-    const spanner = new Spanner({
-      projectId: projectId,
-    });
-
-    // Gets a reference to a Cloud Spanner Database Admin Client object
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
-
     // Restore the database
     console.log(
       `Restoring database ${databaseAdminClient.databasePath(
@@ -60,7 +60,7 @@ function main(
       backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
       encryptionConfig: {
         encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-        kmsKeyNames: kmsKeyNames,
+        kmsKeyNames: kmsKeyNames.split(','),
       },
     });
 
@@ -77,9 +77,9 @@ function main(
         `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
         `using encryption key ${metadata.encryptionConfig.kmsKeyNames}.`
     );
-    // [END spanner_restore_backup_with_MR_CMEK]
   }
   restoreBackupWithMultipleKmsKeys();
+  // [END spanner_restore_backup_with_MR_CMEK]
 }
 
 process.on('unhandledRejection', err => {
