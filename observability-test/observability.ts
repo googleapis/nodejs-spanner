@@ -25,6 +25,8 @@ const {SpanStatusCode, TracerProvider} = require('@opentelemetry/api');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 const {
+  LIB_FQNAME,
+  LIB_VERSION,
   SPAN_NAMESPACE_PREFIX,
   getActiveOrNoopSpan,
   setSpanError,
@@ -32,6 +34,8 @@ const {
   startTrace,
 } = require('../src/instrument');
 const {
+  ATTR_OTEL_SCOPE_NAME,
+  ATTR_OTEL_SCOPE_VERSION,
   SEMATTRS_DB_NAME,
   SEMATTRS_DB_SQL_TABLE,
   SEMATTRS_DB_STATEMENT,
@@ -129,6 +133,18 @@ describe('startTrace', () => {
   it('with semantic attributes', () => {
     const opts = {tableName: 'table', dbName: 'db'};
     startTrace('aSpan', opts, span => {
+      assert.equal(
+        span.attributes[ATTR_OTEL_SCOPE_NAME],
+        LIB_FQNAME,
+        'Missing OTEL_SCOPE_NAME attribute'
+      );
+
+      assert.equal(
+        span.attributes[ATTR_OTEL_SCOPE_VERSION],
+        LIB_VERSION,
+        'Missing OTEL_SCOPE_VERSION attribute'
+      );
+
       assert.equal(
         span.attributes[SEMATTRS_DB_SYSTEM],
         'spanner',
