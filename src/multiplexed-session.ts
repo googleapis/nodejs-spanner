@@ -16,8 +16,8 @@ export interface GetSessionCallback {
 }
 
 export interface MultiplexedSessionInterface {
-  createMultiplexedSession(): Promise<void>;
-  getMultiplexedSession(callback: GetSessionCallback): void;
+  createSession(): Promise<void>;
+  getSession(callback: GetSessionCallback): void;
 }
 
 export interface MultiplexedSessionOptions {
@@ -60,31 +60,28 @@ export class MultiplexedSession {
 
   /*New
    **/
-  async createMultiplexedSession(): Promise<void> {
+  async createSession(): Promise<void> {
     // this._startHouseKeeping();
-    await this._createMultiplexedSessions();
-    this._startRefreshingSession();
+    await this._createSession();
+    this._maintain();
   }
 
-  _startHouseKeeping(): void {
-    const pingRate = this.multiplexedSessionOptions.keepAlive! * 60000;
-    this._pingHandle = setInterval(
-      () => this._pingMultiplexedSession(),
-      pingRate
-    );
-    this._pingHandle.unref();
-  }
+  // _startHouseKeeping(): void {
+  //   const pingRate = this.multiplexedSessionOptions.keepAlive! * 60000;
+  //   this._pingHandle = setInterval(
+  //     () => this._pingMultiplexedSession(),
+  //     pingRate
+  //   );
+  //   this._pingHandle.unref();
+  // }
 
-  _startRefreshingSession(): void {
+  _maintain(): void {
     const refreshRate = this.multiplexedSessionOptions.refreshRate! * 60000;
-    this._refreshHandle = setInterval(
-      () => this._refreshMultiplexedSession(),
-      refreshRate
-    );
+    this._refreshHandle = setInterval(() => this._refresh(), refreshRate);
     this._refreshHandle.unref();
   }
 
-  async _refreshMultiplexedSession(): Promise<void> {
+  async _refresh(): Promise<void> {
     this._multiplexedInventory.multiplexedSession?.getMetadata((err, resp) => {
       if (err) {
         console.error('Error fetching metadata:', err);
@@ -103,7 +100,7 @@ export class MultiplexedSession {
           );
           const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
           if (differenceInDays >= 7) {
-            this.createMultiplexedSession();
+            this.createSession();
           }
         } else {
           console.warn('Invalid timestamp values.');
@@ -119,12 +116,12 @@ export class MultiplexedSession {
    *
    * @returns {Promise}
    */
-  async _pingMultiplexedSession(): Promise<void> {
-    this.getMultiplexedSession(async (err, session) => {
-      await this._ping(session!);
-    });
-    await this.createMultiplexedSession();
-  }
+  // async _pingMultiplexedSession(): Promise<void> {
+  //   this.getSession(async (err, session) => {
+  //     await this._ping(session!);
+  //   });
+  //   await this._createSession();
+  // }
 
   /**
    * Pings an individual session.
@@ -134,46 +131,40 @@ export class MultiplexedSession {
    * @param {Session} session The session to ping.
    * @returns {Promise}
    */
-  async _ping(session: Session): Promise<void> {
-    await session.keepAlive();
-  }
+  // async _ping(session: Session): Promise<void> {
+  //   await session.keepAlive();
+  // }
 
   /**
    * Retrieve a multiplexed session.
    *
    * @param {GetSessionCallback} callback The callback function.
    */
-  getMultiplexedSession(callback: GetSessionCallback): void {
-    this._acquireMultiplexedSession().then(session =>
-      callback(null, session, session?.txn)
+  getSession(callback: GetSessionCallback): void {
+    this._acquire().then(
+      session => callback(null, session, session?.txn),
+      callback
     );
   }
 
-  async _acquireMultiplexedSession(): Promise<Session | null> {
-    const session = await this._getMultiplexedSession();
+  async _acquire(): Promise<Session | null> {
+    const session = await this._getSession();
     return session;
   }
 
-  _borrowMultiplexedSession(multiplexedSession: Session): void {
-    this._multiplexedInventory.multiplexedSession = multiplexedSession;
-  }
-
-  _borrowFromMultiplexed(): Session | null {
+  _multiplexedSession(): Session | null {
     return this._multiplexedInventory.multiplexedSession;
   }
 
-  _borrowAvailableMultiplexedSession(): Session | null {
-    return this._borrowFromMultiplexed();
-  }
-
-  async _createMultiplexedSessions(): Promise<void> {
+  async _createSession(): Promise<void> {
     if (this._multiplexedSessionLock) {
       await this._multiplexedSessionLock;
       return;
     }
     this._multiplexedSessionLock = new Promise(resolve => {
       this.database.createMultiplexedSession({}).then(createSessionResponse => {
-        this._multiplexedInventory.multiplexedSession = createSessionResponse[0];
+        this._multiplexedInventory.multiplexedSession =
+          createSessionResponse[0];
         resolve();
       });
     });
@@ -181,15 +172,11 @@ export class MultiplexedSession {
     this._multiplexedSessionLock = null;
   }
 
-  _hasMultiplexedSessionUsableFor(): boolean {
-    return this._multiplexedInventory.multiplexedSession !== null;
-  }
-
-  async _getMultiplexedSession(): Promise<Session | null> {
-    if (this._hasMultiplexedSessionUsableFor()) {
-      return this._borrowAvailableMultiplexedSession();
+  async _getSession(): Promise<Session | null> {
+    if (this._multiplexedInventory.multiplexedSession !== null) {
+      return this._multiplexedSession();
     }
-    await this._createMultiplexedSessions();
-    return this._borrowAvailableMultiplexedSession();
+    await this.createSession();
+    return this._getSession();
   }
 }

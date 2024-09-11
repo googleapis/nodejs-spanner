@@ -472,7 +472,7 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
-    this.multiplexedSession_.createMultiplexedSession();
+    this.multiplexedSession_.createSession();
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
@@ -2101,7 +2101,7 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     if (process.env.IS_MULTIPLEXED) {
-      this.multiplexedSession_?.getMultiplexedSession((err, session) => {
+      this.multiplexedSession_?.getSession((err, session) => {
         if (err) {
           callback!(err as ServiceError);
           return;
@@ -3032,7 +3032,7 @@ class Database extends common.GrpcServiceObject {
     const proxyStream: Transform = through.obj();
 
     if (process.env.IS_MULTIPLEXED) {
-      this.multiplexedSession_?.getMultiplexedSession((err, session) => {
+      this.multiplexedSession_?.getSession((err, session) => {
         console.log('SESSION: ', session?.formattedName_);
         if (err) {
           proxyStream.destroy(err);
@@ -3571,21 +3571,19 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as CallOptions)
         : {};
     if (process.env.IS_MULTIPLEXED) {
-      this.multiplexedSession_?.getMultiplexedSession(
-        (err, session?, transaction?) => {
-          if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
-            this.writeAtLeastOnce(mutations, options, cb!);
-            return;
-          }
-          if (err) {
-            cb!(err as grpc.ServiceError);
-            return;
-          }
-          this._releaseOnEnd(session!, transaction!);
-          transaction?.setQueuedMutations(mutations.proto());
-          return transaction?.commit(options, cb!);
+      this.multiplexedSession_?.getSession((err, session?, transaction?) => {
+        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+          this.writeAtLeastOnce(mutations, options, cb!);
+          return;
         }
-      );
+        if (err) {
+          cb!(err as grpc.ServiceError);
+          return;
+        }
+        this._releaseOnEnd(session!, transaction!);
+        transaction?.setQueuedMutations(mutations.proto());
+        return transaction?.commit(options, cb!);
+      });
     } else {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
