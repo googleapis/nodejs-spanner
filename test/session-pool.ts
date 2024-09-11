@@ -515,6 +515,36 @@ describe('SessionPool', () => {
         process.listeners('unhandledRejection').push(originalRejection!);
       }
     });
+
+    it('should catch unhandled rejection errors', async () => {
+      const error = new Error('Unexpected error') as grpc.ServiceError;
+
+      sandbox.restore();
+      sandbox.stub(sessionPool, '_fill').callsFake(async () => {
+        throw error;
+      });
+
+      const originalRejection = process.listeners('unhandledRejection').pop();
+      if (originalRejection) {
+        process.removeListener('unhandledRejection', originalRejection!);
+      }
+
+      process.once('unhandledRejection', err => {
+        assert.ifError(err);
+      });
+
+      const errorListener = sandbox.stub();
+      sessionPool.on('error', errorListener);
+
+      await sessionPool.open();
+
+      assert.strictEqual(errorListener.calledOnce, true);
+      assert.strictEqual(errorListener.firstCall.args[0], error);
+
+      if (originalRejection) {
+        process.listeners('unhandledRejection').push(originalRejection!);
+      }
+    });
   });
 
   describe('release', () => {
