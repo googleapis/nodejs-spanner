@@ -540,6 +540,7 @@ export class MockSpanner {
             call.request!.transaction.id
           }`;
           if (this.abortedTransactions.has(fullTransactionId)) {
+            call.sendMetadata(new Metadata());
             call.emit(
               'error',
               MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
@@ -556,6 +557,7 @@ export class MockSpanner {
               call.request!.transaction.begin
             );
             if (txn instanceof Error) {
+              call.sendMetadata(new Metadata());
               call.emit('error', txn);
               call.end();
               return;
@@ -593,6 +595,7 @@ export class MockSpanner {
                   index
                 );
                 if (streamErr) {
+                  call.sendMetadata(new Metadata());
                   call.emit('error', streamErr);
                   break;
                 }
@@ -610,6 +613,7 @@ export class MockSpanner {
                 1
               );
               if (streamErr) {
+                call.sendMetadata(new Metadata());
                 call.emit('error', streamErr);
                 break;
               }

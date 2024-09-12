@@ -4,6 +4,30 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.14.0](https://github.com/googleapis/nodejs-spanner/compare/v7.13.0...v7.14.0) (2024-08-14)
+
+
+### Features
+
+* **spanner:** Add resource reference annotation to backup schedules ([#2093](https://github.com/googleapis/nodejs-spanner/issues/2093)) ([df539e6](https://github.com/googleapis/nodejs-spanner/commit/df539e665fe5d8fe01084b8d8cf6094c89b13d48))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.9 ([#2094](https://github.com/googleapis/nodejs-spanner/issues/2094)) ([487efc0](https://github.com/googleapis/nodejs-spanner/commit/487efc091e0e143d3c59ac63d66005133b1ef2e5))
+
+## [7.13.0](https://github.com/googleapis/nodejs-spanner/compare/v7.12.0...v7.13.0) (2024-08-09)
+
+
+### Features
+
+* **spanner:** Add support for Cloud Spanner Incremental Backups ([#2085](https://github.com/googleapis/nodejs-spanner/issues/2085)) ([33b9645](https://github.com/googleapis/nodejs-spanner/commit/33b9645d6096e0d77d30fab6aadf5d92da973a67))
+
+
+### Bug Fixes
+
+* Unhandled exception error catch ([#2091](https://github.com/googleapis/nodejs-spanner/issues/2091)) ([e277752](https://github.com/googleapis/nodejs-spanner/commit/e277752fad961908e37e37d88d7b6a61d61a078e))
+
 ## [7.12.0](https://github.com/googleapis/nodejs-spanner/compare/v7.11.0...v7.12.0) (2024-08-02)
 
 
