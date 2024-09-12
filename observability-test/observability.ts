@@ -15,6 +15,7 @@
  */
 
 const assert = require('assert');
+const {createReadStream, ReadStream} = require('fs');
 const {
   AlwaysOffSampler,
   AlwaysOnSampler,
@@ -25,14 +26,19 @@ const {SpanStatusCode, TracerProvider} = require('@opentelemetry/api');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 const {
+  ObservabilityOptions,
   TRACER_NAME,
   TRACER_VERSION,
   SPAN_NAMESPACE_PREFIX,
+  SQLStatement,
   getActiveOrNoopSpan,
   setSpanError,
   setSpanErrorAndException,
   startTrace,
+  traceUnwrap,
+  traceWrap,
 } = require('../src/instrument');
+import {PartialResultStream} from '../src/partial-result-stream';
 const {
   ATTR_OTEL_SCOPE_NAME,
   ATTR_OTEL_SCOPE_VERSION,
@@ -42,12 +48,14 @@ const {
   SEMATTRS_DB_SYSTEM,
   SEMATTRS_EXCEPTION_MESSAGE,
 } = require('@opentelemetry/semantic-conventions');
+const {ExecuteSqlRequest} = require('../src/transaction');
 
 const {disableContextAndManager, setGlobalContextManager} = require('./helper');
 
 const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
+import {EventEmitter} from 'events';
 
 describe('startTrace', () => {
   const globalExporter = new InMemorySpanExporter();
@@ -452,5 +460,389 @@ describe('setErrorAndException', () => {
         'the exception must have been recorded'
       );
     });
+  });
+});
+
+class TestWrapObject {
+  observabilityOptions: typeof ObservabilityOptions;
+
+  constructor(opts: typeof ObservabilityOptions) {
+    this.observabilityOptions = opts;
+  }
+
+  withCallback(card: number, callback: (err: Error | null, res: any) => void) {
+    if (card <= 0) {
+      callback(new Error('only positive numbers expected'), null);
+    } else {
+      callback(null, card * 2);
+    }
+  }
+
+  withPartialResultStream(card: number): PartialResultStream {
+    const stream = new PartialResultStream({});
+    if (card <= 0) {
+      stream.destroy(new Error('only positive numbers expected'));
+    } else {
+      stream.write(JSON.stringify(card * 2));
+    }
+    return stream;
+  }
+
+  withPromise(card: number): Promise<number> {
+    return new Promise((resolve, reject) => {
+      if (card <= 0) {
+        reject(new Error('only positive numbers expected'));
+      } else {
+        resolve(card * 2);
+      }
+    });
+  }
+
+  withEventEmitter(): typeof ReadStream {
+    return createReadStream(__filename, 'utf8');
+  }
+
+  withIterable(card: number): Iterable<number> {
+    let i = 0;
+    const iter = {
+      next() {
+        if (i > 0) {
+          return {value: 0, done: true};
+        }
+
+        i++;
+
+        if (card <= 0) {
+          throw new Error('only positive numbers expected');
+        } else {
+          return {value: card * 2, done: false};
+        }
+      },
+
+      [Symbol.iterator]() {
+        return this;
+      },
+    };
+
+    return iter as Iterable<number>;
+  }
+
+  withAsyncIterable(card: number): AsyncIterable<number> {
+    let i = 0;
+    const asyncIter = {
+      async next() {
+        if (i > 0) {
+          return Promise.resolve({value: 0, done: true});
+        }
+
+        i++;
+
+        if (card <= 0) {
+          return Promise.reject(new Error('only positive numbers expected'));
+        } else {
+          return Promise.resolve({value: card * 2, done: false});
+        }
+      },
+
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+    };
+
+    return asyncIter as AsyncIterable<number>;
+  }
+
+  /*
+   * This method is necessary to test enableExtendedTracing=true and annotating spans with SQL.
+   */
+  withSQLLikeQuery(query: string | typeof SQLStatement | any): Promise<string> {
+    return Promise.resolve('invoked');
+  }
+}
+
+describe('traceWrap', () => {
+  const methods = [
+    'withCallback',
+    'withPromise',
+    'withEventEmitter',
+    'withPartialResultStream',
+    'withIterable',
+    'withAsyncIterable',
+    'withSQLLikeQuery',
+  ];
+
+  const contextManager = new AsyncHooksContextManager();
+  setGlobalContextManager(contextManager);
+
+  const exporter = new InMemorySpanExporter();
+  const provider = new NodeTracerProvider({
+    sampler: new AlwaysOnSampler(),
+    exporter: exporter,
+  });
+  provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+
+  before(() => {
+    traceWrap(TestWrapObject, methods);
+  });
+
+  afterEach(() => {
+    exporter.forceFlush();
+  });
+
+  after(async () => {
+    traceUnwrap(TestWrapObject, methods);
+    await provider.shutdown();
+  });
+
+  it('Callback', () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    wrapCheck.withCallback(10, (err, res) => {
+      assert.strictEqual(err, null, 'A nil error is expected');
+      assert.strictEqual(res, 10 * 2);
+
+      const spans = exporter.getFinishedSpans();
+      assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+      // We expect a span with the name of the class.method.
+      const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withCallback`;
+      assert.strictEqual(
+        spans[spans.length - 1].name,
+        wantName,
+        'Name mismatch'
+      );
+    });
+  });
+
+  it('PartialResultStream', done => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const stream = wrapCheck.withPartialResultStream(10);
+    stream.on('error', done);
+    stream
+      .on('data', row => {
+        const result = JSON.parse(row.value);
+        assert.strictEqual(result, 10 * 2);
+      })
+      .on('end', () => {
+        const spans = exporter.getFinishedSpans();
+        assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+        // We expect a span with the name of the class.method.
+        const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withPartialResultStream`;
+        assert.strictEqual(
+          spans[spans.length - 1].name,
+          wantName,
+          'Name mismatch'
+        );
+        done();
+      });
+
+    stream.end();
+  });
+
+  it('Promise', async () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const result = await wrapCheck.withPromise(10);
+    assert.strictEqual(result, 10 * 2);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withPromise`;
+    assert.strictEqual(spans[spans.length - 1].name, wantName, 'Name mismatch');
+  });
+
+  it('EventEmitter', done => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const fh = wrapCheck.withEventEmitter();
+    fh.on('data', chunk => {})
+      .on('error', done)
+      .on('close', () => {
+        const spans = exporter.getFinishedSpans();
+        assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+        // We expect a span with the name of the class.method.
+        const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withEventEmitter`;
+        assert.strictEqual(
+          spans[spans.length - 1].name,
+          wantName,
+          'Name mismatch'
+        );
+        done();
+      });
+
+    fh.close();
+  });
+
+  it('Iterator', () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const iter = wrapCheck.withIterable(10);
+    const results: number[] = [];
+    for (const value of iter) {
+      results.push(value);
+    }
+    assert.strictEqual(results.length, 1);
+    assert.strictEqual(results[0], 10 * 2);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withIterable`;
+    assert.strictEqual(spans[spans.length - 1].name, wantName, 'Name mismatch');
+  });
+
+  it('AsyncIterator', async () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const iter = wrapCheck.withAsyncIterable(10);
+    const results: number[] = [];
+    for await (const value of iter) {
+      results.push(value);
+    }
+    assert.strictEqual(results.length, 1);
+    assert.strictEqual(results[0], 10 * 2);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withAsyncIterable`;
+    assert.strictEqual(spans[spans.length - 1].name, wantName, 'Name mismatch');
+  });
+
+  it('traceWrap with extendedTracing=true, string', async () => {
+    const wrapCheck = new TestWrapObject({
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    });
+    const sql = 'SELECT * FROM Table';
+    const [result] = await wrapCheck.withSQLLikeQuery(sql);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      sql,
+      'Expecting the annotated SQL'
+    );
+  });
+
+  it('traceWrap with extendedTracing=false, string', async () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const sql = 'SELECT * FROM Table';
+    const [result] = await wrapCheck.withSQLLikeQuery(sql);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      undefined,
+      'Expecting undefined for the annotated SQL'
+    );
+  });
+
+  it('traceWrap with extendedTracing=true, ExecuteSqlRequest', async () => {
+    const wrapCheck = new TestWrapObject({
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    });
+    const query: typeof ExecuteSqlRequest = {sql: 'SELECT * FROM Table'};
+    const [result] = await wrapCheck.withSQLLikeQuery(query);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      query.sql,
+      'Expecting the annotated SQL'
+    );
+  });
+
+  it('traceWrap with extendedTracing=false, ExecuteSqlRequest', async () => {
+    const wrapCheck = new TestWrapObject({tracerProvider: provider});
+    const query: typeof ExecuteSqlRequest = {sql: 'SELECT * FROM Table'};
+    const [result] = await wrapCheck.withSQLLikeQuery(query);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      undefined,
+      'Expecting undefined for the annotated SQL'
+    );
+  });
+
+  it('traceWrap with extendedTracing=true, non-annotatable', async () => {
+    const wrapCheck = new TestWrapObject({
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    });
+    const [result] = await wrapCheck.withSQLLikeQuery(1000);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      undefined,
+      'Non-annotable first query should produce undefined'
+    );
+  });
+
+  it('traceWrap with extendedTracing=false, non-annotatable', async () => {
+    const wrapCheck = new TestWrapObject({
+      tracerProvider: provider,
+      enableExtendedTracing: false,
+    });
+    const [result] = await wrapCheck.withSQLLikeQuery(1000);
+
+    const spans = exporter.getFinishedSpans();
+    assert.strictEqual(spans.length > 0, true, 'Atleast 1 span expected');
+
+    // We expect a span with the name of the class.method.
+    const wantName = `${SPAN_NAMESPACE_PREFIX}.${TestWrapObject.name}.withSQLLikeQuery`;
+    const targetSpan = spans[spans.length - 1];
+    assert.strictEqual(targetSpan.name, wantName, 'Name mismatch');
+
+    // Ensure that the span was annotated with the SQL statement.
+    assert.strictEqual(
+      targetSpan.attributes[SEMATTRS_DB_STATEMENT],
+      undefined,
+      'Non-annotable first query should produce undefined'
+    );
   });
 });

@@ -38,6 +38,10 @@ import {
   SpanKind,
 } from '@opentelemetry/api';
 
+import {EventEmitter} from 'events';
+import {finished} from 'stream';
+import {PartialResultStream} from './partial-result-stream';
+
 const optedInPII: boolean =
   process.env.SPANNER_ENABLE_EXTENDED_TRACING === 'true';
 
@@ -69,7 +73,7 @@ export function getTracer(tracerProvider?: TracerProvider) {
     return tracerProvider.getTracer(TRACER_NAME, TRACER_VERSION);
   }
   // Otherwise use the global tracer.
-  return trace.getTracer(TRACER_NAME, TRACER_VERSION);
+  return trace.getTracerProvider().getTracer(TRACER_NAME, TRACER_VERSION);
 }
 
 interface traceConfig {
@@ -245,4 +249,285 @@ class noopSpan implements Span {
   updateName(name: string): this {
     return this;
   }
+}
+
+interface TraceWrapped extends Function {
+  traceWrapped?: Function;
+}
+
+function performWrap(
+  klass: Function,
+  spanName: string,
+  original: TraceWrapped
+) {
+  /*
+  original would be for example:
+    const [rows] = await database.run('SELECT 1');
+  or
+    database.run('SELECT 1', (err, rows) => {
+        ...
+    });
+  */
+  if (original.traceWrapped) {
+    return original;
+  }
+
+  const traced: TraceWrapped = function (
+    this: any,
+    ...args: any[]
+  ):
+    | void
+    | Promise<unknown>
+    | PartialResultStream
+    | EventEmitter
+    | AsyncIterable<unknown> {
+    const lastArg = args[args.length - 1];
+    const hasCallback = typeof lastArg === 'function';
+    const firstArg = args[0];
+
+    const opts: traceConfig = {opts: this.observabilityOptions || {}};
+
+    if (typeof firstArg === 'string' || (firstArg as SQLStatement)) {
+      opts.sql = firstArg;
+    }
+
+    return startTrace(spanName, opts, span => {
+      // Case 1. We have a callback function, plainly wrap it
+      // with a passthrough function that starts the span on invocation
+      // and then ends it once results are returned from the original.
+      if (hasCallback) {
+        const callback = lastArg;
+        const wrappedFn = function (...args: any) {
+          const errIndex = Array.from(args).findIndex(
+            arg => arg instanceof Error
+          );
+          const err: Error = errIndex !== -1 ? args[errIndex] : null;
+          setSpanError(span, err);
+          span.end();
+          return callback(...args);
+        };
+
+        // Let's copy the name of the wrapping callback
+        // to be that of the original callback function.
+        Object.defineProperty(wrappedFn, 'name', {value: callback.name});
+        Object.defineProperty(wrappedFn, '__original_callback', {
+          value: callback,
+        });
+        args[args.length - 1] = wrappedFn;
+
+        // Finally invoke the function with its modified callback argument.
+        return original.apply(this, args);
+      }
+
+      let originalResult: any = null;
+
+      try {
+        originalResult = original.apply(this, args);
+      } catch (err: any) {
+        setSpanErrorAndException(span, err);
+        span.end();
+        // Finally re-raise the exception.
+        throw err;
+      }
+
+      if (!originalResult) {
+        span.end();
+        return originalResult;
+      }
+
+      // Case 2. We have a PartialResultStream, check the event emitters
+      // and end the span once the finished event is issued.
+      if (originalResult instanceof PartialResultStream) {
+        const originalStream = originalResult as PartialResultStream;
+        if (originalStream.on) {
+          originalStream.on('error', err => {
+            setSpanError(span, err);
+          });
+        }
+
+        finished(originalStream, err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+        });
+
+        const eventNames = originalStream.eventNames();
+
+        const closeRelatedEvents = [
+          'close',
+          'complete',
+          'end',
+          'finished',
+          'prefinish',
+        ];
+        closeRelatedEvents.forEach(eventName => {
+          originalStream.on(eventName, () => span.end());
+        });
+        return originalStream;
+      }
+
+      // Case 3. We have an EventEmitter so for each event that is related
+      // to completion should be listened on, allow span ending.
+      if (originalResult instanceof EventEmitter) {
+        const eventEmitter = originalResult as EventEmitter;
+        eventEmitter.on('error', err => {
+          setSpanError(span, err);
+        });
+        const closeRelatedEvents = [
+          'close',
+          'complete',
+          'end',
+          'finished',
+          'prefinish',
+        ];
+        closeRelatedEvents.forEach(eventName => {
+          eventEmitter.on(eventName, () => span.end());
+        });
+        return eventEmitter;
+      }
+
+      // Case 4. We have a Promise and for that create a wrapping
+      // Promise with a finally event that'll end the span..
+      const hasPromiseConstructor =
+        originalResult.constructor &&
+        originalResult.constructor.name === 'Promise';
+      if (hasPromiseConstructor || originalResult instanceof Promise) {
+        const asPromise = originalResult as Promise<unknown>;
+        const passThroughPromise = new Promise((resolve, reject) => {
+          asPromise
+            .then(
+              onFulfilled => {
+                span.end();
+                resolve(onFulfilled);
+              },
+              onRejected => {
+                span.end();
+                reject(onRejected);
+              }
+            )
+            .catch((err: Error) => {
+              setSpanErrorAndException(span, err);
+              span.end();
+              throw err;
+            })
+            .finally(() => {
+              span.end();
+            });
+        });
+
+        return passThroughPromise;
+      }
+
+      // Case 5. Check if it is an iterable.
+      if (Symbol.iterator in Object(originalResult)) {
+        return {
+          next() {
+            const res = originalResult.next();
+            if (res.done) {
+              span.end();
+            }
+            return res;
+          },
+          throw(err: Error) {
+            setSpanErrorAndException(span, err);
+            throw err;
+          },
+          [Symbol.iterator]() {
+            return this;
+          },
+        };
+      }
+
+      // Case 6. Check if it is an async-iterable.
+      if (Symbol.asyncIterator in Object(originalResult)) {
+        if (!originalResult.next) {
+          // TODO: Figure out what to do with asyncIteratables
+          // that do not have a .next method.
+          span.end();
+          return originalResult;
+        }
+
+        return {
+          async next() {
+            const res = await originalResult.next();
+            if (res.done) {
+              span.end();
+            }
+            return Promise.resolve(res);
+          },
+          throw(err: Error) {
+            setSpanErrorAndException(span, err);
+            throw err;
+          },
+          [Symbol.asyncIterator]() {
+            return this;
+          },
+        };
+      }
+
+      // Case 7. We don't know how to handle this type, so
+      // return and instead just log that problem, do not crash!
+      console.log(`\x19traceWrap cannot handle type: ${originalResult}\x00`);
+      span.end();
+      return originalResult;
+    });
+  };
+
+  traced.traceWrapped = original;
+  return traced;
+}
+
+const knownToHaveSQLQueries = {
+  'Database.run': true,
+};
+
+/*
+ * traceWrap examines methodNmaes and checks if each method exists in klass'
+ * function prototype and if not throws an exception, otherwise it creates
+ * a wrapper function that at runtime, when invoked starts an observability
+ * trace and invokes the original calling function and depending on the
+ * result figures out how to end the trace.
+ */
+export function traceWrap(klass: Function, methodNames: string[]) {
+  const canWrap =
+    klass && klass.prototype && methodNames && methodNames.length > 0;
+  if (!canWrap) {
+    return;
+  }
+
+  methodNames.forEach(methodName => {
+    const original = klass.prototype[methodName];
+    const spanName = klass.name + '.' + methodName;
+    if (!original) {
+      throw new Error(`Missing/mispelled method ${spanName}`);
+    }
+
+    klass.prototype[methodName] = performWrap(klass, spanName, original);
+  });
+}
+
+/*
+ * traceUnwrap examines methodNames and checks if the entry in
+ * klass.prototype was already wrapped and if so, replaces the
+ * wrapped entry with the original.
+ */
+export function traceUnwrap(klass: Function, methodNames: string[]) {
+  const canUnwrap =
+    klass && klass.prototype && methodNames && methodNames.length > 0;
+  if (!canUnwrap) {
+    return;
+  }
+
+  methodNames.forEach(methodName => {
+    const wrapped = klass.prototype[methodName];
+    const fullName = klass.name + '.' + methodName;
+    if (!wrapped) {
+      throw new Error(`Missing/mispelled method ${fullName}`);
+    }
+
+    if (wrapped.traceWrapped) {
+      klass.prototype[methodName] = wrapped.traceWrapped;
+    }
+  });
 }
