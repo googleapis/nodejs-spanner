@@ -52,12 +52,10 @@ interface observabilityOptions {
 
 export type {observabilityOptions as ObservabilityOptions};
 
-const LIB_FQNAME = 'cloud.google.com/nodejs/spanner';
-const LIB_VERSION = '7.14.0'; // Manually hard coded, TODO: remove
-const TRACER_NAME = LIB_FQNAME;
-const TRACER_VERSION = LIB_VERSION;
+const TRACER_NAME = 'cloud.google.com/nodejs/spanner';
+const TRACER_VERSION = '7.14.0'; // Manually hard coded, TODO: remove
 
-export {LIB_FQNAME, LIB_VERSION}; // Only exported for testing.
+export {TRACER_NAME, TRACER_VERSION}; // Only exported for testing.
 
 /**
  * getTracer fetches the tracer from the provided tracerProvider.
@@ -108,8 +106,8 @@ export function startTrace<T>(
     {kind: SpanKind.CLIENT},
     span => {
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
-      span.setAttribute(ATTR_OTEL_SCOPE_NAME, LIB_FQNAME);
-      span.setAttribute(ATTR_OTEL_SCOPE_VERSION, LIB_VERSION);
+      span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
+      span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
 
       if (config.tableName) {
         span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
