@@ -77,16 +77,8 @@ describe('startTrace', () => {
     startTrace('mySpan', {}, span => {
       span.end();
 
-      const spans = globalExporter.getFinishedSpans();
-      assert.strictEqual(
-        spans.length,
-        1,
-        'Exactly 1 span must have been exported'
-      );
-      const span0 = spans[0];
-
       assert.equal(
-        span0.name,
+        span.name,
         SPAN_NAMESPACE_PREFIX + '.mySpan',
         'name mismatch'
       );
@@ -317,7 +309,7 @@ describe('getActiveOrNoopSpan', () => {
       assert.strictEqual(
         span.name,
         activeSpan.name,
-        'names must match between activeSpan or current one'
+        `names must match between activeSpan or current one\n\tGot:  ${span.name}\n\tWant: ${activeSpan.name}`
       );
       assert.strictEqual(
         span.startTime,

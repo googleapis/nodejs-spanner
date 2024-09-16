@@ -24,6 +24,7 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
+import {getActiveOrNoopSpan} from './instrument';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -630,7 +631,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise<Session>}
    */
   async _acquire(): Promise<Session> {
+    const span = getActiveOrNoopSpan();
     if (!this.isOpen) {
+      span.addEvent('SessionPool is closed');
       throw new GoogleError(errors.Closed);
     }
 
@@ -642,18 +645,30 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // wrapping this logic in a function to call recursively if the session
     // we end up with is already dead
     const getSession = async (): Promise<Session> => {
+      span.addEvent('Acquiring session');
       const elapsed = Date.now() - startTime;
 
       if (elapsed >= timeout!) {
+        span.addEvent('Could not acquire session due to an exceeded timeout');
         throw new GoogleError(errors.Timeout);
       }
 
       const session = await this._getSession(startTime);
 
       if (this._isValidSession(session)) {
+        span.addEvent('Acquired session', {
+          'time.elapsed': Date.now() - startTime,
+          'session.id': session.id.toString(),
+        });
         return session;
       }
 
+      span.addEvent(
+        'Could not acquire session because it was invalid. Retrying',
+        {
+          'session.id': session.id.toString(),
+        }
+      );
       this._inventory.borrowed.delete(session);
       return getSession();
     };
@@ -723,6 +738,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#createError
    */
   async _createSessions(amount: number): Promise<void> {
+    const span = getActiveOrNoopSpan();
+    span.addEvent(`Requesting ${amount} sessions`);
+
     const labels = this.options.labels!;
     const databaseRole = this.options.databaseRole!;
 
@@ -731,10 +749,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
     this._pending += amount;
 
+    let nReturned = 0;
+    const nRequested: number = amount;
+
     // while we can request as many sessions be created as we want, the backend
     // will return at most 100 at a time, hence the need for a while loop.
     while (amount > 0) {
       let sessions: Session[] | null = null;
+
+      span.addEvent(`Creating ${amount} sessions`);
 
       try {
         [sessions] = await this.database.batchCreateSessions({
@@ -744,9 +767,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         });
 
         amount -= sessions.length;
+        nReturned += sessions.length;
       } catch (e) {
         this._pending -= amount;
         this.emit('createError', e);
+        span.addEvent(
+          `Requested for ${nRequested} sessions returned ${nReturned}`
+        );
         throw e;
       }
 
@@ -758,6 +785,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         });
       });
     }
+
+    span.addEvent(`Requested for ${nRequested} sessions returned ${nReturned}`);
   }
 
   /**
@@ -860,10 +889,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise<Session>}
    */
   async _getSession(startTime: number): Promise<Session> {
+    const span = getActiveOrNoopSpan();
     if (this._hasSessionUsableFor()) {
+      span.addEvent('Cache hit: has usable session');
       return this._borrowNextAvailableSession();
     }
     if (this.isFull && this.options.fail!) {
+      span.addEvent('Session pool is full and failFast=true');
       throw new SessionPoolExhaustedError(this._getLeaks());
     }
 
@@ -871,6 +903,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let removeListener: Function;
 
     // Wait for a session to become available.
+    span.addEvent('Waiting for a session to become available');
     const availableEvent = 'session-available';
     const promises = [
       new Promise((_, reject) => {
@@ -985,6 +1018,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @returns {Promise}
    */
   async _ping(session: Session): Promise<void> {
+    // NOTE: Please do not trace Ping as it gets quite spammy
+    // with many root spans polluting the main span.
+    // Please see https://github.com/googleapis/google-cloud-go/issues/1691
+
     this._borrow(session);
 
     if (!this._isValidSession(session)) {
