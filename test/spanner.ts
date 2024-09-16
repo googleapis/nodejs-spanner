@@ -67,6 +67,14 @@ import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 
+const {
+  AlwaysOnSampler,
+  NodeTracerProvider,
+  InMemorySpanExporter,
+} = require('@opentelemetry/sdk-trace-node');
+const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {startTrace} = require('../src/instrument');
+
 function numberToEnglishWord(num: number): string {
   switch (num) {
     case 1:
@@ -4983,6 +4991,74 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(operations1.length, 2);
       assert.strictEqual(operations2.length, 2);
       assert.deepStrictEqual(operations1, operations2);
+    });
+  });
+
+  // TODO: Refactor this file's Spanner creation to make it more
+  // self contained and remove the tight coupling that requires
+  // and tests the database/instance suffix is an iteration of
+  // each afresh invocation of newTestDatabase, which has been
+  // causing test flakes.
+  it('Check for span annotations', () => {
+    const exporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+    provider.register();
+
+    after(async () => {
+      await provider.shutdown();
+    });
+
+    startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
+      const database = newTestDatabase();
+
+      async function runIt() {
+        const query = {
+          sql: 'SELECT 1',
+        };
+
+        const [rows] = await database.run(query);
+        assert.strictEqual(rows.length, 1);
+      }
+
+      runIt();
+
+      span.end();
+
+      const spans = exporter.getFinishedSpans();
+      assert.strictEqual(spans.length, 1, 'Exactly 1 span');
+      const span0 = spans[0];
+      const events = span0.events;
+
+      // Sort the events by earliest time of occurence.
+      events.sort((evtA, evtB) => {
+        return evtA.time < evtB.time;
+      });
+
+      const gotEventNames: string[] = [];
+      events.forEach(event => {
+        gotEventNames.push(event.name);
+      });
+
+      const wantEventNames = [
+        'Requesting 25 sessions',
+        'Creating 25 sessions',
+        'Acquiring session',
+        'Waiting for a session to become available',
+        // 'Requested for 25 sessions returned 25 sessions',
+        // 'Acquired session',
+        // 'Creating Transaction',
+        // 'Transaction Creation Done',
+      ];
+
+      assert.deepEqual(
+        gotEventNames,
+        wantEventNames,
+        `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
+      );
     });
   });
 });

@@ -33,6 +33,7 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
+import {getActiveOrNoopSpan} from './instrument';
 import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
@@ -412,6 +413,9 @@ export class Snapshot extends EventEmitter {
       session,
       options,
     };
+
+    const span = getActiveOrNoopSpan();
+    span.addEvent('Begin Transaction');
 
     // Only hand crafted read-write transactions will be able to set a
     // transaction tag for the BeginTransaction RPC. Also, this.requestOptions
@@ -1419,6 +1423,9 @@ export class Snapshot extends EventEmitter {
     this.id = id!;
     this.metadata = resp;
 
+    const span = getActiveOrNoopSpan();
+    span.addEvent('Transaction Creation Done', {id: this.id.toString()});
+
     if (readTimestamp) {
       this.readTimestampProto = readTimestamp;
       this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
@@ -1966,6 +1973,8 @@ export class Transaction extends Dml {
     const requestOptions = (options as CommitOptions).requestOptions;
     const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
+    const span = getActiveOrNoopSpan();
+
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;
     } else if (!this._useInRunner) {
@@ -1997,6 +2006,8 @@ export class Transaction extends Dml {
       addLeaderAwareRoutingHeader(headers);
     }
 
+    span.addEvent('Starting Commit');
+
     this.request(
       {
         client: 'SpannerClient',
@@ -2007,6 +2018,12 @@ export class Transaction extends Dml {
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
+
+        if (err) {
+          span.addEvent('Commit failed');
+        } else {
+          span.addEvent('Commit Done');
+        }
 
         if (resp && resp.commitTimestamp) {
           this.commitTimestampProto = resp.commitTimestamp;
