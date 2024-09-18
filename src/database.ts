@@ -95,6 +95,11 @@ import {
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
+import {
+  MultiplexedSession,
+  MultiplexedSessionInterface,
+  MultiplexedSessionOptions,
+} from './multiplexed-session';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
@@ -149,6 +154,10 @@ export interface SessionPoolConstructor {
 export type GetDatabaseDialectCallback = NormalCallback<
   EnumKey<typeof google.spanner.admin.database.v1.DatabaseDialect>
 >;
+
+export interface MultiplexedSessionConstructor {
+  new (database: Database): MultiplexedSessionInterface;
+}
 
 export interface SetIamPolicyRequest {
   policy: Policy | null;
@@ -246,6 +255,7 @@ export interface CreateSessionOptions {
   labels?: {[k: string]: string} | null;
   databaseRole?: string | null;
   gaxOptions?: CallOptions;
+  multiplexed?: boolean;
 }
 
 export interface GetIamPolicyOptions {
@@ -337,6 +347,7 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  multiplexedSession_?: MultiplexedSessionInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
@@ -349,7 +360,10 @@ class Database extends common.GrpcServiceObject {
     instance: Instance,
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    multiplexedSessionOptions?:
+      | MultiplexedSessionOptions
+      | MultiplexedSessionConstructor
   ) {
     const methods = {
       /**
@@ -450,6 +464,10 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+    this.multiplexedSession_ =
+      typeof multiplexedSessionOptions === 'function'
+        ? new (multiplexedSessionOptions as MultiplexedSessionConstructor)(this)
+        : new MultiplexedSession(this, multiplexedSessionOptions);
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
     }
@@ -463,6 +481,9 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
+    this.multiplexedSession_.createSession().then();
+    //creating multiplexed session
+    // this.database.createSession({multiplexed: true});
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
@@ -960,6 +981,10 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
+    if (options.multiplexed) {
+      reqOpts.session.multiplexed = true;
+    }
+
     const headers = this.resourceHeader_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
@@ -984,6 +1009,7 @@ class Database extends common.GrpcServiceObject {
       }
     );
   }
+
   /**
    * @typedef {array} CreateTableResponse
    * @property {Table} 0 The new {@link Table}.
