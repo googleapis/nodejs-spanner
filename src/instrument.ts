@@ -47,7 +47,7 @@ interface SQLStatement {
 
 interface observabilityOptions {
   tracerProvider: TracerProvider;
-  enableExtendedTracing: boolean;
+  enableExtendedTracing?: boolean;
 }
 
 export type {observabilityOptions as ObservabilityOptions};
@@ -81,7 +81,7 @@ interface traceConfig {
 }
 
 const SPAN_NAMESPACE_PREFIX = 'CloudSpanner'; // TODO: discuss & standardize this prefix.
-export {SPAN_NAMESPACE_PREFIX};
+export {SPAN_NAMESPACE_PREFIX, traceConfig};
 
 /**
  * startTrace begins an active span in the current active context

@@ -31,6 +31,12 @@ import {
 import {google as databaseAdmin} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
+import {
+  ObservabilityOptions,
+  startTrace,
+  setSpanError,
+  traceConfig,
+} from './instrument';
 
 export type Key = string | string[];
 
@@ -93,6 +99,7 @@ const POSTGRESQL = 'POSTGRESQL';
 class Table {
   database: Database;
   name: string;
+  observabilityOptions?: ObservabilityOptions;
   constructor(database: Database, name: string) {
     /**
      * The {@link Database} instance of this {@link Table} instance.
@@ -1072,29 +1079,43 @@ class Table {
     options: MutateRowsOptions | CallOptions = {},
     callback: CommitCallback
   ): void {
-    const requestOptions =
-      'requestOptions' in options ? options.requestOptions : {};
+    const traceConfig: traceConfig = {
+      opts: this.observabilityOptions,
+    };
 
-    const excludeTxnFromChangeStreams =
-      'excludeTxnFromChangeStreams' in options
-        ? options.excludeTxnFromChangeStreams
-        : false;
+    startTrace('Table.' + method, traceConfig, span => {
+      const requestOptions =
+        'requestOptions' in options ? options.requestOptions : {};
 
-    this.database.runTransaction(
-      {
-        requestOptions: requestOptions,
-        excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
-      },
-      (err, transaction) => {
-        if (err) {
-          callback(err);
-          return;
+      const excludeTxnFromChangeStreams =
+        'excludeTxnFromChangeStreams' in options
+          ? options.excludeTxnFromChangeStreams
+          : false;
+
+      this.database.runTransaction(
+        {
+          requestOptions: requestOptions,
+          excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+        },
+        (err, transaction) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback(err);
+            return;
+          }
+
+          transaction![method](this.name, rows as Key[]);
+          transaction!.commit(options, (err, resp) => {
+            if (err) {
+              setSpanError(span, err);
+            }
+            span.end();
+            callback(err, resp);
+          });
         }
-
-        transaction![method](this.name, rows as Key[]);
-        transaction!.commit(options, callback);
-      }
-    );
+      );
+    });
   }
 }
 

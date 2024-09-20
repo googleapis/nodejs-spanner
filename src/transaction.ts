@@ -46,6 +46,7 @@ import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import {ObservabilityOptions} from './instrument';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -285,6 +286,7 @@ export class Snapshot extends EventEmitter {
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
+  observabilityOptions?: ObservabilityOptions;
 
   /**
    * The transaction ID.
