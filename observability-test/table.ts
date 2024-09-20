@@ -71,6 +71,14 @@ describe('Table', () => {
     getSnapshot: (options, callback) => callback(null, transaction),
   };
 
+  const traceExporter = new InMemorySpanExporter();
+  const sampler = new AlwaysOnSampler();
+  const provider = new NodeTracerProvider({
+    sampler: sampler,
+    exporter: traceExporter,
+  });
+  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
   const NAME = 'table-name';
 
   before(() => {
@@ -84,240 +92,225 @@ describe('Table', () => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
     transaction = new FakeTransaction();
+    table.observabilityOptions = {tracerProvider: provider};
   });
 
-  afterEach(() => sandbox.restore());
+  afterEach(() => {
+    sandbox.restore();
+    traceExporter.reset();
+  });
 
-  describe('observability traces', () => {
-    const traceExporter = new InMemorySpanExporter();
-    const sampler = new AlwaysOnSampler();
+  function getExportedSpans(minCount: number) {
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+    assert.strictEqual(
+      spans.length >= minCount,
+      true,
+      `at least ${minCount} spans expected`
+    );
 
-    const provider = new NodeTracerProvider({
-      sampler: sampler,
-      exporter: traceExporter,
+    // Sort the spans by duration.
+    spans.sort((spanA, spanB) => {
+      spanA.duration < spanB.duration;
     });
-    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
-    afterEach(() => {
-      traceExporter.reset();
+    return spans;
+  }
+
+  function spanNames(spans) {
+    const actualSpanNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+    });
+    return actualSpanNames;
+  }
+
+  it('deleteRows', done => {
+    const KEYS = ['key'];
+    const stub = (
+      sandbox.stub(transaction, 'deleteRows') as sinon.SinonStub
+    ).withArgs(table.name, KEYS);
+
+    sandbox.stub(transaction, 'commit').callsFake((opts, callback) => {
+      callback();
     });
 
-    beforeEach(() => {
-      table.observabilityOptions = {tracerProvider: provider};
-    });
-
-    function getExportedSpans(minCount: number) {
-      traceExporter.forceFlush();
-      const spans = traceExporter.getFinishedSpans();
-      assert.strictEqual(
-        spans.length >= minCount,
-        true,
-        `at least ${minCount} spans expected`
+    table.deleteRows(KEYS, err => {
+      assert.ifError(err);
+      assert.strictEqual(stub.callCount, 1);
+      const actualSpanNames = spanNames(getExportedSpans(1));
+      const expectedSpanNames = ['CloudSpanner.Table.deleteRows'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
       );
 
-      // Sort the spans by duration.
-      spans.sort((spanA, spanB) => {
-        spanA.duration < spanB.duration;
-      });
-
-      return spans;
-    }
-
-    function spanNames(spans) {
-      const actualSpanNames: string[] = [];
-      spans.forEach(span => {
-        actualSpanNames.push(span.name);
-      });
-      return actualSpanNames;
-    }
-
-    it('deleteRows', done => {
-      const KEYS = ['key'];
-      const stub = (
-        sandbox.stub(transaction, 'deleteRows') as sinon.SinonStub
-      ).withArgs(table.name, KEYS);
-
-      sandbox.stub(transaction, 'commit').callsFake((opts, callback) => {
-        callback();
-      });
-
-      table.deleteRows(KEYS, err => {
-        assert.ifError(err);
-        assert.strictEqual(stub.callCount, 1);
-        const actualSpanNames = spanNames(getExportedSpans(1));
-        const expectedSpanNames = ['CloudSpanner.Table.deleteRows'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-
-        done();
-      });
+      done();
     });
+  });
 
-    const ROW = {};
+  const ROW = {};
 
-    it('insert', done => {
-      const stub = (
-        sandbox.stub(transaction, 'insert') as sinon.SinonStub
-      ).withArgs(table.name, ROW);
+  it('insert', done => {
+    const stub = (
+      sandbox.stub(transaction, 'insert') as sinon.SinonStub
+    ).withArgs(table.name, ROW);
 
-      table.insert(ROW, err => {
-        assert.ifError(err);
-        assert.strictEqual(stub.callCount, 1);
-        const actualSpanNames = spanNames(getExportedSpans(1));
-        const expectedSpanNames = ['CloudSpanner.Table.insert'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+    table.insert(ROW, err => {
+      assert.ifError(err);
+      assert.strictEqual(stub.callCount, 1);
+      const actualSpanNames = spanNames(getExportedSpans(1));
+      const expectedSpanNames = ['CloudSpanner.Table.insert'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
+  });
 
-    it('insert with an error', done => {
-      const fakeError = new Error('err');
-      sandbox
-        .stub(DATABASE, 'runTransaction')
-        .callsFake((opts, callback) => callback(fakeError));
+  it('insert with an error', done => {
+    const fakeError = new Error('err');
+    sandbox
+      .stub(DATABASE, 'runTransaction')
+      .callsFake((opts, callback) => callback(fakeError));
 
-      table.insert(ROW, err => {
-        assert.strictEqual(err, fakeError);
+    table.insert(ROW, err => {
+      assert.strictEqual(err, fakeError);
 
-        const gotSpans = getExportedSpans(1);
-        const gotSpanStatus = gotSpans[0].status;
-        const wantSpanStatus = {
-          code: SpanStatusCode.ERROR,
-          message: fakeError.toString(),
-        };
-        assert.deepStrictEqual(
-          gotSpanStatus,
-          wantSpanStatus,
-          `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
-        );
+      const gotSpans = getExportedSpans(1);
+      const gotSpanStatus = gotSpans[0].status;
+      const wantSpanStatus = {
+        code: SpanStatusCode.ERROR,
+        message: fakeError.toString(),
+      };
+      assert.deepStrictEqual(
+        gotSpanStatus,
+        wantSpanStatus,
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+      );
 
-        const actualSpanNames = spanNames(gotSpans);
-        const expectedSpanNames = ['CloudSpanner.Table.insert'];
+      const actualSpanNames = spanNames(gotSpans);
+      const expectedSpanNames = ['CloudSpanner.Table.insert'];
 
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
+  });
 
-    it('upsert', done => {
-      const stub = (
-        sandbox.stub(transaction, 'upsert') as sinon.SinonStub
-      ).withArgs(table.name, ROW);
+  it('upsert', done => {
+    const stub = (
+      sandbox.stub(transaction, 'upsert') as sinon.SinonStub
+    ).withArgs(table.name, ROW);
 
-      table.upsert(ROW, err => {
-        assert.ifError(err);
-        assert.strictEqual(stub.callCount, 1);
+    table.upsert(ROW, err => {
+      assert.ifError(err);
+      assert.strictEqual(stub.callCount, 1);
 
-        const actualSpanNames = spanNames(getExportedSpans(1));
-        const expectedSpanNames = ['CloudSpanner.Table.upsert'];
+      const actualSpanNames = spanNames(getExportedSpans(1));
+      const expectedSpanNames = ['CloudSpanner.Table.upsert'];
 
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
+  });
 
-    it('upsert with an error', done => {
-      const fakeError = new Error('err');
-      sandbox
-        .stub(DATABASE, 'runTransaction')
-        .callsFake((opts, callback) => callback(fakeError));
+  it('upsert with an error', done => {
+    const fakeError = new Error('err');
+    sandbox
+      .stub(DATABASE, 'runTransaction')
+      .callsFake((opts, callback) => callback(fakeError));
 
-      table.upsert(ROW, err => {
-        assert.strictEqual(err, fakeError);
+    table.upsert(ROW, err => {
+      assert.strictEqual(err, fakeError);
 
-        const gotSpans = getExportedSpans(1);
-        const gotSpanStatus = gotSpans[0].status;
-        const wantSpanStatus = {
-          code: SpanStatusCode.ERROR,
-          message: fakeError.toString(),
-        };
-        assert.deepStrictEqual(
-          gotSpanStatus,
-          wantSpanStatus,
-          `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
-        );
+      const gotSpans = getExportedSpans(1);
+      const gotSpanStatus = gotSpans[0].status;
+      const wantSpanStatus = {
+        code: SpanStatusCode.ERROR,
+        message: fakeError.toString(),
+      };
+      assert.deepStrictEqual(
+        gotSpanStatus,
+        wantSpanStatus,
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+      );
 
-        const actualSpanNames = spanNames(gotSpans);
-        const expectedSpanNames = ['CloudSpanner.Table.upsert'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+      const actualSpanNames = spanNames(gotSpans);
+      const expectedSpanNames = ['CloudSpanner.Table.upsert'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
+  });
 
-    it('replace', done => {
-      const stub = (
-        sandbox.stub(transaction, 'replace') as sinon.SinonStub
-      ).withArgs(table.name, ROW);
+  it('replace', done => {
+    const stub = (
+      sandbox.stub(transaction, 'replace') as sinon.SinonStub
+    ).withArgs(table.name, ROW);
 
-      table.replace(ROW, err => {
-        assert.ifError(err);
-        assert.strictEqual(stub.callCount, 1);
+    table.replace(ROW, err => {
+      assert.ifError(err);
+      assert.strictEqual(stub.callCount, 1);
 
-        const actualSpanNames = spanNames(getExportedSpans(1));
-        const expectedSpanNames = ['CloudSpanner.Table.replace'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+      const actualSpanNames = spanNames(getExportedSpans(1));
+      const expectedSpanNames = ['CloudSpanner.Table.replace'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
+  });
 
-    it('replace with an error', done => {
-      const fakeError = new Error('err');
-      sandbox
-        .stub(DATABASE, 'runTransaction')
-        .callsFake((opts, callback) => callback(fakeError));
+  it('replace with an error', done => {
+    const fakeError = new Error('err');
+    sandbox
+      .stub(DATABASE, 'runTransaction')
+      .callsFake((opts, callback) => callback(fakeError));
 
-      table.replace(ROW, err => {
-        assert.strictEqual(err, fakeError);
-        const gotSpans = getExportedSpans(1);
-        const gotSpanStatus = gotSpans[0].status;
-        const wantSpanStatus = {
-          code: SpanStatusCode.ERROR,
-          message: fakeError.toString(),
-        };
-        assert.deepStrictEqual(
-          gotSpanStatus,
-          wantSpanStatus,
-          `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
-        );
+    table.replace(ROW, err => {
+      assert.strictEqual(err, fakeError);
+      const gotSpans = getExportedSpans(1);
+      const gotSpanStatus = gotSpans[0].status;
+      const wantSpanStatus = {
+        code: SpanStatusCode.ERROR,
+        message: fakeError.toString(),
+      };
+      assert.deepStrictEqual(
+        gotSpanStatus,
+        wantSpanStatus,
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+      );
 
-        const actualSpanNames = spanNames(gotSpans);
-        const expectedSpanNames = ['CloudSpanner.Table.replace'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+      const actualSpanNames = spanNames(gotSpans);
+      const expectedSpanNames = ['CloudSpanner.Table.replace'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        done();
-      });
+      done();
     });
   });
 });
