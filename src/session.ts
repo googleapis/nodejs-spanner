@@ -44,6 +44,7 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
+import {ObservabilityOptions, startTrace, setSpanError} from './instrument';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -118,6 +119,7 @@ export class Session extends common.GrpcServiceObject {
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
+  observabilityConfig: ObservabilityOptions | undefined;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -247,14 +249,24 @@ export class Session extends common.GrpcServiceObject {
         this.databaseRole =
           options.databaseRole || database.databaseRole || null;
 
-        return database.createSession(options, (err, session, apiResponse) => {
-          if (err) {
-            callback(err, null, apiResponse);
-            return;
-          }
+        const q = {opts: database.observabilityConfig};
+        return startTrace('Session.create', q, span => {
+          return database.createSession(
+            options,
+            (err, session, apiResponse) => {
+              if (err) {
+                setSpanError(span, err);
+                span.end();
+                callback(err, null, apiResponse);
+                return;
+              }
 
-          extend(this, session);
-          callback(null, this, apiResponse);
+              this.observabilityConfig = database.ovservabilityConfig;
+              span.end();
+              extend(this, session);
+              callback(null, this, apiResponse);
+            }
+          );
         });
       },
     } as {} as ServiceObjectConfig);
@@ -268,6 +280,8 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
+
+    this.observabilityConfig = database.observabilityConfig;
   }
   /**
    * Delete a session.
@@ -388,23 +402,32 @@ export class Session extends common.GrpcServiceObject {
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'getSession',
-        reqOpts,
-        gaxOpts,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (resp) {
-          resp.databaseRole = resp.creatorRole;
-          delete resp.creatorRole;
-          this.metadata = resp;
+
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Session.getMetadata', q, span => {
+      return this.request(
+        {
+          client: 'SpannerClient',
+          method: 'getSession',
+          reqOpts,
+          gaxOpts,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          if (resp) {
+            resp.databaseRole = resp.creatorRole;
+            delete resp.creatorRole;
+            this.metadata = resp;
+          }
+          span.end();
+          callback!(err, resp);
         }
-        callback!(err, resp);
-      }
-    );
+      );
+    });
   }
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
@@ -431,6 +454,10 @@ export class Session extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | KeepAliveCallback,
     cb?: KeepAliveCallback
   ): void | Promise<KeepAliveResponse> {
+    // NOTE: Please do not trace Ping as it gets quite spammy
+    // with many root spans polluting the main span.
+    // Please see https://github.com/googleapis/google-cloud-go/issues/1691
+
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
