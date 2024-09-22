@@ -37,6 +37,9 @@ const {
 
 const {ObservabilityOptions} = require('../src/instrument');
 
+const selectSql = 'SELECT 1';
+const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
+
 /** A simple result set for SELECT 1. */
 function createSelect1ResultSet(): protobuf.ResultSet {
   const fields = [
@@ -85,8 +88,6 @@ async function setup(
     );
   });
 
-  const selectSql = 'SELECT 1';
-  const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
   spannerMock.putStatementResult(
     selectSql,
     mock.StatementResult.resultSet(createSelect1ResultSet())
@@ -205,7 +206,6 @@ describe('EndToEnd', () => {
 
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
@@ -216,14 +216,19 @@ describe('EndToEnd', () => {
             });
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
+          const expectedSpanNames = [
+            'CloudSpanner.Snapshot.begin',
+            'CloudSpanner.Database.getSnapshot',
+            'CloudSpanner.Snapshot.runStream',
+            'CloudSpanner.Snapshot.run',
+          ];
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = [];
+          const expectedEventNames = ['Begin Transaction'];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
@@ -279,7 +284,6 @@ describe('EndToEnd', () => {
         .on('end', () => {
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
@@ -290,7 +294,10 @@ describe('EndToEnd', () => {
             });
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.runStream'];
+          const expectedSpanNames = [
+            'CloudSpanner.Snapshot.runStream',
+            'CloudSpanner.Database.runStream',
+          ];
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
@@ -313,7 +320,6 @@ describe('EndToEnd', () => {
 
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
-      assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
 
       // Sort the spans by duration.
       spans.sort((spanA, spanB) => {
@@ -330,6 +336,7 @@ describe('EndToEnd', () => {
       });
 
       const expectedSpanNames = [
+        'CloudSpanner.Snapshot.runStream',
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
       ];
@@ -375,7 +382,6 @@ describe('EndToEnd', () => {
 
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
           const actualEventNames: string[] = [];
           const actualSpanNames: string[] = [];
@@ -386,7 +392,11 @@ describe('EndToEnd', () => {
             });
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.runTransaction'];
+          const expectedSpanNames = [
+            'CloudSpanner.Database.runTransaction',
+            'CloudSpanner.Snapshot.runStream',
+            'CloudSpanner.Snapshot.run',
+          ];
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
@@ -413,7 +423,6 @@ describe('EndToEnd', () => {
 
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -424,14 +433,21 @@ describe('EndToEnd', () => {
           });
         });
 
-        const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
+        const expectedSpanNames = [
+          'CloudSpanner.Transaction.commit',
+          'CloudSpanner.Database.writeAtLeastOnce',
+        ];
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = ['Using Session'];
+        const expectedEventNames = [
+          'Starting Commit',
+          'Commit Done',
+          'Using Session',
+        ];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -522,6 +538,226 @@ describe('ObservabilityOptions injection and propagation', async () => {
     done();
   });
 
+  afterEach(async () => {
+    await injectedTracerProvider.forceFlush();
+    injectedTraceExporter.reset();
+  });
+
+  let database: Database;
+  beforeEach(() => {
+    const instance = spanner.instance('instance');
+    database = instance.database('db');
+  });
+
+  describe('Transaction', () => {
+    const traceExporter = injectedTraceExporter;
+
+    it('run', done => {
+      database.getTransaction((err, tx) => {
+        assert.ifError(err);
+
+        tx!.run('SELECT 1', (err, rows) => {
+          traceExporter.forceFlush();
+
+          const spans = traceExporter.getFinishedSpans();
+
+          const actualSpanNames: string[] = [];
+          const actualEventNames: string[] = [];
+          spans.forEach(span => {
+            actualSpanNames.push(span.name);
+            span.events.forEach(event => {
+              actualEventNames.push(event.name);
+            });
+          });
+
+          const expectedSpanNames = [
+            'CloudSpanner.Database.getTransaction',
+            'CloudSpanner.Snapshot.runStream',
+            'CloudSpanner.Snapshot.run',
+          ];
+          assert.deepStrictEqual(
+            actualSpanNames,
+            expectedSpanNames,
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          );
+
+          const expectedEventNames = [
+            'Requesting 25 sessions',
+            'Creating 25 sessions',
+            'Requested for 25 sessions returned 25',
+            'Acquiring session',
+            'Waiting for a session to become available',
+            'Acquired session',
+            'Using Session',
+            'Transaction Creation Done',
+          ];
+          assert.strictEqual(
+            actualEventNames.every(value => expectedEventNames.includes(value)),
+            true,
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          );
+
+          done();
+        });
+      });
+    });
+
+    it('Transaction.begin+Dml.runUpdate', done => {
+      database.getTransaction((err, tx) => {
+        assert.ifError(err);
+
+        // Firstly erase the prior spans so that we can have only Transaction spans.
+        traceExporter.reset();
+
+        tx!.begin();
+        tx!.runUpdate(updateSql, (err, rowCount) => {
+          assert.ifError(err);
+
+          traceExporter.forceFlush();
+
+          const spans = traceExporter.getFinishedSpans();
+          assert.strictEqual(spans.length, 4);
+
+          const actualSpanNames: string[] = [];
+          const actualEventNames: string[] = [];
+          spans.forEach(span => {
+            actualSpanNames.push(span.name);
+            span.events.forEach(event => {
+              actualEventNames.push(event.name);
+            });
+          });
+
+          const expectedSpanNames = [
+            'CloudSpanner.Snapshot.begin',
+            'CloudSpanner.Snapshot.runStream',
+            'CloudSpanner.Snapshot.run',
+            'CloudSpanner.Dml.runUpdate',
+          ];
+          assert.deepStrictEqual(
+            actualSpanNames,
+            expectedSpanNames,
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          );
+
+          const expectedEventNames = [
+            'Begin Transaction',
+            'Transaction Creation Done',
+          ];
+          assert.strictEqual(
+            actualEventNames.every(value => expectedEventNames.includes(value)),
+            true,
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          );
+
+          done();
+        });
+      });
+    });
+
+    it('runStream', done => {
+      let rowCount = 0;
+      database.getTransaction((err, tx) => {
+        assert.ifError(err);
+        tx!
+          .runStream(selectSql)
+          .on('data', () => rowCount++)
+          .on('error', assert.ifError)
+          .on('stats', _stats => {})
+          .on('end', () => {
+            tx!.end();
+
+            traceExporter.forceFlush();
+
+            const spans = traceExporter.getFinishedSpans();
+
+            const actualSpanNames: string[] = [];
+            const actualEventNames: string[] = [];
+            spans.forEach(span => {
+              actualSpanNames.push(span.name);
+              span.events.forEach(event => {
+                actualEventNames.push(event.name);
+              });
+            });
+
+            const expectedSpanNames = [
+              'CloudSpanner.Database.getTransaction',
+              'CloudSpanner.Snapshot.runStream',
+            ];
+            assert.deepStrictEqual(
+              actualSpanNames,
+              expectedSpanNames,
+              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            );
+
+            const expectedEventNames = ['Using Session'];
+            assert.deepStrictEqual(
+              actualEventNames,
+              expectedEventNames,
+              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            );
+
+            done();
+          });
+      });
+    });
+
+    it('rollback', done => {
+      database.getTransaction((err, tx) => {
+        assert.ifError(err);
+
+        // Firstly erase the prior spans so that we can have only Transaction spans.
+        traceExporter.reset();
+
+        tx!.begin();
+
+        tx!.runUpdate(updateSql, async (err, rowCount) => {
+          assert.ifError(err);
+          tx!.rollback(err => {
+            traceExporter.forceFlush();
+
+            const spans = traceExporter.getFinishedSpans();
+
+            const actualSpanNames: string[] = [];
+            const actualEventNames: string[] = [];
+            spans.forEach(span => {
+              actualSpanNames.push(span.name);
+              span.events.forEach(event => {
+                actualEventNames.push(event.name);
+              });
+            });
+
+            const expectedSpanNames = [
+              'CloudSpanner.Snapshot.begin',
+              'CloudSpanner.Snapshot.runStream',
+              'CloudSpanner.Snapshot.run',
+              'CloudSpanner.Dml.runUpdate',
+              'CloudSpanner.Transaction.rollback',
+            ];
+            assert.deepStrictEqual(
+              actualSpanNames,
+              expectedSpanNames,
+              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            );
+
+            const expectedEventNames = [
+              'Begin Transaction',
+              'Transaction Creation Done',
+            ];
+            assert.strictEqual(
+              actualEventNames.every(value =>
+                expectedEventNames.includes(value)
+              ),
+              true,
+              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            );
+
+            done();
+          });
+        });
+      });
+    });
+  });
+
   it('Propagates spans to the injected not global TracerProvider', done => {
     const instance = spanner.instance('instance');
     const database = instance.database('database');
@@ -558,6 +794,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       });
 
       const expectedSpanNames = [
+        'CloudSpanner.Snapshot.runStream',
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
       ];
