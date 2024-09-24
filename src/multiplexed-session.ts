@@ -1,13 +1,9 @@
 import {EventEmitter} from 'events';
-import * as is from 'is';
 import PQueue from 'p-queue';
 import { GoogleError } from 'google-gax';
-import {google} from '../protos/protos';
 import {Database} from './database';
 import {Session} from './session';
 import {Transaction} from './transaction';
-import {NormalCallback} from './common';
-
 interface MultiplexedSessionInventory {
   multiplexedSession: Session | null;
 }
@@ -40,7 +36,7 @@ export interface MultiplexedSessionOptions {
 }
 
 const DEFAULTS: MultiplexedSessionOptions = {
-  refreshRate: 10,
+  refreshRate: 30,
   concurrency: Infinity,
   databaseRole: null,
 };
@@ -48,7 +44,6 @@ const DEFAULTS: MultiplexedSessionOptions = {
 export class MultiplexedSession extends EventEmitter implements MultiplexedSessionInterface {
   database: Database;
   multiplexedSessionOptions: MultiplexedSessionOptions;
-  multiplexedSessionPromise: Promise<Session> | undefined;
   _acquires: PQueue;
   _multiplexedInventory!: MultiplexedSessionInventory;
   _pingHandle!: NodeJS.Timer;
@@ -67,7 +62,6 @@ export class MultiplexedSession extends EventEmitter implements MultiplexedSessi
     this._multiplexedInventory = {
       multiplexedSession: null,
     };
-    this.multiplexedSessionPromise = undefined;
     this._acquires = new PQueue({
       concurrency: 1,
     });
@@ -96,31 +90,12 @@ export class MultiplexedSession extends EventEmitter implements MultiplexedSessi
   }
 
   async _refresh(): Promise<void> {
-    this._multiplexedInventory.multiplexedSession?.getMetadata((err, resp) => {
-      if (err) {
-        console.error('Error fetching metadata:', err);
-        return;
-      }
-
-      if (resp?.createTime) {
-        const seconds = Number(resp.createTime.seconds) ?? 0;
-        const nanos = resp.createTime.nanos ?? 0;
-        if (typeof seconds === 'number' && typeof nanos === 'number') {
-          const timestampMs = seconds * 1000 + nanos / 1000000;
-          const createdDate = new Date(timestampMs);
-          const currentDate = new Date(Date.now());
-          const differenceInMs = Math.abs(
-            currentDate.getTime() - createdDate.getTime()
-          );
-          const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 7) {
-            this.createSession();
-          }
-        } else {
-          console.warn('Invalid timestamp values.');
-        }
-      }
-    });
+    const metadata = await this._multiplexedInventory.multiplexedSession?.getMetadata();
+    const createTime = (parseInt(metadata![0].createTime.seconds) * 1000) + (metadata![0].createTime.nanos / 1000000);
+    const expireTime = createTime + (7*24*60*60*1000);
+    if(Date.now() > expireTime) {
+      this.createSession();
+    }
   }
 
   /**
@@ -132,7 +107,9 @@ export class MultiplexedSession extends EventEmitter implements MultiplexedSessi
     this._acquire().then(
       session => callback(null, session, session?.txn),
       callback
-    );
+    ).catch(err => {
+      console.log("err: ", err);
+    })
   }
 
   async _acquire(): Promise<Session | null> {
@@ -210,10 +187,9 @@ export class MultiplexedSession extends EventEmitter implements MultiplexedSessi
     );
 
     try {
-      const res = await Promise.race(promises);
-      console.log("the response is: ", res);
+      await Promise.race(promises);
     } catch(err) {
-      console.log("try is catching error");
+      console.log("ERROR: ",err);
     } finally {
       removeOnceCloseListener!();
       removeListener!();

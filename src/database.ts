@@ -115,6 +115,7 @@ import {
   setSpanError,
   setSpanErrorAndException,
 } from './instrument';
+import { GetSession, GetSessionInterface } from './session-getter';
 
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
@@ -348,6 +349,7 @@ class Database extends common.GrpcServiceObject {
   formattedName_: string;
   pool_: SessionPoolInterface;
   multiplexedSession_?: MultiplexedSessionInterface;
+  getSession_?: GetSessionInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
@@ -468,6 +470,7 @@ class Database extends common.GrpcServiceObject {
       typeof multiplexedSessionOptions === 'function'
         ? new (multiplexedSessionOptions as MultiplexedSessionConstructor)(this)
         : new MultiplexedSession(this, multiplexedSessionOptions);
+    this.getSession_ = new GetSession(this);
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
     }
@@ -3033,63 +3036,128 @@ class Database extends common.GrpcServiceObject {
     const proxyStream: Transform = through.obj();
     const q = {sql: query, opts: this.observabilityConfig};
     return startTrace('Database.runStream', q, span => {
-      this.pool_.getSession((err, session) => {
-        if (err) {
-          setSpanError(span, err);
-          proxyStream.destroy(err);
-          span.end();
-          return;
-        }
 
-        span.addEvent('Using Session', {'session.id': session?.id});
-
-        const snapshot = session!.snapshot(options, this.queryOptions_);
-
-        this._releaseOnEnd(session!, snapshot, span);
-
-        let dataReceived = false;
-        let dataStream = snapshot.runStream(query);
-
-        const endListener = () => {
-          span.end();
-          snapshot.end();
-        };
-        dataStream
-          .once('data', () => (dataReceived = true))
-          .once('error', err => {
-            setSpanError(span, err);
-
-            if (
-              !dataReceived &&
-              isSessionNotFoundError(err as grpc.ServiceError)
-            ) {
-              // If it is a 'Session not found' error and we have not yet received
-              // any data, we can safely retry the query on a new session.
-              // Register the error on the session so the pool can discard it.
-              if (session) {
-                session.lastError = err as grpc.ServiceError;
-              }
-              span.addEvent('No session available', {
-                'session.id': session?.id,
-              });
-              // Remove the current data stream from the end user stream.
-              dataStream.unpipe(proxyStream);
-              dataStream.removeListener('end', endListener);
-              dataStream.end();
-              snapshot.end();
-              // Create a new data stream and add it to the end user stream.
-              dataStream = this.runStream(query, options);
-              dataStream.pipe(proxyStream);
-            } else {
-              proxyStream.destroy(err);
-              snapshot.end();
-            }
-          })
-          .on('stats', stats => proxyStream.emit('stats', stats))
-          .on('response', response => proxyStream.emit('response', response))
-          .once('end', endListener)
-          .pipe(proxyStream);
+      this.getSession_?.getSession((err, session) => {
+        console.log("err: ", err);
+        console.log("session: ", session);
       });
+      
+      // if(process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS) {
+      //   this.multiplexedSession_?.getSession((err, session) => {
+      //     console.log("mux session: ", session?.formattedName_);
+      //     if (err) {
+      //       setSpanError(span, err);
+      //       proxyStream.destroy(err);
+      //       span.end();
+      //       return;
+      //     }
+  
+      //     span.addEvent('Using Session', {'session.id': session?.id});
+  
+      //     const snapshot = session!.snapshot(options, this.queryOptions_);
+  
+      //     let dataReceived = false;
+      //     let dataStream = snapshot.runStream(query);
+  
+      //     const endListener = () => {
+      //       span.end();
+      //       snapshot.end();
+      //     };
+      //     dataStream
+      //       .once('data', () => (dataReceived = true))
+      //       .once('error', err => {
+      //         setSpanError(span, err);
+  
+      //         if (
+      //           !dataReceived &&
+      //           isSessionNotFoundError(err as grpc.ServiceError)
+      //         ) {
+      //           // If it is a 'Session not found' error and we have not yet received
+      //           // any data, we can safely retry the query on a new session.
+      //           // Register the error on the session so the pool can discard it.
+      //           if (session) {
+      //             session.lastError = err as grpc.ServiceError;
+      //           }
+      //           span.addEvent('No session available', {
+      //             'session.id': session?.id,
+      //           });
+      //           // Remove the current data stream from the end user stream.
+      //           dataStream.unpipe(proxyStream);
+      //           dataStream.removeListener('end', endListener);
+      //           dataStream.end();
+      //           snapshot.end();
+      //           // Create a new data stream and add it to the end user stream.
+      //           dataStream = this.runStream(query, options);
+      //           dataStream.pipe(proxyStream);
+      //         } else {
+      //           proxyStream.destroy(err);
+      //           snapshot.end();
+      //         }
+      //       })
+      //       .on('stats', stats => proxyStream.emit('stats', stats))
+      //       .on('response', response => proxyStream.emit('response', response))
+      //       .once('end', endListener)
+      //       .pipe(proxyStream);
+      //   });
+      // } else {
+      //   this.pool_.getSession((err, session) => {
+      //     if (err) {
+      //       setSpanError(span, err);
+      //       proxyStream.destroy(err);
+      //       span.end();
+      //       return;
+      //     }
+  
+      //     span.addEvent('Using Session', {'session.id': session?.id});
+  
+      //     const snapshot = session!.snapshot(options, this.queryOptions_);
+  
+      //     this._releaseOnEnd(session!, snapshot, span);
+  
+      //     let dataReceived = false;
+      //     let dataStream = snapshot.runStream(query);
+  
+      //     const endListener = () => {
+      //       span.end();
+      //       snapshot.end();
+      //     };
+      //     dataStream
+      //       .once('data', () => (dataReceived = true))
+      //       .once('error', err => {
+      //         setSpanError(span, err);
+  
+      //         if (
+      //           !dataReceived &&
+      //           isSessionNotFoundError(err as grpc.ServiceError)
+      //         ) {
+      //           // If it is a 'Session not found' error and we have not yet received
+      //           // any data, we can safely retry the query on a new session.
+      //           // Register the error on the session so the pool can discard it.
+      //           if (session) {
+      //             session.lastError = err as grpc.ServiceError;
+      //           }
+      //           span.addEvent('No session available', {
+      //             'session.id': session?.id,
+      //           });
+      //           // Remove the current data stream from the end user stream.
+      //           dataStream.unpipe(proxyStream);
+      //           dataStream.removeListener('end', endListener);
+      //           dataStream.end();
+      //           snapshot.end();
+      //           // Create a new data stream and add it to the end user stream.
+      //           dataStream = this.runStream(query, options);
+      //           dataStream.pipe(proxyStream);
+      //         } else {
+      //           proxyStream.destroy(err);
+      //           snapshot.end();
+      //         }
+      //       })
+      //       .on('stats', stats => proxyStream.emit('stats', stats))
+      //       .on('response', response => proxyStream.emit('response', response))
+      //       .once('end', endListener)
+      //       .pipe(proxyStream);
+      //   });
+      // }
 
       finished(proxyStream, err => {
         if (err) {

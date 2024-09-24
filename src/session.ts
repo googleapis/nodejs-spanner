@@ -544,7 +544,6 @@ export class Session extends common.GrpcServiceObject {
 promisifyAll(Session, {
   exclude: [
     'delete',
-    'getMetadata',
     'partitionedDml',
     'snapshot',
     'transaction',
