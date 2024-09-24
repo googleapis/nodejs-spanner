@@ -22,7 +22,7 @@ async function main(
 
     await Promise.all(promises);
   }
-  runQueriesConcurrently().catch(console.error);
+  runQueriesConcurrently();
 }
 
 process.on('unhandledRejection', err => {

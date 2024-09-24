@@ -481,7 +481,7 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
     this.pool_.open();
-    this.multiplexedSession_.createSession().then();
+    this.multiplexedSession_.createSession();
     //creating multiplexed session
     // this.database.createSession({multiplexed: true});
     this.queryOptions_ = Object.assign(
