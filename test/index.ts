@@ -779,6 +779,19 @@ describe('Spanner', () => {
       spanner.createInstance(NAME, config, assert.ifError);
     });
 
+    it('should accept the edition', done => {
+      const edition =
+        protos.google.spanner.admin.instance.v1.Instance.Edition.STANDARD;
+      const config = Object.assign({}, CONFIG, {edition});
+
+      spanner.request = config => {
+        assert.strictEqual(config.reqOpts.instance.edition, edition);
+        done();
+      };
+
+      spanner.createInstance(NAME, config, assert.ifError);
+    });
+
     it('should create an instance with processing units', done => {
       const processingUnits = 500;
       const config = Object.assign({}, CONFIG, {processingUnits});

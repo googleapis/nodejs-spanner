@@ -15,6 +15,8 @@
  */
 
 import {
+  ATTR_OTEL_SCOPE_NAME,
+  ATTR_OTEL_SCOPE_VERSION,
   SEMATTRS_DB_NAME,
   SEMATTRS_DB_STATEMENT,
   SEMATTRS_DB_SYSTEM,
@@ -45,13 +47,15 @@ interface SQLStatement {
 
 interface observabilityOptions {
   tracerProvider: TracerProvider;
-  enableExtendedTracing: boolean;
+  enableExtendedTracing?: boolean;
 }
 
 export type {observabilityOptions as ObservabilityOptions};
 
 const TRACER_NAME = 'cloud.google.com/nodejs/spanner';
 const TRACER_VERSION = '7.14.0'; // Manually hard coded, TODO: remove
+
+export {TRACER_NAME, TRACER_VERSION}; // Only exported for testing.
 
 /**
  * getTracer fetches the tracer from the provided tracerProvider.
@@ -77,7 +81,7 @@ interface traceConfig {
 }
 
 const SPAN_NAMESPACE_PREFIX = 'CloudSpanner'; // TODO: discuss & standardize this prefix.
-export {SPAN_NAMESPACE_PREFIX};
+export {SPAN_NAMESPACE_PREFIX, traceConfig};
 
 /**
  * startTrace begins an active span in the current active context
@@ -102,6 +106,8 @@ export function startTrace<T>(
     {kind: SpanKind.CLIENT},
     span => {
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
+      span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
+      span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
 
       if (config.tableName) {
         span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
