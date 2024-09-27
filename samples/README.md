@@ -15,6 +15,7 @@ and automatic, synchronous replication for high availability.
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
   * [Add and drop new database role](#add-and-drop-new-database-role)
+  * [Export observability traces](#export-observability-traces)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
   * [Copies a source backup](#copies-a-source-backup)
@@ -160,6 +161,21 @@ __Usage:__
 
 -----
 
+
+
+### Export observability traces
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability.js trace <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
 
 
 
