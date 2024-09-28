@@ -5054,6 +5054,62 @@ describe('Spanner with mock server', () => {
       );
     });
   });
+
+  it('Plumb ObservabilityConfig into Spanner, Instance and Database', () => {
+    const exporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+
+    const observabilityConfig: typeof ObservabilityOptions = {
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    };
+    const spanner = new Spanner({
+      servicePath: 'localhost',
+      port,
+      sslCreds: grpc.credentials.createInsecure(),
+      observabilityConfig: observabilityConfig,
+    });
+
+    // Ensure that the same observability configuration is set on the Spanner client.
+    assert.deepStrictEqual(spanner.observabilityConfig, observabilityConfig);
+
+    // Acquire a handle to the Instance through spanner.instance.
+    const instanceByHandle = spanner.instance('instance');
+    assert.deepStrictEqual(
+      instanceByHandle.observabilityConfig,
+      observabilityConfig
+    );
+
+    // Create the Instance by means of a constructor directly.
+    const instanceByConstructor = new Instance(spanner, 'myInstance');
+    assert.deepStrictEqual(
+      instanceByConstructor.observabilityConfig,
+      observabilityConfig
+    );
+
+    // Acquire a handle to the Database through instance.database.
+    const databaseByHandle = instanceByHandle.database('database');
+    assert.deepStrictEqual(
+      databaseByHandle.observabilityConfig,
+      observabilityConfig
+    );
+
+    // Create the Database by means of a constructor directly.
+    const databaseByConstructor = new Database(
+      instanceByConstructor,
+      'myDatabase'
+    );
+    assert.deepStrictEqual(
+      databaseByConstructor.observabilityConfig,
+      observabilityConfig
+    );
+
+    spanner.close();
+  });
 });
 
 function executeSimpleUpdate(
