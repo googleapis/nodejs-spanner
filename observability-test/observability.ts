@@ -122,6 +122,11 @@ describe('startTrace', () => {
     );
   });
 
+  it('sanity check: TRACER_NAME, TRACER_VERSION', () => {
+    assert.equal(!TRACER_NAME, false, 'TRACER_NAME must be set');
+    assert.equal(!TRACER_VERSION, false, 'TRACER_VERSION must be set');
+  });
+
   it('with semantic attributes', () => {
     const opts = {tableName: 'table', dbName: 'db'};
     startTrace('aSpan', opts, span => {
