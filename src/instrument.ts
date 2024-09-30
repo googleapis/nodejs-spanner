@@ -51,9 +51,10 @@ interface observabilityOptions {
 }
 
 export type {observabilityOptions as ObservabilityOptions};
+export type {Span};
 
 const TRACER_NAME = 'cloud.google.com/nodejs/spanner';
-const TRACER_VERSION = '7.14.0'; // Manually hard coded, TODO: remove
+const TRACER_VERSION = require('../../package.json').version;
 
 export {TRACER_NAME, TRACER_VERSION}; // Only exported for testing.
 
@@ -149,9 +150,15 @@ export function setSpanError(span: Span, err: Error | String): boolean {
     return false;
   }
 
+  let message = '';
+  if (typeof err === 'object' && 'message' in err) {
+    message = err.message as string;
+  } else {
+    message = err.toString();
+  }
   span.setStatus({
     code: SpanStatusCode.ERROR,
-    message: err.toString(),
+    message: message,
   });
   return true;
 }
