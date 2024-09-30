@@ -163,8 +163,12 @@ describe('Session', () => {
       assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
       const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
       spans.forEach(span => {
         actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
       });
 
       const expectedSpanNames = ['CloudSpanner.Session.create'];
@@ -174,6 +178,13 @@ describe('Session', () => {
         `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
       );
 
+      // We expect no span events here.
+      const expectedEventNames = [];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
       done();
     });
   });
@@ -187,8 +198,12 @@ describe('Session', () => {
       assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
       const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
       spans.forEach(span => {
         actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
       });
 
       const expectedSpanNames = ['CloudSpanner.Session.create'];
@@ -196,6 +211,14 @@ describe('Session', () => {
         actualSpanNames,
         expectedSpanNames,
         `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      // We expect no span events here.
+      const expectedEventNames = [];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
       );
 
       done();
@@ -219,6 +242,19 @@ describe('Session', () => {
           span.name,
           expectedSpanName,
           `span names mismatch:\n\tGot:  ${span.name}\n\tWant: ${expectedSpanName}`
+        );
+
+        const actualEventNames: string[] = [];
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+
+        // We expect no span events here.
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
         );
 
         done();
