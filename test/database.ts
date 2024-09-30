@@ -840,9 +840,13 @@ describe('Database', () => {
       try {
         database.writeAtLeastOnce(null, (err, res) => {});
       } catch (err) {
-        (err as grpc.ServiceError).message.includes(
-          "Cannot read properties of null (reading 'proto')"
+        const errorMessage = (err as grpc.ServiceError).message;
+        assert.ok(
+          errorMessage.includes(
+            "Cannot read properties of null (reading 'proto')"
+          ) || errorMessage.includes("Cannot read property 'proto' of null")
         );
+
         done();
       }
     });
@@ -2961,7 +2965,9 @@ describe('Database', () => {
 
       assert.strictEqual(session, SESSION);
       assert.strictEqual(transaction, TRANSACTION);
-      assert.strictEqual(runFn, fakeRunFn);
+      // Given that we've wrapped the transaction runner with observability
+      // tracing, directly comparing values runFn and fakeRunFn.
+      // assert.strictEqual(runFn, fakeRunFn);
       assert.deepStrictEqual(options, {});
     });
 
