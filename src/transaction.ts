@@ -286,7 +286,7 @@ export class Snapshot extends EventEmitter {
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
-  observabilityOptions?: ObservabilityOptions;
+  observabilityOptions_?: ObservabilityOptions;
 
   /**
    * The transaction ID.

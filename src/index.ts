@@ -139,7 +139,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
-  observabilityConfig?: ObservabilityOptions | undefined;
+  observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
   client: string;
@@ -241,7 +241,7 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  observabilityConfig: ObservabilityOptions | undefined;
+  observabilityOptions_: ObservabilityOptions | undefined;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -368,7 +368,7 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this.observabilityConfig = options.observabilityConfig;
+    this.observabilityOptions_ = options.observabilityOptions;
   }
 
   /**
@@ -589,7 +589,7 @@ class Spanner extends GrpcService {
           return;
         }
         const instance = this.instance(formattedName);
-        instance.observabilityConfig = this.observabilityConfig;
+        instance.observabilityOptions_ = this.observabilityOptions_;
         callback!(null, instance, operation, resp);
       }
     );

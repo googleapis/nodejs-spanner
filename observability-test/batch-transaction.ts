@@ -139,7 +139,7 @@ describe('BatchTransaction', () => {
     batchTransaction = new BatchTransaction(SESSION as {} as Session);
     batchTransaction.session = SESSION as {} as Session;
     batchTransaction.id = ID;
-    batchTransaction.observabilityOptions = {tracerProvider: provider};
+    batchTransaction.observabilityOptions_ = {tracerProvider: provider};
     REQUEST.callsFake((_, callback) => callback(null, RESPONSE));
   });
 

@@ -344,7 +344,7 @@ class Database extends common.GrpcServiceObject {
   databaseDialect?: EnumKey<
     typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
   > | null;
-  observabilityConfig: ObservabilityOptions | undefined;
+  observabilityOptions_?: ObservabilityOptions;
   constructor(
     instance: Instance,
     name: string,
@@ -467,7 +467,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this.observabilityConfig = instance.observabilityConfig;
+    this.observabilityOptions_ = instance.observabilityOptions_;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -1085,6 +1085,7 @@ class Database extends common.GrpcServiceObject {
         /CREATE TABLE `*([^\s`(]+)/
       )![1];
       const table = this.table(tableName!);
+      table.observabilityOptions_ = this.observabilityOptions_;
       callback!(null, table, operation!, resp!);
     });
   }

@@ -99,7 +99,7 @@ const POSTGRESQL = 'POSTGRESQL';
 class Table {
   database: Database;
   name: string;
-  observabilityOptions?: ObservabilityOptions;
+  observabilityOptions_?: ObservabilityOptions;
   constructor(database: Database, name: string) {
     /**
      * The {@link Database} instance of this {@link Table} instance.
@@ -113,6 +113,7 @@ class Table {
      * @type {string}
      */
     this.name = name;
+    this.observabilityOptions_ = database.observabilityOptions_;
   }
   /**
    * Create a table.
@@ -1080,7 +1081,7 @@ class Table {
     callback: CommitCallback
   ): void {
     const traceConfig: traceConfig = {
-      opts: this.observabilityOptions,
+      opts: this.observabilityOptions_,
     };
 
     startTrace('Table.' + method, traceConfig, span => {

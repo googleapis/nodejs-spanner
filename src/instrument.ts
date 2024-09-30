@@ -45,12 +45,12 @@ interface SQLStatement {
   sql: string;
 }
 
-interface observabilityOptions {
+interface ObservabilityOptions {
   tracerProvider: TracerProvider;
   enableExtendedTracing?: boolean;
 }
 
-export type {observabilityOptions as ObservabilityOptions};
+export type {ObservabilityOptions};
 export type {Span};
 
 const TRACER_NAME = 'cloud.google.com/nodejs/spanner';
@@ -77,7 +77,7 @@ interface traceConfig {
   sql?: string | SQLStatement;
   tableName?: string;
   dbName?: string;
-  opts?: observabilityOptions;
+  opts?: ObservabilityOptions;
   that?: Object;
 }
 

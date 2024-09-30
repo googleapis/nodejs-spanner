@@ -165,7 +165,7 @@ class Instance extends common.GrpcServiceObject {
   databases_: Map<string, Database>;
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
-  observabilityConfig: ObservabilityOptions | undefined;
+  observabilityOptions_?: ObservabilityOptions;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -241,7 +241,7 @@ class Instance extends common.GrpcServiceObject {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
-    this.observabilityConfig = spanner.observabilityConfig;
+    this.observabilityOptions_ = spanner.observabilityOptions_;
   }
 
   /**
@@ -928,7 +928,7 @@ class Instance extends common.GrpcServiceObject {
           return;
         }
         const database = this.database(name, poolOptions || poolCtor);
-        database.observabilityConfig = this.observabilityConfig;
+        database.observabilityOptions_ = this.observabilityOptions_;
         callback(null, database, operation, resp);
       }
     );
@@ -978,7 +978,7 @@ class Instance extends common.GrpcServiceObject {
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
       const db = new Database(this, name, poolOptions, queryOptions);
-      db.observabilityConfig = this.observabilityConfig;
+      db.observabilityOptions_ = this.observabilityOptions_;
       this.databases_.set(key!, db);
     }
     return this.databases_.get(key!)!;
