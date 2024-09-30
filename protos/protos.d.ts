@@ -29206,7 +29206,9 @@ export namespace google {
                 enum QueryMode {
                     NORMAL = 0,
                     PLAN = 1,
-                    PROFILE = 2
+                    PROFILE = 2,
+                    WITH_STATS = 3,
+                    WITH_PLAN_AND_STATS = 4
                 }
 
                 /** Properties of a QueryOptions. */
