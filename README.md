@@ -35,7 +35,11 @@ Google APIs Client Libraries, in [Client Libraries Explained][explained].
   * [Installing the client library](#installing-the-client-library)
   * [Using the client library](#using-the-client-library)
 * [Observability](#observability)
-  * [Enabling gRPC instrumentation](#enabling-grpc-instrumentation)
+  * [OpenTelemetry Dependencies](#opentelemetry-dependencies)
+  * [OpenTelemetry Configuration](#opentelemetry-configuration)
+  * [SQL Statement span annotation](#sql-statement-span-annotation)
+  * [OpenTelemetry gRCP instrumentation](#opentelemetry-grpc-instrumentation)
+  * [OpenTelemetry Sample](#opentelemetry-sample)
 * [Samples](#samples)
 * [Versioning](#versioning)
 * [Contributing](#contributing)
@@ -85,28 +89,33 @@ rows.forEach(row => console.log(row));
 
 ## Observability
 
-This package has been instrumented with [OpenTelemetry](https://opentelemetry.io/docs/languages/js/) for tracing.
-For correct operation, please make sure to firstly import and enable OpenTelemetry before importing this Spanner library.
+This Cloud Spanner client supports [OpenTelemetry Traces](https://opentelemetry.io/), which gives insight into the client internals and aids in debugging/troubleshooting production issues.
 
-> :warning: **Make sure that the OpenTelemetry imports are the first, before importing the Spanner library**
-> :warning: **In order for your spans to be annotated with the executed SQL, you MUST opt-in by setting environment variable
-`SPANNER_ENABLE_EXTENDED_TRACING=true`, this is because SQL statements can contain
-sensitive personally-identifiable-information (PII).**
+By default, the functionality is disabled. You shall need to add OpenTelemetry dependencies, and must configure and
+enable OpenTelemetry with appropriate exporters at the startup of your application:
 
-To observe traces, you'll need to examine them in a trace viewer such as Google Cloud Trace,
-after having initialized like this:
+### OpenTelemetry Dependencies
+
+Use a trace exporter of your choice, such as Google Cloud Trace like below:
 
 ```javascript
-const {Resource} = require('@opentelemetry/resources');
+const {
+  TraceExporter,
+} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
+const exporter = new TraceExporter();
+```
+
+### OpenTelemetry Configuration
+
+```javascript
 const {NodeSDK} = require('@opentelemetry/sdk-node');
+const {Resource} = require('@opentelemetry/resources');
 const {
   NodeTracerProvider,
   TraceIdRatioBasedSampler,
 } = require('@opentelemetry/sdk-trace-node');
 const {
   BatchSpanProcessor,
-  ConsoleSpanExporter,
-  SimpleSpanProcessor,
 } = require('@opentelemetry/sdk-trace-base');
 const {
   SEMRESATTRS_SERVICE_NAME,
@@ -120,65 +129,59 @@ const resource = Resource.default().merge(
   })
 );
 
-// Create the Google Cloud Trace exporter for OpenTelemetry.
-const {
-  TraceExporter,
-} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-const exporter = new TraceExporter();
+// Wire up the OpenTelemetry SDK instance with the exporter and sampler.
+const sdk = new NodeSDK({
+  resource: resource,
+  traceExporter: exporter,
+  // Trace every single request to ensure that we generate
+  // enough traffic for proper examination of traces.
+  sampler: new TraceIdRatioBasedSampler(1.0),
+});
+sdk.start();
 
-function traceAndExportSpans(instanceId, databaseId, projectId, next) {
-  // Wire up the OpenTelemetry SDK instance with the exporter and sampler.
-  const sdk = new NodeSDK({
-    resource: resource,
-    traceExporter: exporter,
-    // Trace every single request to ensure that we generate
-    // enough traffic for proper examination of traces.
-    sampler: new TraceIdRatioBasedSampler(1.0),
-  });
-  sdk.start();
+// Create the tracerProvider that the exporter shall be attached to.
+const provider = new NodeTracerProvider({resource: resource});
+provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
-  // Create the tracerProvider that the exporter shall be attached to.
-  const provider = new NodeTracerProvider({resource: resource});
-  provider.addSpanProcessor(new BatchSpanProcessor(exporter));
-
-  // This makes a global tracerProvider but you could optionally
-  // instead pass in the provider while creating the Spanner client.
-  provider.register();
-
-  // Acquire the tracer.
-  const tracer = provider.getTracer('MyApp');
-
-  // Create the Cloud Spanner Client.
-  const {Spanner} = require('@google-cloud/spanner');
-  const spanner = new Spanner({
-    projectId: projectId,
-    observabilityConfig: {
-      // Optional, can rather register the global tracerProvider
-      tracerProvider: provider,
-      enableExtendedTracing: true, // Optional but can also use SPANNER_EXTENDED_TRACING=true
-    },
-  });
-
-  // Start your user defined trace.
-  tracer.startActiveSpan('deleteAndCreateDatabase', async span => {
-    // Use the Cloud Spanner API connection normally.
-    const [rows] = await database.run('SELECT * FROM Transactions');
-    for (const row of rows) {
-      const json = row.toJSON();
-
-      console.log(
-        `TransactionId: ${json.tId}, Amount: ${json.amount}, Currency: ${json.currency}`
-      );
-    }
-    span.end();
-    next();
-  });
-}
+// Create the Cloud Spanner Client.
+const {Spanner} = require('@google-cloud/spanner');
+const spanner = new Spanner({
+  projectId: projectId,
+  observabilityConfig: {
+    // Inject the TracerProvider via SpannerOptions or
+    // register it as a global by invoking `provider.register()`
+    tracerProvider: provider,
+  },
+});
 ```
 
-### Enabling gRPC instrumentation
+### SQL Statement span annotation
 
-Optionally, you can enable gRPC instrumentation which produces traces of executed remote procedure calls (RPCs)
+To allow your SQL statements to be annotated in the appropriate spans, you need to opt-in, because
+SQL statements can contain sensitive personally-identifiable-information (PII).
+
+You can opt-in by either:
+
+* Setting the environment variable `SPANNER_ENABLE_EXTENDED_TRACING=true` before your application is started
+* In code, setting `enableExtendedTracing: true` in your SpannerOptions before creating the Cloud Spanner client
+
+```javascript
+const spanner = new Spanner({
+  projectId: projectId,
+  observabilityConfig: {
+    // Inject the TracerProvider via SpannerOptions or
+    // register it as a global by invoking `provider.register()`
+    tracerProvider: provider,
+
+    // This option can also be enabled by setting the environment
+    // variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
+    enableExtendedTracing: true,
+  },
+```
+
+### OpenTelemetry gRPC instrumentation
+
+Optionally, you can enable OpenTelemetry gRPC instrumentation which produces traces of executed remote procedure calls (RPCs)
 in your programs by these imports and instantiation before creating the tracerProvider:
 
 ```javascript
@@ -188,6 +191,9 @@ in your programs by these imports and instantiation before creating the tracerPr
     instrumentations: [new GrpcInstrumentation()],
   });
 ```
+
+### OpenTelemetry Sample
+For more information please see this [sample code](./samples/observability.js)
 
 ## Samples
 

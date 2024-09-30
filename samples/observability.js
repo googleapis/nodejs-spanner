@@ -27,15 +27,14 @@ const {NodeSDK} = require('@opentelemetry/sdk-node');
 const {
   NodeTracerProvider,
   TraceIdRatioBasedSampler,
+  // eslint-disable-next-line n/no-extraneous-require
 } = require('@opentelemetry/sdk-trace-node');
-const {
-  BatchSpanProcessor,
-  ConsoleSpanExporter,
-  SimpleSpanProcessor,
-} = require('@opentelemetry/sdk-trace-base');
+// eslint-disable-next-line n/no-extraneous-require
+const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 const {
   SEMRESATTRS_SERVICE_NAME,
   SEMRESATTRS_SERVICE_VERSION,
+  // eslint-disable-next-line n/no-extraneous-require
 } = require('@opentelemetry/semantic-conventions');
 
 const resource = Resource.default().merge(
@@ -45,14 +44,21 @@ const resource = Resource.default().merge(
   })
 );
 
+/*
+ * Uncomment these lines to debug OpenTelemetry.
+const {diag, DiagConsoleLogger, DiagLogLevel} = require('@opentelemetry/api');
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ALL);
+*/
+
 // Create the Google Cloud Trace exporter for OpenTelemetry.
 const {
   TraceExporter,
 } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
 const exporter = new TraceExporter();
 
-// Optionally, you can enable gRPC instrumentation.
-if (process.env.ENABLE_GRPC_TRACING === 'true') {
+// Optionally, you can enable gRPC instrumentation, by removing this guard.
+if (process.env.SPANNER_ENABLE_GRPC_INSTRUMENTATION === 'true') {
+  // eslint-disable-next-line n/no-extraneous-require
   const {registerInstrumentations} = require('@opentelemetry/instrumentation');
   const {GrpcInstrumentation} = require('@opentelemetry/instrumentation-grpc');
   registerInstrumentations({
@@ -75,196 +81,61 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
   const provider = new NodeTracerProvider({resource: resource});
   provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
-  // This makes a global tracerProvider but you could optionally
-  // instead pass in the provider while creating the Spanner client.
-  provider.register();
+  // Uncomment this line to make this a global tracerProvider instead of
+  // passing it into SpannerOptions.observabilityConfig.
+  // provider.register();
 
   // Acquire the tracer.
   const tracer = provider.getTracer('MyApp');
 
   // Start our user defined trace.
-  tracer.startActiveSpan('deleteAndCreateDatabase', async span => {
+  tracer.startActiveSpan('SpannerTracingQuickstart', async span => {
     // Create the Cloud Spanner Client.
     const {Spanner} = require('@google-cloud/spanner');
     const spanner = new Spanner({
       projectId: projectId,
-      observabilityConfig: {
-        // Optional, can rather register the global tracerProvider
+      observabilityOptions: {
+        // Optional, but you could rather register the global tracerProvider.
         tracerProvider: provider,
-        enableExtendedTracing: true, // Optional but can also use SPANNER_EXTENDED_TRACING=true
+        // This option can also be enabled by setting the environment
+        // variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
+        enableExtendedTracing: true,
       },
     });
 
-    // Acquire the database and databaseAdminClient handles.
+    // Acquire the database handle.
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
-    const databasePath = databaseAdminClient.databasePath(
-      projectId,
-      instanceId,
-      databaseId
-    );
+    try {
+      const query = {
+        sql: 'SELECT 1',
+      };
+      const [rows] = await database.run(query);
 
-    // Mimicking how in real world code, there will be a pause after
-    // application startup, as the service waits to serve traffic.
-    await new Promise((resolve, reject) => setTimeout(resolve, 5000));
+      for (const row of rows) {
+        console.log(`Result: ${row.toString()}`);
+      }
+    } catch (err) {
+      console.error('ERROR:', err);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } finally {
+      span.end();
+      spanner.close();
+      console.log('main span.end');
+    }
 
-    /*
-     * This code path exercises deleting then creating a Cloud Spanner database,
-     * inserting data into the database and then reading from it.
-     */
-    deleteDatabase(databaseAdminClient, databasePath, () => {
-      createDatabase(
-        databaseAdminClient,
-        projectId,
-        instanceId,
-        databaseId,
-        () => {
-          insertUsingDml(tracer, database, async () => {
-            try {
-              const query = {
-                sql: 'SELECT SingerId, FirstName, LastName FROM Singers',
-              };
-              const [rows] = await database.run(query);
-
-              for (const row of rows) {
-                const json = row.toJSON();
-
-                console.log(
-                  `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}`
-                );
-              }
-            } catch (err) {
-              console.error('ERROR:', err);
-              await new Promise((resolve, reject) => setTimeout(resolve, 2000));
-            } finally {
-              span.end();
-              spanner.close();
-              console.log('main span.end');
-            }
-
-            // This sleep gives ample time for the trace
-            // spans to be exported to Google Cloud Trace.
-            await new Promise((resolve, reject) => {
-              setTimeout(() => {
-                console.log('finished delete and creation of the database');
-              }, 8800);
-            });
-          });
-        }
-      );
+    // This sleep gives ample time for the trace
+    // spans to be exported to Google Cloud Trace.
+    await new Promise(resolve => {
+      setTimeout(() => {
+        console.log('Finished running the code');
+        resolve();
+      }, 8800);
     });
   });
 
   // [END spanner_trace_and_export_spans]
-}
-
-/*
- * insertUsingDml exercises the path of inserting
- * data into the Cloud Spanner database.
- */
-function insertUsingDml(tracer, database, callback) {
-  tracer.startActiveSpan('insertUsingDML', span => {
-    database.runTransaction(async (err, transaction) => {
-      if (err) {
-        span.end();
-        console.error(err);
-        return;
-      }
-
-      try {
-        const [delCount] = await transaction.runUpdate({
-          sql: 'DELETE FROM Singers WHERE 1=1',
-        });
-
-        console.log(`Deletion count ${delCount}`);
-
-        const [rowCount] = await transaction.runUpdate({
-          sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
-          params: {
-            firstName: 'Virginia',
-            lastName: 'Watson',
-          },
-        });
-
-        console.log(
-          `Successfully inserted ${rowCount} record into the Singers table.`
-        );
-
-        await transaction.commit();
-      } catch (err) {
-        console.error('ERROR:', err);
-      } finally {
-        // Close the database when finished.
-        console.log('exiting insertUsingDml');
-        tracer.startActiveSpan('timingOutToExport-insertUsingDML', eSpan => {
-          setTimeout(() => {
-            if (callback) {
-              callback();
-            }
-            eSpan.end();
-            span.end();
-          }, 500);
-        });
-      }
-    });
-  });
-}
-
-function createDatabase(
-  databaseAdminClient,
-  projectId,
-  instanceId,
-  databaseId,
-  callback
-) {
-  async function doCreateDatabase() {
-    if (databaseId) {
-      callback();
-      return;
-    }
-
-    // Create the database with default tables.
-    const createSingersTableStatement = `
-      CREATE TABLE Singers (
-        SingerId   INT64 NOT NULL,
-        FirstName  STRING(1024),
-        LastName   STRING(1024),
-        SingerInfo BYTES(MAX)
-      ) PRIMARY KEY (SingerId)`;
-
-    const [operation] = await databaseAdminClient.createDatabase({
-      createStatement: 'CREATE DATABASE `' + databaseId + '`',
-      extraStatements: [createSingersTableStatement],
-      parent: databaseAdminClient.instancePath(projectId, instanceId),
-    });
-
-    console.log(`Waiting for creation of ${databaseId} to complete...`);
-    await operation.promise();
-    console.log(`Created database ${databaseId}`);
-    callback();
-  }
-  doCreateDatabase();
-}
-
-function deleteDatabase(databaseAdminClient, databasePath, callback) {
-  async function doDropDatabase() {
-    if (databasePath) {
-      callback();
-      return;
-    }
-
-    const [operation] = await databaseAdminClient.dropDatabase({
-      database: databasePath,
-    });
-
-    await operation;
-    console.log('Finished dropping the database');
-    callback();
-  }
-
-  doDropDatabase();
 }
 
 require('yargs')
