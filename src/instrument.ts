@@ -53,7 +53,7 @@ interface observabilityOptions {
 export type {observabilityOptions as ObservabilityOptions};
 
 const TRACER_NAME = 'cloud.google.com/nodejs/spanner';
-const TRACER_VERSION = '7.14.0'; // Manually hard coded, TODO: remove
+const TRACER_VERSION = require('../../package.json').version;
 
 export {TRACER_NAME, TRACER_VERSION}; // Only exported for testing.
 
