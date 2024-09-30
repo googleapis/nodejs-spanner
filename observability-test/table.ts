@@ -185,7 +185,7 @@ describe('Table', () => {
       const gotSpanStatus = gotSpans[0].status;
       const wantSpanStatus = {
         code: SpanStatusCode.ERROR,
-        message: fakeError.toString(),
+        message: fakeError.message,
       };
       assert.deepStrictEqual(
         gotSpanStatus,
@@ -241,7 +241,7 @@ describe('Table', () => {
       const gotSpanStatus = gotSpans[0].status;
       const wantSpanStatus = {
         code: SpanStatusCode.ERROR,
-        message: fakeError.toString(),
+        message: fakeError.message,
       };
       assert.deepStrictEqual(
         gotSpanStatus,
@@ -294,7 +294,7 @@ describe('Table', () => {
       const gotSpanStatus = gotSpans[0].status;
       const wantSpanStatus = {
         code: SpanStatusCode.ERROR,
-        message: fakeError.toString(),
+        message: fakeError.message,
       };
       assert.deepStrictEqual(
         gotSpanStatus,

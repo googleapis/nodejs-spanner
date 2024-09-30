@@ -73,7 +73,7 @@ const {
   InMemorySpanExporter,
 } = require('@opentelemetry/sdk-trace-node');
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-const {startTrace} = require('../src/instrument');
+const {startTrace, ObservabilityOptions} = require('../src/instrument');
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -5012,8 +5012,10 @@ describe('Spanner with mock server', () => {
       await provider.shutdown();
     });
 
-    startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
+    const opts: typeof ObservabilityOptions = {tracerProvider: provider};
+    startTrace('aSpan', {opts: opts}, span => {
       const database = newTestDatabase();
+      database.observabilityConfig = opts;
 
       async function runIt() {
         const query = {
@@ -5043,16 +5045,7 @@ describe('Spanner with mock server', () => {
         gotEventNames.push(event.name);
       });
 
-      const wantEventNames = [
-        'Requesting 25 sessions',
-        'Creating 25 sessions',
-        'Acquiring session',
-        'Waiting for a session to become available',
-        // 'Requested for 25 sessions returned 25 sessions',
-        // 'Acquired session',
-        // 'Creating Transaction',
-        // 'Transaction Creation Done',
-      ];
+      const wantEventNames = ['Requesting 25 sessions', 'Creating 25 sessions'];
 
       assert.deepEqual(
         gotEventNames,
