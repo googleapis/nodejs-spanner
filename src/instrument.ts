@@ -45,6 +45,15 @@ interface SQLStatement {
   sql: string;
 }
 
+/*
+ * ObservabilityOptions defines the configuration with which
+ * startTrace may be invoked if set.
+ * @property [tracerProvider] is the injected TracerProvider to use,
+ * otherwise the global TracerProvider shall be used.
+ * @property [enableExtendedTracing] when set signifies that spans started
+ * with an accompanying an SQL statement shall be annotated with that SQL.
+ * Alternatively, you could set environment variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
+ */
 interface ObservabilityOptions {
   tracerProvider: TracerProvider;
   enableExtendedTracing?: boolean;

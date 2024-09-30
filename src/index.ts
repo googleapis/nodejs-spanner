@@ -131,6 +131,8 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
  * Indicates which replicas or regions should be used for non-transactional reads or queries.
  * DirectedReadOptions won't be set for readWrite transactions"
+ * @property {ObservabilityOptions} [observabilityOptions] defines the configuration
+ * for OpenTelemetry Tracing.
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -241,7 +243,7 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  observabilityOptions_: ObservabilityOptions | undefined;
+  _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -368,7 +370,7 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this.observabilityOptions_ = options.observabilityOptions;
+    this._observabilityOptions = options.observabilityOptions;
   }
 
   /**
@@ -589,7 +591,7 @@ class Spanner extends GrpcService {
           return;
         }
         const instance = this.instance(formattedName);
-        instance.observabilityOptions_ = this.observabilityOptions_;
+        instance._observabilityOptions = this._observabilityOptions;
         callback!(null, instance, operation, resp);
       }
     );

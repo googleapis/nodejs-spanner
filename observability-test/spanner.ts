@@ -127,7 +127,16 @@ describe('EndToEnd', () => {
     });
 
     beforeEach(async () => {
-      const setupResult = await setup();
+      traceExporter = new InMemorySpanExporter();
+      const sampler = new AlwaysOnSampler();
+      const provider = new NodeTracerProvider({
+        sampler: sampler,
+        exporter: traceExporter,
+      });
+      const setupResult = await setup({
+        tracerProvider: provider,
+        enableExtendedTracing: false,
+      });
       spanner = setupResult.spanner;
       server = setupResult.server;
       spannerMock = setupResult.spannerMock;
@@ -143,21 +152,10 @@ describe('EndToEnd', () => {
         mock.StatementResult.updateCount(1)
       );
 
-      traceExporter = new InMemorySpanExporter();
-      const sampler = new AlwaysOnSampler();
-
-      const provider = new NodeTracerProvider({
-        sampler: sampler,
-        exporter: traceExporter,
-      });
       provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
       const instance = spanner.instance('instance');
       database = instance.database('database');
-      database.observabilityOptions_ = {
-        tracerProvider: provider,
-        enableExtendedTracing: false,
-      };
     });
 
     afterEach(() => {
@@ -488,26 +486,26 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
   it('Passed into Spanner, Instance and Database', done => {
     // Ensure that the same observability configuration is set on the Spanner client.
-    assert.deepStrictEqual(spanner.observabilityOptions_, observabilityOptions);
+    assert.deepStrictEqual(spanner._observabilityOptions, observabilityOptions);
 
     // Acquire a handle to the Instance through spanner.instance.
     const instanceByHandle = spanner.instance('instance');
     assert.deepStrictEqual(
-      instanceByHandle.observabilityOptions_,
+      instanceByHandle._observabilityOptions,
       observabilityOptions
     );
 
     // Create the Instance by means of a constructor directly.
     const instanceByConstructor = new Instance(spanner, 'myInstance');
     assert.deepStrictEqual(
-      instanceByConstructor.observabilityOptions_,
+      instanceByConstructor._observabilityOptions,
       observabilityOptions
     );
 
     // Acquire a handle to the Database through instance.database.
     const databaseByHandle = instanceByHandle.database('database');
     assert.deepStrictEqual(
-      databaseByHandle.observabilityOptions_,
+      databaseByHandle._observabilityOptions,
       observabilityOptions
     );
 
@@ -517,7 +515,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       'myDatabase'
     );
     assert.deepStrictEqual(
-      databaseByConstructor.observabilityOptions_,
+      databaseByConstructor._observabilityOptions,
       observabilityOptions
     );
 
