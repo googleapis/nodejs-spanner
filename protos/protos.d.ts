@@ -33761,7 +33761,8 @@ export namespace google {
                 NUMERIC = 10,
                 JSON = 11,
                 PROTO = 13,
-                ENUM = 14
+                ENUM = 14,
+                INTERVAL = 16
             }
 
             /** TypeAnnotationCode enum. */
