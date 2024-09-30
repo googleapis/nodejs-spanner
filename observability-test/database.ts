@@ -241,7 +241,7 @@ describe('Database', () => {
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
     database.databaseRole = 'parent_role';
-    database.observabilityConfig = {
+    database.observabilityOptions_ = {
       tracerProvider: provider,
       enableExtendedTracing: false,
     };

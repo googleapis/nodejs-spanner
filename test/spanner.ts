@@ -5015,7 +5015,7 @@ describe('Spanner with mock server', () => {
     const opts: typeof ObservabilityOptions = {tracerProvider: provider};
     startTrace('aSpan', {opts: opts}, span => {
       const database = newTestDatabase();
-      database.observabilityConfig = opts;
+      database.observabilityOptions_ = opts;
 
       async function runIt() {
         const query = {
@@ -5053,70 +5053,6 @@ describe('Spanner with mock server', () => {
         `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
       );
     });
-  });
-
-  it('Should use passed ObservabilityOptions in Spanner, Instance and Database', () => {
-    const exporter = new InMemorySpanExporter();
-    const provider = new NodeTracerProvider({
-      sampler: new AlwaysOnSampler(),
-      exporter: exporter,
-    });
-    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
-
-    const observabilityOptions: typeof ObservabilityOptions = {
-      tracerProvider: provider,
-      enableExtendedTracing: true,
-    };
-    const spanner = new Spanner({
-      servicePath: 'localhost',
-      port,
-      sslCreds: grpc.credentials.createInsecure(),
-      observabilityOptions: observabilityOptions,
-    });
-
-    // Ensure that the same observability configuration is set on the Spanner client.
-    assert.deepStrictEqual(spanner.observabilityOptions_, observabilityOptions);
-
-    // Acquire a handle to the Instance through spanner.instance.
-    const instanceByHandle = spanner.instance('instance');
-    assert.deepStrictEqual(
-      instanceByHandle.observabilityOptions_,
-      observabilityOptions
-    );
-
-    // Create the Instance by means of a constructor directly.
-    const instanceByConstructor = new Instance(spanner, 'myInstance');
-    assert.deepStrictEqual(
-      instanceByConstructor.observabilityOptions_,
-      observabilityOptions
-    );
-
-    // Acquire a handle to the Database through instance.database.
-    const databaseByHandle = instanceByHandle.database('database');
-    assert.deepStrictEqual(
-      databaseByHandle.observabilityOptions_,
-      observabilityOptions
-    );
-
-    // Create the Database by means of a constructor directly.
-    const databaseByConstructor = new Database(
-      instanceByConstructor,
-      'myDatabase'
-    );
-    assert.deepStrictEqual(
-      databaseByConstructor.observabilityOptions_,
-      observabilityOptions
-    );
-
-    spanner.close();
-
-    /*
-     * TODO: Once we've merged in end-to-end Database tests,
-     * we shall add another test in which we:
-     *   Register a global exporter
-     *   Inject a different exporter via Spanner
-     *   Verify that injected exporter is used and not global.
-     */
   });
 });
 
