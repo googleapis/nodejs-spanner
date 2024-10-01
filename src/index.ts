@@ -131,8 +131,7 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
  * Indicates which replicas or regions should be used for non-transactional reads or queries.
  * DirectedReadOptions won't be set for readWrite transactions"
- * @property {ObservabilityOptions} [observabilityOptions] defines the configuration
- * for OpenTelemetry Tracing.
+ * @property {ObservabilityOptions} [observabilityOptions] Sets the observability options to be used for OpenTelemetry tracing
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
