@@ -23,7 +23,6 @@
 // Setup OpenTelemetry and the trace exporter.
 // [START spanner_trace_and_export_spans]
 const {Resource} = require('@opentelemetry/resources');
-const {NodeSDK} = require('@opentelemetry/sdk-node');
 const {
   NodeTracerProvider,
   TraceIdRatioBasedSampler,
@@ -67,18 +66,13 @@ if (process.env.SPANNER_ENABLE_GRPC_INSTRUMENTATION === 'true') {
 }
 
 function traceAndExportSpans(instanceId, databaseId, projectId) {
-  // Wire up the OpenTelemetry SDK instance with the exporter and sampler.
-  const sdk = new NodeSDK({
-    resource: resource,
-    traceExporter: exporter,
+  // Create the OpenTelemetry tracerProvider that the exporter shall be attached to.
+  const provider = new NodeTracerProvider({
     // Trace every single request to ensure that we generate
     // enough traffic for proper examination of traces.
     sampler: new TraceIdRatioBasedSampler(1.0),
+    resource: resource,
   });
-  sdk.start();
-
-  // Create the tracerProvider that the exporter shall be attached to.
-  const provider = new NodeTracerProvider({resource: resource});
   provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
   // Uncomment this line to make this a global tracerProvider instead of
@@ -113,9 +107,7 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
       };
       const [rows] = await database.run(query);
 
-      for (const row of rows) {
-        console.log(`Result: ${row.toString()}`);
-      }
+      rows.forEach(row => console.log(row));
     } catch (err) {
       console.error('ERROR:', err);
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -125,13 +117,15 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
       console.log('main span.end');
     }
 
+    provider.forceFlush();
     // This sleep gives ample time for the trace
     // spans to be exported to Google Cloud Trace.
+
     await new Promise(resolve => {
       setTimeout(() => {
         console.log('Finished running the code');
         resolve();
-      }, 8800);
+      }, 5000);
     });
   });
 
