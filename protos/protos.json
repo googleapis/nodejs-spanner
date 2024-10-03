@@ -3619,6 +3619,17 @@
                             "FULFILLMENT_PERIOD_EXTENDED": 2
                           }
                         },
+                        "ReplicaSelection": {
+                          "fields": {
+                            "location": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
                         "InstanceAdmin": {
                           "options": {
                             "(google.api.default_host)": "spanner.googleapis.com",
@@ -4190,6 +4201,33 @@
                             }
                           }
                         },
+                        "ReplicaComputeCapacity": {
+                          "oneofs": {
+                            "computeCapacity": {
+                              "oneof": [
+                                "nodeCount",
+                                "processingUnits"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "replicaSelection": {
+                              "type": "ReplicaSelection",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "nodeCount": {
+                              "type": "int32",
+                              "id": 2
+                            },
+                            "processingUnits": {
+                              "type": "int32",
+                              "id": 3
+                            }
+                          }
+                        },
                         "AutoscalingConfig": {
                           "fields": {
                             "autoscalingLimits": {
@@ -4204,6 +4242,14 @@
                               "id": 2,
                               "options": {
                                 "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "asymmetricAutoscalingOptions": {
+                              "rule": "repeated",
+                              "type": "AsymmetricAutoscalingOption",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
                               }
                             }
                           },
@@ -4259,6 +4305,44 @@
                                   }
                                 }
                               }
+                            },
+                            "AsymmetricAutoscalingOption": {
+                              "fields": {
+                                "replicaSelection": {
+                                  "type": "ReplicaSelection",
+                                  "id": 1,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                },
+                                "overrides": {
+                                  "type": "AutoscalingConfigOverrides",
+                                  "id": 2,
+                                  "options": {
+                                    "(google.api.field_behavior)": "OPTIONAL"
+                                  }
+                                }
+                              },
+                              "nested": {
+                                "AutoscalingConfigOverrides": {
+                                  "fields": {
+                                    "autoscalingLimits": {
+                                      "type": "AutoscalingLimits",
+                                      "id": 1,
+                                      "options": {
+                                        "(google.api.field_behavior)": "OPTIONAL"
+                                      }
+                                    },
+                                    "autoscalingTargetHighPriorityCpuUtilizationPercent": {
+                                      "type": "int32",
+                                      "id": 2,
+                                      "options": {
+                                        "(google.api.field_behavior)": "OPTIONAL"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         },
@@ -4297,6 +4381,14 @@
                             "processingUnits": {
                               "type": "int32",
                               "id": 9
+                            },
+                            "replicaComputeCapacity": {
+                              "rule": "repeated",
+                              "type": "ReplicaComputeCapacity",
+                              "id": 19,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             },
                             "autoscalingConfig": {
                               "type": "AutoscalingConfig",

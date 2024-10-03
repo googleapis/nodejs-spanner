@@ -13124,6 +13124,103 @@ export namespace google {
                         FULFILLMENT_PERIOD_EXTENDED = 2
                     }
 
+                    /** Properties of a ReplicaSelection. */
+                    interface IReplicaSelection {
+
+                        /** ReplicaSelection location */
+                        location?: (string|null);
+                    }
+
+                    /** Represents a ReplicaSelection. */
+                    class ReplicaSelection implements IReplicaSelection {
+
+                        /**
+                         * Constructs a new ReplicaSelection.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IReplicaSelection);
+
+                        /** ReplicaSelection location. */
+                        public location: string;
+
+                        /**
+                         * Creates a new ReplicaSelection instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ReplicaSelection instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IReplicaSelection): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Encodes the specified ReplicaSelection message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaSelection.verify|verify} messages.
+                         * @param message ReplicaSelection message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ReplicaSelection message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaSelection.verify|verify} messages.
+                         * @param message ReplicaSelection message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Verifies a ReplicaSelection message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ReplicaSelection message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ReplicaSelection
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Creates a plain object from a ReplicaSelection message. Also converts values to other types if specified.
+                         * @param message ReplicaSelection
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ReplicaSelection, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ReplicaSelection to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ReplicaSelection
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Represents an InstanceAdmin */
                     class InstanceAdmin extends $protobuf.rpc.Service {
 
@@ -13883,6 +13980,118 @@ export namespace google {
                         }
                     }
 
+                    /** Properties of a ReplicaComputeCapacity. */
+                    interface IReplicaComputeCapacity {
+
+                        /** ReplicaComputeCapacity replicaSelection */
+                        replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                        /** ReplicaComputeCapacity nodeCount */
+                        nodeCount?: (number|null);
+
+                        /** ReplicaComputeCapacity processingUnits */
+                        processingUnits?: (number|null);
+                    }
+
+                    /** Represents a ReplicaComputeCapacity. */
+                    class ReplicaComputeCapacity implements IReplicaComputeCapacity {
+
+                        /**
+                         * Constructs a new ReplicaComputeCapacity.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IReplicaComputeCapacity);
+
+                        /** ReplicaComputeCapacity replicaSelection. */
+                        public replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                        /** ReplicaComputeCapacity nodeCount. */
+                        public nodeCount?: (number|null);
+
+                        /** ReplicaComputeCapacity processingUnits. */
+                        public processingUnits?: (number|null);
+
+                        /** ReplicaComputeCapacity computeCapacity. */
+                        public computeCapacity?: ("nodeCount"|"processingUnits");
+
+                        /**
+                         * Creates a new ReplicaComputeCapacity instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ReplicaComputeCapacity instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IReplicaComputeCapacity): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Encodes the specified ReplicaComputeCapacity message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaComputeCapacity.verify|verify} messages.
+                         * @param message ReplicaComputeCapacity message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IReplicaComputeCapacity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ReplicaComputeCapacity message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaComputeCapacity.verify|verify} messages.
+                         * @param message ReplicaComputeCapacity message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IReplicaComputeCapacity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ReplicaComputeCapacity message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ReplicaComputeCapacity
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Decodes a ReplicaComputeCapacity message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ReplicaComputeCapacity
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Verifies a ReplicaComputeCapacity message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ReplicaComputeCapacity message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ReplicaComputeCapacity
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Creates a plain object from a ReplicaComputeCapacity message. Also converts values to other types if specified.
+                         * @param message ReplicaComputeCapacity
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ReplicaComputeCapacity, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ReplicaComputeCapacity to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ReplicaComputeCapacity
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an AutoscalingConfig. */
                     interface IAutoscalingConfig {
 
@@ -13891,6 +14100,9 @@ export namespace google {
 
                         /** AutoscalingConfig autoscalingTargets */
                         autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /** AutoscalingConfig asymmetricAutoscalingOptions */
+                        asymmetricAutoscalingOptions?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption[]|null);
                     }
 
                     /** Represents an AutoscalingConfig. */
@@ -13907,6 +14119,9 @@ export namespace google {
 
                         /** AutoscalingConfig autoscalingTargets. */
                         public autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /** AutoscalingConfig asymmetricAutoscalingOptions. */
+                        public asymmetricAutoscalingOptions: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption[];
 
                         /**
                          * Creates a new AutoscalingConfig instance using the specified properties.
@@ -14211,6 +14426,215 @@ export namespace google {
                              */
                             public static getTypeUrl(typeUrlPrefix?: string): string;
                         }
+
+                        /** Properties of an AsymmetricAutoscalingOption. */
+                        interface IAsymmetricAutoscalingOption {
+
+                            /** AsymmetricAutoscalingOption replicaSelection */
+                            replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                            /** AsymmetricAutoscalingOption overrides */
+                            overrides?: (google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides|null);
+                        }
+
+                        /** Represents an AsymmetricAutoscalingOption. */
+                        class AsymmetricAutoscalingOption implements IAsymmetricAutoscalingOption {
+
+                            /**
+                             * Constructs a new AsymmetricAutoscalingOption.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption);
+
+                            /** AsymmetricAutoscalingOption replicaSelection. */
+                            public replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                            /** AsymmetricAutoscalingOption overrides. */
+                            public overrides?: (google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides|null);
+
+                            /**
+                             * Creates a new AsymmetricAutoscalingOption instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AsymmetricAutoscalingOption instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Encodes the specified AsymmetricAutoscalingOption message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.verify|verify} messages.
+                             * @param message AsymmetricAutoscalingOption message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AsymmetricAutoscalingOption message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.verify|verify} messages.
+                             * @param message AsymmetricAutoscalingOption message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AsymmetricAutoscalingOption message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AsymmetricAutoscalingOption
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Decodes an AsymmetricAutoscalingOption message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AsymmetricAutoscalingOption
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Verifies an AsymmetricAutoscalingOption message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AsymmetricAutoscalingOption message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AsymmetricAutoscalingOption
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Creates a plain object from an AsymmetricAutoscalingOption message. Also converts values to other types if specified.
+                             * @param message AsymmetricAutoscalingOption
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AsymmetricAutoscalingOption to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AsymmetricAutoscalingOption
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+
+                        namespace AsymmetricAutoscalingOption {
+
+                            /** Properties of an AutoscalingConfigOverrides. */
+                            interface IAutoscalingConfigOverrides {
+
+                                /** AutoscalingConfigOverrides autoscalingLimits */
+                                autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                                /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent */
+                                autoscalingTargetHighPriorityCpuUtilizationPercent?: (number|null);
+                            }
+
+                            /** Represents an AutoscalingConfigOverrides. */
+                            class AutoscalingConfigOverrides implements IAutoscalingConfigOverrides {
+
+                                /**
+                                 * Constructs a new AutoscalingConfigOverrides.
+                                 * @param [properties] Properties to set
+                                 */
+                                constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides);
+
+                                /** AutoscalingConfigOverrides autoscalingLimits. */
+                                public autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                                /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent. */
+                                public autoscalingTargetHighPriorityCpuUtilizationPercent: number;
+
+                                /**
+                                 * Creates a new AutoscalingConfigOverrides instance using the specified properties.
+                                 * @param [properties] Properties to set
+                                 * @returns AutoscalingConfigOverrides instance
+                                 */
+                                public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Encodes the specified AutoscalingConfigOverrides message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.verify|verify} messages.
+                                 * @param message AutoscalingConfigOverrides message or plain object to encode
+                                 * @param [writer] Writer to encode to
+                                 * @returns Writer
+                                 */
+                                public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                                /**
+                                 * Encodes the specified AutoscalingConfigOverrides message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.verify|verify} messages.
+                                 * @param message AutoscalingConfigOverrides message or plain object to encode
+                                 * @param [writer] Writer to encode to
+                                 * @returns Writer
+                                 */
+                                public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                                /**
+                                 * Decodes an AutoscalingConfigOverrides message from the specified reader or buffer.
+                                 * @param reader Reader or buffer to decode from
+                                 * @param [length] Message length if known beforehand
+                                 * @returns AutoscalingConfigOverrides
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Decodes an AutoscalingConfigOverrides message from the specified reader or buffer, length delimited.
+                                 * @param reader Reader or buffer to decode from
+                                 * @returns AutoscalingConfigOverrides
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Verifies an AutoscalingConfigOverrides message.
+                                 * @param message Plain object to verify
+                                 * @returns `null` if valid, otherwise the reason why it is not
+                                 */
+                                public static verify(message: { [k: string]: any }): (string|null);
+
+                                /**
+                                 * Creates an AutoscalingConfigOverrides message from a plain object. Also converts values to their respective internal types.
+                                 * @param object Plain object
+                                 * @returns AutoscalingConfigOverrides
+                                 */
+                                public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Creates a plain object from an AutoscalingConfigOverrides message. Also converts values to other types if specified.
+                                 * @param message AutoscalingConfigOverrides
+                                 * @param [options] Conversion options
+                                 * @returns Plain object
+                                 */
+                                public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                                /**
+                                 * Converts this AutoscalingConfigOverrides to JSON.
+                                 * @returns JSON object
+                                 */
+                                public toJSON(): { [k: string]: any };
+
+                                /**
+                                 * Gets the default type url for AutoscalingConfigOverrides
+                                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                                 * @returns The default type url
+                                 */
+                                public static getTypeUrl(typeUrlPrefix?: string): string;
+                            }
+                        }
                     }
 
                     /** Properties of an Instance. */
@@ -14230,6 +14654,9 @@ export namespace google {
 
                         /** Instance processingUnits */
                         processingUnits?: (number|null);
+
+                        /** Instance replicaComputeCapacity */
+                        replicaComputeCapacity?: (google.spanner.admin.instance.v1.IReplicaComputeCapacity[]|null);
 
                         /** Instance autoscalingConfig */
                         autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
@@ -14276,6 +14703,9 @@ export namespace google {
 
                         /** Instance processingUnits. */
                         public processingUnits: number;
+
+                        /** Instance replicaComputeCapacity. */
+                        public replicaComputeCapacity: google.spanner.admin.instance.v1.IReplicaComputeCapacity[];
 
                         /** Instance autoscalingConfig. */
                         public autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
