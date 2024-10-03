@@ -344,7 +344,7 @@ class Database extends common.GrpcServiceObject {
   databaseDialect?: EnumKey<
     typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
   > | null;
-  observabilityConfig: ObservabilityOptions | undefined;
+  _observabilityOptions?: ObservabilityOptions;
   constructor(
     instance: Instance,
     name: string,
@@ -467,7 +467,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this.observabilityConfig = instance.observabilityConfig;
+    this._observabilityOptions = instance._observabilityOptions;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -693,7 +693,7 @@ class Database extends common.GrpcServiceObject {
 
         const sessions = (resp!.session || []).map(metadata => {
           const session = this.session(metadata.name!);
-          session.observabilityConfig = this.observabilityConfig;
+          session._observabilityOptions = this._observabilityOptions;
           session.metadata = metadata;
           return session;
         });
@@ -738,6 +738,7 @@ class Database extends common.GrpcServiceObject {
     const id = identifier.transaction;
     const transaction = new BatchTransaction(session, options);
     transaction.id = id;
+    transaction._observabilityOptions = this._observabilityOptions;
     transaction.readTimestamp = identifier.timestamp as PreciseDate;
     return transaction;
   }
@@ -827,7 +828,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     return startTrace('Database.createBatchTransaction', q, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
@@ -1085,6 +1086,7 @@ class Database extends common.GrpcServiceObject {
         /CREATE TABLE `*([^\s`(]+)/
       )![1];
       const table = this.table(tableName!);
+      table._observabilityOptions = this._observabilityOptions;
       callback!(null, table, operation!, resp!);
     });
   }
@@ -1873,7 +1875,7 @@ class Database extends common.GrpcServiceObject {
       delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     return startTrace('Database.getSessions', q, span => {
       this.request<
         google.spanner.v1.ISession,
@@ -1895,7 +1897,7 @@ class Database extends common.GrpcServiceObject {
             sessionInstances = sessions.map(metadata => {
               const session = self.session(metadata.name!);
               session.metadata = metadata;
-              session.observabilityConfig = this.observabilityConfig;
+              session._observabilityOptions = this._observabilityOptions;
               return session;
             });
           }
@@ -2056,7 +2058,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     return startTrace('Database.getSnapshot', q, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
@@ -2157,7 +2159,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     return startTrace('Database.getTransaction', q, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
@@ -2784,7 +2786,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {sql: query, opts: this.observabilityConfig};
+    const q = {sql: query, opts: this._observabilityOptions};
     return startTrace('Database.run', q, span => {
       this.runStream(query, options)
         .on('error', err => {
@@ -3005,7 +3007,7 @@ class Database extends common.GrpcServiceObject {
     options?: TimestampBounds
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
-    const q = {sql: query, opts: this.observabilityConfig};
+    const q = {sql: query, opts: this._observabilityOptions};
     return startTrace('Database.runStream', q, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
@@ -3183,7 +3185,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     startTrace('Database.runTransaction', q, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
@@ -3576,7 +3578,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as CallOptions)
         : {};
 
-    const q = {opts: this.observabilityConfig};
+    const q = {opts: this._observabilityOptions};
     return startTrace('Database.writeAtLeastOnce', q, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
