@@ -33,7 +33,7 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
 } from './common';
-import {Duplex} from 'stream';
+import {Duplex, Readable} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {
   grpc,
@@ -51,6 +51,12 @@ import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
+import {
+  ObservabilityOptions,
+  setSpanError,
+  setSpanErrorAndException,
+  startTrace,
+} from './instrument';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -164,6 +170,7 @@ class Instance extends common.GrpcServiceObject {
   databases_: Map<string, Database>;
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
+  observabilityConfig: ObservabilityOptions | undefined;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -911,23 +918,32 @@ class Instance extends common.GrpcServiceObject {
       reqOpts.extraStatements = arrify(reqOpts.schema);
       delete reqOpts.schema;
     }
-    this.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'createDatabase',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
-      },
-      (err, operation, resp) => {
-        if (err) {
-          callback(err, null, null, resp);
-          return;
+
+    const opts = {opts: this.observabilityConfig, sql: createStatement};
+    return startTrace('Database.createDatabase', opts, span => {
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'createDatabase',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          console.log('createDatabase invoked');
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback(err, null, null, resp);
+            return;
+          }
+          const database = this.database(name, poolOptions || poolCtor);
+          span.end();
+          console.log('createDatabase done');
+          callback(null, database, operation, resp);
         }
-        const database = this.database(name, poolOptions || poolCtor);
-        callback(null, database, operation, resp);
-      }
-    );
+      );
+    });
   }
 
   /**
@@ -1042,30 +1058,43 @@ class Instance extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
-    Promise.all(
-      Array.from(this.databases_.values()).map(database => {
-        return database.close();
-      })
-    )
-      .catch(() => {})
-      .then(() => {
-        this.databases_.clear();
-        this.request<instanceAdmin.protobuf.IEmpty>(
-          {
-            client: 'InstanceAdminClient',
-            method: 'deleteInstance',
-            reqOpts,
-            gaxOpts,
-            headers: this.resourceHeader_,
-          },
-          (err, resp) => {
-            if (!err) {
-              this.parent.instances_.delete(this.id);
+
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.delete', opts, span => {
+      Promise.all(
+        Array.from(this.databases_.values()).map(database => {
+          return database.close();
+        })
+      )
+        .catch(err => {
+          setSpanErrorAndException(span, err);
+        })
+        .then(() => {
+          this.databases_.clear();
+          this.request<instanceAdmin.protobuf.IEmpty>(
+            {
+              client: 'InstanceAdminClient',
+              method: 'deleteInstance',
+              reqOpts,
+              gaxOpts,
+              headers: this.resourceHeader_,
+            },
+            (err, resp) => {
+              if (!err) {
+                this.parent.instances_.delete(this.id);
+              } else {
+                setSpanError(span, err);
+              }
+              span.end();
+              callback!(err, resp!);
             }
-            callback!(err, resp!);
-          }
-        );
-      });
+          );
+        })
+        .finally(() => {
+          console.log('span.end in finally');
+          span.end();
+        });
+    });
   }
 
   /**
@@ -1118,14 +1147,22 @@ class Instance extends common.GrpcServiceObject {
 
     const NOT_FOUND = 5;
 
-    this.getMetadata({gaxOptions}, err => {
-      if (err && err.code !== NOT_FOUND) {
-        callback!(err, null);
-        return;
-      }
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.exists', opts, span => {
+      this.getMetadata({gaxOptions}, err => {
+        if (err) {
+          setSpanError(span, err);
+        }
+        span.end();
 
-      const exists = !err || err.code !== NOT_FOUND;
-      callback!(null, exists);
+        if (err && err.code !== NOT_FOUND) {
+          callback!(err, null);
+          return;
+        }
+
+        const exists = !err || err.code !== NOT_FOUND;
+        callback!(null, exists);
+      });
     });
   }
 
@@ -1199,37 +1236,46 @@ class Instance extends common.GrpcServiceObject {
       getMetadataOptions.gaxOptions = options.gaxOptions;
     }
 
-    this.getMetadata(getMetadataOptions, (err, metadata) => {
-      if (err) {
-        if (err.code === 5 && options.autoCreate) {
-          const createOptions = extend(true, {}, options);
-          delete createOptions.fieldNames;
-          delete createOptions.autoCreate;
-          this.create(
-            createOptions,
-            (
-              err: grpc.ServiceError | null,
-              instance?: Instance,
-              operation?: GaxOperation | null
-            ) => {
-              if (err) {
-                callback(err);
-                return;
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.get', opts, span => {
+      this.getMetadata(getMetadataOptions, (err, metadata) => {
+        if (err) {
+          setSpanError(span, err);
+          if (err.code === 5 && options.autoCreate) {
+            const createOptions = extend(true, {}, options);
+            delete createOptions.fieldNames;
+            delete createOptions.autoCreate;
+            this.create(
+              createOptions,
+              (
+                err: grpc.ServiceError | null,
+                instance?: Instance,
+                operation?: GaxOperation | null
+              ) => {
+                if (err) {
+                  callback(err);
+                  return;
+                }
+                operation!
+                  .on('error', callback)
+                  .on('complete', (metadata: IInstance) => {
+                    this.metadata = metadata;
+                    span.end();
+                    callback(null, this, metadata);
+                  });
               }
-              operation!
-                .on('error', callback)
-                .on('complete', (metadata: IInstance) => {
-                  this.metadata = metadata;
-                  callback(null, this, metadata);
-                });
-            }
-          );
+            );
+            span.end();
+            return;
+          }
+          span.end();
+          callback(err);
           return;
         }
-        callback(err);
-        return;
-      }
-      callback(null, this, metadata!);
+
+        span.end();
+        callback(null, this, metadata!);
+      });
     });
   }
 
@@ -1343,33 +1389,40 @@ class Instance extends common.GrpcServiceObject {
       delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
-    this.request<
-      IDatabase,
-      databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
-    >(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'listDatabases',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err, rowDatabases, nextPageRequest, ...args) => {
-        let databases: Database[] | null = null;
-        if (rowDatabases) {
-          databases = rowDatabases.map(database => {
-            const databaseInstance = self.database(database.name!, {min: 0});
-            databaseInstance.metadata = database;
-            return databaseInstance;
-          });
-        }
-        const nextQuery = nextPageRequest!
-          ? extend({}, options, nextPageRequest!)
-          : null;
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.getDatabases', opts, span => {
+      this.request<
+        IDatabase,
+        databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
+      >(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'listDatabases',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, rowDatabases, nextPageRequest, ...args) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          let databases: Database[] | null = null;
+          if (rowDatabases) {
+            databases = rowDatabases.map(database => {
+              const databaseInstance = self.database(database.name!, {min: 0});
+              databaseInstance.metadata = database;
+              return databaseInstance;
+            });
+          }
+          const nextQuery = nextPageRequest!
+            ? extend({}, options, nextPageRequest!)
+            : null;
 
-        callback(err, databases, nextQuery, ...args);
-      }
-    );
+          span.end();
+          callback(err, databases, nextQuery, ...args);
+        }
+      );
+    });
   }
 
   /**
@@ -1434,12 +1487,30 @@ class Instance extends common.GrpcServiceObject {
       delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
-    return this.requestStream({
-      client: 'DatabaseAdminClient',
-      method: 'listDatabasesStream',
-      reqOpts,
-      gaxOpts,
-      headers: this.resourceHeader_,
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.getDatabasesStream', opts, span => {
+      const stream = this.requestStream({
+        client: 'DatabaseAdminClient',
+        method: 'listDatabasesStream',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      });
+
+      const readable = stream as Readable;
+      console.log('readable', Object.entries(readable));
+      console.dir(readable, {showHidden: true, maxDepth: 10000});
+      if (readable.on) {
+        console.log('on detected');
+        readable.on('end', err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+        });
+      }
+
+      return stream;
     });
   }
 
@@ -1530,21 +1601,27 @@ class Instance extends common.GrpcServiceObject {
         paths: arrify(options['fieldNames']!).map(snakeCase),
       };
     }
-    return this.request<IInstance>(
-      {
-        client: 'InstanceAdminClient',
-        method: 'getInstance',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
-      },
-      (err, resp) => {
-        if (resp) {
-          this.metadata = resp;
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.getMetadata', opts, span => {
+      return this.request<IInstance>(
+        {
+          client: 'InstanceAdminClient',
+          method: 'getInstance',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: this.resourceHeader_,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          if (resp) {
+            this.metadata = resp;
+          }
+          callback!(err, resp);
         }
-        callback!(err, resp);
-      }
-    );
+      );
+    });
   }
 
   /**
@@ -1626,16 +1703,27 @@ class Instance extends common.GrpcServiceObject {
         paths: Object.keys(metadata).map(snakeCase),
       },
     };
-    return this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'updateInstance',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      callback!
-    );
+
+    const opts = {opts: this.observabilityConfig};
+    return startTrace('Database.setMetadata', opts, span => {
+      return this.request(
+        {
+          client: 'InstanceAdminClient',
+          method: 'updateInstance',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, apiResponse) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          span.end();
+          callback!(err, operation, apiResponse);
+        }
+      );
+    });
   }
   /**
    * Format the instance name to include the project ID.
