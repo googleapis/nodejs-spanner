@@ -310,7 +310,7 @@ async function readStaleData(instanceId, databaseId, projectId) {
 
   const options = {
     // Guarantees that all writes committed more than 15 seconds ago are visible
-    exactStaleness: 15,
+    exactStaleness: 1500,
   };
 
   try {
