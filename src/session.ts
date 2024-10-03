@@ -61,6 +61,7 @@ export interface GetSessionMetadataResponse {
   createTime?: google.protobuf.ITimestamp | null;
   approximateLastUseTime?: google.protobuf.ITimestamp | null;
   databaseRole?: string | null;
+  multiplexed?: boolean;
 }
 
 export type GetSessionMetadataCallback =
@@ -543,7 +544,6 @@ export class Session extends common.GrpcServiceObject {
 promisifyAll(Session, {
   exclude: [
     'delete',
-    'getMetadata',
     'partitionedDml',
     'snapshot',
     'transaction',
