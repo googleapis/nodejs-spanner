@@ -100,14 +100,16 @@ const {
 } = require('@opentelemetry/context-async-hooks');
 
 /*
- * This function ensures that async/await functions correctly by
+ * This function ensures that async/await works correctly by
  * checking if context.active() returns an invalid/unset context
- * and if so, sets a global AsyncHooksContextManager.
+ * and if so, sets a global AsyncHooksContextManager otherwise
+ * spans resulting from async/await invocations won't be correctly
+ * associated in their respective hierarchies.
  */
 function ensureInitialContextManagerSet() {
   if (context.active() === ROOT_CONTEXT) {
     // If no active context was set previously, trace context propagation cannot
-    // work correctly with async/await for OpenTelemetry and they acknowledge
+    // function correctly with async/await for OpenTelemetry and they acknowledge
     // this fact per https://opentelemetry.io/docs/languages/js/context/#active-context
     // but we shouldn't make our customers have to invasively edit their code
     // nor should they be burdened about these facts, their code should JUST work.

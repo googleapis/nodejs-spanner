@@ -617,8 +617,9 @@ describe('ObservabilityOptions injection and propagation', async () => {
   });
 });
 
-describe('Bug fixes', () => {
+describe('Regression tests for fixed bugs', () => {
   it('async/await correctly parents trace spans', async () => {
+    // See https://github.com/googleapis/nodejs-spanner/issues/2146.
     const traceExporter = new InMemorySpanExporter();
     const provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
