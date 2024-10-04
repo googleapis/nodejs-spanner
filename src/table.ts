@@ -1082,6 +1082,7 @@ class Table {
   ): void {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
+      tableName: this.name,
     };
 
     startTrace('Table.' + method, traceConfig, span => {

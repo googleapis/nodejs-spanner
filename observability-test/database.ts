@@ -375,6 +375,115 @@ describe('Database', () => {
     });
   });
 
+  describe('batchCreateSessions', () => {
+    it('without error', done => {
+      const ARGS = [null, [{}]];
+      database.request = (config, callback) => {
+        callback(...ARGS);
+      };
+
+      database.batchCreateSessions(10, (err, sessions) => {
+        assert.ifError(err);
+        assert.ok(sessions);
+
+        traceExporter.forceFlush();
+        const spans = traceExporter.getFinishedSpans();
+
+        const actualSpanNames: string[] = [];
+        const actualEventNames: string[] = [];
+        spans.forEach(span => {
+          actualSpanNames.push(span.name);
+          span.events.forEach(event => {
+            actualEventNames.push(event.name);
+          });
+        });
+
+        const expectedSpanNames = ['CloudSpanner.Database.batchCreateSessions'];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        // Ensure that the span didn't encounter an error.
+        const firstSpan = spans[0];
+        assert.strictEqual(
+          SpanStatusCode.UNSET,
+          firstSpan.status.code,
+          'Unexpected span status code'
+        );
+        assert.strictEqual(
+          undefined,
+          firstSpan.status.message,
+          'Mismatched span status message'
+        );
+
+        // We don't expect events.
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+
+        done();
+      });
+    });
+
+    it('with error', done => {
+      const ARGS = [new Error('batchCreateSessions.error'), null];
+      database.request = (config, callback) => {
+        callback(...ARGS);
+      };
+
+      database.batchCreateSessions(10, (err, sessions) => {
+        assert.ok(err);
+        assert.ok(!sessions);
+        traceExporter.forceFlush();
+        const spans = traceExporter.getFinishedSpans();
+
+        const actualSpanNames: string[] = [];
+        const actualEventNames: string[] = [];
+        spans.forEach(span => {
+          actualSpanNames.push(span.name);
+          span.events.forEach(event => {
+            actualEventNames.push(event.name);
+          });
+        });
+
+        const expectedSpanNames = ['CloudSpanner.Database.batchCreateSessions'];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        // Ensure that the span actually produced an error that was recorded.
+        const firstSpan = spans[0];
+        assert.strictEqual(
+          SpanStatusCode.ERROR,
+          firstSpan.status.code,
+          'Expected an ERROR span status'
+        );
+        assert.strictEqual(
+          'batchCreateSessions.error',
+          firstSpan.status.message,
+          'Mismatched span status message'
+        );
+
+        // We don't expect events.
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+
+        done();
+      });
+    });
+  });
+
   describe('getSnapshot', () => {
     let fakePool: FakeSessionPool;
     let fakeSession: FakeSession;

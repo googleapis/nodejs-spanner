@@ -178,7 +178,10 @@ describe('Transaction', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = ['Begin Transaction'];
+          const expectedEventNames = [
+            'Begin Transaction',
+            'Transaction Creation Done',
+          ];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,

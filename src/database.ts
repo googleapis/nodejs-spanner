@@ -450,6 +450,11 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+    const sessionPoolInstance = this.pool_ as SessionPool;
+    if (sessionPoolInstance) {
+      sessionPoolInstance._observabilityOptions =
+        instance._observabilityOptions;
+    }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
     }
@@ -677,30 +682,36 @@ class Database extends common.GrpcServiceObject {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
-      {
-        client: 'SpannerClient',
-        method: 'batchCreateSessions',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (err) {
-          callback!(err, null, resp!);
-          return;
+    const q = {opts: this._observabilityOptions};
+    startTrace('Database.batchCreateSessions', q, span => {
+      this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
+        {
+          client: 'SpannerClient',
+          method: 'batchCreateSessions',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback!(err, null, resp!);
+            return;
+          }
+
+          const sessions = (resp!.session || []).map(metadata => {
+            const session = this.session(metadata.name!);
+            session._observabilityOptions = this._observabilityOptions;
+            session.metadata = metadata;
+            return session;
+          });
+
+          span.end();
+          callback!(null, sessions, resp!);
         }
-
-        const sessions = (resp!.session || []).map(metadata => {
-          const session = this.session(metadata.name!);
-          session._observabilityOptions = this._observabilityOptions;
-          session.metadata = metadata;
-          return session;
-        });
-
-        callback!(null, sessions, resp!);
-      }
-    );
+      );
+    });
   }
 
   /**
@@ -2177,6 +2188,7 @@ class Database extends common.GrpcServiceObject {
 
         if (!err) {
           span.addEvent('Using Session', {'session.id': session?.id});
+          transaction!._observabilityOptions = this._observabilityOptions;
           this._releaseOnEnd(session!, transaction!, span);
         } else if (isSessionNotFoundError(err as grpc.ServiceError)) {
           span.addEvent('No session available', {
@@ -3206,6 +3218,8 @@ class Database extends common.GrpcServiceObject {
           runFn!(err as grpc.ServiceError);
           return;
         }
+
+        transaction!._observabilityOptions = this._observabilityOptions;
         if (options.optimisticLock) {
           transaction!.useOptimisticLock();
         }
