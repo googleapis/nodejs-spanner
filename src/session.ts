@@ -541,11 +541,5 @@ export class Session extends common.GrpcServiceObject {
  * that a callback is omitted.
  */
 promisifyAll(Session, {
-  exclude: [
-    'delete',
-    'getMetadata',
-    'partitionedDml',
-    'snapshot',
-    'transaction',
-  ],
+  exclude: ['delete', 'partitionedDml', 'snapshot', 'transaction'],
 });
