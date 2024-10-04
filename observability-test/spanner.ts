@@ -37,6 +37,9 @@ const {
 
 const {ObservabilityOptions} = require('../src/instrument');
 
+const selectSql = 'SELECT 1';
+const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
+
 /** A simple result set for SELECT 1. */
 function createSelect1ResultSet(): protobuf.ResultSet {
   const fields = [
@@ -141,8 +144,6 @@ describe('EndToEnd', () => {
       server = setupResult.server;
       spannerMock = setupResult.spannerMock;
 
-      const selectSql = 'SELECT 1';
-      const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
       spannerMock.putStatementResult(
         selectSql,
         mock.StatementResult.resultSet(createSelect1ResultSet())
@@ -223,7 +224,13 @@ describe('EndToEnd', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = [];
+          const expectedEventNames = [
+            'Acquiring session',
+            'Waiting for a session to become available',
+            'Acquired session',
+            'Begin Transaction',
+            'Transaction Creation Done',
+          ];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
@@ -260,7 +267,12 @@ describe('EndToEnd', () => {
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = ['Using Session'];
+        const expectedEventNames = [
+          'Acquiring session',
+          'Waiting for a session to become available',
+          'Acquired session',
+          'Using Session',
+        ];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -297,7 +309,12 @@ describe('EndToEnd', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = ['Using Session'];
+          const expectedEventNames = [
+            'Acquiring session',
+            'Waiting for a session to become available',
+            'Acquired session',
+            'Using Session',
+          ];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
@@ -359,7 +376,12 @@ describe('EndToEnd', () => {
         'Expected that RunStream has a defined spanId'
       );
 
-      const expectedEventNames = ['Using Session'];
+      const expectedEventNames = [
+        'Acquiring session',
+        'Waiting for a session to become available',
+        'Acquired session',
+        'Using Session',
+      ];
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
@@ -393,7 +415,11 @@ describe('EndToEnd', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = [];
+          const expectedEventNames = [
+            'Acquiring session',
+            'Waiting for a session to become available',
+            'Acquired session',
+          ];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
@@ -431,7 +457,14 @@ describe('EndToEnd', () => {
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = ['Using Session'];
+        const expectedEventNames = [
+          'Acquiring session',
+          'Waiting for a session to become available',
+          'Acquired session',
+          'Using Session',
+          'Starting Commit',
+          'Commit Done',
+        ];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -581,5 +614,120 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
       done();
     });
+  });
+});
+
+describe('Bug fixes', () => {
+  it('async/await correctly parents trace spans', async () => {
+    const traceExporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: traceExporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
+    const observabilityOptions: typeof ObservabilityOptions = {
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    };
+    const setupResult = await setup(observabilityOptions);
+    const spanner = setupResult.spanner;
+    const server = setupResult.server;
+    const spannerMock = setupResult.spannerMock;
+
+    after(async () => {
+      provider.shutdown();
+      spannerMock.resetRequests();
+      spanner.close();
+      server.tryShutdown(() => {});
+    });
+
+    async function main() {
+      const instance = spanner.instance('testing');
+      instance._observabilityOptions = observabilityOptions;
+      const database = instance.database('db-1');
+
+      const query = {
+        sql: selectSql,
+      };
+
+      const [rows] = await database.run(query);
+
+      rows.forEach(row => {
+        const json = row.toJSON();
+      });
+
+      provider.forceFlush();
+    }
+
+    await main();
+
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+
+    const actualSpanNames: string[] = [];
+    const actualEventNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+      span.events.forEach(event => {
+        actualEventNames.push(event.name);
+      });
+    });
+
+    const expectedSpanNames = [
+      'CloudSpanner.Database.runStream',
+      'CloudSpanner.Database.run',
+    ];
+    assert.deepStrictEqual(
+      actualSpanNames,
+      expectedSpanNames,
+      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+    );
+
+    // We need to ensure a strict relationship between the spans.
+    // runSpan -------------------|
+    //     |-runStream ----------|
+    const runStreamSpan = spans[0];
+    const runSpan = spans[1];
+    assert.ok(
+      runSpan.spanContext().traceId,
+      'Expected that unSpan has a defined traceId'
+    );
+    assert.ok(
+      runStreamSpan.spanContext().traceId,
+      'Expected that runStreamSpan has a defined traceId'
+    );
+
+    assert.deepStrictEqual(
+      runStreamSpan.parentSpanId,
+      runSpan.spanContext().spanId,
+      `Expected that runSpan(spanId=${runSpan.spanContext().spanId}) is the parent to runStreamSpan(parentSpanId=${runStreamSpan.parentSpanId})`
+    );
+
+    assert.deepStrictEqual(
+      runSpan.spanContext().traceId,
+      runStreamSpan.spanContext().traceId,
+      'Expected that both spans share a traceId'
+    );
+    assert.ok(
+      runStreamSpan.spanContext().spanId,
+      'Expected that runStreamSpan has a defined spanId'
+    );
+    assert.ok(
+      runSpan.spanContext().spanId,
+      'Expected that runSpan has a defined spanId'
+    );
+
+    const expectedEventNames = [
+      'Acquiring session',
+      'Waiting for a session to become available',
+      'Acquired session',
+      'Using Session',
+    ];
+    assert.deepStrictEqual(
+      actualEventNames,
+      expectedEventNames,
+      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    );
   });
 });

@@ -26,7 +26,9 @@ import {
 import {
   Span,
   SpanStatusCode,
+  context,
   trace,
+  ROOT_CONTEXT,
   INVALID_SPAN_CONTEXT,
   SpanAttributes,
   TimeInput,
@@ -93,6 +95,30 @@ interface traceConfig {
 const SPAN_NAMESPACE_PREFIX = 'CloudSpanner'; // TODO: discuss & standardize this prefix.
 export {SPAN_NAMESPACE_PREFIX, traceConfig};
 
+const {
+  AsyncHooksContextManager,
+} = require('@opentelemetry/context-async-hooks');
+
+/*
+ * This function ensures that async/await functions correctly by
+ * checking if context.active() returns an invalid/unset context
+ * and if so, sets a global AsyncHooksContextManager.
+ */
+function ensureInitialContextManagerSet() {
+  if (context.active() === ROOT_CONTEXT) {
+    // If no active context was set previously, trace context propagation cannot
+    // work correctly with async/await for OpenTelemetry and they acknowledge
+    // this fact per https://opentelemetry.io/docs/languages/js/context/#active-context
+    // but we shouldn't make our customers have to invasively edit their code
+    // nor should they be burdened about these facts, their code should JUST work.
+    // Please see https://github.com/googleapis/nodejs-spanner/issues/2146
+    context.disable(); // Firstly disable any prior contextManager.
+    const contextManager = new AsyncHooksContextManager();
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
+  }
+}
+
 /**
  * startTrace begins an active span in the current active context
  * and passes it back to the set callback function. Each span will
@@ -110,6 +136,8 @@ export function startTrace<T>(
   if (!config) {
     config = {} as traceConfig;
   }
+
+  ensureInitialContextManagerSet();
 
   return getTracer(config.opts?.tracerProvider).startActiveSpan(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
