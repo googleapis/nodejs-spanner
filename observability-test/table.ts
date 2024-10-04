@@ -92,7 +92,7 @@ describe('Table', () => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
     transaction = new FakeTransaction();
-    table.observabilityOptions = {tracerProvider: provider};
+    table._observabilityOptions = {tracerProvider: provider};
   });
 
   afterEach(() => {
