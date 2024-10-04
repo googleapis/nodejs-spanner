@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {grpc} from 'google-gax';
 import {google} from '../protos/protos';
-import {Database, Spanner} from '../src';
+import {Database, Instance, Spanner} from '../src';
 import {MutationSet} from '../src/transaction';
 import protobuf = google.spanner.v1;
 import * as mock from '../test/mockserver/mockspanner';
@@ -34,6 +34,8 @@ const {disableContextAndManager, setGlobalContextManager} = require('./helper');
 const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
+
+const {ObservabilityOptions} = require('../src/instrument');
 
 /** A simple result set for SELECT 1. */
 function createSelect1ResultSet(): protobuf.ResultSet {
@@ -60,7 +62,9 @@ interface setupResults {
   spannerMock: mock.MockSpanner;
 }
 
-async function setup(): Promise<setupResults> {
+async function setup(
+  observabilityOptions?: typeof ObservabilityOptions
+): Promise<setupResults> {
   const server = new grpc.Server();
 
   const spannerMock = mock.createMockSpanner(server);
@@ -97,6 +101,7 @@ async function setup(): Promise<setupResults> {
     servicePath: 'localhost',
     port,
     sslCreds: grpc.credentials.createInsecure(),
+    observabilityOptions: observabilityOptions,
   });
 
   return Promise.resolve({
@@ -122,7 +127,16 @@ describe('EndToEnd', () => {
     });
 
     beforeEach(async () => {
-      const setupResult = await setup();
+      traceExporter = new InMemorySpanExporter();
+      const sampler = new AlwaysOnSampler();
+      const provider = new NodeTracerProvider({
+        sampler: sampler,
+        exporter: traceExporter,
+      });
+      const setupResult = await setup({
+        tracerProvider: provider,
+        enableExtendedTracing: false,
+      });
       spanner = setupResult.spanner;
       server = setupResult.server;
       spannerMock = setupResult.spannerMock;
@@ -138,21 +152,10 @@ describe('EndToEnd', () => {
         mock.StatementResult.updateCount(1)
       );
 
-      traceExporter = new InMemorySpanExporter();
-      const sampler = new AlwaysOnSampler();
-
-      const provider = new NodeTracerProvider({
-        sampler: sampler,
-        exporter: traceExporter,
-      });
       provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
       const instance = spanner.instance('instance');
       database = instance.database('database');
-      database.observabilityConfig = {
-        tracerProvider: provider,
-        enableExtendedTracing: false,
-      };
     });
 
     afterEach(() => {
@@ -437,6 +440,146 @@ describe('EndToEnd', () => {
 
         done();
       });
+    });
+  });
+});
+
+describe('ObservabilityOptions injection and propagation', async () => {
+  const globalTraceExporter = new InMemorySpanExporter();
+  const globalTracerProvider = new NodeTracerProvider({
+    sampler: new AlwaysOnSampler(),
+    exporter: globalTraceExporter,
+  });
+  globalTracerProvider.addSpanProcessor(
+    new SimpleSpanProcessor(globalTraceExporter)
+  );
+  globalTracerProvider.register();
+
+  const injectedTraceExporter = new InMemorySpanExporter();
+  const injectedTracerProvider = new NodeTracerProvider({
+    sampler: new AlwaysOnSampler(),
+    exporter: injectedTraceExporter,
+  });
+  injectedTracerProvider.addSpanProcessor(
+    new SimpleSpanProcessor(injectedTraceExporter)
+  );
+
+  const observabilityOptions: typeof ObservabilityOptions = {
+    tracerProvider: injectedTracerProvider,
+    enableExtendedTracing: true,
+  };
+
+  const setupResult = await setup(observabilityOptions);
+  const spanner = setupResult.spanner;
+  const server = setupResult.server;
+  const spannerMock = setupResult.spannerMock;
+
+  after(async () => {
+    globalTraceExporter.reset();
+    injectedTraceExporter.reset();
+    await globalTracerProvider.shutdown();
+    await injectedTracerProvider.shutdown();
+    spannerMock.resetRequests();
+    spanner.close();
+    server.tryShutdown(() => {});
+  });
+
+  it('Passed into Spanner, Instance and Database', done => {
+    // Ensure that the same observability configuration is set on the Spanner client.
+    assert.deepStrictEqual(spanner._observabilityOptions, observabilityOptions);
+
+    // Acquire a handle to the Instance through spanner.instance.
+    const instanceByHandle = spanner.instance('instance');
+    assert.deepStrictEqual(
+      instanceByHandle._observabilityOptions,
+      observabilityOptions
+    );
+
+    // Create the Instance by means of a constructor directly.
+    const instanceByConstructor = new Instance(spanner, 'myInstance');
+    assert.deepStrictEqual(
+      instanceByConstructor._observabilityOptions,
+      observabilityOptions
+    );
+
+    // Acquire a handle to the Database through instance.database.
+    const databaseByHandle = instanceByHandle.database('database');
+    assert.deepStrictEqual(
+      databaseByHandle._observabilityOptions,
+      observabilityOptions
+    );
+
+    // Create the Database by means of a constructor directly.
+    const databaseByConstructor = new Database(
+      instanceByConstructor,
+      'myDatabase'
+    );
+    assert.deepStrictEqual(
+      databaseByConstructor._observabilityOptions,
+      observabilityOptions
+    );
+
+    done();
+  });
+
+  it('Propagates spans to the injected not global TracerProvider', done => {
+    const instance = spanner.instance('instance');
+    const database = instance.database('database');
+
+    database.run('SELECT 1', (err, rows) => {
+      assert.ifError(err);
+
+      injectedTraceExporter.forceFlush();
+      globalTraceExporter.forceFlush();
+      const spansFromInjected = injectedTraceExporter.getFinishedSpans();
+      const spansFromGlobal = globalTraceExporter.getFinishedSpans();
+
+      assert.strictEqual(
+        spansFromGlobal.length,
+        0,
+        'Expecting no spans from the global exporter'
+      );
+      assert.strictEqual(
+        spansFromInjected.length > 0,
+        true,
+        'Expecting spans from the injected exporter'
+      );
+
+      spansFromInjected.sort((spanA, spanB) => {
+        spanA.startTime < spanB.startTime;
+      });
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spansFromInjected.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = [
+        'CloudSpanner.Database.runStream',
+        'CloudSpanner.Database.run',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      const expectedEventNames = [
+        'Acquiring session',
+        'Waiting for a session to become available',
+        'Acquired session',
+        'Using Session',
+      ];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+
+      done();
     });
   });
 });

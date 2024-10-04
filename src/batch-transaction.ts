@@ -139,7 +139,7 @@ class BatchTransaction extends Snapshot {
 
     const traceConfig: traceConfig = {
       sql: query,
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
     };
     return startTrace(
       'BatchTransaction.createQueryPartitions',
@@ -182,7 +182,7 @@ class BatchTransaction extends Snapshot {
    */
   createPartitions_(config, callback) {
     const traceConfig: traceConfig = {
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
     };
 
     return startTrace(
@@ -259,7 +259,7 @@ class BatchTransaction extends Snapshot {
    */
   createReadPartitions(options, callback) {
     const traceConfig: traceConfig = {
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
     };
 
     return startTrace(

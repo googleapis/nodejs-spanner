@@ -5015,7 +5015,7 @@ describe('Spanner with mock server', () => {
     const opts: typeof ObservabilityOptions = {tracerProvider: provider};
     startTrace('aSpan', {opts: opts}, span => {
       const database = newTestDatabase();
-      database.observabilityConfig = opts;
+      database._observabilityOptions = opts;
 
       async function runIt() {
         const query = {
