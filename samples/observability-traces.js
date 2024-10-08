@@ -16,7 +16,7 @@
 
 // sample-metadata:
 //   title: Observability (Tracing) with OpenTelemetry
-//   usage: node observability.js trace <INSTANCE> <DATABASE> <PROJECT-ID>
+//   usage: node observability-traces.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>
 
 'use strict';
 
@@ -65,7 +65,11 @@ if (process.env.SPANNER_ENABLE_GRPC_INSTRUMENTATION === 'true') {
   });
 }
 
-function traceAndExportSpans(instanceId, databaseId, projectId) {
+function main(
+  projectId = 'my-project-id',
+  instanceId = 'my-instance-id',
+  databaseId = 'my-project-id'
+) {
   // Create the OpenTelemetry tracerProvider that the exporter shall be attached to.
   const provider = new NodeTracerProvider({
     // Trace every single request to ensure that we generate
@@ -75,8 +79,8 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
   });
   provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
-  // Uncomment this line to make this a global tracerProvider instead of
-  // passing it into SpannerOptions.observabilityConfig.
+  // Uncomment this to make it a global tracerProvider instead
+  // of passing it into SpannerOptions.observabilityOptions.
   // provider.register();
 
   // Acquire the tracer.
@@ -86,6 +90,15 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
   tracer.startActiveSpan('SpannerTracingQuickstart', async span => {
     // Create the Cloud Spanner Client.
     const {Spanner} = require('@google-cloud/spanner');
+
+    /**
+     * TODO(developer): Uncomment these variables before running the sample.
+     */
+    // const projectId = 'my-project-id';
+    // const instanceId = 'my-instance-id';
+    // const databaseId = 'my-database-id';
+    // const scheduleId = 'my-schedule-id';
+
     const spanner = new Spanner({
       projectId: projectId,
       observabilityOptions: {
@@ -106,24 +119,18 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
         sql: 'SELECT 1',
       };
       const [rows] = await database.run(query);
-
       rows.forEach(row => console.log(row));
-    } catch (err) {
-      console.error('ERROR:', err);
-      await new Promise(resolve => setTimeout(resolve, 2000));
     } finally {
-      span.end();
       spanner.close();
-      console.log('main span.end');
+      span.end();
     }
 
     provider.forceFlush();
+
     // This sleep gives ample time for the trace
     // spans to be exported to Google Cloud Trace.
-
     await new Promise(resolve => {
       setTimeout(() => {
-        console.log('Finished running the code');
         resolve();
       }, 5000);
     });
@@ -132,18 +139,8 @@ function traceAndExportSpans(instanceId, databaseId, projectId) {
   // [END spanner_trace_and_export_spans]
 }
 
-require('yargs')
-  .demand(1)
-  .command(
-    'trace <instanceName> <databaseName> <projectId>',
-    'Run an end-to-end traced sample.',
-    {},
-    opts =>
-      traceAndExportSpans(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .example('node $0 trace "my-instance" "my-database" "my-project-id"')
-  .wrap(120)
-  .recommendCommands()
-  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
-  .strict()
-  .help().argv;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
