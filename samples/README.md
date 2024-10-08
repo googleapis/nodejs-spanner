@@ -15,7 +15,6 @@ and automatic, synchronous replication for high availability.
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
   * [Add and drop new database role](#add-and-drop-new-database-role)
-  * [Export observability traces](#export-observability-traces)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
@@ -77,6 +76,7 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Observability (Tracing) with OpenTelemetry](#observability-tracing-with-opentelemetry)
   * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.](#showcase-the-rules-for-case-sensitivity-and-case-folding-for-a-spanner-postgresql-database.)
   * [Creates a PostgreSQL Database.](#creates-a-postgresql-database.)
@@ -157,21 +157,6 @@ __Usage:__
 
 -----
 
-
-
-### Export observability traces
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md)
-
-__Usage:__
-
-
-`node observability-traces.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID>`
-
-
------
 
 
 
@@ -1205,6 +1190,23 @@ __Usage:__
 
 
 `node samples/numeric-update-data.js`
+
+
+-----
+
+
+
+
+### Observability (Tracing) with OpenTelemetry
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability-traces.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>`
 
 
 -----
