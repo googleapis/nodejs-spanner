@@ -65,7 +65,7 @@ if (process.env.SPANNER_ENABLE_GRPC_INSTRUMENTATION === 'true') {
   });
 }
 
-function main(
+async function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-project-id'
@@ -83,57 +83,50 @@ function main(
   // of passing it into SpannerOptions.observabilityOptions.
   // provider.register();
 
-  // Acquire the tracer.
-  const tracer = provider.getTracer('MyApp');
+  // Create the Cloud Spanner Client.
+  const {Spanner} = require('@google-cloud/spanner');
 
-  // Start our user defined trace.
-  tracer.startActiveSpan('SpannerTracingQuickstart', async span => {
-    // Create the Cloud Spanner Client.
-    const {Spanner} = require('@google-cloud/spanner');
+  /**
+   * TODO(developer): Uncomment these variables before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance-id';
+  // const databaseId = 'my-database-id';
 
-    /**
-     * TODO(developer): Uncomment these variables before running the sample.
-     */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance-id';
-    // const databaseId = 'my-database-id';
+  const spanner = new Spanner({
+    projectId: projectId,
+    observabilityOptions: {
+      // Optional, but you could rather register the global tracerProvider.
+      tracerProvider: provider,
+      // This option can also be enabled by setting the environment
+      // variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
+      enableExtendedTracing: true,
+    },
+  });
 
-    const spanner = new Spanner({
-      projectId: projectId,
-      observabilityOptions: {
-        // Optional, but you could rather register the global tracerProvider.
-        tracerProvider: provider,
-        // This option can also be enabled by setting the environment
-        // variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
-        enableExtendedTracing: true,
-      },
-    });
+  // Acquire the database handle.
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
 
-    // Acquire the database handle.
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+  try {
+    const query = {
+      sql: 'SELECT 1',
+    };
+    const [rows] = await database.run(query);
+    console.log(`Query: ${rows.length} found.`);
+    rows.forEach(row => console.log(row));
+  } finally {
+    spanner.close();
+  }
 
-    try {
-      const query = {
-        sql: 'SELECT 1',
-      };
-      const [rows] = await database.run(query);
-      console.log(`Query: ${rows.length} found.`);
-      rows.forEach(row => console.log(row));
-    } finally {
-      spanner.close();
-      span.end();
-    }
+  provider.forceFlush();
 
-    provider.forceFlush();
-
-    // This sleep gives ample time for the trace
-    // spans to be exported to Google Cloud Trace.
-    await new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, 8800);
-    });
+  // This sleep gives ample time for the trace
+  // spans to be exported to Google Cloud Trace.
+  await new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, 8800);
   });
 
   // [END spanner_trace_and_export_spans]
