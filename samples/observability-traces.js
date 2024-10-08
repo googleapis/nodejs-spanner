@@ -118,6 +118,7 @@ function main(
         sql: 'SELECT 1',
       };
       const [rows] = await database.run(query);
+      console.log(`Query: ${rows.length} found.`);
       rows.forEach(row => console.log(row));
     } finally {
       spanner.close();
