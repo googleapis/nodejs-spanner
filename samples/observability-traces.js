@@ -97,7 +97,6 @@ function main(
     // const projectId = 'my-project-id';
     // const instanceId = 'my-instance-id';
     // const databaseId = 'my-database-id';
-    // const scheduleId = 'my-schedule-id';
 
     const spanner = new Spanner({
       projectId: projectId,
@@ -132,7 +131,7 @@ function main(
     await new Promise(resolve => {
       setTimeout(() => {
         resolve();
-      }, 5000);
+      }, 8800);
     });
   });
 
