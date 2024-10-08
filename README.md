@@ -147,7 +147,7 @@ provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 const {Spanner} = require('@google-cloud/spanner');
 const spanner = new Spanner({
   projectId: projectId,
-  observabilityConfig: {
+  observabilityOptions: {
     // Inject the TracerProvider via SpannerOptions or
     // register it as a global by invoking `provider.register()`
     tracerProvider: provider,
@@ -168,7 +168,7 @@ You can opt-in by either:
 ```javascript
 const spanner = new Spanner({
   projectId: projectId,
-  observabilityConfig: {
+  observabilityOptions: {
     // Inject the TracerProvider via SpannerOptions or
     // register it as a global by invoking `provider.register()`
     tracerProvider: provider,
@@ -193,7 +193,7 @@ in your programs by these imports and instantiation before creating the tracerPr
 ```
 
 ### OpenTelemetry Sample
-For more information please see this [sample code](./samples/observability.js)
+For more information please see this [sample code](./samples/observability-traces.js)
 
 ## Samples
 
@@ -202,7 +202,7 @@ Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tre
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
 | Add and drop new database role | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/add-and-drop-new-database-role.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/add-and-drop-new-database-role.js,samples/README.md) |
-| Export observability traces | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability.js,samples/README.md) |
+| Export observability traces | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md) |
 | Backups-cancel | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-cancel.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-cancel.js,samples/README.md) |
 | Copies a source backup | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy-with-multiple-kms-keys.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy-with-multiple-kms-keys.js,samples/README.md) |
 | Copies a source backup | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md) |

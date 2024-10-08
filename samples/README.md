@@ -165,14 +165,14 @@ __Usage:__
 
 ### Export observability traces
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md)
 
 __Usage:__
 
 
-`node observability.js trace <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+`node observability-traces.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID>`
 
 
 -----
