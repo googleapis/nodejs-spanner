@@ -32,7 +32,6 @@ const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 import {Database} from '../src/database';
 import {Session} from '../src/session';
 import * as sp from '../src/session-pool';
-import {Transaction} from '../src/transaction';
 
 let pQueueOverride: typeof PQueue | null = null;
 

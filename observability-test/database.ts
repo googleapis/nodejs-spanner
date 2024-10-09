@@ -518,7 +518,7 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError, null));
 
-      database.getSnapshot((err, snapshot) => {
+      database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
@@ -1136,7 +1136,6 @@ describe('Database', () => {
     });
 
     it('with error on null mutation should catch thrown error', done => {
-      const fakeError = new Error('err');
       try {
         database.writeAtLeastOnce(null, (err, res) => {});
       } catch (err) {

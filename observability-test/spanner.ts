@@ -1010,52 +1010,43 @@ describe('ObservabilityOptions injection and propagation', async () => {
   });
 });
 
-describe('Regression tests for fixed bugs', () => {
-  it('async/await correctly parents trace spans', async () => {
-    // See https://github.com/googleapis/nodejs-spanner/issues/2146.
-    const traceExporter = new InMemorySpanExporter();
-    const provider = new NodeTracerProvider({
+describe('Regression tests for fixed bugs', async () => {
+  let server: grpc.Server;
+  let spanner: Spanner;
+  let database: Database;
+  let spannerMock: mock.MockSpanner;
+  let traceExporter: typeof InMemorySpanExporter;
+  let provider: typeof TracerProvider;
+  let observabilityOptions: typeof ObservabilityOptions;
+
+  beforeEach(async () => {
+    traceExporter = new InMemorySpanExporter();
+    provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
     });
     provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
-    const observabilityOptions: typeof ObservabilityOptions = {
+    observabilityOptions = {
       tracerProvider: provider,
       enableExtendedTracing: true,
     };
     const setupResult = await setup(observabilityOptions);
-    const spanner = setupResult.spanner;
-    const server = setupResult.server;
-    const spannerMock = setupResult.spannerMock;
+    spanner = setupResult.spanner;
+    server = setupResult.server;
+    spannerMock = setupResult.spannerMock;
+  });
 
-    after(async () => {
-      provider.shutdown();
-      spannerMock.resetRequests();
-      spanner.close();
-      server.tryShutdown(() => {});
-    });
+  afterEach(async () => {
+    traceExporter.reset();
+    provider.shutdown();
+    spannerMock.resetRequests();
+    spanner.close();
+    server.tryShutdown(() => {});
+  });
 
-    async function main() {
-      const instance = spanner.instance('testing');
-      instance._observabilityOptions = observabilityOptions;
-      const database = instance.database('db-1');
-
-      const query = {
-        sql: selectSql,
-      };
-
-      const [rows] = await database.run(query);
-
-      rows.forEach(row => {
-        const json = row.toJSON();
-      });
-
-      provider.forceFlush();
-    }
-
-    await main();
-
+  function assertAsyncAwaitExpectations() {
+    // See https://github.com/googleapis/nodejs-spanner/issues/2146.
     traceExporter.forceFlush();
     const spans = traceExporter.getFinishedSpans();
 
@@ -1162,5 +1153,55 @@ describe('Regression tests for fixed bugs', () => {
       expectedEventNames,
       `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
     );
+  }
+
+  it('async/await correctly parents trace spans', async () => {
+    // See https://github.com/googleapis/nodejs-spanner/issues/2146.
+    async function main() {
+      const instance = spanner.instance('testing');
+      instance._observabilityOptions = observabilityOptions;
+      const database = instance.database('db-1');
+
+      const query = {
+        sql: selectSql,
+      };
+
+      const [rows] = await database.run(query);
+
+      rows.forEach(row => {
+        const json = row.toJSON();
+      });
+
+      provider.forceFlush();
+    }
+
+    await main();
+    assertAsyncAwaitExpectations();
+  });
+
+  it('callback correctly parents trace spans', done => {
+    function main(onComplete) {
+      const instance = spanner.instance('testing');
+      instance._observabilityOptions = observabilityOptions;
+      const database = instance.database('db-1');
+
+      const query = {
+        sql: selectSql,
+      };
+
+      database.run(query, (err, rows) => {
+        rows.forEach(row => {
+          const json = row.toJSON();
+        });
+
+        provider.forceFlush();
+        onComplete();
+      });
+    }
+
+    main(() => {
+      assertAsyncAwaitExpectations();
+      done();
+    });
   });
 });
