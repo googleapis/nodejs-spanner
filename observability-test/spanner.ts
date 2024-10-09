@@ -147,6 +147,14 @@ describe('EndToEnd', () => {
 
     const instance = spanner.instance('instance');
     database = instance.database('database');
+
+    // To deflake expectations of session creation, let's
+    // issue out a warm-up request request that'll ensure
+    // that the SessionPool is created deterministically.
+    const [rows] = await database.run('SELECT 1');
+    // Clear out any present traces to make a clean slate for testing.
+    traceExporter.forceFlush();
+    traceExporter.reset();
   });
 
   afterEach(() => {
@@ -160,7 +168,6 @@ describe('EndToEnd', () => {
     it('getSessions', async () => {
       const [rows] = await database.getSessions();
 
-      traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
 
       const actualSpanNames: string[] = [];
@@ -172,22 +179,14 @@ describe('EndToEnd', () => {
         });
       });
 
-      const expectedSpanNames = [
-        'CloudSpanner.Database.batchCreateSessions',
-        'CloudSpanner.SessionPool.createSessions',
-        'CloudSpanner.Database.getSessions',
-      ];
+      const expectedSpanNames = ['CloudSpanner.Database.getSessions'];
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
         `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
       );
 
-      const expectedEventNames = [
-        'Requesting 25 sessions',
-        'Creating 25 sessions',
-        'Requested for 25 sessions returned 25',
-      ];
+      const expectedEventNames = [];
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
@@ -215,8 +214,6 @@ describe('EndToEnd', () => {
           });
 
           const expectedSpanNames = [
-            'CloudSpanner.Database.batchCreateSessions',
-            'CloudSpanner.SessionPool.createSessions',
             'CloudSpanner.Snapshot.begin',
             'CloudSpanner.Database.getSnapshot',
             'CloudSpanner.Snapshot.runStream',
@@ -229,13 +226,10 @@ describe('EndToEnd', () => {
           );
 
           const expectedEventNames = [
-            'Requesting 25 sessions',
-            'Creating 25 sessions',
-            'Requested for 25 sessions returned 25',
             'Begin Transaction',
             'Transaction Creation Done',
             'Acquiring session',
-            'Waiting for a session to become available',
+            'Cache hit: has usable session',
             'Acquired session',
           ];
           assert.deepStrictEqual(
@@ -266,11 +260,7 @@ describe('EndToEnd', () => {
           });
         });
 
-        const expectedSpanNames = [
-          'CloudSpanner.Database.batchCreateSessions',
-          'CloudSpanner.SessionPool.createSessions',
-          'CloudSpanner.Database.getTransaction',
-        ];
+        const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
@@ -278,11 +268,8 @@ describe('EndToEnd', () => {
         );
 
         const expectedEventNames = [
-          'Requesting 25 sessions',
-          'Creating 25 sessions',
-          'Requested for 25 sessions returned 25',
           'Acquiring session',
-          'Waiting for a session to become available',
+          'Cache hit: has usable session',
           'Acquired session',
           'Using Session',
         ];
@@ -315,8 +302,6 @@ describe('EndToEnd', () => {
           });
 
           const expectedSpanNames = [
-            'CloudSpanner.Database.batchCreateSessions',
-            'CloudSpanner.SessionPool.createSessions',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Database.runStream',
           ];
@@ -327,11 +312,8 @@ describe('EndToEnd', () => {
           );
 
           const expectedEventNames = [
-            'Requesting 25 sessions',
-            'Creating 25 sessions',
-            'Requested for 25 sessions returned 25',
             'Acquiring session',
-            'Waiting for a session to become available',
+            'Cache hit: has usable session',
             'Acquired session',
             'Using Session',
           ];
@@ -366,8 +348,6 @@ describe('EndToEnd', () => {
       });
 
       const expectedSpanNames = [
-        'CloudSpanner.Database.batchCreateSessions',
-        'CloudSpanner.SessionPool.createSessions',
         'CloudSpanner.Snapshot.runStream',
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
@@ -399,11 +379,8 @@ describe('EndToEnd', () => {
       );
 
       const expectedEventNames = [
-        'Requesting 25 sessions',
-        'Creating 25 sessions',
-        'Requested for 25 sessions returned 25',
         'Acquiring session',
-        'Waiting for a session to become available',
+        'Cache hit: has usable session',
         'Acquired session',
         'Using Session',
       ];
@@ -433,8 +410,6 @@ describe('EndToEnd', () => {
           });
 
           const expectedSpanNames = [
-            'CloudSpanner.Database.batchCreateSessions',
-            'CloudSpanner.SessionPool.createSessions',
             'CloudSpanner.Database.runTransaction',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
@@ -446,11 +421,8 @@ describe('EndToEnd', () => {
           );
 
           const expectedEventNames = [
-            'Requesting 25 sessions',
-            'Creating 25 sessions',
-            'Requested for 25 sessions returned 25',
             'Acquiring session',
-            'Waiting for a session to become available',
+            'Cache hit: has usable session',
             'Acquired session',
             'Transaction Creation Done',
           ];
@@ -484,8 +456,6 @@ describe('EndToEnd', () => {
         });
 
         const expectedSpanNames = [
-          'CloudSpanner.Database.batchCreateSessions',
-          'CloudSpanner.SessionPool.createSessions',
           'CloudSpanner.Transaction.commit',
           'CloudSpanner.Database.writeAtLeastOnce',
         ];
@@ -496,13 +466,10 @@ describe('EndToEnd', () => {
         );
 
         const expectedEventNames = [
-          'Requesting 25 sessions',
-          'Creating 25 sessions',
-          'Requested for 25 sessions returned 25',
           'Starting Commit',
           'Commit Done',
           'Acquiring session',
-          'Waiting for a session to become available',
+          'Cache hit: has usable session',
           'Acquired session',
           'Using Session',
         ];
@@ -517,7 +484,6 @@ describe('EndToEnd', () => {
     });
 
     it('batchCreateSessions', done => {
-      const blankMutations = new MutationSet();
       database.batchCreateSessions(5, (err, sessions) => {
         assert.ifError(err);
 
@@ -533,22 +499,14 @@ describe('EndToEnd', () => {
           });
         });
 
-        const expectedSpanNames = [
-          'CloudSpanner.Database.batchCreateSessions',
-          'CloudSpanner.SessionPool.createSessions',
-          'CloudSpanner.Database.batchCreateSessions',
-        ];
+        const expectedSpanNames = ['CloudSpanner.Database.batchCreateSessions'];
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = [
-          'Requesting 25 sessions',
-          'Creating 25 sessions',
-          'Requested for 25 sessions returned 25',
-        ];
+        const expectedEventNames = [];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -725,9 +683,17 @@ describe('ObservabilityOptions injection and propagation', async () => {
     });
 
     let database: Database;
-    beforeEach(() => {
+    beforeEach(async () => {
       const instance = spanner.instance('instance');
       database = instance.database('database');
+
+      // To deflake expectations of session creation, let's
+      // issue out a warm-up request request that'll ensure
+      // that the SessionPool is created deterministically.
+      const [rows] = await database.run('SELECT 1');
+      // Clear out any present traces to make a clean slate for testing.
+      traceExporter.forceFlush();
+      traceExporter.reset();
     });
 
     afterEach(() => {
@@ -753,8 +719,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
           });
 
           const expectedSpanNames = [
-            'CloudSpanner.Database.batchCreateSessions',
-            'CloudSpanner.SessionPool.createSessions',
             'CloudSpanner.Database.getTransaction',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
@@ -766,11 +730,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
           );
 
           const expectedEventNames = [
-            'Requesting 25 sessions',
-            'Creating 25 sessions',
-            'Requested for 25 sessions returned 25',
             'Acquiring session',
-            'Waiting for a session to become available',
+            'Cache hit: has usable session',
             'Acquired session',
             'Using Session',
             'Transaction Creation Done',
@@ -827,7 +788,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             'Begin Transaction',
             'Transaction Creation Done',
           ];
-          assert.strictEqual(
+          assert.deepStrictEqual(
             actualEventNames.every(value => expectedEventNames.includes(value)),
             true,
             `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
@@ -864,10 +825,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
             });
 
             const expectedSpanNames = [
-              'CloudSpanner.Snapshot.begin',
-              'CloudSpanner.Snapshot.runStream',
-              'CloudSpanner.Snapshot.run',
-              'CloudSpanner.Dml.runUpdate',
               'CloudSpanner.Database.getTransaction',
               'CloudSpanner.Snapshot.runStream',
             ];
@@ -878,8 +835,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
             );
 
             const expectedEventNames = [
-              'Begin Transaction',
-              'Transaction Creation Done',
               'Acquiring session',
               'Cache hit: has usable session',
               'Acquired session',

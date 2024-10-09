@@ -16,13 +16,11 @@
 
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import * as events from 'events';
 import * as extend from 'extend';
 import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
-import timeSpan = require('time-span');
 const {
   AlwaysOnSampler,
   NodeTracerProvider,
@@ -53,8 +51,6 @@ class FakeTransaction {
 }
 
 const fakeStackTrace = extend({}, stackTrace);
-
-function noop() {}
 
 describe('SessionPool', () => {
   let sessionPool: sp.SessionPool;
