@@ -682,8 +682,8 @@ class Database extends common.GrpcServiceObject {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const q = {opts: this._observabilityOptions};
-    startTrace('Database.batchCreateSessions', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    startTrace('Database.batchCreateSessions', traceConfig, span => {
       this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
         {
           client: 'SpannerClient',

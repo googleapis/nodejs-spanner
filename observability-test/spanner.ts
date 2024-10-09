@@ -36,6 +36,7 @@ const {
 } = require('@opentelemetry/context-async-hooks');
 
 const {ObservabilityOptions} = require('../src/instrument');
+import {SessionPool} from '../src/session-pool';
 
 const selectSql = 'SELECT 1';
 const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
@@ -171,14 +172,22 @@ describe('EndToEnd', () => {
         });
       });
 
-      const expectedSpanNames = ['CloudSpanner.Database.getSessions'];
+      const expectedSpanNames = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.SessionPool.createSessions',
+        'CloudSpanner.Database.getSessions',
+      ];
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
         `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
       );
 
-      const expectedEventNames = [];
+      const expectedEventNames = [
+        'Requesting 25 sessions',
+        'Creating 25 sessions',
+        'Requested for 25 sessions returned 25',
+      ];
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
@@ -549,6 +558,82 @@ describe('EndToEnd', () => {
         done();
       });
     });
+  });
+});
+
+describe('SessionPool', async () => {
+  const traceExporter = new InMemorySpanExporter();
+  const sampler = new AlwaysOnSampler();
+  const provider = new NodeTracerProvider({
+    sampler: sampler,
+    exporter: traceExporter,
+  });
+  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
+  const setupResult = await setup();
+
+  const spanner = setupResult.spanner;
+  const server = setupResult.server;
+  const spannerMock = setupResult.spannerMock;
+  const instance = spanner.instance('instance');
+
+  after(async () => {
+    traceExporter.reset();
+    await provider.shutdown();
+    spannerMock.resetRequests();
+    spanner.close();
+    server.tryShutdown(() => {});
+  });
+
+  it('_createSessions', async () => {
+    // The first invocation of new SessionPool shall implicitly happen in here.
+    const database = instance.database('database');
+
+    await provider.forceFlush();
+    traceExporter.reset();
+
+    // Explicitly invoking new SessionPool.
+    const sessionPool = new SessionPool(database);
+    sessionPool._observabilityOptions = {
+      tracerProvider: provider,
+      enableExtendedTracing: false,
+    };
+
+    const OPTIONS = 3;
+    await sessionPool._createSessions(OPTIONS);
+
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+
+    const actualSpanNames: string[] = [];
+    const actualEventNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+      span.events.forEach(event => {
+        actualEventNames.push(event.name);
+      });
+    });
+
+    const expectedSpanNames = [
+      'CloudSpanner.Database.batchCreateSessions',
+      'CloudSpanner.SessionPool.createSessions',
+    ];
+    assert.deepStrictEqual(
+      actualSpanNames,
+      expectedSpanNames,
+      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+    );
+
+    const expectedEventNames = [
+      'Requesting 3 sessions',
+      'Creating 3 sessions',
+      'Requested for 3 sessions returned 3',
+    ];
+    assert.deepStrictEqual(
+      actualEventNames,
+      expectedEventNames,
+      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    );
   });
 });
 

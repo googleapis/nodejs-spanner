@@ -789,6 +789,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
             `Requested for ${nRequested} sessions returned ${nReturned}`
           );
           setSpanErrorAndException(span, e as Error);
+          span.end();
           throw e;
         }
 
