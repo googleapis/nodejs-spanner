@@ -39,6 +39,7 @@ import {Instance, Spanner} from '../src';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {MockError} from '../test/mockserver/mockspanner';
+const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -235,16 +236,20 @@ describe('Database', () => {
     DatabaseCached = Object.assign({}, Database);
   });
 
+  const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+    INSTANCE.formattedName_ + '/databases/' + NAME
+  );
+
   beforeEach(() => {
     fakeCodec.encode = util.noop;
     extend(Database, DatabaseCached);
-    database = new Database(INSTANCE, NAME, POOL_OPTIONS);
-    database.parent = INSTANCE;
-    database.databaseRole = 'parent_role';
-    database._observabilityOptions = {
+    INSTANCE._observabilityOptions = {
       tracerProvider: provider,
       enableExtendedTracing: false,
     };
+    database = new Database(INSTANCE, NAME, POOL_OPTIONS);
+    database.parent = INSTANCE;
+    database.databaseRole = 'parent_role';
     const gaxOpts = {};
     const options: {
       a: string;
@@ -284,6 +289,8 @@ describe('Database', () => {
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
       assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+
+      withAllSpansHaveDBName(spans);
 
       const actualSpanNames: string[] = [];
       const actualEventNames: string[] = [];
@@ -333,6 +340,7 @@ describe('Database', () => {
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
       assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+      withAllSpansHaveDBName(spans);
 
       const actualSpanNames: string[] = [];
       const actualEventNames: string[] = [];
@@ -523,6 +531,7 @@ describe('Database', () => {
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
 
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
@@ -604,6 +613,7 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
+        withAllSpansHaveDBName(spans);
 
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
@@ -706,6 +716,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
         spans.forEach(span => {
@@ -771,6 +783,7 @@ describe('Database', () => {
         assert.strictEqual(resp, RESPONSE);
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -836,6 +849,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
         spans.forEach(span => {
@@ -911,6 +926,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
         spans.forEach(span => {
@@ -958,6 +975,8 @@ describe('Database', () => {
         assert.strictEqual(transaction, fakeTransaction);
 
         const spans = traceExporter.getFinishedSpans();
+        withAllSpansHaveDBName(spans);
+
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -1037,6 +1056,7 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -1091,6 +1111,7 @@ describe('Database', () => {
 
           const spans = traceExporter.getFinishedSpans();
           assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+          withAllSpansHaveDBName(spans);
 
           const actualEventNames: string[] = [];
           const actualSpanNames: string[] = [];
@@ -1148,6 +1169,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
         spans.forEach(span => {
@@ -1222,6 +1245,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
         spans.forEach(span => {
@@ -1273,6 +1298,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualSpanNames: string[] = [];
         const actualEventNames: string[] = [];
         spans.forEach(span => {
@@ -1376,6 +1403,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
         spans.forEach(span => {
@@ -1427,6 +1456,8 @@ describe('Database', () => {
 
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+        withAllSpansHaveDBName(spans);
+
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
         spans.forEach(span => {
@@ -1491,6 +1522,8 @@ describe('Database', () => {
 
           const spans = traceExporter.getFinishedSpans();
           assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
+          withAllSpansHaveDBName(spans);
+
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
           spans.forEach(span => {

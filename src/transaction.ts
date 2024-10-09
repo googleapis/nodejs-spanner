@@ -292,6 +292,7 @@ export class Snapshot extends EventEmitter {
   resourceHeader_: {[k: string]: string};
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
   _observabilityOptions?: ObservabilityOptions;
+  protected _dbName?: string;
 
   /**
    * The transaction ID.
@@ -351,8 +352,9 @@ export class Snapshot extends EventEmitter {
 
     const readOnly = Snapshot.encodeTimestampBounds(options || {});
     this._options = {readOnly};
+    this._dbName = (this.session.parent as Database).formattedName_;
     this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
+      [CLOUD_RESOURCE_HEADER]: this._dbName,
     };
     this._waitingRequests = [];
     this._inlineBeginStarted = false;
@@ -439,7 +441,10 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const traceConfig = {opts: this._observabilityOptions};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Snapshot.begin', traceConfig, span => {
       span.addEvent('Begin Transaction');
 
@@ -717,7 +722,11 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const traceConfig = {tableName: table, opts: this._observabilityOptions};
+    const traceConfig = {
+      tableName: table,
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       const resultStream = partialResultStream(
         this._wrapWithIdWaiter(makeRequest),
@@ -961,7 +970,11 @@ export class Snapshot extends EventEmitter {
       callback = cb as ReadCallback;
     }
 
-    const traceConfig = {tableName: table, opts: this._observabilityOptions};
+    const traceConfig = {
+      tableName: table,
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Snapshot.read', traceConfig, span => {
       this.createReadStream(table, request)
         .on('error', err => {
@@ -1065,7 +1078,11 @@ export class Snapshot extends EventEmitter {
     let stats: google.spanner.v1.ResultSetStats;
     let metadata: google.spanner.v1.ResultSetMetadata;
 
-    const traceConfig = {sql: query, opts: this._observabilityOptions};
+    const traceConfig = {
+      sql: query,
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     startTrace('Snapshot.run', traceConfig, span => {
       return this.runStream(query)
         .on('error', (err, rows, stats, metadata) => {
@@ -1258,7 +1275,11 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const traceConfig = {opts: this._observabilityOptions, ...query};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+      ...query,
+    };
     return startTrace('Snapshot.runStream', traceConfig, span => {
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
@@ -1627,7 +1648,11 @@ export class Dml extends Snapshot {
       query = {sql: query} as ExecuteSqlRequest;
     }
 
-    const traceConfig = {opts: this._observabilityOptions, ...query};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+      ...query,
+    };
     return startTrace('Dml.runUpdate', traceConfig, span => {
       this.run(
         query,
@@ -1904,7 +1929,10 @@ export class Transaction extends Dml {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const traceConfig = {opts: this._observabilityOptions};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Transaction.batchUpdate', traceConfig, span => {
       this.request(
         {
@@ -2074,7 +2102,10 @@ export class Transaction extends Dml {
     const requestOptions = (options as CommitOptions).requestOptions;
     const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
-    const traceConfig = {opts: this._observabilityOptions};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Transaction.commit', traceConfig, span => {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
@@ -2440,7 +2471,10 @@ export class Transaction extends Dml {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
-    const traceConfig = {opts: this._observabilityOptions};
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('Transaction.rollback', traceConfig, span => {
       if (!this.id) {
         const err = new Error(
@@ -2933,7 +2967,11 @@ export class PartitionedDml extends Dml {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<RunUpdateResponse> {
-    const traceConfig = {sql: query, opts: this._observabilityOptions};
+    const traceConfig = {
+      sql: query,
+      opts: this._observabilityOptions,
+      dbName: this._dbName!,
+    };
     return startTrace('PartitionedDml.runUpdate', traceConfig, span => {
       super.runUpdate(query, (err, count) => {
         if (err) {
