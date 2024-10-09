@@ -828,8 +828,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.createBatchTransaction', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('Database.createBatchTransaction', traceConfig, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
@@ -1875,8 +1875,8 @@ class Database extends common.GrpcServiceObject {
       delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getSessions', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('Database.getSessions', traceConfig, span => {
       this.request<
         google.spanner.v1.ISession,
         google.spanner.v1.IListSessionsResponse
@@ -2058,8 +2058,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getSnapshot', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('Database.getSnapshot', traceConfig, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
@@ -2159,8 +2159,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getTransaction', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('Database.getTransaction', traceConfig, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
           transaction!.requestOptions = Object.assign(
@@ -2786,8 +2786,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {sql: query, opts: this._observabilityOptions};
-    return startTrace('Database.run', q, span => {
+    const traceConfig = {sql: query, opts: this._observabilityOptions};
+    return startTrace('Database.run', traceConfig, span => {
       this.runStream(query, options)
         .on('error', err => {
           setSpanError(span, err);
@@ -3007,8 +3007,8 @@ class Database extends common.GrpcServiceObject {
     options?: TimestampBounds
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
-    const q = {sql: query, opts: this._observabilityOptions};
-    return startTrace('Database.runStream', q, span => {
+    const traceConfig = {sql: query, opts: this._observabilityOptions};
+    return startTrace('Database.runStream', traceConfig, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
@@ -3185,8 +3185,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    startTrace('Database.runTransaction', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    startTrace('Database.runTransaction', traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
           setSpanError(span, err);
@@ -3578,8 +3578,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as CallOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.writeAtLeastOnce', q, span => {
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('Database.writeAtLeastOnce', traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
           span.addEvent('No session available', {
