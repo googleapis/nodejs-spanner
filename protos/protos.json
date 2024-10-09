@@ -8147,6 +8147,13 @@
                     "status": {
                       "type": "google.rpc.Status",
                       "id": 2
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 3,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -8378,6 +8385,13 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 3
+                    },
+                    "mutationKey": {
+                      "type": "Mutation",
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -8426,6 +8440,13 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 6
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 9,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -8511,6 +8532,13 @@
                   }
                 },
                 "CommitResponse": {
+                  "oneofs": {
+                    "MultiplexedSessionRetry": {
+                      "oneof": [
+                        "precommitToken"
+                      ]
+                    }
+                  },
                   "fields": {
                     "commitTimestamp": {
                       "type": "google.protobuf.Timestamp",
@@ -8519,6 +8547,10 @@
                     "commitStats": {
                       "type": "CommitStats",
                       "id": 2
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 4
                     }
                   },
                   "nested": {
@@ -8529,6 +8561,156 @@
                           "id": 1
                         }
                       }
+                    }
+                  }
+                },
+                "TransactionOptions": {
+                  "oneofs": {
+                    "mode": {
+                      "oneof": [
+                        "readWrite",
+                        "partitionedDml",
+                        "readOnly"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "readWrite": {
+                      "type": "ReadWrite",
+                      "id": 1
+                    },
+                    "partitionedDml": {
+                      "type": "PartitionedDml",
+                      "id": 3
+                    },
+                    "readOnly": {
+                      "type": "ReadOnly",
+                      "id": 2
+                    },
+                    "excludeTxnFromChangeStreams": {
+                      "type": "bool",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "ReadWrite": {
+                      "fields": {
+                        "readLockMode": {
+                          "type": "ReadLockMode",
+                          "id": 1
+                        },
+                        "multiplexedSessionPreviousTransactionId": {
+                          "type": "bytes",
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "OPTIONAL"
+                          }
+                        }
+                      },
+                      "nested": {
+                        "ReadLockMode": {
+                          "values": {
+                            "READ_LOCK_MODE_UNSPECIFIED": 0,
+                            "PESSIMISTIC": 1,
+                            "OPTIMISTIC": 2
+                          }
+                        }
+                      }
+                    },
+                    "PartitionedDml": {
+                      "fields": {}
+                    },
+                    "ReadOnly": {
+                      "oneofs": {
+                        "timestampBound": {
+                          "oneof": [
+                            "strong",
+                            "minReadTimestamp",
+                            "maxStaleness",
+                            "readTimestamp",
+                            "exactStaleness"
+                          ]
+                        }
+                      },
+                      "fields": {
+                        "strong": {
+                          "type": "bool",
+                          "id": 1
+                        },
+                        "minReadTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 2
+                        },
+                        "maxStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 3
+                        },
+                        "readTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 4
+                        },
+                        "exactStaleness": {
+                          "type": "google.protobuf.Duration",
+                          "id": 5
+                        },
+                        "returnReadTimestamp": {
+                          "type": "bool",
+                          "id": 6
+                        }
+                      }
+                    }
+                  }
+                },
+                "Transaction": {
+                  "fields": {
+                    "id": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "readTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 3
+                    }
+                  }
+                },
+                "TransactionSelector": {
+                  "oneofs": {
+                    "selector": {
+                      "oneof": [
+                        "singleUse",
+                        "id",
+                        "begin"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "singleUse": {
+                      "type": "TransactionOptions",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "bytes",
+                      "id": 2
+                    },
+                    "begin": {
+                      "type": "TransactionOptions",
+                      "id": 3
+                    }
+                  }
+                },
+                "MultiplexedSessionPrecommitToken": {
+                  "fields": {
+                    "precommitToken": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "seqNum": {
+                      "type": "int32",
+                      "id": 2
                     }
                   }
                 },
@@ -8674,6 +8856,13 @@
                     "stats": {
                       "type": "ResultSetStats",
                       "id": 3
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 5,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -8699,6 +8888,13 @@
                     "stats": {
                       "type": "ResultSetStats",
                       "id": 5
+                    },
+                    "precommitToken": {
+                      "type": "MultiplexedSessionPrecommitToken",
+                      "id": 8,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -8823,133 +9019,6 @@
                       "rule": "repeated",
                       "type": "PlanNode",
                       "id": 1
-                    }
-                  }
-                },
-                "TransactionOptions": {
-                  "oneofs": {
-                    "mode": {
-                      "oneof": [
-                        "readWrite",
-                        "partitionedDml",
-                        "readOnly"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "readWrite": {
-                      "type": "ReadWrite",
-                      "id": 1
-                    },
-                    "partitionedDml": {
-                      "type": "PartitionedDml",
-                      "id": 3
-                    },
-                    "readOnly": {
-                      "type": "ReadOnly",
-                      "id": 2
-                    },
-                    "excludeTxnFromChangeStreams": {
-                      "type": "bool",
-                      "id": 5
-                    }
-                  },
-                  "nested": {
-                    "ReadWrite": {
-                      "fields": {
-                        "readLockMode": {
-                          "type": "ReadLockMode",
-                          "id": 1
-                        }
-                      },
-                      "nested": {
-                        "ReadLockMode": {
-                          "values": {
-                            "READ_LOCK_MODE_UNSPECIFIED": 0,
-                            "PESSIMISTIC": 1,
-                            "OPTIMISTIC": 2
-                          }
-                        }
-                      }
-                    },
-                    "PartitionedDml": {
-                      "fields": {}
-                    },
-                    "ReadOnly": {
-                      "oneofs": {
-                        "timestampBound": {
-                          "oneof": [
-                            "strong",
-                            "minReadTimestamp",
-                            "maxStaleness",
-                            "readTimestamp",
-                            "exactStaleness"
-                          ]
-                        }
-                      },
-                      "fields": {
-                        "strong": {
-                          "type": "bool",
-                          "id": 1
-                        },
-                        "minReadTimestamp": {
-                          "type": "google.protobuf.Timestamp",
-                          "id": 2
-                        },
-                        "maxStaleness": {
-                          "type": "google.protobuf.Duration",
-                          "id": 3
-                        },
-                        "readTimestamp": {
-                          "type": "google.protobuf.Timestamp",
-                          "id": 4
-                        },
-                        "exactStaleness": {
-                          "type": "google.protobuf.Duration",
-                          "id": 5
-                        },
-                        "returnReadTimestamp": {
-                          "type": "bool",
-                          "id": 6
-                        }
-                      }
-                    }
-                  }
-                },
-                "Transaction": {
-                  "fields": {
-                    "id": {
-                      "type": "bytes",
-                      "id": 1
-                    },
-                    "readTimestamp": {
-                      "type": "google.protobuf.Timestamp",
-                      "id": 2
-                    }
-                  }
-                },
-                "TransactionSelector": {
-                  "oneofs": {
-                    "selector": {
-                      "oneof": [
-                        "singleUse",
-                        "id",
-                        "begin"
-                      ]
-                    }
-                  },
-                  "fields": {
-                    "singleUse": {
-                      "type": "TransactionOptions",
-                      "id": 1
-                    },
-                    "id": {
-                      "type": "bytes",
-                      "id": 2
-                    },
-                    "begin": {
-                      "type": "TransactionOptions",
-                      "id": 3
                     }
                   }
                 },
