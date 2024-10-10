@@ -139,7 +139,8 @@ class BatchTransaction extends Snapshot {
 
     const traceConfig: traceConfig = {
       sql: query,
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
+      dbName: this.getDBName(),
     };
     return startTrace(
       'BatchTransaction.createQueryPartitions',
@@ -170,6 +171,11 @@ class BatchTransaction extends Snapshot {
       }
     );
   }
+
+  protected getDBName(): string {
+    return (this.session.parent as Database).formattedName_;
+  }
+
   /**
    * Generic create partition method. Handles common parameters used in both
    * {@link BatchTransaction#createQueryPartitions} and {@link
@@ -182,7 +188,8 @@ class BatchTransaction extends Snapshot {
    */
   createPartitions_(config, callback) {
     const traceConfig: traceConfig = {
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
+      dbName: this.getDBName(),
     };
 
     return startTrace(
@@ -259,7 +266,8 @@ class BatchTransaction extends Snapshot {
    */
   createReadPartitions(options, callback) {
     const traceConfig: traceConfig = {
-      opts: this.observabilityOptions,
+      opts: this._observabilityOptions,
+      dbName: this.getDBName(),
     };
 
     return startTrace(

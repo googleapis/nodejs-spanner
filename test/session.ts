@@ -37,7 +37,6 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'delete',
-      'getMetadata',
       'partitionedDml',
       'snapshot',
       'transaction',
@@ -285,10 +284,35 @@ describe('Session', () => {
   });
 
   describe('getMetadata', () => {
-    it('should correctly call and return the request', () => {
+    it('should correctly call and return the request using callback', done => {
       const requestReturnValue = {};
 
-      function callback() {}
+      session.request = (config, callback) => {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'getSession');
+        assert.deepStrictEqual(config.reqOpts, {
+          name: session.formattedName_,
+        });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(
+          config.headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            session.resourceHeader_
+          )
+        );
+        callback(null, requestReturnValue);
+      };
+
+      session.getMetadata((err, returnValue) => {
+        assert.ifError(err);
+        assert.strictEqual(returnValue, requestReturnValue);
+        done();
+      });
+    });
+
+    it('should correctly call and return the request using promise', async () => {
+      const requestReturnValue = {};
 
       session.request = config => {
         assert.strictEqual(config.client, 'SpannerClient');
@@ -304,10 +328,10 @@ describe('Session', () => {
             session.resourceHeader_
           )
         );
-        return requestReturnValue;
+        return new Promise(resolve => resolve(requestReturnValue));
       };
 
-      const returnValue = session.getMetadata(callback);
+      const returnValue = await session.getMetadata();
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
