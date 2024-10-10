@@ -20,7 +20,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
-import {promisifyAll} from '@google-cloud/promisify';
+import {callbackifyAll, promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as r from 'teeny-request';
 import {
@@ -44,7 +44,7 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
-import {TraceConfig, setSpanError, startTrace} from './instrument';
+import {ObservabilityOptions, setSpanError, startTrace} from './instrument';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -119,7 +119,6 @@ export class Session extends common.GrpcServiceObject {
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
-  _traceConfig?: ObservabilityOptions;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -249,7 +248,8 @@ export class Session extends common.GrpcServiceObject {
         this.databaseRole =
           options.databaseRole || database.databaseRole || null;
 
-        return startTrace('Session.create', this._traceConfig || {}, span => {
+        const traceConfig = {opts: database._observabilityOptions};
+        return startTrace('Session.create', traceConfig, span => {
           return database.createSession(
             options,
             (err, session, apiResponse) => {
@@ -261,7 +261,6 @@ export class Session extends common.GrpcServiceObject {
               }
 
               extend(this, session);
-              span.end();
               callback(null, this, apiResponse);
             }
           );
@@ -278,10 +277,6 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
-    this._traceConfig = {
-      dbName: database.formattedName_,
-      opts: database._observabilityOptions,
-    };
   }
   /**
    * Delete a session.
@@ -331,26 +326,50 @@ export class Session extends common.GrpcServiceObject {
       name: this.formattedName_,
     };
 
-    return startTrace('Session.delete', this._traceConfig, span => {
-      if (this.formattedName_) {
-        span.setAttribute('session.id', this.formattedName_);
-      }
-      return this.request(
-        {
-          client: 'SpannerClient',
-          method: 'deleteSession',
-          reqOpts,
-          gaxOpts,
-          headers: this.resourceHeader_,
-        },
-        (err, apiResponse) => {
-          if (err) {
-            setSpanError(span, err);
+    if (typeof callback === 'function') {
+      return startTrace('Session.delete', {}, span => {
+        return this.request(
+          {
+            client: 'SpannerClient',
+            method: 'deleteSession',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          },
+          (err, apiResponse) => {
+            if (err) {
+              setSpanError(span, err);
+            }
+            callback!(err, apiResponse);
           }
-          callback!(err, apiResponse);
-        }
-      );
-    });
+        );
+      });
+    } else {
+      return startTrace('Session.delete', {}, span => {
+        const promise = this.request(
+          {
+            client: 'SpannerClient',
+            method: 'deleteSession',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          },
+          callback!
+        );
+        return new Promise((resolve, reject) => {
+          promise
+            .then(apiResponse => {
+              resolve(apiResponse);
+            })
+            .catch((e: Error) => {
+              setSpanError(span, e);
+            })
+            .finally(() => {
+              span.end();
+            });
+        });
+      });
+    }
   }
   /**
    * @typedef {array} GetSessionMetadataResponse
@@ -566,5 +585,8 @@ export class Session extends common.GrpcServiceObject {
  * that a callback is omitted.
  */
 promisifyAll(Session, {
+  exclude: ['delete', 'partitionedDml', 'snapshot', 'transaction'],
+});
+callbackifyAll(Session, {
   exclude: ['delete', 'partitionedDml', 'snapshot', 'transaction'],
 });
