@@ -111,9 +111,6 @@ function ensureInitialContextManagerSet() {
     // If no active context was set previously, trace context propagation cannot
     // function correctly with async/await for OpenTelemetry
     // See {@link https://opentelemetry.io/docs/languages/js/context/#active-context}
-    // but we shouldn't make our customers have to invasively edit their code
-    // nor should they be burdened about these facts, their code should JUST work.
-    // Please see https://github.com/googleapis/nodejs-spanner/issues/2146
     context.disable(); // Disable any prior contextManager.
     const contextManager = new AsyncHooksContextManager();
     contextManager.enable();

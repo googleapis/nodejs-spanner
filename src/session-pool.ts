@@ -491,9 +491,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
-    if (!this._observabilityOptions) {
-      this._observabilityOptions = database._observabilityOptions;
-    }
+    this._observabilityOptions = database._observabilityOptions;
   }
 
   /**
@@ -757,10 +755,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     let nReturned = 0;
     const nRequested: number = amount;
-
-    if (!this.database._observabilityOptions) {
-      this.database._observabilityOptions = this._observabilityOptions;
-    }
 
     const traceConfig = {opts: this._observabilityOptions};
     return startTrace('SessionPool.createSessions', traceConfig, async span => {

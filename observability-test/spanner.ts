@@ -528,7 +528,10 @@ describe('SessionPool', async () => {
   });
   provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
-  const setupResult = await setup();
+  const setupResult = await setup({
+    tracerProvider: provider,
+    enableExtendedTracing: false,
+  });
 
   const spanner = setupResult.spanner;
   const server = setupResult.server;
@@ -546,16 +549,13 @@ describe('SessionPool', async () => {
   it('_createSessions', async () => {
     // The first invocation of new SessionPool shall implicitly happen in here.
     const database = instance.database('database');
+    await database.run('SELECT 1');
 
     await provider.forceFlush();
     traceExporter.reset();
 
     // Explicitly invoking new SessionPool.
     const sessionPool = new SessionPool(database);
-    sessionPool._observabilityOptions = {
-      tracerProvider: provider,
-      enableExtendedTracing: false,
-    };
 
     const OPTIONS = 3;
     await sessionPool._createSessions(OPTIONS);
@@ -1010,7 +1010,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
   });
 });
 
-describe('Regression tests for fixed bugs', async () => {
+describe('E2E traces with async/await', async () => {
   let server: grpc.Server;
   let spanner: Spanner;
   let database: Database;
@@ -1159,7 +1159,6 @@ describe('Regression tests for fixed bugs', async () => {
     // See https://github.com/googleapis/nodejs-spanner/issues/2146.
     async function main() {
       const instance = spanner.instance('testing');
-      instance._observabilityOptions = observabilityOptions;
       const database = instance.database('db-1');
 
       const query = {
@@ -1182,7 +1181,6 @@ describe('Regression tests for fixed bugs', async () => {
   it('callback correctly parents trace spans', done => {
     function main(onComplete) {
       const instance = spanner.instance('testing');
-      instance._observabilityOptions = observabilityOptions;
       const database = instance.database('db-1');
 
       const query = {

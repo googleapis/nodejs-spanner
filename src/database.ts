@@ -464,6 +464,7 @@ class Database extends common.GrpcServiceObject {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
     this.request = instance.request;
+    this._observabilityOptions = instance._observabilityOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
@@ -472,7 +473,6 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this._observabilityOptions = instance._observabilityOptions;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
