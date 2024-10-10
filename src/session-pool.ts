@@ -24,7 +24,12 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
-import {getActiveOrNoopSpan} from './instrument';
+import {
+  ObservabilityOptions,
+  getActiveOrNoopSpan,
+  setSpanErrorAndException,
+  startTrace,
+} from './instrument';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -353,6 +358,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
+  _observabilityOptions?: ObservabilityOptions;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -485,6 +491,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
+    this._observabilityOptions = database._observabilityOptions;
   }
 
   /**
@@ -738,9 +745,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#createError
    */
   async _createSessions(amount: number): Promise<void> {
-    const span = getActiveOrNoopSpan();
-    span.addEvent(`Requesting ${amount} sessions`);
-
     const labels = this.options.labels!;
     const databaseRole = this.options.databaseRole!;
 
@@ -752,41 +756,51 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let nReturned = 0;
     const nRequested: number = amount;
 
-    // while we can request as many sessions be created as we want, the backend
-    // will return at most 100 at a time, hence the need for a while loop.
-    while (amount > 0) {
-      let sessions: Session[] | null = null;
+    const traceConfig = {opts: this._observabilityOptions};
+    return startTrace('SessionPool.createSessions', traceConfig, async span => {
+      span.addEvent(`Requesting ${amount} sessions`);
 
-      span.addEvent(`Creating ${amount} sessions`);
+      // while we can request as many sessions be created as we want, the backend
+      // will return at most 100 at a time, hence the need for a while loop.
+      while (amount > 0) {
+        let sessions: Session[] | null = null;
 
-      try {
-        [sessions] = await this.database.batchCreateSessions({
-          count: amount,
-          labels: labels,
-          databaseRole: databaseRole,
+        span.addEvent(`Creating ${amount} sessions`);
+
+        try {
+          [sessions] = await this.database.batchCreateSessions({
+            count: amount,
+            labels: labels,
+            databaseRole: databaseRole,
+          });
+
+          amount -= sessions.length;
+          nReturned += sessions.length;
+        } catch (e) {
+          this._pending -= amount;
+          this.emit('createError', e);
+          span.addEvent(
+            `Requested for ${nRequested} sessions returned ${nReturned}`
+          );
+          setSpanErrorAndException(span, e as Error);
+          span.end();
+          throw e;
+        }
+
+        sessions.forEach((session: Session) => {
+          setImmediate(() => {
+            this._inventory.borrowed.add(session);
+            this._pending -= 1;
+            this.release(session);
+          });
         });
-
-        amount -= sessions.length;
-        nReturned += sessions.length;
-      } catch (e) {
-        this._pending -= amount;
-        this.emit('createError', e);
-        span.addEvent(
-          `Requested for ${nRequested} sessions returned ${nReturned}`
-        );
-        throw e;
       }
 
-      sessions.forEach((session: Session) => {
-        setImmediate(() => {
-          this._inventory.borrowed.add(session);
-          this._pending -= 1;
-          this.release(session);
-        });
-      });
-    }
-
-    span.addEvent(`Requested for ${nRequested} sessions returned ${nReturned}`);
+      span.addEvent(
+        `Requested for ${nRequested} sessions returned ${nReturned}`
+      );
+      span.end();
+    });
   }
 
   /**
