@@ -756,7 +756,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let nReturned = 0;
     const nRequested: number = amount;
 
-    const traceConfig = {opts: this._observabilityOptions};
+    // TODO: Inlining this code for now and later on shall go
+    // extract _traceConfig to the constructor when we have plenty of time.
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this.database.formattedName_,
+    };
     return startTrace('SessionPool.createSessions', traceConfig, async span => {
       span.addEvent(`Requesting ${amount} sessions`);
 

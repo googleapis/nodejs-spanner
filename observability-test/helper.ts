@@ -15,6 +15,9 @@
  */
 
 import {ContextManager, context} from '@opentelemetry/api';
+import * as assert from 'assert';
+const {ReadableSpan} = require('@opentelemetry/sdk-trace-base');
+import {SEMATTRS_DB_NAME} from '@opentelemetry/semantic-conventions';
 
 /**
  * This utility exists as a test helper because mocha has builtin "context"
@@ -31,4 +34,16 @@ export function setGlobalContextManager(manager: ContextManager) {
 export function disableContextAndManager(manager: ContextManager) {
   manager.disable();
   context.disable();
+}
+
+export function generateWithAllSpansHaveDBName(dbName: String): Function {
+  return function (spans: (typeof ReadableSpan)[]) {
+    spans.forEach(span => {
+      assert.deepStrictEqual(
+        span.attributes[SEMATTRS_DB_NAME],
+        dbName,
+        `Span ${span.name} has mismatched DB_NAME`
+      );
+    });
+  };
 }

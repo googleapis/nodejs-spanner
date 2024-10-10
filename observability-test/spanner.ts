@@ -30,7 +30,11 @@ const {
 } = require('@opentelemetry/sdk-trace-node');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-const {disableContextAndManager, setGlobalContextManager} = require('./helper');
+const {
+  disableContextAndManager,
+  generateWithAllSpansHaveDBName,
+  setGlobalContextManager,
+} = require('./helper');
 const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
@@ -168,7 +172,13 @@ describe('EndToEnd', () => {
     it('getSessions', async () => {
       const [rows] = await database.getSessions();
 
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
+      traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
+      assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+      withAllSpansHaveDBName(spans);
 
       const actualSpanNames: string[] = [];
       const actualEventNames: string[] = [];
@@ -195,6 +205,10 @@ describe('EndToEnd', () => {
     });
 
     it('getSnapshot', done => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
+
       database.getSnapshot((err, transaction) => {
         assert.ifError(err);
 
@@ -203,6 +217,7 @@ describe('EndToEnd', () => {
 
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
+          withAllSpansHaveDBName(spans);
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
@@ -244,12 +259,16 @@ describe('EndToEnd', () => {
     });
 
     it('getTransaction', done => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
       database.getTransaction((err, transaction) => {
         assert.ifError(err);
         assert.ok(transaction);
 
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
+        withAllSpansHaveDBName(spans);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -284,6 +303,9 @@ describe('EndToEnd', () => {
     });
 
     it('runStream', done => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
       database
         .runStream('SELECT 1')
         .on('data', row => {})
@@ -291,6 +313,7 @@ describe('EndToEnd', () => {
         .on('end', () => {
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
+          withAllSpansHaveDBName(spans);
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
@@ -328,10 +351,14 @@ describe('EndToEnd', () => {
     });
 
     it('run', async () => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
       const [rows] = await database.run('SELECT 1');
 
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
+      withAllSpansHaveDBName(spans);
 
       // Sort the spans by duration.
       spans.sort((spanA, spanB) => {
@@ -392,6 +419,9 @@ describe('EndToEnd', () => {
     });
 
     it('runTransaction', done => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
       database.runTransaction((err, transaction) => {
         assert.ifError(err);
         transaction!.run('SELECT 1', (err, rows) => {
@@ -399,6 +429,7 @@ describe('EndToEnd', () => {
 
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
+          withAllSpansHaveDBName(spans);
 
           const actualEventNames: string[] = [];
           const actualSpanNames: string[] = [];
@@ -438,6 +469,9 @@ describe('EndToEnd', () => {
     });
 
     it('writeAtLeastOnce', done => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
       const blankMutations = new MutationSet();
       database.writeAtLeastOnce(blankMutations, (err, response) => {
         assert.ifError(err);
@@ -445,6 +479,7 @@ describe('EndToEnd', () => {
 
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
+        withAllSpansHaveDBName(spans);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -700,6 +735,11 @@ describe('ObservabilityOptions injection and propagation', async () => {
       spannerMock.resetRequests();
     });
 
+    const db = spanner.instance('instance').database('database');
+    const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+      db.formattedName_
+    );
+
     it('run', done => {
       database.getTransaction((err, tx) => {
         assert.ifError(err);
@@ -708,6 +748,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
+          withAllSpansHaveDBName(spans);
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
@@ -761,6 +802,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
+          withAllSpansHaveDBName(spans);
           assert.strictEqual(spans.length, 4);
 
           const actualSpanNames: string[] = [];
@@ -814,6 +856,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             traceExporter.forceFlush();
 
             const spans = traceExporter.getFinishedSpans();
+            withAllSpansHaveDBName(spans);
 
             const actualSpanNames: string[] = [];
             const actualEventNames: string[] = [];
@@ -866,6 +909,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             traceExporter.forceFlush();
 
             const spans = traceExporter.getFinishedSpans();
+            withAllSpansHaveDBName(spans);
 
             const actualSpanNames: string[] = [];
             const actualEventNames: string[] = [];
@@ -948,6 +992,10 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const instance = spanner.instance('instance');
     const database = instance.database('database');
 
+    const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+      database.formattedName_
+    );
+
     database.run('SELECT 1', (err, rows) => {
       assert.ifError(err);
 
@@ -970,6 +1018,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       spansFromInjected.sort((spanA, spanB) => {
         spanA.startTime < spanB.startTime;
       });
+      withAllSpansHaveDBName(spansFromInjected);
       const actualSpanNames: string[] = [];
       const actualEventNames: string[] = [];
       spansFromInjected.forEach(span => {

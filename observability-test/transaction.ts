@@ -32,6 +32,7 @@ const {
   ReadableSpan,
   SimpleSpanProcessor,
 } = require('@opentelemetry/sdk-trace-base');
+const {generateWithAllSpansHaveDBName} = require('./helper');
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -53,6 +54,10 @@ describe('Transaction', () => {
     formattedName_: 'formatted-database-name',
     parent: INSTANCE,
   };
+
+  const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+    DATABASE.formattedName_
+  );
 
   const SESSION = {
     parent: DATABASE,
@@ -723,6 +728,7 @@ describe('Transaction', () => {
 
         // Ensure that the final span that got retries did not error.
         const spans = exportResults.spans;
+
         const firstSpan = spans[0];
         assert.strictEqual(
           SpanStatusCode.ERROR,
@@ -734,6 +740,8 @@ describe('Transaction', () => {
           firstSpan.status.message,
           'Unexpected span status message'
         );
+
+        withAllSpansHaveDBName(spans);
       });
     });
   });
