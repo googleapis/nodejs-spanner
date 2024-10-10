@@ -28,6 +28,8 @@ const {
 } = require('@opentelemetry/sdk-trace-node');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+// eslint-disable-next-line n/no-extraneous-require
+const {SpanStatusCode} = require('@opentelemetry/api');
 
 import {Database} from '../src/database';
 import {Session} from '../src/session';
@@ -149,6 +151,18 @@ describe('SessionPool', () => {
         expectedEventNames,
         `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
       );
+
+      const firstSpan = spans[0];
+      assert.strictEqual(
+        SpanStatusCode.ERROR,
+        firstSpan.status.code,
+        'Unexpected an span status code'
+      );
+      assert.strictEqual(
+        ourException.message,
+        firstSpan.status.message,
+        'Unexpected span status message'
+      );
     });
 
     it('without error', async () => {
@@ -190,6 +204,18 @@ describe('SessionPool', () => {
         actualEventNames,
         expectedEventNames,
         `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+
+      const firstSpan = spans[0];
+      assert.strictEqual(
+        SpanStatusCode.UNSET,
+        firstSpan.status.code,
+        'Unexpected an span status code'
+      );
+      assert.strictEqual(
+        undefined,
+        firstSpan.status.message,
+        'Unexpected span status message'
       );
     });
   });
