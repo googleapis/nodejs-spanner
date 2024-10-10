@@ -44,6 +44,7 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
+import {TraceConfig, setSpanError, startTrace} from './instrument';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -118,6 +119,7 @@ export class Session extends common.GrpcServiceObject {
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
+  _traceConfig?: ObservabilityOptions;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -247,14 +249,22 @@ export class Session extends common.GrpcServiceObject {
         this.databaseRole =
           options.databaseRole || database.databaseRole || null;
 
-        return database.createSession(options, (err, session, apiResponse) => {
-          if (err) {
-            callback(err, null, apiResponse);
-            return;
-          }
+        return startTrace('Session.create', this._traceConfig || {}, span => {
+          return database.createSession(
+            options,
+            (err, session, apiResponse) => {
+              if (err) {
+                setSpanError(span, err);
+                span.end();
+                callback(err, null, apiResponse);
+                return;
+              }
 
-          extend(this, session);
-          callback(null, this, apiResponse);
+              extend(this, session);
+              span.end();
+              callback(null, this, apiResponse);
+            }
+          );
         });
       },
     } as {} as ServiceObjectConfig);
@@ -268,6 +278,10 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
+    this._traceConfig = {
+      dbName: database.formattedName_,
+      opts: database._observabilityOptions,
+    };
   }
   /**
    * Delete a session.
@@ -316,16 +330,27 @@ export class Session extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'deleteSession',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      callback!
-    );
+
+    return startTrace('Session.delete', this._traceConfig, span => {
+      if (this.formattedName_) {
+        span.setAttribute('session.id', this.formattedName_);
+      }
+      return this.request(
+        {
+          client: 'SpannerClient',
+          method: 'deleteSession',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, apiResponse) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          callback!(err, apiResponse);
+        }
+      );
+    });
   }
   /**
    * @typedef {array} GetSessionMetadataResponse

@@ -25,7 +25,18 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
-import {Database, Instance, Spanner} from '../src';
+import {Database, Instance, Session, Spanner} from '../src';
+const {
+  AlwaysOnSampler,
+  NodeTracerProvider,
+  InMemorySpanExporter,
+} = require('@opentelemetry/sdk-trace-node');
+// eslint-disable-next-line n/no-extraneous-require
+const {SpanStatusCode} = require('@opentelemetry/api');
+const {
+  ReadableSpan,
+  SimpleSpanProcessor,
+} = require('@opentelemetry/sdk-trace-base');
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -280,6 +291,75 @@ describe('Session', () => {
         done();
       };
       session.delete(gaxOptions, assert.ifError);
+    });
+
+    describe('Observability spans', () => {
+      let traceExporter: typeof InMemorySpanExporter;
+      let tracerProvider: typeof NodeTracerProvider;
+      let session: Session;
+
+      beforeEach(() => {
+        session = new Session(DATABASE, NAME);
+        session.parent = DATABASE;
+        traceExporter = new InMemorySpanExporter();
+        const sampler = new AlwaysOnSampler();
+
+        tracerProvider = new NodeTracerProvider({
+          sampler: sampler,
+          exporter: traceExporter,
+        });
+        tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+      });
+
+      afterEach(async () => {
+        await tracerProvider.forceFlush();
+        traceExporter.reset();
+      });
+
+      it('without error', async () => {
+        session.request = (config, callback) => {
+          session.delete(callback);
+        };
+
+        await session.delete();
+        traceExporter.forceFlush();
+        const spans = traceExporter.getFinishedSpans();
+
+        const actualSpanNames: string[] = [];
+        const actualEventNames: string[] = [];
+        spans.forEach(span => {
+          actualSpanNames.push(span.name);
+          span.events.forEach(event => {
+            actualEventNames.push(event.name);
+          });
+        });
+
+        const expectedSpanNames = ['CloudSpanner.Session.delete'];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+
+        const firstSpan = spans[0];
+        assert.strictEqual(
+          SpanStatusCode.UNSET,
+          firstSpan.status.code,
+          'Unexpected an span status code'
+        );
+        assert.strictEqual(
+          undefined,
+          firstSpan.status.message,
+          'Unexpected span status message'
+        );
+      });
     });
   });
 
