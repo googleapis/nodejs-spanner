@@ -31,8 +31,6 @@ const exporter = new TraceExporter();
 #### OpenTelemetry Configuration
 
 ```javascript
-const {NodeSDK} = require('@opentelemetry/sdk-node');
-const {Resource} = require('@opentelemetry/resources');
 const {
   NodeTracerProvider,
   TraceIdRatioBasedSampler,
@@ -40,27 +38,6 @@ const {
 const {
   BatchSpanProcessor,
 } = require('@opentelemetry/sdk-trace-base');
-const {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-} = require('@opentelemetry/semantic-conventions');
-
-const resource = Resource.default().merge(
-  new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: 'spanner-sample',
-    [SEMRESATTRS_SERVICE_VERSION]: 'v1.0.0', // The version of your app running.,
-  })
-);
-
-// Wire up the OpenTelemetry SDK instance with the exporter and sampler.
-const sdk = new NodeSDK({
-  resource: resource,
-  traceExporter: exporter,
-  // Trace every single request to ensure that we generate
-  // enough traffic for proper examination of traces.
-  sampler: new TraceIdRatioBasedSampler(1.0),
-});
-sdk.start();
 
 // Create the tracerProvider that the exporter shall be attached to.
 const provider = new NodeTracerProvider({resource: resource});
@@ -92,12 +69,7 @@ You can opt-in by either:
 const spanner = new Spanner({
   projectId: projectId,
   observabilityOptions: {
-    // Inject the TracerProvider via SpannerOptions or
-    // register it as a global by invoking `provider.register()`
     tracerProvider: provider,
-
-    // This option can also be enabled by setting the environment
-    // variable `SPANNER_ENABLE_EXTENDED_TRACING=true`.
     enableExtendedTracing: true,
   },
 ```
@@ -105,12 +77,14 @@ const spanner = new Spanner({
 #### OpenTelemetry gRPC instrumentation
 
 Optionally, you can enable OpenTelemetry gRPC instrumentation which produces traces of executed remote procedure calls (RPCs)
-in your programs by these imports and instantiation before creating the tracerProvider:
+in your programs by these imports and instantiation. You could pass in the traceProvider or register it globally
+by invoking `tracerProvider.register()`
 
 ```javascript
   const {registerInstrumentations} = require('@opentelemetry/instrumentation');
   const {GrpcInstrumentation} = require('@opentelemetry/instrumentation-grpc');
   registerInstrumentations({
+    tracerProvider: tracerProvider,
     instrumentations: [new GrpcInstrumentation()],
   });
 ```
