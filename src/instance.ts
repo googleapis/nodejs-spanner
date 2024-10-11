@@ -1363,6 +1363,7 @@ class Instance extends common.GrpcServiceObject {
           databases = rowDatabases.map(database => {
             const databaseInstance = self.database(database.name!, {min: 0});
             databaseInstance.metadata = database;
+            databaseInstance._observabilityOptions = this._observabilityOptions;
             return databaseInstance;
           });
         }
