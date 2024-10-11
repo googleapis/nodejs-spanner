@@ -31,6 +31,7 @@ import {SpanStatusCode} from '@opentelemetry/api';
 
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -67,6 +68,7 @@ describe('Table', () => {
   let transaction: FakeTransaction;
 
   const DATABASE = {
+    formattedName_: 'formatted-db-name',
     runTransaction: (opts, callback) => callback(null, transaction),
     getSnapshot: (options, callback) => callback(null, transaction),
   };
@@ -92,13 +94,17 @@ describe('Table', () => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
     transaction = new FakeTransaction();
-    table.observabilityOptions = {tracerProvider: provider};
+    table._observabilityOptions = {tracerProvider: provider};
   });
 
   afterEach(() => {
     sandbox.restore();
     traceExporter.reset();
   });
+
+  const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+    DATABASE.formattedName_
+  );
 
   function getExportedSpans(minCount: number) {
     traceExporter.forceFlush();
@@ -215,7 +221,10 @@ describe('Table', () => {
       assert.ifError(err);
       assert.strictEqual(stub.callCount, 1);
 
-      const actualSpanNames = spanNames(getExportedSpans(1));
+      const gotSpans = getExportedSpans(1);
+      withAllSpansHaveDBName(gotSpans);
+
+      const actualSpanNames = spanNames(gotSpans);
       const expectedSpanNames = ['CloudSpanner.Table.upsert'];
 
       assert.deepStrictEqual(
@@ -238,6 +247,8 @@ describe('Table', () => {
       assert.strictEqual(err, fakeError);
 
       const gotSpans = getExportedSpans(1);
+      withAllSpansHaveDBName(gotSpans);
+
       const gotSpanStatus = gotSpans[0].status;
       const wantSpanStatus = {
         code: SpanStatusCode.ERROR,
@@ -270,7 +281,10 @@ describe('Table', () => {
       assert.ifError(err);
       assert.strictEqual(stub.callCount, 1);
 
-      const actualSpanNames = spanNames(getExportedSpans(1));
+      const gotSpans = getExportedSpans(1);
+      withAllSpansHaveDBName(gotSpans);
+
+      const actualSpanNames = spanNames(gotSpans);
       const expectedSpanNames = ['CloudSpanner.Table.replace'];
       assert.deepStrictEqual(
         actualSpanNames,
@@ -301,6 +315,8 @@ describe('Table', () => {
         wantSpanStatus,
         `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
       );
+
+      withAllSpansHaveDBName(gotSpans);
 
       const actualSpanNames = spanNames(gotSpans);
       const expectedSpanNames = ['CloudSpanner.Table.replace'];

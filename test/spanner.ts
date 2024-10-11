@@ -4999,7 +4999,7 @@ describe('Spanner with mock server', () => {
   // and tests the database/instance suffix is an iteration of
   // each afresh invocation of newTestDatabase, which has been
   // causing test flakes.
-  it('Check for span annotations', () => {
+  it('Check for span annotations', done => {
     const exporter = new InMemorySpanExporter();
     const provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
@@ -5013,45 +5013,68 @@ describe('Spanner with mock server', () => {
     });
 
     const opts: typeof ObservabilityOptions = {tracerProvider: provider};
-    startTrace('aSpan', {opts: opts}, span => {
+    startTrace('aSpan', {opts: opts}, async span => {
+      instance._observabilityOptions = opts;
       const database = newTestDatabase();
-      database.observabilityConfig = opts;
+      database._observabilityOptions = opts;
 
-      async function runIt() {
-        const query = {
-          sql: 'SELECT 1',
-        };
+      const query = {
+        sql: 'SELECT 1',
+      };
 
-        const [rows] = await database.run(query);
-        assert.strictEqual(rows.length, 1);
-      }
-
-      runIt();
+      const [rows] = await database.run(query);
+      assert.strictEqual(rows.length, 1);
 
       span.end();
 
+      exporter.forceFlush();
       const spans = exporter.getFinishedSpans();
-      assert.strictEqual(spans.length, 1, 'Exactly 1 span');
-      const span0 = spans[0];
-      const events = span0.events;
 
-      // Sort the events by earliest time of occurence.
-      events.sort((evtA, evtB) => {
-        return evtA.time < evtB.time;
+      // Sort the spans by startTime.
+      spans.sort((spanA, spanB) => {
+        spanA.startTime < spanB.startTime;
       });
 
-      const gotEventNames: string[] = [];
-      events.forEach(event => {
-        gotEventNames.push(event.name);
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
       });
 
-      const wantEventNames = ['Requesting 25 sessions', 'Creating 25 sessions'];
+      const expectedSpanNames = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.SessionPool.createSessions',
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Database.runStream',
+        'CloudSpanner.Database.run',
+        'CloudSpanner.aSpan',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      const expectedEventNames = [
+        'Requesting 25 sessions',
+        'Creating 25 sessions',
+        'Requested for 25 sessions returned 25',
+        'Acquiring session',
+        'Waiting for a session to become available',
+        'Acquired session',
+        'Using Session',
+      ];
 
       assert.deepEqual(
-        gotEventNames,
-        wantEventNames,
-        `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
+        actualEventNames,
+        expectedEventNames,
+        `Mismatched events\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
       );
+
+      done();
     });
   });
 });
