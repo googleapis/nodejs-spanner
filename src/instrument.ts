@@ -145,7 +145,7 @@ export function startTrace<T>(
     {kind: SpanKind.CLIENT},
     span => {
       if (debugTraces) {
-        patchSpanEndForDebugging(span);
+        patchSpanEndForDebugging(span, spanNameSuffix);
       }
 
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
@@ -305,9 +305,10 @@ class noopSpan implements Span {
   }
 }
 
-function patchSpanEndForDebugging(span: Span) {
+function patchSpanEndForDebugging(span: Span, spanNameSuffix: string) {
   const origSpanEnd = span.end;
   const wrapSpanEnd = function (this: Span) {
+    console.trace(`\x1b[35m${spanNameSuffix}.end()\x1b[00m`);
     return origSpanEnd.apply(this);
   };
   Object.defineProperty(span, 'end', {
