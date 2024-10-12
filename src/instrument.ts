@@ -117,6 +117,7 @@ function ensureInitialContextManagerSet() {
     context.setGlobalContextManager(contextManager);
   }
 }
+export {ensureInitialContextManagerSet};
 
 /**
  * startTrace begins an active span in the current active context
@@ -135,8 +136,6 @@ export function startTrace<T>(
   if (!config) {
     config = {} as traceConfig;
   }
-
-  ensureInitialContextManagerSet();
 
   return getTracer(config.opts?.tracerProvider).startActiveSpan(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
@@ -165,11 +164,20 @@ export function startTrace<T>(
         }
       }
 
-      if (config.that) {
-        const fn = cb.bind(config.that);
-        return fn(span);
-      } else {
-        return cb(span);
+      // If at all the invoked function throws an exception,
+      // record the exception and then end this span.
+      try {
+        if (config.that) {
+          const fn = cb.bind(config.that);
+          return fn(span);
+        } else {
+          return cb(span);
+        }
+      } catch (e) {
+        setSpanErrorAndException(span, e as Error);
+        span.end();
+        // Finally re-throw the exception.
+        throw e;
       }
     }
   );

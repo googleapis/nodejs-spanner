@@ -456,19 +456,21 @@ export class Snapshot extends EventEmitter {
           gaxOpts,
           headers: headers,
         },
-        (
+        async (
           err: null | grpc.ServiceError,
           resp: spannerClient.spanner.v1.ITransaction
         ) => {
           if (err) {
             setSpanError(span, err);
-            span.end();
-            callback!(err, resp);
-            return;
+          } else {
+            this._update(resp);
           }
-          this._update(resp);
+
+          // begin simply issues an RPC to signal a state change to the backend,
+          // and doesn't invoke any other subsequent code hence it is paramount
+          // to invoke span.end() before returning results to the callback.
           span.end();
-          callback!(null, resp);
+          callback!(err, resp);
         }
       );
     });
@@ -708,26 +710,37 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      if (this.id && transaction.begin) {
-        delete transaction.begin;
-        transaction.id = this.id;
-      }
-      return this.requestStream({
-        client: 'SpannerClient',
-        method: 'streamingRead',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
-        headers: headers,
-      });
-    };
-
     const traceConfig = {
       tableName: table,
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
+      let attempt = 0;
+      const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        if (this.id && transaction.begin) {
+          delete transaction.begin;
+          transaction.id = this.id;
+        }
+
+        if (resumeToken) {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
+        attempt++;
+
+        return this.requestStream({
+          client: 'SpannerClient',
+          method: 'streamingRead',
+          reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+          gaxOpts: gaxOptions,
+          headers: headers,
+        });
+      };
+
       const resultStream = partialResultStream(
         this._wrapWithIdWaiter(makeRequest),
         {
@@ -743,20 +756,21 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            this.begin();
-          }
+        .on('error', async err => {
           setSpanError(span, err);
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            // It is paramount for us to await this invocation to
+            // .begin() to complete before we invoke span.end();
+            await this.begin();
+          } else {
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
+          }
+          span.end();
         })
         .on('end', err => {
           if (err) {
@@ -770,7 +784,9 @@ export class Snapshot extends EventEmitter {
           if (err) {
             setSpanError(span, err);
           }
-          span.end();
+          if (span.isRecording()) {
+            span.end();
+          }
         });
       }
 
@@ -1281,7 +1297,21 @@ export class Snapshot extends EventEmitter {
       ...query,
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
+      let attempt = 0;
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        if (!resumeToken) {
+          if (attempt === 0) {
+            span.addEvent('Starting stream');
+          } else {
+            span.addEvent('Re-attempting start stream', {attempt: attempt});
+          }
+        } else {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
         if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
           try {
             sanitizeRequest();
@@ -1293,6 +1323,8 @@ export class Snapshot extends EventEmitter {
             return errorStream;
           }
         }
+
+        attempt++;
 
         return this.requestStream({
           client: 'SpannerClient',
@@ -1318,36 +1350,29 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
+        .on('error', async err => {
           setSpanError(span, err as Error);
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            this.begin();
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            span.addEvent('Stream broken. Safe to retry');
+            await this.begin();
+          } else {
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
           }
+          span.end();
         })
         .on('end', err => {
           if (err) {
             setSpanError(span, err as Error);
           }
-          span.end();
-        });
-
-      if (resultStream instanceof Stream) {
-        finished(resultStream, err => {
-          if (err) {
-            setSpanError(span, err);
+          if (span.isRecording()) {
+            span.end();
           }
-          span.end();
         });
-      }
 
       return resultStream;
     });
@@ -2106,21 +2131,28 @@ export class Transaction extends Dml {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
-    return startTrace('Transaction.commit', traceConfig, span => {
+    startTrace('Transaction.commit', traceConfig, async span => {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
         reqOpts.singleUseTransaction = this._options;
       } else {
-        this.begin().then(() => {
-          this.commit(options, (err, resp) => {
-            if (err) {
-              setSpanError(span, err);
-            }
+        this.begin().then(
+          () => {
+            this.commit(options, (err, resp) => {
+              if (err) {
+                setSpanError(span, err);
+              }
+              span.end();
+              callback(err, resp);
+            });
+          },
+          err => {
+            setSpanError(span, err);
             span.end();
-            callback(err, resp);
-          });
-        }, callback);
+            callback(err, null);
+          }
+        );
         return;
       }
 
@@ -2983,6 +3015,15 @@ export class PartitionedDml extends Dml {
       });
     });
   }
+}
+
+function isErrorAborted(err): boolean {
+  return (
+    err &&
+    typeof err === 'object' &&
+    'code' in err &&
+    (err as grpc.ServiceError).code === grpc.status.ABORTED
+  );
 }
 
 /*! Developer Documentation
