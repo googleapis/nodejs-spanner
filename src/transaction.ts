@@ -757,12 +757,6 @@ export class Snapshot extends EventEmitter {
             this.begin();
           }
           setSpanError(span, err);
-        })
-        .on('end', err => {
-          if (err) {
-            setSpanError(span, err);
-          }
-          span.end();
         });
 
       if (resultStream instanceof Stream) {
@@ -1288,7 +1282,6 @@ export class Snapshot extends EventEmitter {
           } catch (e) {
             const errorStream = new PassThrough();
             setSpanErrorAndException(span, e as Error);
-            span.end();
             setImmediate(() => errorStream.destroy(e as Error));
             return errorStream;
           }
@@ -1332,12 +1325,6 @@ export class Snapshot extends EventEmitter {
           ) {
             this.begin();
           }
-        })
-        .on('end', err => {
-          if (err) {
-            setSpanError(span, err as Error);
-          }
-          span.end();
         });
 
       if (resultStream instanceof Stream) {
@@ -2112,15 +2099,29 @@ export class Transaction extends Dml {
       } else if (!this._useInRunner) {
         reqOpts.singleUseTransaction = this._options;
       } else {
-        this.begin().then(() => {
-          this.commit(options, (err, resp) => {
-            if (err) {
+        this.begin()
+          .then(
+            () => {
+              this.commit(options, (err, resp) => {
+                if (err) {
+                  setSpanError(span, err);
+                }
+                span.end();
+                callback(err, resp);
+              });
+            },
+            err => {
               setSpanError(span, err);
+              callback(err);
+              span.end();
             }
+          )
+          .catch(err => {
+            setSpanErrorAndException(span, err as Error);
             span.end();
-            callback(err, resp);
+            // Re-throw the exception after recording it.
+            throw err;
           });
-        }, callback);
         return;
       }
 
