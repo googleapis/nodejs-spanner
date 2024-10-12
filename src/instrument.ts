@@ -118,6 +118,8 @@ function ensureInitialContextManagerSet() {
   }
 }
 
+const debugTraces = process.env.SPANNER_DEBUG_TRACES === 'true';
+
 /**
  * startTrace begins an active span in the current active context
  * and passes it back to the set callback function. Each span will
@@ -142,6 +144,10 @@ export function startTrace<T>(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
     {kind: SpanKind.CLIENT},
     span => {
+      if (debugTraces) {
+        patchSpanEndForDebugging(span);
+      }
+
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
       span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
       span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
@@ -165,11 +171,20 @@ export function startTrace<T>(
         }
       }
 
-      if (config.that) {
-        const fn = cb.bind(config.that);
-        return fn(span);
-      } else {
-        return cb(span);
+      // If at all the invoked function throws an exception,
+      // record the exception and then end this span.
+      try {
+        if (config.that) {
+          const fn = cb.bind(config.that);
+          return fn(span);
+        } else {
+          return cb(span);
+        }
+      } catch (e) {
+        setSpanErrorAndException(span, e as Error);
+        span.end();
+        // Finally re-throw the exception.
+        throw e;
       }
     }
   );
@@ -288,4 +303,15 @@ class noopSpan implements Span {
   updateName(name: string): this {
     return this;
   }
+}
+
+function patchSpanEndForDebugging(span: Span) {
+  const origSpanEnd = span.end;
+  const wrapSpanEnd = function (this: Span) {
+    console.trace(`\x1b[35m${spanNameSuffix}.end()\x1b[00m`);
+    return origSpanEnd.apply(this);
+  };
+  Object.defineProperty(span, 'end', {
+    value: wrapSpanEnd,
+  });
 }
