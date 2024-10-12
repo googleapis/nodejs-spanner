@@ -308,7 +308,6 @@ class noopSpan implements Span {
 function patchSpanEndForDebugging(span: Span) {
   const origSpanEnd = span.end;
   const wrapSpanEnd = function (this: Span) {
-    console.trace(`\x1b[35m${spanNameSuffix}.end()\x1b[00m`);
     return origSpanEnd.apply(this);
   };
   Object.defineProperty(span, 'end', {

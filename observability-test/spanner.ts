@@ -30,6 +30,7 @@ const {
 } = require('@opentelemetry/sdk-trace-node');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {SpanStatusCode} = require('@opentelemetry/api');
 const {
   disableContextAndManager,
   generateWithAllSpansHaveDBName,
@@ -1253,7 +1254,7 @@ describe('E2E traces with async/await', async () => {
   });
 });
 
-describe('Negative cases', async () => {
+describe("Negative case: database.run('SELECT 1p')", async () => {
   let server: grpc.Server;
   let spanner: Spanner;
   let database: Database;
@@ -1261,6 +1262,11 @@ describe('Negative cases', async () => {
   let traceExporter: typeof InMemorySpanExporter;
   let provider: typeof TracerProvider;
   let observabilityOptions: typeof ObservabilityOptions;
+
+  const selectSql1p = 'SELECT 1p';
+  const messageBadSelect1p = `Missing whitespace between literal and alias [at 1:9]
+SELECT 1p
+        ^`;
 
   beforeEach(async () => {
     traceExporter = new InMemorySpanExporter();
@@ -1278,6 +1284,15 @@ describe('Negative cases', async () => {
     spanner = setupResult.spanner;
     server = setupResult.server;
     spannerMock = setupResult.spannerMock;
+
+    const serverErr = {
+      message: messageBadSelect1p,
+      code: grpc.status.INVALID_ARGUMENT,
+    } as mock.MockError;
+    spannerMock.putStatementResult(
+      selectSql1p,
+      mock.StatementResult.error(serverErr)
+    );
   });
 
   afterEach(async () => {
@@ -1288,8 +1303,7 @@ describe('Negative cases', async () => {
     server.tryShutdown(() => {});
   });
 
-	function assertRunBadSyntaxExpectations() {
-  // See https://github.com/googleapis/nodejs-spanner/issues/2146.
+  function assertRunBadSyntaxExpectations() {
     traceExporter.forceFlush();
     const spans = traceExporter.getFinishedSpans();
 
@@ -1381,6 +1395,20 @@ describe('Negative cases', async () => {
       'Did not expect the same traceId'
     );
 
+    // Ensure that the last span has an error.
+    assert.deepStrictEqual(
+      runStreamSpan.status.code,
+      SpanStatusCode.ERROR,
+      'Expected an error status'
+    );
+
+    const want = '3 INVALID_ARGUMENT: ' + messageBadSelect1p;
+    assert.deepStrictEqual(
+      runStreamSpan.status.message,
+      want,
+      `Mismatched status message:\n\n\tGot:  '${runStreamSpan.status.message}'\n\tWant: '${want}'`
+    );
+
     // Finally check for the collective expected event names.
     const expectedEventNames = [
       'Requesting 25 sessions',
@@ -1390,6 +1418,7 @@ describe('Negative cases', async () => {
       'Waiting for a session to become available',
       'Acquired session',
       'Using Session',
+      'exception',
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -1397,12 +1426,32 @@ describe('Negative cases', async () => {
       `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
     );
   }
-  it('bad query on database.run async/await', () => {
-	const instance = spanner.instance('instance');
-	const database = instance.database('database');
 
-	const [rows] = await database.run('SELECT 1p');
+  it('async/await', async () => {
+    const instance = spanner.instance('instance');
+    const database = instance.database('database');
 
-	provider.forceFlush();
+    try {
+      const [rows] = await database.run(selectSql1p);
+    } catch (e) {
+      // This catch is meant to ensure that we
+      // can assert on the generated spans.
+    } finally {
+      provider.forceFlush();
+    }
+
+    assertRunBadSyntaxExpectations();
+  });
+
+  it('callback', done => {
+    const instance = spanner.instance('instance');
+    const database = instance.database('database');
+
+    database.run(selectSql1p, (err, rows) => {
+      assert.ok(err);
+      provider.forceFlush();
+      assertRunBadSyntaxExpectations();
+      done();
+    });
   });
 });
