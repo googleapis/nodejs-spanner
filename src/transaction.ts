@@ -757,6 +757,12 @@ export class Snapshot extends EventEmitter {
             this.begin();
           }
           setSpanError(span, err);
+        })
+        .on('end', err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
         });
 
       if (resultStream instanceof Stream) {
@@ -1325,6 +1331,12 @@ export class Snapshot extends EventEmitter {
           ) {
             this.begin();
           }
+        })
+        .on('end', err => {
+          if (err) {
+            setSpanError(span, err as Error);
+          }
+          span.end();
         });
 
       if (resultStream instanceof Stream) {

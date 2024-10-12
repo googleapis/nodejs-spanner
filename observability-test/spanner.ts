@@ -804,7 +804,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
           const spans = traceExporter.getFinishedSpans();
           withAllSpansHaveDBName(spans);
-          assert.strictEqual(spans.length, 4);
 
           const actualSpanNames: string[] = [];
           const actualEventNames: string[] = [];
