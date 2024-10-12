@@ -3374,7 +3374,7 @@ class Database extends common.GrpcServiceObject {
     return startTrace(
       'Database.runTransactionAsync',
       this._traceConfig,
-      span => {
+      async span => {
         // Loop to retry 'Session not found' errors.
         // (and yes, we like while (true) more than for (;;) here)
         // eslint-disable-next-line no-constant-condition
