@@ -3266,22 +3266,11 @@ class Database extends common.GrpcServiceObject {
             span.addEvent('No session available', {
               'session.id': session?.id,
             });
-            span.addEvent('Retrying');
             release();
-            this.runTransaction(
-              options,
-              (
-                err: ServiceError | null,
-                txn: Transaction | null | undefined
-              ) => {
-                runFn!(err, txn);
-              }
-            );
+            this.runTransaction(options, runFn!);
           } else {
             span.addEvent('Using Session', {'session.id': session!.id});
-            setImmediate((err: null | ServiceError) => {
-              runFn!(err);
-            }, err);
+            setImmediate(runFn!, err);
             release();
           }
         });
