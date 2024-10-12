@@ -1252,3 +1252,157 @@ describe('E2E traces with async/await', async () => {
     });
   });
 });
+
+describe('Negative cases', async () => {
+  let server: grpc.Server;
+  let spanner: Spanner;
+  let database: Database;
+  let spannerMock: mock.MockSpanner;
+  let traceExporter: typeof InMemorySpanExporter;
+  let provider: typeof TracerProvider;
+  let observabilityOptions: typeof ObservabilityOptions;
+
+  beforeEach(async () => {
+    traceExporter = new InMemorySpanExporter();
+    provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: traceExporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
+    observabilityOptions = {
+      tracerProvider: provider,
+      enableExtendedTracing: true,
+    };
+    const setupResult = await setup(observabilityOptions);
+    spanner = setupResult.spanner;
+    server = setupResult.server;
+    spannerMock = setupResult.spannerMock;
+  });
+
+  afterEach(async () => {
+    traceExporter.reset();
+    provider.shutdown();
+    spannerMock.resetRequests();
+    spanner.close();
+    server.tryShutdown(() => {});
+  });
+
+	function assertRunBadSyntaxExpectations() {
+  // See https://github.com/googleapis/nodejs-spanner/issues/2146.
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+
+    const actualSpanNames: string[] = [];
+    const actualEventNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+      span.events.forEach(event => {
+        actualEventNames.push(event.name);
+      });
+    });
+
+    const expectedSpanNames = [
+      'CloudSpanner.Database.batchCreateSessions',
+      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Snapshot.runStream',
+      'CloudSpanner.Database.runStream',
+      'CloudSpanner.Database.run',
+    ];
+    assert.deepStrictEqual(
+      actualSpanNames,
+      expectedSpanNames,
+      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+    );
+
+    // We need to ensure a strict relationship between the spans.
+    // runSpan -------------------|
+    //     |-runStream ----------|
+    const runStreamSpan = spans[spans.length - 2];
+    const runSpan = spans[spans.length - 1];
+    assert.ok(
+      runSpan.spanContext().traceId,
+      'Expected that runSpan has a defined traceId'
+    );
+    assert.ok(
+      runStreamSpan.spanContext().traceId,
+      'Expected that runStreamSpan has a defined traceId'
+    );
+    assert.deepStrictEqual(
+      runStreamSpan.parentSpanId,
+      runSpan.spanContext().spanId,
+      `Expected that runSpan(spanId=${runSpan.spanContext().spanId}) is the parent to runStreamSpan(parentSpanId=${runStreamSpan.parentSpanId})`
+    );
+    assert.deepStrictEqual(
+      runSpan.spanContext().traceId,
+      runStreamSpan.spanContext().traceId,
+      'Expected that both spans share a traceId'
+    );
+    assert.ok(
+      runStreamSpan.spanContext().spanId,
+      'Expected that runStreamSpan has a defined spanId'
+    );
+    assert.ok(
+      runSpan.spanContext().spanId,
+      'Expected that runSpan has a defined spanId'
+    );
+
+    const databaseBatchCreateSessionsSpan = spans[0];
+    assert.strictEqual(
+      databaseBatchCreateSessionsSpan.name,
+      'CloudSpanner.Database.batchCreateSessions'
+    );
+    const sessionPoolCreateSessionsSpan = spans[1];
+    assert.strictEqual(
+      sessionPoolCreateSessionsSpan.name,
+      'CloudSpanner.SessionPool.createSessions'
+    );
+    assert.ok(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      'Expecting a defined sessionPoolCreateSessions traceId'
+    );
+    assert.deepStrictEqual(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      databaseBatchCreateSessionsSpan.spanContext().traceId,
+      'Expected the same traceId'
+    );
+    assert.deepStrictEqual(
+      databaseBatchCreateSessionsSpan.parentSpanId,
+      sessionPoolCreateSessionsSpan.spanContext().spanId,
+      'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions'
+    );
+
+    // Assert that despite all being exported, SessionPool.createSessions
+    // is not in the same trace as runStream, createSessions is invoked at
+    // Spanner Client instantiation, thus before database.run is invoked.
+    assert.notEqual(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      runSpan.spanContext().traceId,
+      'Did not expect the same traceId'
+    );
+
+    // Finally check for the collective expected event names.
+    const expectedEventNames = [
+      'Requesting 25 sessions',
+      'Creating 25 sessions',
+      'Requested for 25 sessions returned 25',
+      'Acquiring session',
+      'Waiting for a session to become available',
+      'Acquired session',
+      'Using Session',
+    ];
+    assert.deepStrictEqual(
+      actualEventNames,
+      expectedEventNames,
+      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    );
+  }
+  it('bad query on database.run async/await', () => {
+	const instance = spanner.instance('instance');
+	const database = instance.database('database');
+
+	const [rows] = await database.run('SELECT 1p');
+
+	provider.forceFlush();
+  });
+});
