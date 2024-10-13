@@ -744,6 +744,7 @@ export class Snapshot extends EventEmitter {
           }
         })
         .on('error', err => {
+          setSpanError(span, err);
           const isServiceError =
             err && typeof err === 'object' && 'code' in err;
           if (
@@ -754,9 +755,11 @@ export class Snapshot extends EventEmitter {
               (err as grpc.ServiceError).code === grpc.status.ABORTED
             )
           ) {
+            span.addEvent('Transaction Aborted, retrying begin', {
+              'transaction.id': this.id?.toString(),
+            });
             this.begin();
           }
-          setSpanError(span, err);
         })
         .on('end', err => {
           if (err) {

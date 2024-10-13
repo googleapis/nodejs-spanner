@@ -3223,8 +3223,8 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          span.end();
           this.runTransaction(options, runFn!);
+          span.end();
           return;
         }
 
@@ -3244,18 +3244,22 @@ class Database extends common.GrpcServiceObject {
 
         const release = () => {
           this.pool_.release(session!);
-          span.end();
+          if (span.isRecording()) {
+            // span.end() might have already been invoked inside
+            // Transactionrunner.
+            span.end();
+          }
         };
 
         const runner = new TransactionRunner(
           session!,
           transaction!,
-          (err, resp) => {
+          async (err, resp) => {
             if (err) {
               setSpanError(span, err!);
             }
+            await runFn!(err, resp);
             span.end();
-            runFn!(err, resp);
           },
           options
         );
