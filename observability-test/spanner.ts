@@ -1253,7 +1253,7 @@ describe('E2E traces with async/await', async () => {
   });
 });
 
-describe("Negative case: database.run('SELECT 1p')", async () => {
+describe('Negative cases', async () => {
   let server: grpc.Server;
   let spanner: Spanner;
   let database: Database;
@@ -1266,6 +1266,10 @@ describe("Negative case: database.run('SELECT 1p')", async () => {
   const messageBadSelect1p = `Missing whitespace between literal and alias [at 1:9]
 SELECT 1p
         ^`;
+  const insertAlreadyExistentDataSql =
+    "INSERT INTO Singers(firstName, SingerId) VALUES('Foo', 1)";
+  const messageBadInsertAlreadyExistent =
+    'Failed to insert row with primary key ({pk#SingerId:1}) due to previously existing row';
 
   beforeEach(async () => {
     traceExporter = new InMemorySpanExporter();
@@ -1292,6 +1296,15 @@ SELECT 1p
       selectSql1p,
       mock.StatementResult.error(serverErr)
     );
+
+    const insertAlreadyExistentErr = {
+      message: messageBadInsertAlreadyExistent,
+      code: grpc.status.ALREADY_EXISTS,
+    } as mock.MockError;
+    spannerMock.putStatementResult(
+      insertAlreadyExistentDataSql,
+      mock.StatementResult.error(insertAlreadyExistentErr)
+    );
   });
 
   afterEach(async () => {
@@ -1305,6 +1318,9 @@ SELECT 1p
   function assertRunBadSyntaxExpectations() {
     traceExporter.forceFlush();
     const spans = traceExporter.getFinishedSpans();
+    spans.sort((spanA, spanB) => {
+      return spanA.startTime < spanB.startTime;
+    });
 
     const actualSpanNames: string[] = [];
     const actualEventNames: string[] = [];
@@ -1451,6 +1467,162 @@ SELECT 1p
       provider.forceFlush();
       assertRunBadSyntaxExpectations();
       done();
+    });
+  });
+
+  function assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData() {
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+    spans.sort((spanA, spanB) => {
+      return spanA.startTime < spanB.startTime;
+    });
+
+    const actualSpanNames: string[] = [];
+    const actualEventNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+      span.events.forEach(event => {
+        actualEventNames.push(event.name);
+      });
+    });
+
+    const expectedSpanNames = [
+      'CloudSpanner.Database.batchCreateSessions',
+      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Snapshot.runStream',
+      'CloudSpanner.Snapshot.run',
+      'CloudSpanner.Snapshot.begin',
+      'CloudSpanner.Snapshot.begin',
+      'CloudSpanner.Transaction.commit',
+      'CloudSpanner.Transaction.commit',
+      'CloudSpanner.Database.runTransaction',
+    ];
+    assert.deepStrictEqual(
+      expectedSpanNames,
+      actualSpanNames,
+      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+    );
+
+    // We need to ensure a strict relationship between the spans.
+    // |-Database.runTransaction |-------------------------------------|
+    //   |-Snapshot.run            |------------------------|
+    //      |-Snapshot.runStream     |---------------------|
+    //   |-Transaction.commit                                 |--------|
+    //      |-Snapshot.begin                                   |------|
+    //       |-Snapshot.commit                                  |-----|
+    const spanDatabaseRunTransaction = spans[spans.length - 1];
+    assert.deepStrictEqual(
+      spanDatabaseRunTransaction.name,
+      'CloudSpanner.Database.runTransaction',
+      `${actualSpanNames}`
+    );
+    const spanTransactionCommit0 = spans[spans.length - 2];
+    assert.strictEqual(
+      spanTransactionCommit0.name,
+      'CloudSpanner.Transaction.commit'
+    );
+    assert.deepStrictEqual(
+      spanTransactionCommit0.parentSpanId,
+      spanDatabaseRunTransaction.spanContext().spanId,
+      'Expected that Database.runTransaction is the parent to Transaction.commmit'
+    );
+    const spanSnapshotRun = spans[3];
+    assert.strictEqual(spanSnapshotRun.name, 'CloudSpanner.Snapshot.run');
+    assert.deepStrictEqual(
+      spanSnapshotRun.parentSpanId,
+      spanDatabaseRunTransaction.spanContext().spanId,
+      'Expected that Database.runTransaction is the parent to Snapshot.run'
+    );
+    const wantSpanErr = '6 ALREADY_EXISTS: ' + messageBadInsertAlreadyExistent;
+    assert.deepStrictEqual(
+      spanSnapshotRun.status.code,
+      SpanStatusCode.ERROR,
+      'Unexpected status code'
+    );
+    assert.deepStrictEqual(
+      spanSnapshotRun.status.message,
+      wantSpanErr,
+      'Unexpexcted error message'
+    );
+
+    const databaseBatchCreateSessionsSpan = spans[0];
+    assert.strictEqual(
+      databaseBatchCreateSessionsSpan.name,
+      'CloudSpanner.Database.batchCreateSessions'
+    );
+    const sessionPoolCreateSessionsSpan = spans[1];
+    assert.strictEqual(
+      sessionPoolCreateSessionsSpan.name,
+      'CloudSpanner.SessionPool.createSessions'
+    );
+    assert.ok(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      'Expecting a defined sessionPoolCreateSessions traceId'
+    );
+    assert.deepStrictEqual(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      databaseBatchCreateSessionsSpan.spanContext().traceId,
+      'Expected the same traceId'
+    );
+    assert.deepStrictEqual(
+      databaseBatchCreateSessionsSpan.parentSpanId,
+      sessionPoolCreateSessionsSpan.spanContext().spanId,
+      'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions'
+    );
+
+    // Assert that despite all being exported, SessionPool.createSessions
+    // is not in the same trace as runStream, createSessions is invoked at
+    // Spanner Client instantiation, thus before database.run is invoked.
+    assert.notEqual(
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      spanDatabaseRunTransaction.spanContext().traceId,
+      'Did not expect the same traceId'
+    );
+    // Finally check for the collective expected event names.
+    const expectedEventNames = [
+      'Requesting 25 sessions',
+      'Creating 25 sessions',
+      'Requested for 25 sessions returned 25',
+      'Begin Transaction',
+      'Transaction Creation Done',
+      'Begin Transaction',
+      'Transaction Creation Done',
+      'Starting Commit',
+      'Commit Done',
+      'Acquiring session',
+      'Waiting for a session to become available',
+      'Acquired session',
+    ];
+    assert.deepStrictEqual(
+      actualEventNames,
+      expectedEventNames,
+      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    );
+  }
+
+  it('runTransaction with async/await for INSERT with existent data + transaction.commit', done => {
+    const instance = spanner.instance('instance');
+    const database = instance.database('database');
+
+    const update = {
+      sql: insertAlreadyExistentDataSql,
+    };
+    database.runTransaction(async (err, transaction) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      try {
+        await transaction!.run(update);
+        await new Promise(resolve => setTimeout(resolve, 400));
+      } catch (err) {
+      } finally {
+        await transaction!.commit();
+        await new Promise(resolve => setTimeout(resolve, 2800));
+        provider.forceFlush();
+        assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData();
+        done();
+      }
     });
   });
 });

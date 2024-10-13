@@ -3259,6 +3259,7 @@ class Database extends common.GrpcServiceObject {
               setSpanError(span, err!);
             }
             await runFn!(err, resp);
+            span.end();
           },
           options
         );
