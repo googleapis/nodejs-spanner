@@ -117,6 +117,7 @@ function ensureInitialContextManagerSet() {
     context.setGlobalContextManager(contextManager);
   }
 }
+export {ensureInitialContextManagerSet};
 
 const debugTraces = process.env.SPANNER_DEBUG_TRACES === 'true';
 
@@ -138,14 +139,19 @@ export function startTrace<T>(
     config = {} as traceConfig;
   }
 
-  ensureInitialContextManagerSet();
+  const tracer = getTracer(config.opts?.tracerProvider);
+  let parentSpanId: string | undefined;
+  if (debugTraces) {
+    const parentSpan = trace.getActiveSpan();
+    parentSpanId = parentSpan?.spanContext()!.spanId;
+  }
 
-  return getTracer(config.opts?.tracerProvider).startActiveSpan(
+  return tracer.startActiveSpan(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
     {kind: SpanKind.CLIENT},
     span => {
       if (debugTraces) {
-        patchSpanEndForDebugging(span, spanNameSuffix);
+        patchSpanEndForDebugging(span, spanNameSuffix, parentSpanId);
       }
 
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
@@ -305,10 +311,19 @@ class noopSpan implements Span {
   }
 }
 
-function patchSpanEndForDebugging(span: Span, spanNameSuffix: string) {
+function patchSpanEndForDebugging(
+  span: Span,
+  spanNameSuffix: string,
+  parentSpanId: string | undefined
+) {
+  console.trace(
+    `\x1b[33m${spanNameSuffix}.start id=${span.spanContext().spanId} with parentSpanId: ${parentSpanId}\x1b[00m`
+  );
   const origSpanEnd = span.end;
   const wrapSpanEnd = function (this: Span) {
-    console.trace(`\x1b[35m${spanNameSuffix}.end()\x1b[00m`);
+    console.trace(
+      `\x1b[35m${spanNameSuffix}.end() id=${span.spanContext().spanId} with parentSpanId: ${parentSpanId}\x1b[00m`
+    );
     return origSpanEnd.apply(this);
   };
   Object.defineProperty(span, 'end', {
