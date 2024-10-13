@@ -3214,7 +3214,7 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     startTrace('Database.runTransaction', this._traceConfig, span => {
-      this.pool_.getSession((err, session?, transaction?) => {
+      this.pool_.getSession(async (err, session?, transaction?) => {
         if (err) {
           setSpanError(span, err);
         }
@@ -3223,7 +3223,7 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          this.runTransaction(options, runFn!);
+          await this.runTransaction(options, runFn!);
           span.end();
           return;
         }
@@ -3259,7 +3259,6 @@ class Database extends common.GrpcServiceObject {
               setSpanError(span, err!);
             }
             await runFn!(err, resp);
-            span.end();
           },
           options
         );
