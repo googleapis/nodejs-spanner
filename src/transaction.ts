@@ -1320,7 +1320,7 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
+        .on('error', async err => {
           setSpanError(span, err as Error);
           const isServiceError =
             err && typeof err === 'object' && 'code' in err;
@@ -1332,7 +1332,7 @@ export class Snapshot extends EventEmitter {
               (err as grpc.ServiceError).code === grpc.status.ABORTED
             )
           ) {
-            this.begin();
+            await this.begin();
           }
         })
         .on('end', err => {
