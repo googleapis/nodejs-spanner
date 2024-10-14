@@ -708,26 +708,36 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      if (this.id && transaction.begin) {
-        delete transaction.begin;
-        transaction.id = this.id;
-      }
-      return this.requestStream({
-        client: 'SpannerClient',
-        method: 'streamingRead',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
-        headers: headers,
-      });
-    };
-
     const traceConfig = {
       tableName: table,
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
+      let attempt = 0;
+      const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        if (this.id && transaction.begin) {
+          delete transaction.begin;
+          transaction.id = this.id;
+        }
+
+        if (resumeToken) {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
+        attempt++;
+
+        return this.requestStream({
+          client: 'SpannerClient',
+          method: 'streamingRead',
+          reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+          gaxOpts: gaxOptions,
+          headers: headers,
+        });
+      };
       const resultStream = partialResultStream(
         this._wrapWithIdWaiter(makeRequest),
         {
@@ -743,7 +753,7 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
+        .on('error', async err => {
           setSpanError(span, err);
           const isServiceError =
             err && typeof err === 'object' && 'code' in err;
@@ -755,11 +765,16 @@ export class Snapshot extends EventEmitter {
               (err as grpc.ServiceError).code === grpc.status.ABORTED
             )
           ) {
-            span.addEvent('Transaction Aborted, retrying begin', {
+            span.addEvent('Stream broken. Safe to retry', {
               'transaction.id': this.id?.toString(),
             });
-            this.begin();
+            await this.begin();
+          } else {
+            span.addEvent('Stream broken. Not safe to retry', {
+              'transaction.id': this.id?.toString(),
+            });
           }
+          span.end();
         })
         .on('end', err => {
           if (err) {
@@ -1284,7 +1299,22 @@ export class Snapshot extends EventEmitter {
       ...query,
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
+      let attempt = 0;
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        if (!resumeToken) {
+          if (attempt === 0) {
+            span.addEvent('Starting stream');
+          } else {
+            span.addEvent('Re-attempting start stream', {attempt: attempt});
+          }
+        } else {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
+        // console.log('runStream', resumeToken?.toString());
         if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
           try {
             sanitizeRequest();
@@ -1292,9 +1322,12 @@ export class Snapshot extends EventEmitter {
             const errorStream = new PassThrough();
             setSpanErrorAndException(span, e as Error);
             setImmediate(() => errorStream.destroy(e as Error));
+            span.end();
             return errorStream;
           }
         }
+
+        attempt++;
 
         return this.requestStream({
           client: 'SpannerClient',
@@ -1332,8 +1365,16 @@ export class Snapshot extends EventEmitter {
               (err as grpc.ServiceError).code === grpc.status.ABORTED
             )
           ) {
+            span.addEvent('Stream broken. Safe to retry', {
+              'transaction.id': this.id?.toString(),
+            });
             await this.begin();
+          } else {
+            span.addEvent('Stream broken. Not safe to retry', {
+              'transaction.id': this.id?.toString(),
+            });
           }
+          span.end();
         })
         .on('end', err => {
           if (err) {

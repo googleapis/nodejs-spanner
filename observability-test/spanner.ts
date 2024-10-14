@@ -20,9 +20,14 @@ import {google} from '../protos/protos';
 import {Database, Instance, Spanner} from '../src';
 import {MutationSet} from '../src/transaction';
 import protobuf = google.spanner.v1;
+import v1 = google.spanner.v1;
+import PartialResultSet = google.spanner.v1.PartialResultSet;
 import * as mock from '../test/mockserver/mockspanner';
 import * as mockInstanceAdmin from '../test/mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from '../test/mockserver/mockdatabaseadmin';
+import * as sinon from 'sinon';
+import {Row} from '../src/partial-result-stream';
+import {Json} from '../src/codec';
 const {
   AlwaysOnSampler,
   NodeTracerProvider,
@@ -776,6 +781,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             'Cache hit: has usable session',
             'Acquired session',
             'Using Session',
+            'Starting stream',
             'Transaction Creation Done',
           ];
           assert.strictEqual(
@@ -829,6 +835,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           const expectedEventNames = [
             'Begin Transaction',
             'Transaction Creation Done',
+            'Starting stream',
           ];
           assert.deepStrictEqual(
             actualEventNames.every(value => expectedEventNames.includes(value)),
@@ -1615,7 +1622,6 @@ SELECT 1p
       try {
         await transaction!.run(update);
         await new Promise(resolve => setTimeout(resolve, 400));
-      } catch (err) {
       } finally {
         await transaction!.commit();
         await new Promise(resolve => setTimeout(resolve, 2800));
@@ -1623,6 +1629,612 @@ SELECT 1p
         assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData();
         done();
       }
+    });
+  });
+});
+
+describe('Traces for ExecuteStream broken stream retries', () => {
+  let sandbox: sinon.SinonSandbox;
+  const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
+  const select1 = 'SELECT 1';
+  const invalidSql = 'SELECT * FROM FOO';
+  const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
+  const selectAllTypes = 'SELECT * FROM TABLE_WITH_ALL_TYPES';
+  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES(
+        COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP
+  ) VALUES (
+        @bool, @int64, @float64, @numeric, @string, @bytes, @json, @date, @timestamp
+  )`;
+  const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
+  const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
+    code: grpc.status.NOT_FOUND,
+  });
+  const server = new grpc.Server();
+  const spannerMock = mock.createMockSpanner(server);
+  mockInstanceAdmin.createMockInstanceAdmin(server);
+  mockDatabaseAdmin.createMockDatabaseAdmin(server);
+  let port: number;
+  let spanner: Spanner;
+  let instance: Instance;
+  let dbCounter = 1;
+
+  const traceExporter = new InMemorySpanExporter();
+  const tracerProvider = new NodeTracerProvider({
+    sampler: new AlwaysOnSampler(),
+    exporter: traceExporter,
+  });
+  tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
+  function newTestDatabase(): Database {
+    return instance.database(`database-${dbCounter++}`);
+  }
+
+  before(async () => {
+    sandbox = sinon.createSandbox();
+    port = await new Promise((resolve, reject) => {
+      server.bindAsync(
+        '0.0.0.0:0',
+        grpc.ServerCredentials.createInsecure(),
+        (err, assignedPort) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(assignedPort);
+          }
+        }
+      );
+    });
+    spannerMock.putStatementResult(
+      selectSql,
+      mock.StatementResult.resultSet(mock.createSimpleResultSet())
+    );
+    spannerMock.putStatementResult(
+      select1,
+      mock.StatementResult.resultSet(mock.createSelect1ResultSet())
+    );
+    spannerMock.putStatementResult(
+      selectAllTypes,
+      mock.StatementResult.resultSet(mock.createResultSetWithAllDataTypes())
+    );
+    spannerMock.putStatementResult(
+      invalidSql,
+      mock.StatementResult.error(fooNotFoundErr)
+    );
+    spannerMock.putStatementResult(
+      insertSql,
+      mock.StatementResult.updateCount(1)
+    );
+    spannerMock.putStatementResult(
+      insertSqlForAllTypes,
+      mock.StatementResult.updateCount(1)
+    );
+    spannerMock.putStatementResult(
+      updateSql,
+      mock.StatementResult.updateCount(2)
+    );
+
+    const observabilityOptions: typeof ObservabilityOptions = {
+      tracerProvider: tracerProvider,
+      enableExtendedTracing: true,
+    };
+
+    spanner = new Spanner({
+      servicePath: 'localhost',
+      port,
+      sslCreds: grpc.credentials.createInsecure(),
+      observabilityOptions: observabilityOptions,
+    });
+    // Gets a reference to a Cloud Spanner instance and database
+    instance = spanner.instance('instance');
+  });
+
+  after(() => {
+    spanner.close();
+    server.tryShutdown(() => {});
+    sandbox.restore();
+  });
+
+  beforeEach(async () => {
+    spannerMock.resetRequests();
+    spannerMock.removeExecutionTimes();
+    await tracerProvider.forceFlush();
+    await traceExporter.forceFlush();
+    await traceExporter.reset();
+  });
+
+  describe('PartialResultStream', () => {
+    const streamIndexes = [1, 2];
+    streamIndexes.forEach(index => {
+      it('should retry UNAVAILABLE during streaming', async () => {
+        const database = newTestDatabase();
+        const err = {
+          message: 'Temporary unavailable',
+          code: grpc.status.UNAVAILABLE,
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        const [rows] = await database.run(selectSql);
+        assert.strictEqual(rows.length, 3);
+        await database.close();
+      });
+
+      it('should retry UNAVAILABLE during streaming with txn ID from inline begin response', async () => {
+        const err = {
+          message: 'Temporary unavailable',
+          code: grpc.status.UNAVAILABLE,
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        const database = newTestDatabase();
+
+        await database.runTransactionAsync(async tx => {
+          await tx.run(selectSql);
+          await tx.commit();
+        });
+        await database.close();
+
+        const requests = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.ExecuteSqlRequest).sql)
+          .map(req => req as v1.ExecuteSqlRequest);
+        assert.strictEqual(requests.length, 2);
+        assert.ok(
+          requests[0].transaction?.begin!.readWrite,
+          'inline txn is not set.'
+        );
+        assert.ok(
+          requests[1].transaction!.id,
+          'Transaction ID is not used for retries.'
+        );
+        assert.ok(
+          requests[1].resumeToken,
+          'Resume token is not set for the retried'
+        );
+      });
+
+      it('should retry UNAVAILABLE during streaming with txn ID from inline begin response with parallel queries', async () => {
+        const err = {
+          message: 'Temporary unavailable',
+          code: grpc.status.UNAVAILABLE,
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        const database = newTestDatabase();
+
+        await database.runTransactionAsync(async tx => {
+          const [rows1, rows2] = await Promise.all([
+            tx!.run(selectSql),
+            tx!.run(selectSql),
+          ]);
+          assert.equal(rows1.length, 3);
+          assert.equal(rows2.length, 3);
+          await tx.commit();
+        });
+        await database.close();
+
+        const requests = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.ExecuteSqlRequest).sql)
+          .map(req => req as v1.ExecuteSqlRequest);
+        assert.strictEqual(requests.length, 3);
+        assert.ok(
+          requests[0].transaction?.begin!.readWrite,
+          'inline txn is not set.'
+        );
+        assert.ok(
+          requests[1].transaction!.id,
+          'Transaction ID is not used for retries.'
+        );
+        assert.ok(
+          requests[1].resumeToken,
+          'Resume token is not set for the retried'
+        );
+        const commitRequests = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.CommitRequest).mutations)
+          .map(req => req as v1.CommitRequest);
+        assert.strictEqual(commitRequests.length, 1);
+        assert.deepStrictEqual(
+          requests[1].transaction!.id,
+          requests[2].transaction!.id
+        );
+        assert.deepStrictEqual(
+          requests[1].transaction!.id,
+          commitRequests[0].transactionId
+        );
+        const beginTxnRequests = spannerMock
+          .getRequests()
+          .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+          .map(req => req as v1.BeginTransactionRequest);
+        assert.deepStrictEqual(beginTxnRequests.length, 0);
+      });
+
+      it('should not retry non-retryable error during streaming', async () => {
+        const database = newTestDatabase();
+        const err = {
+          message: 'Test error',
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        try {
+          await database.run(selectSql);
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            (e as grpc.ServiceError).message,
+            '2 UNKNOWN: Test error'
+          );
+        }
+        await database.close();
+      });
+
+      it('should retry UNAVAILABLE during streaming with a callback', done => {
+        const database = newTestDatabase();
+        const err = {
+          message: 'Temporary unavailable',
+          code: grpc.status.UNAVAILABLE,
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        database.run(selectSql, (err, rows) => {
+          assert.ifError(err);
+          assert.strictEqual(rows!.length, 3);
+          database
+            .close()
+            .catch(done)
+            .then(() => done());
+        });
+      });
+
+      it('should not retry non-retryable error during streaming with a callback', done => {
+        const database = newTestDatabase();
+        const err = {
+          message: 'Non-retryable error',
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        database.run(selectSql, err => {
+          assert.ok(err, 'Missing expected error');
+          assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+          database
+            .close()
+            .catch(done)
+            .then(() => done());
+        });
+      });
+
+      it('should emit non-retryable error during streaming to stream', done => {
+        const database = newTestDatabase();
+
+        const err = {
+          message: 'Non-retryable error',
+          streamIndex: index,
+        } as mock.MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          mock.SimulatedExecutionTime.ofError(err)
+        );
+        const receivedRows: Row[] = [];
+        database
+          .runStream(selectSql)
+          // We will receive data for the partial result sets that are
+          // returned before the error occurs.
+          .on('data', row => {
+            receivedRows.push(row);
+          })
+          .on('end', () => {
+            assert.fail('Missing expected error');
+          })
+          .on('error', err => {
+            assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
+            database
+              .close()
+              .catch(done)
+              .then(() => {
+                traceExporter.forceFlush();
+                const spans = traceExporter.getFinishedSpans();
+                spans.sort((spanA, spanB) => {
+                  return spanA.startTime < spanB.startTime;
+                });
+
+                const actualSpanNames: string[] = [];
+                const actualEventNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
+
+                const expectedSpanNames = [
+                  'CloudSpanner.Database.batchCreateSessions',
+                  'CloudSpanner.SessionPool.createSessions',
+                  'CloudSpanner.Snapshot.runStream',
+                  'CloudSpanner.Database.runStream',
+                ];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
+
+                // Finally check for the collective expected event names.
+                const expectedEventNames = [
+                  'Requesting 25 sessions',
+                  'Creating 25 sessions',
+                  'Requested for 25 sessions returned 25',
+                  'Starting stream',
+                  'Acquiring session',
+                  'Waiting for a session to become available',
+                  'Acquired session',
+                  'Using Session',
+                  'Transaction Creation Done',
+                ];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
+
+                done();
+              });
+          });
+      });
+    });
+  });
+
+  it('should retry UNAVAILABLE from executeStreamingSql with multiple errors during streaming', async () => {
+    const database = newTestDatabase();
+    const errors: mock.MockError[] = [];
+    for (const index of [0, 1, 1, 2, 2]) {
+      errors.push({
+        message: 'Temporary unavailable',
+        code: grpc.status.UNAVAILABLE,
+        streamIndex: index,
+      } as mock.MockError);
+    }
+    spannerMock.setExecutionTime(
+      spannerMock.executeStreamingSql,
+      mock.SimulatedExecutionTime.ofErrors(errors)
+    );
+    const [rows] = await database.run(selectSql);
+    assert.strictEqual(rows.length, 3);
+    await database.close();
+
+    traceExporter.forceFlush();
+    const spans = traceExporter.getFinishedSpans();
+    spans.sort((spanA, spanB) => {
+      return spanA.startTime < spanB.startTime;
+    });
+
+    const actualSpanNames: string[] = [];
+    const actualEventNames: string[] = [];
+    spans.forEach(span => {
+      actualSpanNames.push(span.name);
+      span.events.forEach(event => {
+        actualEventNames.push(event.name);
+      });
+    });
+
+    const expectedSpanNames = [
+      'CloudSpanner.Database.batchCreateSessions',
+      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Snapshot.runStream',
+      'CloudSpanner.Database.runStream',
+      'CloudSpanner.Database.run',
+    ];
+    assert.deepStrictEqual(
+      actualSpanNames,
+      expectedSpanNames,
+      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+    );
+
+    // Finally check for the collective expected event names.
+    const expectedEventNames = [
+      'Requesting 25 sessions',
+      'Creating 25 sessions',
+      'Requested for 25 sessions returned 25',
+      'Starting stream',
+      'Re-attempting start stream',
+      'Resuming stream',
+      'Resuming stream',
+      'Resuming stream',
+      'Resuming stream',
+      'Acquiring session',
+      'Waiting for a session to become available',
+      'Acquired session',
+      'Using Session',
+    ];
+    assert.deepStrictEqual(
+      actualEventNames,
+      expectedEventNames,
+      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    );
+  });
+
+  it('should retry UNAVAILABLE on update', done => {
+    const database = newTestDatabase();
+    const err = {
+      message: 'Temporary unavailable',
+      code: grpc.status.UNAVAILABLE,
+    } as mock.MockError;
+    spannerMock.setExecutionTime(
+      spannerMock.executeStreamingSql,
+      mock.SimulatedExecutionTime.ofError(err)
+    );
+    database.runTransaction((err, tx) => {
+      assert.ifError(err);
+      tx!.runUpdate(insertSql, (err, updateCount) => {
+        assert.ifError(err);
+        assert.strictEqual(updateCount, 1);
+        tx!.commit().then(() => {
+          database
+            .close()
+            .catch(done)
+            .then(() => {
+              traceExporter.forceFlush();
+              const spans = traceExporter.getFinishedSpans();
+              spans.sort((spanA, spanB) => {
+                return spanA.startTime < spanB.startTime;
+              });
+
+              const actualSpanNames: string[] = [];
+              const actualEventNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
+              });
+
+              const expectedSpanNames = [
+                'CloudSpanner.Database.batchCreateSessions',
+                'CloudSpanner.SessionPool.createSessions',
+                'CloudSpanner.Database.runTransaction',
+                'CloudSpanner.Snapshot.runStream',
+                'CloudSpanner.Snapshot.run',
+                'CloudSpanner.Dml.runUpdate',
+                'CloudSpanner.Snapshot.begin',
+                'CloudSpanner.Transaction.commit',
+                'CloudSpanner.Transaction.commit',
+              ];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
+
+              // Finally check for the collective expected event names.
+              const expectedEventNames = [
+                'Requesting 25 sessions',
+                'Creating 25 sessions',
+                'Requested for 25 sessions returned 25',
+                'Acquiring session',
+                'Waiting for a session to become available',
+                'Acquired session',
+                'Starting stream',
+                'Re-attempting start stream',
+                'Begin Transaction',
+                'Transaction Creation Done',
+                'Starting Commit',
+                'Commit Done',
+              ];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
+              done();
+            });
+        });
+      });
+    });
+  });
+
+  it('should not retry non-retryable error on update', done => {
+    const database = newTestDatabase();
+    const err = {
+      message: 'Permanent error',
+      // We need to specify a non-retryable error code to prevent the entire
+      // transaction to retry. Not specifying an error code, will result in
+      // an error with code UNKNOWN, which again will retry the transaction.
+      code: grpc.status.INVALID_ARGUMENT,
+    } as mock.MockError;
+    spannerMock.setExecutionTime(
+      spannerMock.executeStreamingSql,
+      mock.SimulatedExecutionTime.ofError(err)
+    );
+    let attempts = 0;
+    database.runTransaction((err, tx) => {
+      assert.ifError(err);
+      attempts++;
+      tx!.runUpdate(insertSql, err => {
+        assert.ok(err, 'Missing expected error');
+        assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
+        assert.strictEqual(attempts, 1);
+        tx!
+          .commit()
+          .then(() => {
+            database
+              .close()
+              .catch(done)
+              .then(() => {
+                traceExporter.forceFlush();
+                const spans = traceExporter.getFinishedSpans();
+                spans.sort((spanA, spanB) => {
+                  return spanA.startTime < spanB.startTime;
+                });
+
+                const actualSpanNames: string[] = [];
+                const actualEventNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
+
+                const expectedSpanNames = [
+                  'CloudSpanner.Database.batchCreateSessions',
+                  'CloudSpanner.SessionPool.createSessions',
+                  'CloudSpanner.Database.runTransaction',
+                  'CloudSpanner.Snapshot.runStream',
+                  'CloudSpanner.Snapshot.run',
+                  'CloudSpanner.Dml.runUpdate',
+                  'CloudSpanner.Snapshot.begin',
+                  'CloudSpanner.Snapshot.begin',
+                  'CloudSpanner.Transaction.commit',
+                  'CloudSpanner.Transaction.commit',
+                ];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
+
+                const expectedEventNames = [
+                  'Requesting 25 sessions',
+                  'Creating 25 sessions',
+                  'Requested for 25 sessions returned 25',
+                  'Acquiring session',
+                  'Waiting for a session to become available',
+                  'Acquired session',
+                  'Starting stream',
+                  'Begin Transaction',
+                  'Transaction Creation Done',
+                  'Begin Transaction',
+                  'Transaction Creation Done',
+                  'Starting Commit',
+                  'Commit Done',
+                ];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
+                done();
+              });
+          })
+          .catch(done);
+      });
     });
   });
 });
