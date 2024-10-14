@@ -3061,7 +3061,7 @@ class Database extends common.GrpcServiceObject {
         dataStream
           .once('data', () => (dataReceived = true))
           .once('error', err => {
-            setSpanErrorAndException(span, err as Error);
+            setSpanError(span, err as Error);
 
             if (
               !dataReceived &&

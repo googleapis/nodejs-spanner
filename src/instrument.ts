@@ -139,14 +139,13 @@ export function startTrace<T>(
     config = {} as traceConfig;
   }
 
-  const tracer = getTracer(config.opts?.tracerProvider);
   let parentSpanId: string | undefined;
   if (debugTraces) {
     const parentSpan = trace.getActiveSpan();
     parentSpanId = parentSpan?.spanContext()!.spanId;
   }
 
-  return tracer.startActiveSpan(
+  return getTracer(config.opts?.tracerProvider).startActiveSpan(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
     {kind: SpanKind.CLIENT},
     span => {
