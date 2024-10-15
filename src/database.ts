@@ -3229,8 +3229,8 @@ class Database extends common.GrpcServiceObject {
         }
 
         if (err) {
+          await runFn!(err as grpc.ServiceError);
           span.end();
-          runFn!(err as grpc.ServiceError);
           return;
         }
 
@@ -3244,11 +3244,6 @@ class Database extends common.GrpcServiceObject {
 
         const release = () => {
           this.pool_.release(session!);
-          if (span.isRecording()) {
-            // span.end() might have already been invoked inside
-            // Transactionrunner.
-            span.end();
-          }
         };
 
         const runner = new TransactionRunner(
@@ -3259,12 +3254,11 @@ class Database extends common.GrpcServiceObject {
               setSpanError(span, err!);
             }
             await runFn!(err, resp);
-            span.end();
           },
           options
         );
 
-        runner.run().then(release, err => {
+        await runner.run().then(release, async err => {
           setSpanError(span, err);
 
           if (isSessionNotFoundError(err)) {
@@ -3272,13 +3266,15 @@ class Database extends common.GrpcServiceObject {
               'session.id': session?.id,
             });
             release();
-            this.runTransaction(options, runFn!);
+            await this.runTransaction(options, runFn!);
           } else {
             span.addEvent('Using Session', {'session.id': session!.id});
             setImmediate(runFn!, err);
             release();
           }
         });
+
+        span.end();
       });
     });
   }

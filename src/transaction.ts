@@ -456,19 +456,18 @@ export class Snapshot extends EventEmitter {
           gaxOpts,
           headers: headers,
         },
-        (
+        async (
           err: null | grpc.ServiceError,
           resp: spannerClient.spanner.v1.ITransaction
         ) => {
           if (err) {
             setSpanError(span, err);
-            span.end();
-            callback!(err, resp);
-            return;
+          } else {
+            this._update(resp);
           }
-          this._update(resp);
+
+          await callback!(err, resp);
           span.end();
-          callback!(null, resp);
         }
       );
     });
@@ -2149,35 +2148,25 @@ export class Transaction extends Dml {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
-    return startTrace('Transaction.commit', traceConfig, span => {
+    startTrace('Transaction.commit', traceConfig, async span => {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
         reqOpts.singleUseTransaction = this._options;
       } else {
-        this.begin()
-          .then(
-            () => {
-              this.commit(options, (err, resp) => {
-                if (err) {
-                  setSpanError(span, err);
-                }
-                span.end();
-                callback(err, resp);
-              });
-            },
-            err => {
-              setSpanError(span, err);
-              callback(err);
-              span.end();
-            }
-          )
-          .catch(err => {
-            setSpanErrorAndException(span, err as Error);
-            span.end();
-            // Re-throw the exception after recording it.
-            throw err;
-          });
+        try {
+          await this.begin();
+          const resp = await this.commit(options);
+          span.end();
+          await callback(
+            null,
+            resp as spannerClient.spanner.v1.ICommitResponse
+          );
+        } catch (err) {
+          setSpanErrorAndException(span, err as Error);
+          span.end();
+          await callback(err as ServiceError, null);
+        }
         return;
       }
 
@@ -2215,7 +2204,10 @@ export class Transaction extends Dml {
           gaxOpts: gaxOpts,
           headers: headers,
         },
-        (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
+        async (
+          err: null | Error,
+          resp: spannerClient.spanner.v1.ICommitResponse
+        ) => {
           this.end();
 
           if (err) {
