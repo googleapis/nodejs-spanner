@@ -466,8 +466,11 @@ export class Snapshot extends EventEmitter {
             this._update(resp);
           }
 
-          await callback!(err, resp);
+          // begin simply issues an RPC to signal a state change to the backend,
+          // and doesn't invoke any other subsequent code hence it is paramount
+          // to invoke span.end() before returning results to the callback.
           span.end();
+          await callback!(err, resp);
         }
       );
     });
@@ -737,6 +740,7 @@ export class Snapshot extends EventEmitter {
           headers: headers,
         });
       };
+
       const resultStream = partialResultStream(
         this._wrapWithIdWaiter(makeRequest),
         {
@@ -754,24 +758,17 @@ export class Snapshot extends EventEmitter {
         })
         .on('error', async err => {
           setSpanError(span, err);
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            span.addEvent('Stream broken. Safe to retry', {
-              'transaction.id': this.id?.toString(),
-            });
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            // It is paramount for us to await this invocation to
+            // .begin() to complete before we invoke span.end();
             await this.begin();
           } else {
-            span.addEvent('Stream broken. Not safe to retry', {
-              'transaction.id': this.id?.toString(),
-            });
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
           }
           span.end();
         })
@@ -1313,7 +1310,6 @@ export class Snapshot extends EventEmitter {
           });
         }
 
-        // console.log('runStream', resumeToken?.toString());
         if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
           try {
             sanitizeRequest();
@@ -1354,24 +1350,16 @@ export class Snapshot extends EventEmitter {
         })
         .on('error', async err => {
           setSpanError(span, err as Error);
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            span.addEvent('Stream broken. Safe to retry', {
-              'transaction.id': this.id?.toString(),
-            });
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            span.addEvent('Stream broken. Safe to retry');
             await this.begin();
           } else {
-            span.addEvent('Stream broken. Not safe to retry', {
-              'transaction.id': this.id?.toString(),
-            });
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
           }
           span.end();
         })
@@ -1379,17 +1367,10 @@ export class Snapshot extends EventEmitter {
           if (err) {
             setSpanError(span, err as Error);
           }
-          span.end();
-        });
-
-      if (resultStream instanceof Stream) {
-        finished(resultStream, err => {
-          if (err) {
-            setSpanError(span, err);
+          if (span.isRecording()) {
+            span.end();
           }
-          span.end();
         });
-      }
 
       return resultStream;
     });
@@ -3032,6 +3013,15 @@ export class PartitionedDml extends Dml {
       });
     });
   }
+}
+
+function isErrorAborted(err): boolean {
+  return (
+    err &&
+    typeof err === 'object' &&
+    'code' in err &&
+    (err as grpc.ServiceError).code === grpc.status.ABORTED
+  );
 }
 
 /*! Developer Documentation

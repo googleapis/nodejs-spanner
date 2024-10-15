@@ -32,10 +32,12 @@ import {google as databaseAdmin} from '../protos/protos';
 import {google} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
+import {grpc} from 'google-gax';
 import {
   ObservabilityOptions,
   startTrace,
   setSpanError,
+  setSpanErrorAndException,
   traceConfig,
 } from './instrument';
 
@@ -1109,20 +1111,19 @@ class Table {
         async (err, transaction) => {
           if (err) {
             setSpanError(span, err);
-            await callback(err);
             span.end();
+            await callback(err);
             return;
           }
 
-          try {
-            transaction![method](this.name, rows as Key[]);
-            const resp = await transaction!.commit(options);
-            await callback(err, resp as google.spanner.v1.ICommitResponse);
-          } catch (e) {
-            await callback(err, null);
-          } finally {
+          transaction![method](this.name, rows as Key[]);
+          transaction!.commit(options, async (err, resp) => {
+            if (err) {
+              setSpanError(span, err);
+            }
             span.end();
-          }
+            await callback(err, resp);
+          });
         }
       );
     });

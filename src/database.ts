@@ -3055,13 +3055,12 @@ class Database extends common.GrpcServiceObject {
         let dataStream = snapshot.runStream(query);
 
         const endListener = () => {
-          span.end();
           snapshot.end();
         };
         dataStream
           .once('data', () => (dataReceived = true))
           .once('error', err => {
-            setSpanError(span, err as Error);
+            setSpanError(span, err);
 
             if (
               !dataReceived &&
@@ -3223,14 +3222,19 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
+          // In this case we are invoking runTransaction afresh
+          // hence we have to wait for this call to complete before
+          // ending the span.
           await this.runTransaction(options, runFn!);
           span.end();
           return;
         }
 
         if (err) {
-          await runFn!(err as grpc.ServiceError);
+          // This code path failed to even begin running the transaction
+          // hence end the span immediately and return it.
           span.end();
+          runFn!(err as grpc.ServiceError);
           return;
         }
 
@@ -3253,12 +3257,17 @@ class Database extends common.GrpcServiceObject {
             if (err) {
               setSpanError(span, err!);
             }
+            // It is paramount that we await
+            // the caller to return before
+            // exiting this function otherwise the span
+            // order will not be correct.
             await runFn!(err, resp);
+            span.end();
           },
           options
         );
 
-        await runner.run().then(release, async err => {
+        runner.run().then(release, async err => {
           setSpanError(span, err);
 
           if (isSessionNotFoundError(err)) {
@@ -3268,13 +3277,12 @@ class Database extends common.GrpcServiceObject {
             release();
             await this.runTransaction(options, runFn!);
           } else {
-            span.addEvent('Using Session', {'session.id': session!.id});
             setImmediate(runFn!, err);
             release();
           }
-        });
 
-        span.end();
+          span.end();
+        });
       });
     });
   }
@@ -3391,18 +3399,15 @@ class Database extends common.GrpcServiceObject {
             );
 
             try {
-              const result = await runner.run();
-              span.end();
-              return result;
+              return await runner.run();
             } finally {
+              span.end();
               this.pool_.release(session);
             }
           } catch (e) {
             if (!isSessionNotFoundError(e as ServiceError)) {
-              span.addEvent('No session available', {
-                'session.id': sessionId,
-              });
               setSpanErrorAndException(span, e as Error);
+              span.end();
               throw e;
             }
           }
