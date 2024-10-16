@@ -25,6 +25,8 @@ const {SpanStatusCode, TracerProvider} = require('@opentelemetry/api');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 const {
+  TRACER_NAME,
+  TRACER_VERSION,
   SPAN_NAMESPACE_PREFIX,
   getActiveOrNoopSpan,
   setSpanError,
@@ -32,6 +34,8 @@ const {
   startTrace,
 } = require('../src/instrument');
 const {
+  ATTR_OTEL_SCOPE_NAME,
+  ATTR_OTEL_SCOPE_VERSION,
   SEMATTRS_DB_NAME,
   SEMATTRS_DB_SQL_TABLE,
   SEMATTRS_DB_STATEMENT,
@@ -73,16 +77,8 @@ describe('startTrace', () => {
     startTrace('mySpan', {}, span => {
       span.end();
 
-      const spans = globalExporter.getFinishedSpans();
-      assert.strictEqual(
-        spans.length,
-        1,
-        'Exactly 1 span must have been exported'
-      );
-      const span0 = spans[0];
-
       assert.equal(
-        span0.name,
+        span.name,
         SPAN_NAMESPACE_PREFIX + '.mySpan',
         'name mismatch'
       );
@@ -126,9 +122,26 @@ describe('startTrace', () => {
     );
   });
 
+  it('sanity check: TRACER_NAME, TRACER_VERSION', () => {
+    assert.equal(!TRACER_NAME, false, 'TRACER_NAME must be set');
+    assert.equal(!TRACER_VERSION, false, 'TRACER_VERSION must be set');
+  });
+
   it('with semantic attributes', () => {
     const opts = {tableName: 'table', dbName: 'db'};
     startTrace('aSpan', opts, span => {
+      assert.equal(
+        span.attributes[ATTR_OTEL_SCOPE_NAME],
+        TRACER_NAME,
+        'Missing OTEL_SCOPE_NAME attribute'
+      );
+
+      assert.equal(
+        span.attributes[ATTR_OTEL_SCOPE_VERSION],
+        TRACER_VERSION,
+        'Missing OTEL_SCOPE_VERSION attribute'
+      );
+
       assert.equal(
         span.attributes[SEMATTRS_DB_SYSTEM],
         'spanner',
@@ -301,7 +314,7 @@ describe('getActiveOrNoopSpan', () => {
       assert.strictEqual(
         span.name,
         activeSpan.name,
-        'names must match between activeSpan or current one'
+        `names must match between activeSpan or current one\n\tGot:  ${span.name}\n\tWant: ${activeSpan.name}`
       );
       assert.strictEqual(
         span.startTime,

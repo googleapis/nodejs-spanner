@@ -29,6 +29,7 @@ import {Session} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
+const {startTrace} = require('../src/instrument');
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -1346,6 +1347,60 @@ describe('SessionPool', () => {
       fakeHandles.forEach((fakeHandle, i) => {
         const [handle] = stub.getCall(i).args;
         assert.strictEqual(handle, fakeHandle);
+      });
+    });
+  });
+
+  describe('trace annotations on active span', () => {
+    beforeEach(() => {
+      sessionPool.isOpen = true;
+      sessionPool._isValidSession = () => true;
+    });
+
+    it('annotations when acquiring a session', done => {
+      const topLevelSpanName = 'testSessionPool.acquire';
+      startTrace(topLevelSpanName, {}, async span => {
+        const fakeSession = createSession();
+        const now = Date.now();
+
+        const stub = sandbox
+          .stub(sessionPool, '_getSession')
+          .resolves(fakeSession);
+        const session = await sessionPool._acquire();
+        const [startTime] = stub.getCall(0).args;
+
+        assert(isAround(startTime, now));
+        assert.strictEqual(session, fakeSession);
+
+        await sessionPool._release(session);
+        span.end();
+
+        const events = span.events;
+        assert.strictEqual(!events, false, 'Events must be set');
+        assert.strictEqual(
+          events.length > 0,
+          true,
+          'Expecting at least 1 event'
+        );
+
+        // Sort the events by earliest time of occurence.
+        events.sort((evtA, evtB) => {
+          return evtA.time < evtB.time;
+        });
+
+        const gotEventNames: string[] = [];
+        events.forEach(event => {
+          gotEventNames.push(event.name);
+        });
+
+        const wantEventNames = ['Acquiring session', 'Acquired session'];
+        assert.deepEqual(
+          gotEventNames,
+          wantEventNames,
+          `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
+        );
+
+        done();
       });
     });
   });

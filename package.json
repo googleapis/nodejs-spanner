@@ -60,7 +60,7 @@
     "@google-cloud/promisify": "^4.0.0",
     "@grpc/proto-loader": "^0.7.0",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/context-async-hooks": "^1.25.1",
+    "@opentelemetry/context-async-hooks": "^1.26.0",
     "@opentelemetry/semantic-conventions": "^1.25.1",
     "@types/big.js": "^6.0.0",
     "@types/stack-trace": "0.0.33",
@@ -86,6 +86,8 @@
     "through2": "^4.0.0"
   },
   "devDependencies": {
+    "@opentelemetry/sdk-trace-base": "^1.26.0",
+    "@opentelemetry/sdk-trace-node": "^1.26.0",
     "@types/concat-stream": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.25",
@@ -116,7 +118,6 @@
     "mv": "^2.1.1",
     "ncp": "^2.0.0",
     "nise": "6.0.0",
-    "@opentelemetry/sdk-trace-node": "^1.25.1",
     "p-limit": "^3.0.1",
     "path-to-regexp": "6.2.2",
     "proxyquire": "^2.0.1",
