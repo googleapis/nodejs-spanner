@@ -863,12 +863,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (needed <= 0) {
       return;
     }
-
-    try {
-      await this._createSessions(needed);
-    } catch (e) {
-      this.emit('error', e);
-    }
+    await this._createSessions(needed);
   }
 
   /**
