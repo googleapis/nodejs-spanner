@@ -4,6 +4,25 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.15.0](https://github.com/googleapis/nodejs-spanner/compare/v7.14.0...v7.15.0) (2024-10-17)
+
+
+### Features
+
+* (observability) add spans for BatchTransaction and Table ([#2115](https://github.com/googleapis/nodejs-spanner/issues/2115)) ([d51aae9](https://github.com/googleapis/nodejs-spanner/commit/d51aae9c9c3c0e6319d81c2809573ae54675acf3)), closes [#2114](https://github.com/googleapis/nodejs-spanner/issues/2114)
+* (observability) Add support for OpenTelemetry traces and allow observability options to be passed.  ([#2131](https://github.com/googleapis/nodejs-spanner/issues/2131)) ([5237e11](https://github.com/googleapis/nodejs-spanner/commit/5237e118befb4b7fe4aea76a80a91e822d7a22e4)), closes [#2079](https://github.com/googleapis/nodejs-spanner/issues/2079)
+* (observability) propagate database name for every span generated to aid in quick debugging ([#2155](https://github.com/googleapis/nodejs-spanner/issues/2155)) ([0342e74](https://github.com/googleapis/nodejs-spanner/commit/0342e74721a0684d8195a6299c3a634eefc2b522))
+* (observability) trace Database.batchCreateSessions + SessionPool.createSessions ([#2145](https://github.com/googleapis/nodejs-spanner/issues/2145)) ([f489c94](https://github.com/googleapis/nodejs-spanner/commit/f489c9479fa5402f0c960cf896fd3be0e946f182))
+* **observability:** Trace Database methods ([#2119](https://github.com/googleapis/nodejs-spanner/issues/2119)) ([1f06871](https://github.com/googleapis/nodejs-spanner/commit/1f06871f7aca386756e8691013602b069697bb87)), closes [#2114](https://github.com/googleapis/nodejs-spanner/issues/2114)
+* **observability:** Trace Database.batchWriteAtLeastOnce ([#2157](https://github.com/googleapis/nodejs-spanner/issues/2157)) ([2a19ef1](https://github.com/googleapis/nodejs-spanner/commit/2a19ef1af4f6fd1b81d08afc15db76007859a0b9)), closes [#2079](https://github.com/googleapis/nodejs-spanner/issues/2079)
+* **observability:** Trace Transaction ([#2122](https://github.com/googleapis/nodejs-spanner/issues/2122)) ([a464bdb](https://github.com/googleapis/nodejs-spanner/commit/a464bdb5cbb7856b7a08dac3ff48132948b65792)), closes [#2114](https://github.com/googleapis/nodejs-spanner/issues/2114)
+
+
+### Bug Fixes
+
+* Exact staleness timebound ([#2143](https://github.com/googleapis/nodejs-spanner/issues/2143)) ([f01516e](https://github.com/googleapis/nodejs-spanner/commit/f01516ec6ba44730622cfb050c52cd93f30bba7a)), closes [#2129](https://github.com/googleapis/nodejs-spanner/issues/2129)
+* GetMetadata for Session ([#2124](https://github.com/googleapis/nodejs-spanner/issues/2124)) ([2fd63ac](https://github.com/googleapis/nodejs-spanner/commit/2fd63acb87ce06a02d7fdfa78d836dbd7ad59a26)), closes [#2123](https://github.com/googleapis/nodejs-spanner/issues/2123)
+
 ## [7.14.0](https://github.com/googleapis/nodejs-spanner/compare/v7.13.0...v7.14.0) (2024-08-14)
 
 
