@@ -3469,66 +3469,79 @@ class Database extends common.GrpcServiceObject {
   ): NodeJS.ReadableStream {
     const proxyStream: Transform = through.obj();
 
-    const span = getActiveOrNoopSpan();
-
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        proxyStream.destroy(err);
-        return;
-      }
-
-      span.addEvent('Using Session', {'session.id': session?.id});
-      const gaxOpts = extend(true, {}, options?.gaxOptions);
-      const reqOpts = Object.assign(
-        {} as spannerClient.spanner.v1.BatchWriteRequest,
-        {
-          session: session!.formattedName_!,
-          mutationGroups: mutationGroups.map(mg => mg.proto()),
-          requestOptions: options?.requestOptions,
-          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
-        }
-      );
-      let dataReceived = false;
-      let dataStream = this.requestStream({
-        client: 'SpannerClient',
-        method: 'batchWrite',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      });
-      dataStream
-        .once('data', () => (dataReceived = true))
-        .once('error', err => {
-          if (
-            !dataReceived &&
-            isSessionNotFoundError(err as grpc.ServiceError)
-          ) {
-            // If there's a 'Session not found' error and we have not yet received
-            // any data, we can safely retry the writes on a new session.
-            // Register the error on the session so the pool can discard it.
-            if (session) {
-              session.lastError = err as grpc.ServiceError;
-            }
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-            // Remove the current data stream from the end user stream.
-            dataStream.unpipe(proxyStream);
-            dataStream.end();
-            // Create a new stream and add it to the end user stream.
-            dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
-            dataStream.pipe(proxyStream);
-          } else {
+    return startTrace(
+      'Database.batchWriteAtLeastOnce',
+      this._traceConfig,
+      span => {
+        this.pool_.getSession((err, session) => {
+          if (err) {
             proxyStream.destroy(err);
+            setSpanError(span, err);
+            span.end();
+            return;
           }
-        })
-        .once('end', () => {
-          this.pool_.release(session!);
-        })
-        .pipe(proxyStream);
-    });
 
-    return proxyStream as NodeJS.ReadableStream;
+          span.addEvent('Using Session', {'session.id': session?.id});
+          const gaxOpts = extend(true, {}, options?.gaxOptions);
+          const reqOpts = Object.assign(
+            {} as spannerClient.spanner.v1.BatchWriteRequest,
+            {
+              session: session!.formattedName_!,
+              mutationGroups: mutationGroups.map(mg => mg.proto()),
+              requestOptions: options?.requestOptions,
+              excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+            }
+          );
+          let dataReceived = false;
+          let dataStream = this.requestStream({
+            client: 'SpannerClient',
+            method: 'batchWrite',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          });
+          dataStream
+            .once('data', () => (dataReceived = true))
+            .once('error', err => {
+              setSpanError(span, err);
+
+              if (
+                !dataReceived &&
+                isSessionNotFoundError(err as grpc.ServiceError)
+              ) {
+                // If there's a 'Session not found' error and we have not yet received
+                // any data, we can safely retry the writes on a new session.
+                // Register the error on the session so the pool can discard it.
+                if (session) {
+                  session.lastError = err as grpc.ServiceError;
+                }
+                span.addEvent('No session available', {
+                  'session.id': session?.id,
+                });
+                // Remove the current data stream from the end user stream.
+                dataStream.unpipe(proxyStream);
+                dataStream.end();
+                // Create a new stream and add it to the end user stream.
+                dataStream = this.batchWriteAtLeastOnce(
+                  mutationGroups,
+                  options
+                );
+                dataStream.pipe(proxyStream);
+              } else {
+                span.end();
+                proxyStream.destroy(err);
+              }
+            })
+            .once('end', () => {
+              span.end();
+              this.pool_.release(session!);
+            })
+            .pipe(proxyStream);
+        });
+
+        return proxyStream as NodeJS.ReadableStream;
+      }
+    );
   }
 
   /**
