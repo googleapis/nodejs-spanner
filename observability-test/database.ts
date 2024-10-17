@@ -1553,7 +1553,7 @@ describe('Database', () => {
         );
 
         // We don't expect events.
-        const expectedEventNames = [];
+        const expectedEventNames = ['Using Session'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -1710,7 +1710,7 @@ describe('Database', () => {
           'Mismatched span status message'
         );
 
-        const expectedEventNames = ['Using Session'];
+        const expectedEventNames = ['Using Session', 'exception'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -1795,6 +1795,7 @@ describe('Database', () => {
           const expectedEventNames = [
             'Using Session',
             'Using Session',
+            'exception',
             'No session available',
           ];
           assert.deepStrictEqual(

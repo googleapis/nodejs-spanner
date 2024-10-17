@@ -80,7 +80,10 @@ import {
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import {ObservabilityOptions} from './instrument';
+import {
+  ObservabilityOptions,
+  ensureInitialContextManagerSet,
+} from './instrument';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -370,6 +373,7 @@ class Spanner extends GrpcService {
     };
     this.directedReadOptions = directedReadOptions;
     this._observabilityOptions = options.observabilityOptions;
+    ensureInitialContextManagerSet();
   }
 
   /**
