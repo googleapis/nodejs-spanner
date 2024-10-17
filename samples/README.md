@@ -17,33 +17,41 @@ and automatic, synchronous replication for high availability.
   * [Add and drop new database role](#add-and-drop-new-database-role)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
+  * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
+  * [Backups-create-with-multiple-kms-keys](#backups-create-with-multiple-kms-keys)
   * [Backups-create](#backups-create)
   * [Backups-delete](#backups-delete)
   * [Backups-get-database-operations](#backups-get-database-operations)
   * [Backups-get-operations](#backups-get-operations)
   * [Backups-get](#backups-get)
   * [Backups-restore-with-encryption-key](#backups-restore-with-encryption-key)
+  * [Backups-restore-with-multiple-kms-keys](#backups-restore-with-multiple-kms-keys)
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
   * [Batch Write](#batch-write)
   * [Batch](#batch)
+  * [Creates a full backup schedule](#creates-a-full-backup-schedule)
+  * [Creates an incremental backup schedule](#creates-an-incremental-backup-schedule)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
+  * [Database-create-with-multiple-kms-keys](#database-create-with-multiple-kms-keys)
   * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
+  * [Deletes a backup schedule](#deletes-a-backup-schedule)
   * [Runs an execute sql request with directed read options](#runs-an-execute-sql-request-with-directed-read-options)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
   * [Update using DML returning.](#update-using-dml-returning.)
   * [DML](#dml)
   * [Enable fine grained access control](#enable-fine-grained-access-control)
+  * [Gets a backup schedule](#gets-a-backup-schedule)
   * [Get-commit-stats](#get-commit-stats)
   * [List database roles](#list-database-roles)
   * [Gets the instance config metadata for the configuration nam6](#gets-the-instance-config-metadata-for-the-configuration-nam6)
@@ -58,12 +66,14 @@ and automatic, synchronous replication for high availability.
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
+  * [Updates an instance.](#updates-an-instance.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
   * [Json-query-parameter](#json-query-parameter)
   * [Json-update-data](#json-update-data)
+  * [Lists backup schedules of a database](#lists-backup-schedules-of-a-database)
   * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
   * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
   * [Executes request with max commit delay](#executes-request-with-max-commit-delay)
@@ -119,6 +129,7 @@ and automatic, synchronous replication for high availability.
   * [Timestamp](#timestamp)
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
+  * [Updates a backup schedule](#updates-a-backup-schedule)
 
 ## Before you begin
 
@@ -171,6 +182,23 @@ __Usage:__
 
 ### Copies a source backup
 
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Copies a source backup
+
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md)
@@ -196,6 +224,23 @@ __Usage:__
 
 
 `node samples/backups-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Backups-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-create-with-multiple-kms-keys.js`
 
 
 -----
@@ -305,6 +350,23 @@ __Usage:__
 
 
 
+### Backups-restore-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-restore-with-multiple-kms-keys.js`
+
+
+-----
+
+
+
+
 ### Backups-restore
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore.js).
@@ -390,6 +452,40 @@ __Usage:__
 
 
 
+### Creates a full backup schedule
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-full-backup-schedule.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-full-backup-schedule.js,samples/README.md)
+
+__Usage:__
+
+
+`node create-full-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Creates an incremental backup schedule
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-incremental-backup-schedule.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-incremental-backup-schedule.js,samples/README.md)
+
+__Usage:__
+
+
+`node create-incremental-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
 ### CRUD
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/crud.js).
@@ -434,6 +530,23 @@ __Usage:__
 
 
 `node samples/database-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Database-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-multiple-kms-keys.js`
 
 
 -----
@@ -543,6 +656,23 @@ __Usage:__
 
 
 
+### Deletes a backup schedule
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/delete-backup-schedule.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/delete-backup-schedule.js,samples/README.md)
+
+__Usage:__
+
+
+`node delete-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
 ### Runs an execute sql request with directed read options
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/directed-reads.js).
@@ -638,6 +768,23 @@ __Usage:__
 
 
 `node enable-fine-grained-access.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Gets a backup schedule
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-backup-schedule.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-backup-schedule.js,samples/README.md)
+
+__Usage:__
+
+
+`node get-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
 
 
 -----
@@ -883,6 +1030,23 @@ __Usage:__
 
 
 
+### Updates an instance.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Creates a instance with autoscaling config.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
@@ -978,6 +1142,23 @@ __Usage:__
 
 
 `node samples/json-update-data.js`
+
+
+-----
+
+
+
+
+### Lists backup schedules of a database
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/list-backup-schedules.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-backup-schedules.js,samples/README.md)
+
+__Usage:__
+
+
+`node list-backup-schedules.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID>`
 
 
 -----
@@ -1913,6 +2094,23 @@ __Usage:__
 
 
 `node samples/transaction.js`
+
+
+-----
+
+
+
+
+### Updates a backup schedule
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/update-backup-schedule.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/update-backup-schedule.js,samples/README.md)
+
+__Usage:__
+
+
+`node update-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
 
 
 

@@ -20,7 +20,7 @@ async function createInstance(instanceId, projectId) {
   // [START spanner_create_instance]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Creates a client
   const spanner = new Spanner({
@@ -56,6 +56,8 @@ async function createInstance(instanceId, projectId) {
           cloud_spanner_samples: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
+        edition:
+          protos.google.spanner.admin.instance.v1.Instance.Edition.STANDARD, //optional
       },
     });
 

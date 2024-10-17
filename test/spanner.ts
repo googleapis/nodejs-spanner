@@ -67,6 +67,14 @@ import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 
+const {
+  AlwaysOnSampler,
+  NodeTracerProvider,
+  InMemorySpanExporter,
+} = require('@opentelemetry/sdk-trace-node');
+const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {startTrace, ObservabilityOptions} = require('../src/instrument');
+
 function numberToEnglishWord(num: number): string {
   switch (num) {
     case 1:
@@ -4983,6 +4991,90 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(operations1.length, 2);
       assert.strictEqual(operations2.length, 2);
       assert.deepStrictEqual(operations1, operations2);
+    });
+  });
+
+  // TODO: Refactor this file's Spanner creation to make it more
+  // self contained and remove the tight coupling that requires
+  // and tests the database/instance suffix is an iteration of
+  // each afresh invocation of newTestDatabase, which has been
+  // causing test flakes.
+  it('Check for span annotations', done => {
+    const exporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+    provider.register();
+
+    after(async () => {
+      await provider.shutdown();
+    });
+
+    const opts: typeof ObservabilityOptions = {tracerProvider: provider};
+    startTrace('aSpan', {opts: opts}, async span => {
+      instance._observabilityOptions = opts;
+      const database = newTestDatabase();
+      database._observabilityOptions = opts;
+
+      const query = {
+        sql: 'SELECT 1',
+      };
+
+      const [rows] = await database.run(query);
+      assert.strictEqual(rows.length, 1);
+
+      span.end();
+
+      exporter.forceFlush();
+      const spans = exporter.getFinishedSpans();
+
+      // Sort the spans by startTime.
+      spans.sort((spanA, spanB) => {
+        spanA.startTime < spanB.startTime;
+      });
+
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.SessionPool.createSessions',
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Database.runStream',
+        'CloudSpanner.Database.run',
+        'CloudSpanner.aSpan',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      const expectedEventNames = [
+        'Requesting 25 sessions',
+        'Creating 25 sessions',
+        'Requested for 25 sessions returned 25',
+        'Acquiring session',
+        'Waiting for a session to become available',
+        'Acquired session',
+        'Using Session',
+      ];
+
+      assert.deepEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Mismatched events\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+
+      done();
     });
   });
 });
