@@ -51,6 +51,7 @@ import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
+import {ObservabilityOptions} from './instrument';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -164,6 +165,7 @@ class Instance extends common.GrpcServiceObject {
   databases_: Map<string, Database>;
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
+  _observabilityOptions?: ObservabilityOptions;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -239,6 +241,7 @@ class Instance extends common.GrpcServiceObject {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
+    this._observabilityOptions = spanner._observabilityOptions;
   }
 
   /**
@@ -925,6 +928,7 @@ class Instance extends common.GrpcServiceObject {
           return;
         }
         const database = this.database(name, poolOptions || poolCtor);
+        database._observabilityOptions = this._observabilityOptions;
         callback(null, database, operation, resp);
       }
     );
@@ -973,10 +977,9 @@ class Instance extends common.GrpcServiceObject {
     }
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
-      this.databases_.set(
-        key!,
-        new Database(this, name, poolOptions, queryOptions)
-      );
+      const db = new Database(this, name, poolOptions, queryOptions);
+      db._observabilityOptions = this._observabilityOptions;
+      this.databases_.set(key!, db);
     }
     return this.databases_.get(key!)!;
   }
@@ -1360,6 +1363,7 @@ class Instance extends common.GrpcServiceObject {
           databases = rowDatabases.map(database => {
             const databaseInstance = self.database(database.name!, {min: 0});
             databaseInstance.metadata = database;
+            databaseInstance._observabilityOptions = this._observabilityOptions;
             return databaseInstance;
           });
         }

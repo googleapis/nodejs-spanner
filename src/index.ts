@@ -80,6 +80,7 @@ import {
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
+import {ObservabilityOptions} from './instrument';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -130,6 +131,7 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
  * Indicates which replicas or regions should be used for non-transactional reads or queries.
  * DirectedReadOptions won't be set for readWrite transactions"
+ * @property {ObservabilityOptions} [observabilityOptions] Sets the observability options to be used for OpenTelemetry tracing
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -138,6 +140,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
+  observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
   client: string;
@@ -239,6 +242,7 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -365,6 +369,7 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
+    this._observabilityOptions = options.observabilityOptions;
   }
 
   /**
@@ -585,6 +590,7 @@ class Spanner extends GrpcService {
           return;
         }
         const instance = this.instance(formattedName);
+        instance._observabilityOptions = this._observabilityOptions;
         callback!(null, instance, operation, resp);
       }
     );
@@ -2052,3 +2058,4 @@ import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig
 export {v1, protos};
 export default {Spanner};
 export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export {ObservabilityOptions};
