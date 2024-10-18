@@ -2815,6 +2815,7 @@ class Database extends common.GrpcServiceObject {
       this.runStream(query, options)
         .on('error', err => {
           setSpanError(span, err);
+          span.end();
           callback!(err as grpc.ServiceError, rows, stats, metadata);
         })
         .on('response', response => {
@@ -3054,7 +3055,6 @@ class Database extends common.GrpcServiceObject {
         let dataStream = snapshot.runStream(query);
 
         const endListener = () => {
-          span.end();
           snapshot.end();
         };
         dataStream
@@ -3212,8 +3212,26 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
+    const retry = (span: Span) => {
+      this.runTransaction(options, (err, txn) => {
+        if (err) {
+          setSpanError(span, err);
+          runFn!(err, null);
+          return;
+        }
+
+        txn!.once('end', () => {
+          span.end();
+        });
+        txn!.once('error', () => {
+          span.end();
+        });
+        runFn!(null, txn!);
+      });
+    };
+
     startTrace('Database.runTransaction', this._traceConfig, span => {
-      this.pool_.getSession((err, session?, transaction?) => {
+      this.pool_.getSession(async (err, session?, transaction?) => {
         if (err) {
           setSpanError(span, err);
         }
@@ -3222,12 +3240,13 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          this.runTransaction(options, runFn!);
-          span.end();
+          retry(span);
           return;
         }
 
         if (err) {
+          // This code path failed to even begin running the transaction
+          // hence end the span immediately and return it.
           span.end();
           runFn!(err as grpc.ServiceError);
           return;
@@ -3241,41 +3260,42 @@ class Database extends common.GrpcServiceObject {
           transaction!.excludeTxnFromChangeStreams();
         }
 
-        const release = () => {
+        // Our span should only be ended if the
+        // transaction either errored or was ended.
+        transaction!.once('error', err => {
+          setSpanError(span, err!);
           span.end();
+        });
+
+        transaction!.once('end', err => {
+          setSpanError(span, err!);
+          span.end();
+        });
+
+        const release = () => {
           this.pool_.release(session!);
         };
 
         const runner = new TransactionRunner(
           session!,
           transaction!,
-          (err, resp) => {
-            if (err) {
-              setSpanError(span, err!);
-            }
-            span.end();
-            runFn!(err, resp);
-          },
+          runFn!,
           options
         );
 
-        runner.run().then(release, err => {
-          if (err) {
-            setSpanError(span, err!);
-          }
+        runner.run().then(release, async err => {
+          setSpanError(span, err);
 
           if (isSessionNotFoundError(err)) {
             span.addEvent('No session available', {
               'session.id': session?.id,
             });
             release();
-            this.runTransaction(options, runFn!);
+            retry(span);
           } else {
-            if (!err) {
-              span.addEvent('Using Session', {'session.id': session!.id});
-            }
             setImmediate(runFn!, err);
             release();
+            span.end();
           }
         });
       });
@@ -3363,46 +3383,53 @@ class Database extends common.GrpcServiceObject {
 
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
-    const span = getActiveOrNoopSpan();
-    // Loop to retry 'Session not found' errors.
-    // (and yes, we like while (true) more than for (;;) here)
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        const [session, transaction] = await promisify(getSession)();
-        transaction.requestOptions = Object.assign(
-          transaction.requestOptions || {},
-          options.requestOptions
-        );
-        if (options.optimisticLock) {
-          transaction.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction.excludeTxnFromChangeStreams();
-        }
-        sessionId = session?.id;
-        span.addEvent('Using Session', {'session.id': sessionId});
-        const runner = new AsyncTransactionRunner<T>(
-          session,
-          transaction,
-          runFn,
-          options
-        );
 
-        try {
-          return await runner.run();
-        } finally {
-          this.pool_.release(session);
-        }
-      } catch (e) {
-        if (!isSessionNotFoundError(e as ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': sessionId,
-          });
-          throw e;
+    return startTrace(
+      'Database.runTransactionAsync',
+      this._traceConfig,
+      async span => {
+        // Loop to retry 'Session not found' errors.
+        // (and yes, we like while (true) more than for (;;) here)
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          try {
+            const [session, transaction] = await promisify(getSession)();
+            transaction.requestOptions = Object.assign(
+              transaction.requestOptions || {},
+              options.requestOptions
+            );
+            if (options.optimisticLock) {
+              transaction.useOptimisticLock();
+            }
+            if (options.excludeTxnFromChangeStreams) {
+              transaction.excludeTxnFromChangeStreams();
+            }
+            sessionId = session?.id;
+            span.addEvent('Using Session', {'session.id': sessionId});
+            const runner = new AsyncTransactionRunner<T>(
+              session,
+              transaction,
+              runFn,
+              options
+            );
+
+            try {
+              const result = await runner.run();
+              span.end();
+              return result;
+            } finally {
+              this.pool_.release(session);
+            }
+          } catch (e) {
+            if (!isSessionNotFoundError(e as ServiceError)) {
+              setSpanErrorAndException(span, e as Error);
+              span.end();
+              throw e;
+            }
+          }
         }
       }
-    }
+    );
   }
 
   /**

@@ -29,12 +29,15 @@ import {
   CommitCallback,
 } from './transaction';
 import {google as databaseAdmin} from '../protos/protos';
+import {google} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
+import {grpc} from 'google-gax';
 import {
   ObservabilityOptions,
   startTrace,
   setSpanError,
+  setSpanErrorAndException,
   traceConfig,
 } from './instrument';
 
@@ -1105,21 +1108,21 @@ class Table {
           requestOptions: requestOptions,
           excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
         },
-        (err, transaction) => {
+        async (err, transaction) => {
           if (err) {
             setSpanError(span, err);
             span.end();
-            callback(err);
+            await callback(err);
             return;
           }
 
           transaction![method](this.name, rows as Key[]);
-          transaction!.commit(options, (err, resp) => {
+          transaction!.commit(options, async (err, resp) => {
             if (err) {
               setSpanError(span, err);
             }
             span.end();
-            callback(err, resp);
+            await callback(err, resp);
           });
         }
       );

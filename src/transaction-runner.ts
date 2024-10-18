@@ -26,6 +26,7 @@ import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
 import {google} from '../protos/protos';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
+import {getActiveOrNoopSpan, setSpanErrorAndException} from './instrument';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
@@ -224,6 +225,7 @@ export abstract class Runner<T> {
   async run(): Promise<T> {
     const start = Date.now();
     const timeout = this.options.timeout!;
+    const span = getActiveOrNoopSpan();
 
     let lastError: grpc.ServiceError;
 
@@ -232,9 +234,21 @@ export abstract class Runner<T> {
     while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
 
+      // this.attempts refers to the number of retries, not while loop iterations
+      // hence without a +1, reading a span entry that says attempt=0 makes no
+      // sence to a user.
+      const countableAttempts = this.attempts + 1;
+
       try {
-        return await this._run(transaction);
+        const result = await this._run(transaction);
+        span.addEvent('Transaction Attempt Succeeded', {
+          attempt: countableAttempts,
+        });
+        return result;
       } catch (e) {
+        span.addEvent('Transaction Attempt Failed', {
+          attempt: countableAttempts,
+        });
         this.session.lastError = e as grpc.ServiceError;
         lastError = e as grpc.ServiceError;
       }
@@ -243,19 +257,29 @@ export abstract class Runner<T> {
       // thrown here. We do this to bubble this error up to the caller who is
       // responsible for retrying the transaction on a different session.
       if (
-        !RETRYABLE.includes(lastError.code!) &&
-        !isRetryableInternalError(lastError)
+        !RETRYABLE.includes(lastError!.code!) &&
+        !isRetryableInternalError(lastError!)
       ) {
-        throw lastError;
+        span.addEvent('Transaction Attempt Aborted', {
+          attempt: this.attempts + 1,
+        });
+        setSpanErrorAndException(span, lastError!);
+        throw lastError!;
       }
 
       this.attempts += 1;
 
-      const delay = this.getNextDelay(lastError);
+      const delay = this.getNextDelay(lastError!);
+      span.addEvent('Backing off', {delay: delay, attempt: countableAttempts});
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    throw new DeadlineError(lastError!);
+    span.addEvent('Transaction Attempt Aborted due to Deadline Error', {
+      total_attempts: this.attempts + 1,
+    });
+    const err = new DeadlineError(lastError!);
+    setSpanErrorAndException(span, err);
+    throw err;
   }
 }
 

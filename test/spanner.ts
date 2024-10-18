@@ -5062,6 +5062,7 @@ describe('Spanner with mock server', () => {
         'Requesting 25 sessions',
         'Creating 25 sessions',
         'Requested for 25 sessions returned 25',
+        'Starting stream',
         'Acquiring session',
         'Waiting for a session to become available',
         'Acquired session',
