@@ -3399,9 +3399,10 @@ class Database extends common.GrpcServiceObject {
             );
 
             try {
-              return await runner.run();
-            } finally {
+              const result = await runner.run();
               span.end();
+              return result;
+            } finally {
               this.pool_.release(session);
             }
           } catch (e) {

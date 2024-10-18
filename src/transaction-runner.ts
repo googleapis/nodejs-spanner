@@ -234,18 +234,20 @@ export abstract class Runner<T> {
     while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
 
+      // this.attempts refers to the number of retries, not while loop iterations
+      // hence without a +1, reading a span entry that says attempt=0 makes no
+      // sence to a user.
+      const countableAttempts = this.attempts + 1;
+
       try {
         const result = await this._run(transaction);
-        if (this.attempts > 0) {
-          // No add to annotate if the transaction wasn't retried.
-          span.addEvent('Transaction Attempt Succeeded', {
-            attempt: this.attempts + 1,
-          });
-        }
+        span.addEvent('Transaction Attempt Succeeded', {
+          attempt: countableAttempts,
+        });
         return result;
       } catch (e) {
         span.addEvent('Transaction Attempt Failed', {
-          attempt: this.attempts + 1,
+          attempt: countableAttempts,
         });
         this.session.lastError = e as grpc.ServiceError;
         lastError = e as grpc.ServiceError;
@@ -268,7 +270,7 @@ export abstract class Runner<T> {
       this.attempts += 1;
 
       const delay = this.getNextDelay(lastError!);
-      span.addEvent('Backing off', {delay: delay, attempt: this.attempts});
+      span.addEvent('Backing off', {delay: delay, attempt: countableAttempts});
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 

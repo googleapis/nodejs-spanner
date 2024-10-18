@@ -467,6 +467,7 @@ describe('EndToEnd', () => {
         'Cache hit: has usable session',
         'Acquired session',
         'Using Session',
+        'Transaction Attempt Succeeded',
       ];
       assert.deepStrictEqual(
         actualEventNames,
@@ -1610,6 +1611,7 @@ SELECT 1p
       'Transaction Attempt Failed',
       'Transaction Attempt Aborted',
       'exception',
+      'exception',
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -1641,7 +1643,6 @@ SELECT 1p
       );
     }
 
-    console.log('flushing now');
     provider.forceFlush();
     assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData();
   });
@@ -1792,8 +1793,6 @@ describe('Traces for ExecuteStream broken stream retries', () => {
           await tx.commit();
         });
         await database.close();
-
-        console.log('done here');
 
         const requests = spannerMock
           .getRequests()
@@ -2101,8 +2100,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       const [updateCount] = await tx!.runUpdate(insertSql);
       assert.strictEqual(updateCount, 1);
       await tx!.commit();
-      await database.close();
     });
+    await database.close();
 
     // The span for a successful invocation of database.runTransaction
     // can only be ended after the calling function is completed.
@@ -2120,13 +2119,13 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     const expectedSpanNames = [
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
-      'CloudSpanner.Database.runTransaction',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Snapshot.run',
       'CloudSpanner.Dml.runUpdate',
       'CloudSpanner.Snapshot.begin',
       'CloudSpanner.Transaction.commit',
       'CloudSpanner.Transaction.commit',
+      'CloudSpanner.Database.runTransactionAsync',
     ];
     assert.deepStrictEqual(
       actualSpanNames,
@@ -2148,6 +2147,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'Acquiring session',
       'Waiting for a session to become available',
       'Acquired session',
+      'Using Session',
+      'Transaction Attempt Succeeded',
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -2223,6 +2224,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'Waiting for a session to become available',
       'Acquired session',
       'Using Session',
+      'Transaction Attempt Succeeded',
     ];
     assert.deepStrictEqual(
       actualEventNames,
