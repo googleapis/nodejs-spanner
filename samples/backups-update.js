@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function updateBackup(instanceId, backupId, projectId) {
+function main(instanceId, backupId, projectId) {
   // [START spanner_update_backup]
 
   // Imports the Google Cloud client library and precise date library
@@ -38,45 +38,52 @@ async function updateBackup(instanceId, backupId, projectId) {
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Read backup metadata and update expiry time
-  try {
-    const [metadata] = await databaseAdminClient.getBackup({
-      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    });
-
-    const currentExpireTime = metadata.expireTime;
-    const maxExpireTime = metadata.maxExpireTime;
-    const wantExpireTime = new PreciseDate(currentExpireTime);
-    wantExpireTime.setDate(wantExpireTime.getDate() + 1);
-
-    // New expire time should be less than the max expire time
-    const min = (currentExpireTime, maxExpireTime) =>
-      currentExpireTime < maxExpireTime ? currentExpireTime : maxExpireTime;
-    const newExpireTime = new PreciseDate(min(wantExpireTime, maxExpireTime));
-    console.log(
-      `Backup ${backupId} current expire time: ${Spanner.timestamp(
-        currentExpireTime
-      ).toISOString()}`
-    );
-    console.log(
-      `Updating expire time to ${Spanner.timestamp(
-        newExpireTime
-      ).toISOString()}`
-    );
-
-    await databaseAdminClient.updateBackup({
-      backup: {
+  async function updateBackup() {
+    try {
+      const [metadata] = await databaseAdminClient.getBackup({
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-        expireTime: Spanner.timestamp(newExpireTime).toStruct(),
-      },
-      updateMask: (protos.google.protobuf.FieldMask = {
-        paths: ['expire_time'],
-      }),
-    });
-    console.log('Expire time updated.');
-  } catch (err) {
-    console.error('ERROR:', err);
+      });
+
+      const currentExpireTime = metadata.expireTime;
+      const maxExpireTime = metadata.maxExpireTime;
+      const wantExpireTime = new PreciseDate(currentExpireTime);
+      wantExpireTime.setDate(wantExpireTime.getDate() + 1);
+
+      // New expire time should be less than the max expire time
+      const min = (currentExpireTime, maxExpireTime) =>
+        currentExpireTime < maxExpireTime ? currentExpireTime : maxExpireTime;
+      const newExpireTime = new PreciseDate(min(wantExpireTime, maxExpireTime));
+      console.log(
+        `Backup ${backupId} current expire time: ${Spanner.timestamp(
+          currentExpireTime
+        ).toISOString()}`
+      );
+      console.log(
+        `Updating expire time to ${Spanner.timestamp(
+          newExpireTime
+        ).toISOString()}`
+      );
+
+      await databaseAdminClient.updateBackup({
+        backup: {
+          name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+          expireTime: Spanner.timestamp(newExpireTime).toStruct(),
+        },
+        updateMask: (protos.google.protobuf.FieldMask = {
+          paths: ['expire_time'],
+        }),
+      });
+      console.log('Expire time updated.');
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
   }
+  updateBackup();
   // [END spanner_update_backup]
 }
 
-module.exports.updateBackup = updateBackup;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
