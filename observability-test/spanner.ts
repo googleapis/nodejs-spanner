@@ -513,6 +513,7 @@ describe('EndToEnd', () => {
       );
 
       const expectedEventNames = [
+        'Starting stream',
         'Transaction Creation Done',
         'Acquiring session',
         'Cache hit: has usable session',
@@ -1558,6 +1559,7 @@ SELECT 1p
       'CloudSpanner.Snapshot.begin',
       'CloudSpanner.Transaction.commit',
       'CloudSpanner.Transaction.commit',
+      'CloudSpanner.Database.runTransactionAsync',
     ];
     assert.deepStrictEqual(
       actualSpanNames,
@@ -1603,7 +1605,6 @@ SELECT 1p
       'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions'
     );
 
-    // TODO: Uncomment once we've merged Database.runTransactionAsync tracing.
     // We need to ensure a strict relationship between the spans.
     // |-Database.runTransactionAsync |-------------------------------------|
     //   |-Snapshot.run                |------------------------|
@@ -1611,14 +1612,13 @@ SELECT 1p
     //   |-Transaction.commit                                 |--------|
     //      |-Snapshot.begin                                   |------|
     //       |-Snapshot.commit                                  |-----|
-    /*
     const spanDatabaseRunTransactionAsync = spans[spans.length - 1];
     assert.deepStrictEqual(
       spanDatabaseRunTransactionAsync.name,
       'CloudSpanner.Database.runTransactionAsync',
       `${actualSpanNames}`
     );
-    const spanTransactionCommit0 = spans[spans.length - 1];
+    const spanTransactionCommit0 = spans[spans.length - 2];
     assert.strictEqual(
       spanTransactionCommit0.name,
       'CloudSpanner.Transaction.commit'
@@ -1643,7 +1643,6 @@ SELECT 1p
       spanDatabaseRunTransactionAsync.spanContext().traceId,
       'Did not expect the same traceId'
     );
-    */
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
@@ -1658,18 +1657,11 @@ SELECT 1p
       'Transaction Creation Done',
       'Starting Commit',
       'Commit Done',
-
-      // TODO: Uncomment once we've merged Database.runTransactionAsync tracing.
-      /*
       'Acquiring session',
       'Waiting for a session to become available',
       'Acquired session',
       'Using Session',
-      'Transaction Attempt Failed',
-      'Transaction Attempt Aborted',
       'exception',
-      'exception',
-     */
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -2183,6 +2175,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'CloudSpanner.Snapshot.begin',
       'CloudSpanner.Transaction.commit',
       'CloudSpanner.Transaction.commit',
+      'CloudSpanner.Database.runTransactionAsync',
     ];
     assert.deepStrictEqual(
       actualSpanNames,
@@ -2201,15 +2194,10 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'Transaction Creation Done',
       'Starting Commit',
       'Commit Done',
-
-      // TODO: Uncomment once we've merged Database.runTransactionAsync tracing.
-      /*
       'Acquiring session',
       'Waiting for a session to become available',
       'Acquired session',
       'Using Session',
-      'Transaction Attempt Succeeded',
-     */
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -2268,6 +2256,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     const expectedSpanNames = [
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.runTransactionAsync',
     ];
     assert.deepStrictEqual(
       actualSpanNames,
@@ -2279,15 +2268,10 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'Requesting 25 sessions',
       'Creating 25 sessions',
       'Requested for 25 sessions returned 25',
-
-      // TODO: Uncomment once we've merged Database.runTransactionAsync tracing.
-      /*
       'Acquiring session',
       'Waiting for a session to become available',
       'Acquired session',
       'Using Session',
-      'Transaction Attempt Succeeded',
-     */
     ];
     assert.deepStrictEqual(
       actualEventNames,
