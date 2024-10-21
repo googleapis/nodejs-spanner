@@ -468,6 +468,52 @@ describe('EndToEnd', () => {
       });
     });
 
+    it('runTransactionAsync', async () => {
+      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
+        database.formattedName_
+      );
+      await database.runTransactionAsync(async transaction => {
+        const [rows] = await transaction!.run('SELECT 1');
+      });
+
+      traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      withAllSpansHaveDBName(spans);
+
+      const actualEventNames: string[] = [];
+      const actualSpanNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = [
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Database.runTransactionAsync',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      const expectedEventNames = [
+        'Transaction Creation Done',
+        'Acquiring session',
+        'Cache hit: has usable session',
+        'Acquired session',
+        'Using Session',
+      ];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+    });
+
     it('writeAtLeastOnce', done => {
       const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
         database.formattedName_
