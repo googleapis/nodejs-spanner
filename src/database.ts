@@ -2105,8 +2105,14 @@ class Database extends common.GrpcServiceObject {
               this.getSnapshot(options, (err, snapshot) => {
                 if (err) {
                   setSpanError(span, err);
+                  span.end();
+                } else {
+                  snapshot!.once('end', () => span.end());
+                  snapshot!.once('error', err => {
+                    setSpanError(span, err);
+                    span.end();
+                  });
                 }
-                span.end();
                 callback!(err, snapshot);
               });
             } else {
@@ -2119,7 +2125,6 @@ class Database extends common.GrpcServiceObject {
           }
 
           this._releaseOnEnd(session!, snapshot, span);
-          span.end();
           callback!(err, snapshot);
         });
       });
@@ -3108,9 +3113,7 @@ class Database extends common.GrpcServiceObject {
         if (err) {
           setSpanError(span, err);
         }
-        if (span.isRecording()) {
-          span.end();
-        }
+        span.end();
       });
 
       return proxyStream as PartialResultStream;

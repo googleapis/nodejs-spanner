@@ -129,6 +129,7 @@ describe('EndToEnd', () => {
   let database: Database;
   let spannerMock: mock.MockSpanner;
   let traceExporter: typeof InMemorySpanExporter;
+  let tracerProvider: typeof NodeTracerProvider;
 
   const contextManager = new AsyncHooksContextManager();
   setGlobalContextManager(contextManager);
@@ -140,14 +141,14 @@ describe('EndToEnd', () => {
   beforeEach(async () => {
     traceExporter = new InMemorySpanExporter();
     const sampler = new AlwaysOnSampler();
-    const provider = new NodeTracerProvider({
+    tracerProvider = new NodeTracerProvider({
       sampler: sampler,
       exporter: traceExporter,
     });
-    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     const setupResult = await setup({
-      tracerProvider: provider,
+      tracerProvider: tracerProvider,
       enableExtendedTracing: false,
     });
 
@@ -167,7 +168,8 @@ describe('EndToEnd', () => {
     traceExporter.reset();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await tracerProvider.forceFlush();
     traceExporter.reset();
     spannerMock.resetRequests();
     spanner.close();
@@ -218,9 +220,11 @@ describe('EndToEnd', () => {
       database.getSnapshot((err, transaction) => {
         assert.ifError(err);
 
-        transaction!.run('SELECT 1', (err, rows) => {
+        transaction!.run('SELECT 1', async (err, rows) => {
           assert.ifError(err);
+          transaction!.end();
 
+          await tracerProvider.forceFlush();
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
           withAllSpansHaveDBName(spans);
@@ -236,9 +240,9 @@ describe('EndToEnd', () => {
 
           const expectedSpanNames = [
             'CloudSpanner.Snapshot.begin',
-            'CloudSpanner.Database.getSnapshot',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
+            'CloudSpanner.Database.getSnapshot',
           ];
           assert.deepStrictEqual(
             actualSpanNames,
@@ -249,10 +253,10 @@ describe('EndToEnd', () => {
           const expectedEventNames = [
             'Begin Transaction',
             'Transaction Creation Done',
+            'Starting stream',
             'Acquiring session',
             'Cache hit: has usable session',
             'Acquired session',
-            'Starting stream',
           ];
           assert.deepStrictEqual(
             actualEventNames,
