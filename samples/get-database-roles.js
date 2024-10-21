@@ -23,7 +23,6 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  
   // [START spanner_list_database_roles]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
