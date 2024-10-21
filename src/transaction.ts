@@ -758,21 +758,6 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
-          setSpanError(span, err);
-          const wasAborted = isErrorAborted(err);
-          if (!this.id && this._useInRunner && !wasAborted) {
-            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
-            this.begin();
-          } else {
-            if (wasAborted) {
-              span.addEvent('Stream broken. Not safe to retry', {
-                'transaction.id': this.id?.toString(),
-              });
-            }
-          }
-          span.end();
-        })
         .on('end', err => {
           if (err) {
             setSpanError(span, err);
@@ -1348,22 +1333,6 @@ export class Snapshot extends EventEmitter {
           if (response.metadata && response.metadata!.transaction && !this.id) {
             this._update(response.metadata!.transaction);
           }
-        })
-        .on('error', err => {
-          setSpanError(span, err as Error);
-          const wasAborted = isErrorAborted(err);
-          if (!this.id && this._useInRunner && !wasAborted) {
-            span.addEvent('Stream broken. Safe to retry');
-            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
-            this.begin();
-          } else {
-            if (wasAborted) {
-              span.addEvent('Stream broken. Not safe to retry', {
-                'transaction.id': this.id?.toString(),
-              });
-            }
-          }
-          span.end();
         })
         .on('end', err => {
           if (err) {

@@ -452,11 +452,8 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
       assert.strictEqual(
-        beginTxnRequest.options?.readWrite!.readLockMode,
+        request.transaction?.begin?.readWrite?.readLockMode,
         'OPTIMISTIC'
       );
     });
@@ -3755,120 +3752,6 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         beginTxnRequest[0].options!.readWrite!.readLockMode,
         'OPTIMISTIC'
-      );
-    });
-
-    it('should use beginTransaction on retry for unknown reason', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(async tx => {
-        try {
-          await tx.runUpdate(invalidSql);
-          assert.fail('missing expected error');
-        } catch (e) {
-          assert.strictEqual(
-            (e as ServiceError).message,
-            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-          );
-        }
-        await tx.run(selectSql);
-        await tx.commit();
-      });
-      await database.close();
-
-      const beginTxnRequest = spannerMock
-        .getRequests()
-        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-        .map(req => req as v1.BeginTransactionRequest);
-      assert.deepStrictEqual(beginTxnRequest.length, 1);
-    });
-
-    it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(
-        {
-          excludeTxnFromChangeStreams: true,
-        },
-        async tx => {
-          try {
-            await tx.runUpdate(invalidSql);
-            assert.fail('missing expected error');
-          } catch (e) {
-            assert.strictEqual(
-              (e as ServiceError).message,
-              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-            );
-          }
-          await tx.run(selectSql);
-          await tx.commit();
-        }
-      );
-      await database.close();
-
-      const beginTxnRequest = spannerMock
-        .getRequests()
-        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-        .map(req => req as v1.BeginTransactionRequest);
-      assert.deepStrictEqual(beginTxnRequest.length, 1);
-      assert.strictEqual(
-        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
-        true
-      );
-    });
-
-    it('should use beginTransaction for streaming on retry for unknown reason', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(async tx => {
-        try {
-          await getRowCountFromStreamingSql(tx!, {sql: invalidSql});
-          assert.fail('missing expected error');
-        } catch (e) {
-          assert.strictEqual(
-            (e as ServiceError).message,
-            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-          );
-        }
-        await tx.run(selectSql);
-        await tx.commit();
-      });
-      await database.close();
-
-      const beginTxnRequest = spannerMock
-        .getRequests()
-        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-        .map(req => req as v1.BeginTransactionRequest);
-      assert.deepStrictEqual(beginTxnRequest.length, 1);
-    });
-
-    it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(
-        {
-          excludeTxnFromChangeStreams: true,
-        },
-        async tx => {
-          try {
-            await getRowCountFromStreamingSql(tx!, {sql: invalidSql});
-            assert.fail('missing expected error');
-          } catch (e) {
-            assert.strictEqual(
-              (e as ServiceError).message,
-              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-            );
-          }
-          await tx.run(selectSql);
-          await tx.commit();
-        }
-      );
-      await database.close();
-
-      const beginTxnRequest = spannerMock
-        .getRequests()
-        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
-        .map(req => req as v1.BeginTransactionRequest);
-      assert.deepStrictEqual(beginTxnRequest.length, 1);
-      assert.strictEqual(
-        beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
-        true
       );
     });
 

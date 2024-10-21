@@ -3385,7 +3385,7 @@ class Database extends common.GrpcServiceObject {
             try {
               return await runner.run();
             } catch (e) {
-              setSpanError(span, e as Error);
+              setSpanErrorAndException(span, e as Error);
               throw e;
             } finally {
               span.end();
