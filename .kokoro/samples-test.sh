@@ -49,6 +49,12 @@ if [ -f samples/package.json ]; then
         $KOKORO_GFILE_DIR/linux_amd64/flakybot
       }
       trap cleanup EXIT HUP
+    else
+      # Check if there are any changes in the "samples" directory only for presubmits. 
+      if git diff --quiet HEAD~1 HEAD -- samples/; then
+        echo "No changes detected in the samples directory. Skipping sample tests."
+        exit 0
+      fi
     fi
 
     npm run samples-test
