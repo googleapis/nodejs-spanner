@@ -140,6 +140,8 @@ Before running the samples, make sure you've followed the steps outlined in
 
 `npm install`
 
+`cd ..`
+
 ## Samples
 
 
@@ -170,7 +172,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-cancel.js`
+`node samples/backups-cancel.js`
 
 
 -----
@@ -221,7 +223,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-create-with-encryption-key.js`
+`node samples/backups-create-with-encryption-key.js`
 
 
 -----
@@ -255,7 +257,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-create.js`
+`node samples/backups-create.js`
 
 
 -----
@@ -272,7 +274,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-delete.js`
+`node samples/backups-delete.js`
 
 
 -----
@@ -289,7 +291,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-get-database-operations.js`
+`node samples/backups-get-database-operations.js`
 
 
 -----
@@ -306,7 +308,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-get-operations.js`
+`node samples/backups-get-operations.js`
 
 
 -----
@@ -323,7 +325,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-get.js`
+`node samples/backups-get.js`
 
 
 -----
@@ -340,7 +342,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-restore-with-encryption-key.js`
+`node samples/backups-restore-with-encryption-key.js`
 
 
 -----
@@ -374,7 +376,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-restore.js`
+`node samples/backups-restore.js`
 
 
 -----
@@ -391,7 +393,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups-update.js`
+`node samples/backups-update.js`
 
 
 -----
@@ -408,7 +410,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node backups.js`
+`node samples/backups.js`
 
 
 -----
@@ -442,7 +444,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node batch.js`
+`node samples/batch.js`
 
 
 -----
@@ -493,7 +495,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node crud.js`
+`node samples/crud.js`
 
 
 -----
@@ -527,7 +529,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node database-create-with-encryption-key.js`
+`node samples/database-create-with-encryption-key.js`
 
 
 -----
@@ -561,7 +563,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node database-create-with-version-retention-period.js`
+`node samples/database-create-with-version-retention-period.js`
 
 
 -----
@@ -646,7 +648,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node datatypes.js`
+`node samples/datatypes.js`
 
 
 -----
@@ -748,7 +750,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node dml.js`
+`node samples/dml.js`
 
 
 -----
@@ -799,7 +801,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node get-commit-stats.js`
+`node samples/get-commit-stats.js`
 
 
 -----
@@ -935,7 +937,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node indexing.js`
+`node samples/indexing.js`
 
 
 -----
@@ -1071,7 +1073,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node instance-with-processing-units.js`
+`node samples/instance-with-processing-units.js`
 
 
 -----
@@ -1088,7 +1090,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node instance.js`
+`node samples/instance.js`
 
 
 -----
@@ -1105,7 +1107,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node json-add-column.js`
+`node samples/json-add-column.js`
 
 
 -----
@@ -1122,7 +1124,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node json-query-parameter.js`
+`node samples/json-query-parameter.js`
 
 
 -----
@@ -1139,7 +1141,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node json-update-data.js`
+`node samples/json-update-data.js`
 
 
 -----
@@ -1224,7 +1226,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node numeric-add-column.js`
+`node samples/numeric-add-column.js`
 
 
 -----
@@ -1241,7 +1243,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node numeric-query-parameter.js`
+`node samples/numeric-query-parameter.js`
 
 
 -----
@@ -1258,7 +1260,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node numeric-update-data.js`
+`node samples/numeric-update-data.js`
 
 
 -----
@@ -1683,7 +1685,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node proto-query-data.js`
+`node samples/proto-query-data.js`
 
 
 -----
@@ -1717,7 +1719,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node proto-update-data-dml.js`
+`node samples/proto-update-data-dml.js`
 
 
 -----
@@ -1734,7 +1736,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node proto-update-data.js`
+`node samples/proto-update-data.js`
 
 
 -----
@@ -1751,7 +1753,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node queryoptions.js`
+`node samples/queryoptions.js`
 
 
 -----
@@ -1768,7 +1770,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node quickstart.js`
+`node samples/quickstart.js`
 
 
 -----
@@ -1921,7 +1923,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node schema.js`
+`node samples/schema.js`
 
 
 -----
@@ -1989,7 +1991,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node struct.js`
+`node samples/struct.js`
 
 
 -----
@@ -2057,7 +2059,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node timestamp.js`
+`node samples/timestamp.js`
 
 
 -----
@@ -2091,7 +2093,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node transaction.js`
+`node samples/transaction.js`
 
 
 -----
