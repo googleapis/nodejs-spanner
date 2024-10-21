@@ -17,13 +17,16 @@ and automatic, synchronous replication for high availability.
   * [Add and drop new database role](#add-and-drop-new-database-role)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
+  * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
+  * [Backups-create-with-multiple-kms-keys](#backups-create-with-multiple-kms-keys)
   * [Backups-create](#backups-create)
   * [Backups-delete](#backups-delete)
   * [Backups-get-database-operations](#backups-get-database-operations)
   * [Backups-get-operations](#backups-get-operations)
   * [Backups-get](#backups-get)
   * [Backups-restore-with-encryption-key](#backups-restore-with-encryption-key)
+  * [Backups-restore-with-multiple-kms-keys](#backups-restore-with-multiple-kms-keys)
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
@@ -34,6 +37,7 @@ and automatic, synchronous replication for high availability.
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
+  * [Database-create-with-multiple-kms-keys](#database-create-with-multiple-kms-keys)
   * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
@@ -176,6 +180,23 @@ __Usage:__
 
 ### Copies a source backup
 
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Copies a source backup
+
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md)
@@ -201,6 +222,23 @@ __Usage:__
 
 
 `node backups-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Backups-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-create-with-multiple-kms-keys.js`
 
 
 -----
@@ -303,6 +341,23 @@ __Usage:__
 
 
 `node backups-restore-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Backups-restore-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-restore-with-multiple-kms-keys.js`
 
 
 -----
@@ -473,6 +528,23 @@ __Usage:__
 
 
 `node database-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Database-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-multiple-kms-keys.js`
 
 
 -----
