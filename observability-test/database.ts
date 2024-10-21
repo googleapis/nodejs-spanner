@@ -1687,7 +1687,7 @@ describe('Database', () => {
         'Unexpected span status message'
       );
 
-      const expectedEventNames = ['Using Session'];
+      const expectedEventNames = ['Using Session', 'exception'];
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
