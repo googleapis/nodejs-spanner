@@ -31,6 +31,12 @@ if [ -f .kokoro/pre-samples-test.sh ]; then
     set -x
 fi
 
+# Check if there are any changes in the "samples" directory
+if git diff --quiet HEAD~1 HEAD -- samples/; then
+  echo "No changes detected in the samples directory. Skipping sample tests."
+  exit 0
+fi
+
 if [ -f samples/package.json ]; then
     npm install
 
