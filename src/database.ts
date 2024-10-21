@@ -109,6 +109,7 @@ import {
   startTrace,
   setSpanError,
   setSpanErrorAndException,
+  traceConfig,
 } from './instrument';
 
 export type GetDatabaseRolesCallback = RequestCallback<
@@ -344,7 +345,8 @@ class Database extends common.GrpcServiceObject {
   databaseDialect?: EnumKey<
     typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
   > | null;
-  _observabilityOptions?: ObservabilityOptions;
+  _observabilityOptions?: ObservabilityOptions; // TODO: exmaine if we can remove it
+  private _traceConfig: traceConfig;
   constructor(
     instance: Instance,
     name: string,
@@ -450,15 +452,27 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+    const sessionPoolInstance = this.pool_ as SessionPool;
+    if (sessionPoolInstance) {
+      sessionPoolInstance._observabilityOptions =
+        instance._observabilityOptions;
+    }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
     }
     this.formattedName_ = formattedName_;
     this.instance = instance;
+    this._observabilityOptions = instance._observabilityOptions;
+    this._traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this.formattedName_,
+    };
+
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
     this.request = instance.request;
+    this._observabilityOptions = instance._observabilityOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
     this.pool_.on('error', this.emit.bind(this, 'error'));
@@ -467,7 +481,6 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this._observabilityOptions = instance._observabilityOptions;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -677,30 +690,35 @@ class Database extends common.GrpcServiceObject {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
-      {
-        client: 'SpannerClient',
-        method: 'batchCreateSessions',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (err) {
-          callback!(err, null, resp!);
-          return;
+    startTrace('Database.batchCreateSessions', this._traceConfig, span => {
+      this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
+        {
+          client: 'SpannerClient',
+          method: 'batchCreateSessions',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback!(err, null, resp!);
+            return;
+          }
+
+          const sessions = (resp!.session || []).map(metadata => {
+            const session = this.session(metadata.name!);
+            session._observabilityOptions = this._traceConfig!.opts;
+            session.metadata = metadata;
+            return session;
+          });
+
+          span.end();
+          callback!(null, sessions, resp!);
         }
-
-        const sessions = (resp!.session || []).map(metadata => {
-          const session = this.session(metadata.name!);
-          session._observabilityOptions = this._observabilityOptions;
-          session.metadata = metadata;
-          return session;
-        });
-
-        callback!(null, sessions, resp!);
-      }
-    );
+      );
+    });
   }
 
   /**
@@ -738,7 +756,7 @@ class Database extends common.GrpcServiceObject {
     const id = identifier.transaction;
     const transaction = new BatchTransaction(session, options);
     transaction.id = id;
-    transaction._observabilityOptions = this._observabilityOptions;
+    transaction._observabilityOptions = this._traceConfig!.opts;
     transaction.readTimestamp = identifier.timestamp as PreciseDate;
     return transaction;
   }
@@ -827,36 +845,41 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as TimestampBounds)
         : {};
-
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.createBatchTransaction', q, span => {
-      this.pool_.getSession((err, session) => {
-        if (err) {
-          setSpanError(span, err);
-          span.end();
-          callback!(err as ServiceError, null, undefined);
-          return;
-        }
-        const transaction = this.batchTransaction({session: session!}, options);
-        this._releaseOnEnd(session!, transaction, span);
-        transaction.begin((err, resp) => {
+    return startTrace(
+      'Database.createBatchTransaction',
+      this._traceConfig,
+      span => {
+        this.pool_.getSession((err, session) => {
           if (err) {
             setSpanError(span, err);
-            if (isSessionNotFoundError(err)) {
-              span.addEvent('No session available', {
-                'session.id': session?.id,
-              });
-            }
             span.end();
-            callback!(err, null, resp!);
+            callback!(err as ServiceError, null, undefined);
             return;
           }
-          span.addEvent('Using Session', {'session.id': session?.id});
-          span.end();
-          callback!(null, transaction, resp!);
+          const transaction = this.batchTransaction(
+            {session: session!},
+            options
+          );
+          this._releaseOnEnd(session!, transaction, span);
+          transaction.begin((err, resp) => {
+            if (err) {
+              setSpanError(span, err);
+              if (isSessionNotFoundError(err)) {
+                span.addEvent('No session available', {
+                  'session.id': session?.id,
+                });
+              }
+              span.end();
+              callback!(err, null, resp!);
+              return;
+            }
+            span.addEvent('Using Session', {'session.id': session?.id});
+            span.end();
+            callback!(null, transaction, resp!);
+          });
         });
-      });
-    });
+      }
+    );
   }
   /**
    * Create a new session.
@@ -1086,7 +1109,7 @@ class Database extends common.GrpcServiceObject {
         /CREATE TABLE `*([^\s`(]+)/
       )![1];
       const table = this.table(tableName!);
-      table._observabilityOptions = this._observabilityOptions;
+      table._observabilityOptions = this._traceConfig!.opts;
       callback!(null, table, operation!, resp!);
     });
   }
@@ -1875,8 +1898,7 @@ class Database extends common.GrpcServiceObject {
       delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getSessions', q, span => {
+    return startTrace('Database.getSessions', this._traceConfig, span => {
       this.request<
         google.spanner.v1.ISession,
         google.spanner.v1.IListSessionsResponse
@@ -1897,7 +1919,7 @@ class Database extends common.GrpcServiceObject {
             sessionInstances = sessions.map(metadata => {
               const session = self.session(metadata.name!);
               session.metadata = metadata;
-              session._observabilityOptions = this._observabilityOptions;
+              session._observabilityOptions = this._traceConfig!.opts;
               return session;
             });
           }
@@ -2058,8 +2080,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getSnapshot', q, span => {
+    return startTrace('Database.getSnapshot', this._traceConfig, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
@@ -2159,8 +2180,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.getTransaction', q, span => {
+    return startTrace('Database.getTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
           transaction!.requestOptions = Object.assign(
@@ -2177,6 +2197,7 @@ class Database extends common.GrpcServiceObject {
 
         if (!err) {
           span.addEvent('Using Session', {'session.id': session?.id});
+          transaction!._observabilityOptions = this._observabilityOptions;
           this._releaseOnEnd(session!, transaction!, span);
         } else if (isSessionNotFoundError(err as grpc.ServiceError)) {
           span.addEvent('No session available', {
@@ -2786,8 +2807,11 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const q = {sql: query, opts: this._observabilityOptions};
-    return startTrace('Database.run', q, span => {
+    const traceConfig = {
+      sql: query,
+      ...this._traceConfig,
+    };
+    return startTrace('Database.run', traceConfig, span => {
       this.runStream(query, options)
         .on('error', err => {
           setSpanError(span, err);
@@ -3007,8 +3031,11 @@ class Database extends common.GrpcServiceObject {
     options?: TimestampBounds
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
-    const q = {sql: query, opts: this._observabilityOptions};
-    return startTrace('Database.runStream', q, span => {
+    const traceConfig = {
+      sql: query,
+      ...this._traceConfig,
+    };
+    return startTrace('Database.runStream', traceConfig, span => {
       this.pool_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
@@ -3185,8 +3212,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    startTrace('Database.runTransaction', q, span => {
+    startTrace('Database.runTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
           setSpanError(span, err);
@@ -3206,6 +3232,8 @@ class Database extends common.GrpcServiceObject {
           runFn!(err as grpc.ServiceError);
           return;
         }
+
+        transaction!._observabilityOptions = this._observabilityOptions;
         if (options.optimisticLock) {
           transaction!.useOptimisticLock();
         }
@@ -3335,46 +3363,56 @@ class Database extends common.GrpcServiceObject {
 
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
-    const span = getActiveOrNoopSpan();
-    // Loop to retry 'Session not found' errors.
-    // (and yes, we like while (true) more than for (;;) here)
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        const [session, transaction] = await promisify(getSession)();
-        transaction.requestOptions = Object.assign(
-          transaction.requestOptions || {},
-          options.requestOptions
-        );
-        if (options.optimisticLock) {
-          transaction.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction.excludeTxnFromChangeStreams();
-        }
-        sessionId = session?.id;
-        span.addEvent('Using Session', {'session.id': sessionId});
-        const runner = new AsyncTransactionRunner<T>(
-          session,
-          transaction,
-          runFn,
-          options
-        );
+    return startTrace(
+      'Database.runTransactionAsync',
+      this._traceConfig,
+      async span => {
+        // Loop to retry 'Session not found' errors.
+        // (and yes, we like while (true) more than for (;;) here)
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          try {
+            const [session, transaction] = await promisify(getSession)();
+            transaction.requestOptions = Object.assign(
+              transaction.requestOptions || {},
+              options.requestOptions
+            );
+            if (options.optimisticLock) {
+              transaction.useOptimisticLock();
+            }
+            if (options.excludeTxnFromChangeStreams) {
+              transaction.excludeTxnFromChangeStreams();
+            }
+            sessionId = session?.id;
+            span.addEvent('Using Session', {'session.id': sessionId});
+            const runner = new AsyncTransactionRunner<T>(
+              session,
+              transaction,
+              runFn,
+              options
+            );
 
-        try {
-          return await runner.run();
-        } finally {
-          this.pool_.release(session);
-        }
-      } catch (e) {
-        if (!isSessionNotFoundError(e as ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': sessionId,
-          });
-          throw e;
+            try {
+              return await runner.run();
+            } catch (e) {
+              setSpanErrorAndException(span, e as Error);
+              throw e;
+            } finally {
+              span.end();
+              this.pool_.release(session);
+            }
+          } catch (e) {
+            if (!isSessionNotFoundError(e as ServiceError)) {
+              span.addEvent('No session available', {
+                'session.id': sessionId,
+              });
+              span.end();
+              throw e;
+            }
+          }
         }
       }
-    }
+    );
   }
 
   /**
@@ -3441,66 +3479,79 @@ class Database extends common.GrpcServiceObject {
   ): NodeJS.ReadableStream {
     const proxyStream: Transform = through.obj();
 
-    const span = getActiveOrNoopSpan();
-
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        proxyStream.destroy(err);
-        return;
-      }
-
-      span.addEvent('Using Session', {'session.id': session?.id});
-      const gaxOpts = extend(true, {}, options?.gaxOptions);
-      const reqOpts = Object.assign(
-        {} as spannerClient.spanner.v1.BatchWriteRequest,
-        {
-          session: session!.formattedName_!,
-          mutationGroups: mutationGroups.map(mg => mg.proto()),
-          requestOptions: options?.requestOptions,
-          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
-        }
-      );
-      let dataReceived = false;
-      let dataStream = this.requestStream({
-        client: 'SpannerClient',
-        method: 'batchWrite',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      });
-      dataStream
-        .once('data', () => (dataReceived = true))
-        .once('error', err => {
-          if (
-            !dataReceived &&
-            isSessionNotFoundError(err as grpc.ServiceError)
-          ) {
-            // If there's a 'Session not found' error and we have not yet received
-            // any data, we can safely retry the writes on a new session.
-            // Register the error on the session so the pool can discard it.
-            if (session) {
-              session.lastError = err as grpc.ServiceError;
-            }
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-            // Remove the current data stream from the end user stream.
-            dataStream.unpipe(proxyStream);
-            dataStream.end();
-            // Create a new stream and add it to the end user stream.
-            dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
-            dataStream.pipe(proxyStream);
-          } else {
+    return startTrace(
+      'Database.batchWriteAtLeastOnce',
+      this._traceConfig,
+      span => {
+        this.pool_.getSession((err, session) => {
+          if (err) {
             proxyStream.destroy(err);
+            setSpanError(span, err);
+            span.end();
+            return;
           }
-        })
-        .once('end', () => {
-          this.pool_.release(session!);
-        })
-        .pipe(proxyStream);
-    });
 
-    return proxyStream as NodeJS.ReadableStream;
+          span.addEvent('Using Session', {'session.id': session?.id});
+          const gaxOpts = extend(true, {}, options?.gaxOptions);
+          const reqOpts = Object.assign(
+            {} as spannerClient.spanner.v1.BatchWriteRequest,
+            {
+              session: session!.formattedName_!,
+              mutationGroups: mutationGroups.map(mg => mg.proto()),
+              requestOptions: options?.requestOptions,
+              excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+            }
+          );
+          let dataReceived = false;
+          let dataStream = this.requestStream({
+            client: 'SpannerClient',
+            method: 'batchWrite',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          });
+          dataStream
+            .once('data', () => (dataReceived = true))
+            .once('error', err => {
+              setSpanError(span, err);
+
+              if (
+                !dataReceived &&
+                isSessionNotFoundError(err as grpc.ServiceError)
+              ) {
+                // If there's a 'Session not found' error and we have not yet received
+                // any data, we can safely retry the writes on a new session.
+                // Register the error on the session so the pool can discard it.
+                if (session) {
+                  session.lastError = err as grpc.ServiceError;
+                }
+                span.addEvent('No session available', {
+                  'session.id': session?.id,
+                });
+                // Remove the current data stream from the end user stream.
+                dataStream.unpipe(proxyStream);
+                dataStream.end();
+                // Create a new stream and add it to the end user stream.
+                dataStream = this.batchWriteAtLeastOnce(
+                  mutationGroups,
+                  options
+                );
+                dataStream.pipe(proxyStream);
+              } else {
+                span.end();
+                proxyStream.destroy(err);
+              }
+            })
+            .once('end', () => {
+              span.end();
+              this.pool_.release(session!);
+            })
+            .pipe(proxyStream);
+        });
+
+        return proxyStream as NodeJS.ReadableStream;
+      }
+    );
   }
 
   /**
@@ -3578,8 +3629,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as CallOptions)
         : {};
 
-    const q = {opts: this._observabilityOptions};
-    return startTrace('Database.writeAtLeastOnce', q, span => {
+    return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
           span.addEvent('No session available', {

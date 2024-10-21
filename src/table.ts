@@ -191,6 +191,11 @@ class Table {
 
     this.database.createTable(schema, gaxOptions, callback!);
   }
+
+  protected getDBName(): string {
+    return this.database.formattedName_;
+  }
+
   /**
    * Create a readable object stream to receive rows from the database using key
    * lookups and scans.
@@ -1082,6 +1087,8 @@ class Table {
   ): void {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
+      tableName: this.name,
+      dbName: this.getDBName(),
     };
 
     startTrace('Table.' + method, traceConfig, span => {
