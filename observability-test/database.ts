@@ -1565,6 +1565,137 @@ describe('Database', () => {
     });
   });
 
+  describe('runTransactionAsync', () => {
+    const SESSION = new FakeSession();
+    const TRANSACTION = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadWrite
+    );
+
+    let pool: FakeSessionPool;
+
+    beforeEach(() => {
+      pool = database.pool_;
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
+        callback => {
+          callback(null, SESSION, TRANSACTION);
+        }
+      );
+    });
+
+    it('with no error', async () => {
+      const fakeValue = {};
+
+      sandbox
+        .stub(FakeAsyncTransactionRunner.prototype, 'run')
+        .resolves(fakeValue);
+
+      const value = await database.runTransactionAsync(async txn => {
+        const result = await txn.run('SELECT 1');
+        await txn.commit();
+        return result;
+      });
+
+      assert.strictEqual(value, fakeValue);
+
+      await provider.forceFlush();
+      await traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      withAllSpansHaveDBName(spans);
+
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = ['CloudSpanner.Database.runTransactionAsync'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      // Ensure that the span actually produced an error that was recorded.
+      const firstSpan = spans[0];
+      assert.strictEqual(
+        SpanStatusCode.UNSET,
+        firstSpan.status.code,
+        'Unexpected span status'
+      );
+      assert.strictEqual(
+        undefined,
+        firstSpan.status.message,
+        'Unexpected span status message'
+      );
+
+      const expectedEventNames = ['Using Session'];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+    });
+
+    it('with error', async () => {
+      const ourException = new Error('our thrown error');
+      sandbox
+        .stub(FakeAsyncTransactionRunner.prototype, 'run')
+        .throws(ourException);
+
+      assert.rejects(async () => {
+        const value = await database.runTransactionAsync(async txn => {
+          const result = await txn.run('SELECT 1');
+          await txn.commit();
+          return result;
+        });
+      }, ourException);
+
+      await provider.forceFlush();
+      await traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      withAllSpansHaveDBName(spans);
+
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = ['CloudSpanner.Database.runTransactionAsync'];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      // Ensure that the span actually produced an error that was recorded.
+      const firstSpan = spans[0];
+      assert.strictEqual(
+        firstSpan.status.code,
+        SpanStatusCode.ERROR,
+        'Unexpected span status'
+      );
+      assert.strictEqual(
+        firstSpan.status.message,
+        ourException.message,
+        'Unexpected span status message'
+      );
+
+      const expectedEventNames = ['Using Session', 'exception'];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+    });
+  });
+
   describe('runStream', () => {
     const QUERY = {
       sql: 'SELECT * FROM table',
