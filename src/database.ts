@@ -3363,46 +3363,56 @@ class Database extends common.GrpcServiceObject {
 
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
-    const span = getActiveOrNoopSpan();
-    // Loop to retry 'Session not found' errors.
-    // (and yes, we like while (true) more than for (;;) here)
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        const [session, transaction] = await promisify(getSession)();
-        transaction.requestOptions = Object.assign(
-          transaction.requestOptions || {},
-          options.requestOptions
-        );
-        if (options.optimisticLock) {
-          transaction.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction.excludeTxnFromChangeStreams();
-        }
-        sessionId = session?.id;
-        span.addEvent('Using Session', {'session.id': sessionId});
-        const runner = new AsyncTransactionRunner<T>(
-          session,
-          transaction,
-          runFn,
-          options
-        );
+    return startTrace(
+      'Database.runTransactionAsync',
+      this._traceConfig,
+      async span => {
+        // Loop to retry 'Session not found' errors.
+        // (and yes, we like while (true) more than for (;;) here)
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          try {
+            const [session, transaction] = await promisify(getSession)();
+            transaction.requestOptions = Object.assign(
+              transaction.requestOptions || {},
+              options.requestOptions
+            );
+            if (options.optimisticLock) {
+              transaction.useOptimisticLock();
+            }
+            if (options.excludeTxnFromChangeStreams) {
+              transaction.excludeTxnFromChangeStreams();
+            }
+            sessionId = session?.id;
+            span.addEvent('Using Session', {'session.id': sessionId});
+            const runner = new AsyncTransactionRunner<T>(
+              session,
+              transaction,
+              runFn,
+              options
+            );
 
-        try {
-          return await runner.run();
-        } finally {
-          this.pool_.release(session);
-        }
-      } catch (e) {
-        if (!isSessionNotFoundError(e as ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': sessionId,
-          });
-          throw e;
+            try {
+              return await runner.run();
+            } catch (e) {
+              setSpanErrorAndException(span, e as Error);
+              throw e;
+            } finally {
+              span.end();
+              this.pool_.release(session);
+            }
+          } catch (e) {
+            if (!isSessionNotFoundError(e as ServiceError)) {
+              span.addEvent('No session available', {
+                'session.id': sessionId,
+              });
+              span.end();
+              throw e;
+            }
+          }
         }
       }
-    }
+    );
   }
 
   /**
