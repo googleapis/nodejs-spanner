@@ -3563,12 +3563,8 @@ class Database extends common.GrpcServiceObject {
                   mutationGroups,
                   options
                 );
-                dataStream.once('end', () => span.end());
-                dataStream.once('error', err => {
-                  setSpanError(span, err!);
-                  span.end();
-                });
                 dataStream.pipe(proxyStream);
+                span.end();
               } else {
                 span.end();
                 proxyStream.destroy(err);

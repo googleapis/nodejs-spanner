@@ -465,7 +465,6 @@ export class Snapshot extends EventEmitter {
           } else {
             this._update(resp);
           }
-
           span.end();
           callback!(err, resp);
         }
