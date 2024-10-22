@@ -466,9 +466,6 @@ export class Snapshot extends EventEmitter {
             this._update(resp);
           }
 
-          // begin simply issues an RPC to signal a state change to the backend,
-          // and doesn't invoke any other subsequent code hence it is paramount
-          // to invoke span.end() before returning results to the callback.
           span.end();
           callback!(err, resp);
         }
@@ -723,14 +720,20 @@ export class Snapshot extends EventEmitter {
           transaction.id = this.id;
         }
 
-        if (resumeToken) {
+        attempt++;
+
+        if (!resumeToken) {
+          if (attempt === 1) {
+            span.addEvent('Starting stream');
+          } else {
+            span.addEvent('Re-attempting start stream', {attempt: attempt});
+          }
+        } else {
           span.addEvent('Resuming stream', {
             resume_token: resumeToken!.toString(),
             attempt: attempt,
           });
         }
-
-        attempt++;
 
         return this.requestStream({
           client: 'SpannerClient',
@@ -756,13 +759,15 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', async err => {
+        .on('error', err => {
           setSpanError(span, err);
           const wasAborted = isErrorAborted(err);
           if (!this.id && this._useInRunner && !wasAborted) {
-            // It is paramount for us to await this invocation to
-            // .begin() to complete before we invoke span.end();
-            await this.begin();
+            // TODO: re-examine if this.begin() should still exist and if
+            // an await is needed: with await the generated begin span
+            // will look wonky and out of order. Please ses
+            // https://github.com/googleapis/nodejs-spanner/issues/2170
+            this.begin();
           } else {
             if (wasAborted) {
               span.addEvent('Stream broken. Not safe to retry', {
@@ -1297,8 +1302,10 @@ export class Snapshot extends EventEmitter {
     return startTrace('Snapshot.runStream', traceConfig, span => {
       let attempt = 0;
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        attempt++;
+
         if (!resumeToken) {
-          if (attempt === 0) {
+          if (attempt === 1) {
             span.addEvent('Starting stream');
           } else {
             span.addEvent('Re-attempting start stream', {attempt: attempt});
@@ -1321,8 +1328,6 @@ export class Snapshot extends EventEmitter {
             return errorStream;
           }
         }
-
-        attempt++;
 
         return this.requestStream({
           client: 'SpannerClient',
@@ -1348,12 +1353,15 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', async err => {
+        .on('error', err => {
           setSpanError(span, err as Error);
           const wasAborted = isErrorAborted(err);
           if (!this.id && this._useInRunner && !wasAborted) {
             span.addEvent('Stream broken. Safe to retry');
-            await this.begin();
+            // TODO: Examine the consequence of not awaiting this method,
+            // as the span might appear out of order.
+            // Please see https://github.com/googleapis/nodejs-spanner/issues/2170
+            this.begin();
           } else {
             if (wasAborted) {
               span.addEvent('Stream broken. Not safe to retry', {
@@ -1378,6 +1386,7 @@ export class Snapshot extends EventEmitter {
           span.end();
         });
       }
+
       return resultStream;
     });
   }
