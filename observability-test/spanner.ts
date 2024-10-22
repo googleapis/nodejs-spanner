@@ -283,7 +283,6 @@ describe('EndToEnd', () => {
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);
-        console.log(`flushed spans: ${spans.toString()}`);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -442,10 +441,10 @@ describe('EndToEnd', () => {
 
       database.runTransaction(async (err, transaction) => {
         assert.ifError(err);
-        const [rows] = await transaction!.run('SELECT 1');
+        await transaction!.run('SELECT 1');
         await transaction!.commit();
+        await traceExporter.forceFlush();
 
-        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);
 
@@ -872,7 +871,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           tx!.end();
 
           await tracerProvider.forceFlush();
-          traceExporter.forceFlush();
+          await traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
           withAllSpansHaveDBName(spans);

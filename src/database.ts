@@ -2105,19 +2105,11 @@ class Database extends common.GrpcServiceObject {
               });
               session!.lastError = err;
               this.pool_.release(session!);
-              this.getSnapshot(options, (err, snapshot) => {
-                if (err) {
-                  setSpanError(span, err);
-                  span.end();
-                } else {
-                  snapshot!.once('end', () => span.end());
-                  snapshot!.once('error', err => {
-                    setSpanError(span, err);
-                    span.end();
-                  });
-                }
-                callback!(err, snapshot);
-              });
+              this.getSnapshot(options, callback!);
+              // Explicitly requested in code review that this span.end() be
+              // moved out of this.getSnapshot, and that there will a later refactor,
+              // similar to https://github.com/googleapis/nodejs-spanner/issues/2159
+              span.end();
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
               this.pool_.release(session!);

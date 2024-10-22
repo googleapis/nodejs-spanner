@@ -605,7 +605,7 @@ describe('Database', () => {
       // pool, so that the pool can remove it from its inventory.
       const releaseStub = sandbox.stub(fakePool, 'release');
 
-      database.getSnapshot((err, snapshot) => {
+      database.getSnapshot(async (err, snapshot) => {
         assert.ifError(err);
         assert.strictEqual(snapshot, fakeSnapshot2);
         // The first session that error should already have been released back
@@ -616,8 +616,9 @@ describe('Database', () => {
         snapshot.emit('end');
         assert.strictEqual(releaseStub.callCount, 2);
 
+        await provider.forceFlush();
+        await traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
         withAllSpansHaveDBName(spans);
 
         const actualSpanNames: string[] = [];
