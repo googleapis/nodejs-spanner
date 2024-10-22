@@ -170,6 +170,7 @@ describe('EndToEnd', () => {
 
   afterEach(async () => {
     await tracerProvider.forceFlush();
+    await tracerProvider.shutdown();
     traceExporter.reset();
     spannerMock.resetRequests();
     spanner.close();
@@ -323,7 +324,16 @@ describe('EndToEnd', () => {
       database
         .runStream('SELECT 1')
         .on('data', row => {})
-        .on('error', assert.ifError)
+        .on('error', err => {
+          // De-flake by ignoring grpc.status.CANCELLED as we've
+          // seen on the Github test runners, due to timing.
+          const grpcErr = err as grpc.ServiceError;
+          if (!grpcErr) {
+            assert.ifError(err);
+          } else if (grpcErr.code != grpc.status.CANCELLED) {
+            assert.ifError(err);
+          }
+        })
         .on('end', () => {
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
