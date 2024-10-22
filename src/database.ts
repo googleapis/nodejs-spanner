@@ -3579,7 +3579,7 @@ class Database extends common.GrpcServiceObject {
    *
    * @example
    * ```
-   * const {Spanner} = require('@google-cloud/spanner');
+   * const {Spanner, MutationSet} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
@@ -3597,7 +3597,7 @@ class Database extends common.GrpcServiceObject {
    *  });
    *
    * try {
-   *  const [response, err] = await database.writeAtLeastOnce(mutations, {});
+   *  const [response] = await database.writeAtLeastOnce(mutations, {});
    *  console.log(response.commitTimestamp);
    * } catch(err) {
    *  console.log("Error: ", err);
