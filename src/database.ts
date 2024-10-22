@@ -856,7 +856,6 @@ class Database extends common.GrpcServiceObject {
             callback!(err as ServiceError, null, undefined);
             return;
           }
-
           const transaction = this.batchTransaction(
             {session: session!},
             options
@@ -3088,11 +3087,9 @@ class Database extends common.GrpcServiceObject {
               // Create a new data stream and add it to the end user stream.
               dataStream = this.runStream(query, options);
               dataStream.pipe(proxyStream);
-              dataStream.on('end', () => span.end());
-              dataStream.on('error', err => {
-                setSpanError(span, err);
-                span.end();
-              });
+              // Explicitly invoking span.end() here,
+              // instead of inside dataStream.on('error').
+              span.end();
             } else {
               proxyStream.destroy(err);
               snapshot.end();

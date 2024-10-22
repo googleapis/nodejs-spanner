@@ -1878,10 +1878,13 @@ describe('Database', () => {
         .on('error', err => {
           assert.fail(err);
         })
-        .on('end', () => {
+        .on('end', async () => {
           assert.strictEqual(endStub.callCount, 1);
           assert.strictEqual(endStub2.callCount, 1);
           assert.strictEqual(rows, 1);
+
+          await provider.forceFlush();
+          await traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
           assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
@@ -1907,26 +1910,26 @@ describe('Database', () => {
           );
 
           // Ensure that the span actually produced an error that was recorded.
-          const secondSpan = spans[1];
-          assert.strictEqual(
+          const lastSpan = spans[0];
+          assert.deepStrictEqual(
             SpanStatusCode.ERROR,
-            secondSpan.status.code,
+            lastSpan.status.code,
             'Expected an ERROR span status'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             'Session not found',
-            secondSpan.status.message,
+            lastSpan.status.message,
             'Mismatched span status message'
           );
 
           // Ensure that the final span that got retries did not error.
-          const firstSpan = spans[0];
-          assert.strictEqual(
+          const firstSpan = spans[1];
+          assert.deepStrictEqual(
             SpanStatusCode.UNSET,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected span status code'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             undefined,
             firstSpan.status.message,
             'Unexpected span status message'
@@ -1934,8 +1937,8 @@ describe('Database', () => {
 
           const expectedEventNames = [
             'Using Session',
-            'Using Session',
             'No session available',
+            'Using Session',
           ];
           assert.deepStrictEqual(
             actualEventNames,
