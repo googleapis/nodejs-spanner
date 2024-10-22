@@ -51,7 +51,7 @@ if [ -f samples/package.json ]; then
       trap cleanup EXIT HUP
     else
       # Check if there are any changes in the "samples" directory only for presubmits. 
-      if git diff --quiet HEAD~1 HEAD -- samples/; then
+      if git diff --quiet HEAD main -- samples/; then
         echo "No changes detected in the samples directory. Skipping sample tests."
         exit 0
       fi
