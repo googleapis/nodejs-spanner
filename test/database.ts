@@ -861,7 +861,7 @@ describe('Database', () => {
 
     it('should return CommitResponse on successful write using await', async () => {
       sinon.stub(database, 'writeAtLeastOnce').resolves([RESPONSE]);
-      const [response, err] = await database.writeAtLeastOnce(mutations, {});
+      const [response] = await database.writeAtLeastOnce(mutations, {});
       assert.deepStrictEqual(
         response.commitTimestamp,
         RESPONSE.commitTimestamp
