@@ -774,6 +774,7 @@ describe('Database', () => {
           callback(null, RESPONSE);
         },
         once() {},
+        end() {},
       };
 
       database.batchTransaction = (identifier, options) => {
@@ -782,10 +783,14 @@ describe('Database', () => {
         return fakeTransaction;
       };
 
-      database.createBatchTransaction(opts, (err, transaction, resp) => {
+      database.createBatchTransaction(opts, async (err, transaction, resp) => {
         assert.strictEqual(err, null);
         assert.strictEqual(transaction, fakeTransaction);
         assert.strictEqual(resp, RESPONSE);
+        transaction!.end();
+
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -839,8 +844,8 @@ describe('Database', () => {
         begin(callback) {
           callback(error, RESPONSE);
         },
-
         once() {},
+        end() {},
       };
 
       database.batchTransaction = () => {
@@ -926,9 +931,11 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError));
 
-      database.getTransaction(err => {
+      database.getTransaction(async err => {
         assert.strictEqual(err, fakeError);
 
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -975,9 +982,10 @@ describe('Database', () => {
     });
 
     it('with no errors', done => {
-      database.getTransaction((err, transaction) => {
+      database.getTransaction(async (err, transaction) => {
         assert.ifError(err);
         assert.strictEqual(transaction, fakeTransaction);
+        transaction!.end();
 
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);

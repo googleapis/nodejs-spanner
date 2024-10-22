@@ -856,6 +856,7 @@ class Database extends common.GrpcServiceObject {
             callback!(err as ServiceError, null, undefined);
             return;
           }
+
           const transaction = this.batchTransaction(
             {session: session!},
             options
@@ -874,6 +875,7 @@ class Database extends common.GrpcServiceObject {
               return;
             }
             span.addEvent('Using Session', {'session.id': session?.id});
+            span.end();
             callback!(null, transaction, resp!);
           });
         });
@@ -1130,7 +1132,9 @@ class Database extends common.GrpcServiceObject {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
       } finally {
-        span.end();
+        if (span.isRecording()) {
+          span.end();
+        }
       }
     });
   }
@@ -2213,11 +2217,10 @@ class Database extends common.GrpcServiceObject {
             'session.id': session?.id,
           });
           setSpanError(span, err);
-          span.end();
         } else {
           setSpanError(span, err);
-          span.end();
         }
+        span.end();
         cb!(err as grpc.ServiceError | null, transaction);
       });
     });

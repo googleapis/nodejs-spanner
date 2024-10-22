@@ -273,13 +273,17 @@ describe('EndToEnd', () => {
       const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
         database.formattedName_
       );
-      database.getTransaction((err, transaction) => {
+      database.getTransaction(async (err, transaction) => {
         assert.ifError(err);
         assert.ok(transaction);
+        transaction!.end();
+        transaction!.commit();
 
+        await tracerProvider.forceFlush();
         traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);
+        console.log(`flushed spans: ${spans.toString()}`);
 
         const actualEventNames: string[] = [];
         const actualSpanNames: string[] = [];
@@ -807,7 +811,10 @@ describe('ObservabilityOptions injection and propagation', async () => {
       database.getTransaction((err, tx) => {
         assert.ifError(err);
 
-        tx!.run('SELECT 1', (err, rows) => {
+        tx!.run('SELECT 1', async (err, rows) => {
+          tx!.end();
+
+          await tracerProvider.forceFlush();
           traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
@@ -860,9 +867,11 @@ describe('ObservabilityOptions injection and propagation', async () => {
         traceExporter.reset();
 
         tx!.begin();
-        tx!.runUpdate(updateSql, (err, rowCount) => {
+        tx!.runUpdate(updateSql, async (err, rowCount) => {
           assert.ifError(err);
+          tx!.end();
 
+          await tracerProvider.forceFlush();
           traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
@@ -914,9 +923,10 @@ describe('ObservabilityOptions injection and propagation', async () => {
           .on('data', () => rowCount++)
           .on('error', assert.ifError)
           .on('stats', _stats => {})
-          .on('end', () => {
+          .on('end', async () => {
             tx!.end();
 
+            await tracerProvider.forceFlush();
             traceExporter.forceFlush();
 
             const spans = traceExporter.getFinishedSpans();
@@ -970,7 +980,9 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
         tx!.runUpdate(updateSql, async (err, rowCount) => {
           assert.ifError(err);
-          tx!.rollback(err => {
+          tx!.rollback(async err => {
+            tx!.end();
+            await tracerProvider.forceFlush();
             traceExporter.forceFlush();
 
             const spans = traceExporter.getFinishedSpans();
@@ -1557,9 +1569,9 @@ SELECT 1p
     const expectedSpanNames = [
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Snapshot.run',
       'CloudSpanner.Snapshot.begin',
-      'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Snapshot.begin',
       'CloudSpanner.Transaction.commit',
       'CloudSpanner.Transaction.commit',
@@ -1570,7 +1582,7 @@ SELECT 1p
       expectedSpanNames,
       `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
     );
-    const spanSnapshotRun = spans[2];
+    const spanSnapshotRun = spans[3];
     assert.strictEqual(spanSnapshotRun.name, 'CloudSpanner.Snapshot.run');
     const wantSpanErr = '6 ALREADY_EXISTS: ' + messageBadInsertAlreadyExistent;
     assert.deepStrictEqual(
@@ -1653,10 +1665,10 @@ SELECT 1p
       'Requesting 25 sessions',
       'Creating 25 sessions',
       'Requested for 25 sessions returned 25',
-      'Begin Transaction',
-      'Transaction Creation Done',
       'Starting stream',
       'Stream broken. Safe to retry',
+      'Begin Transaction',
+      'Transaction Creation Done',
       'Begin Transaction',
       'Transaction Creation Done',
       'Starting Commit',

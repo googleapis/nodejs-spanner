@@ -1370,12 +1370,14 @@ export class Snapshot extends EventEmitter {
           span.end();
         });
 
-      finished(resultStream, err => {
-        if (err) {
-          setSpanError(span, err);
-        }
-        span.end();
-      });
+      if (resultStream instanceof Stream) {
+        finished(resultStream, err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+        });
+      }
       return resultStream;
     });
   }
@@ -2133,7 +2135,7 @@ export class Transaction extends Dml {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
-    startTrace('Transaction.commit', traceConfig, async span => {
+    return startTrace('Transaction.commit', traceConfig, span => {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
