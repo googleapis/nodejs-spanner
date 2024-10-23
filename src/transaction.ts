@@ -743,21 +743,6 @@ export class Snapshot extends EventEmitter {
             this._update(response.metadata!.transaction);
           }
         })
-        .on('error', err => {
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            this.begin();
-          }
-          setSpanError(span, err);
-        })
         .on('end', err => {
           if (err) {
             setSpanError(span, err);
@@ -1316,21 +1301,6 @@ export class Snapshot extends EventEmitter {
         .on('response', response => {
           if (response.metadata && response.metadata!.transaction && !this.id) {
             this._update(response.metadata!.transaction);
-          }
-        })
-        .on('error', err => {
-          setSpanError(span, err as Error);
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            this.begin();
           }
         })
         .on('end', err => {
