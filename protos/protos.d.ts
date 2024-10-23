@@ -14678,6 +14678,9 @@ export namespace google {
 
                         /** Instance edition */
                         edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
+
+                        /** Instance defaultBackupScheduleType */
+                        defaultBackupScheduleType?: (google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|keyof typeof google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|null);
                     }
 
                     /** Represents an Instance. */
@@ -14727,6 +14730,9 @@ export namespace google {
 
                         /** Instance edition. */
                         public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
+
+                        /** Instance defaultBackupScheduleType. */
+                        public defaultBackupScheduleType: (google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|keyof typeof google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType);
 
                         /**
                          * Creates a new Instance instance using the specified properties.
@@ -14821,6 +14827,13 @@ export namespace google {
                             STANDARD = 1,
                             ENTERPRISE = 2,
                             ENTERPRISE_PLUS = 3
+                        }
+
+                        /** DefaultBackupScheduleType enum. */
+                        enum DefaultBackupScheduleType {
+                            DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0,
+                            NONE = 1,
+                            AUTOMATIC = 2
                         }
                     }
 

@@ -4434,6 +4434,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OPTIONAL"
                               }
+                            },
+                            "defaultBackupScheduleType": {
+                              "type": "DefaultBackupScheduleType",
+                              "id": 23,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
                             }
                           },
                           "nested": {
@@ -4450,6 +4457,13 @@
                                 "STANDARD": 1,
                                 "ENTERPRISE": 2,
                                 "ENTERPRISE_PLUS": 3
+                              }
+                            },
+                            "DefaultBackupScheduleType": {
+                              "values": {
+                                "DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED": 0,
+                                "NONE": 1,
+                                "AUTOMATIC": 2
                               }
                             }
                           }
