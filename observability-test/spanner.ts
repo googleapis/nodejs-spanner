@@ -172,7 +172,6 @@ describe('EndToEnd', () => {
     await tracerProvider.forceFlush();
     await tracerProvider.shutdown();
     traceExporter.reset();
-    database.close();
     spannerMock.resetRequests();
     spanner.close();
     server.tryShutdown(() => {});
@@ -821,10 +820,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
       db.formattedName_
     );
-
-    after(() => {
-      db.close();
-    });
 
     it('run', done => {
       database.getTransaction((err, tx) => {
