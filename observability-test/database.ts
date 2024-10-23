@@ -641,7 +641,7 @@ describe('Database', () => {
         );
 
         // Ensure that the first span actually produced an error that was recorded.
-        const parentSpan = spans[1];
+        const parentSpan = spans[0];
         assert.strictEqual(
           SpanStatusCode.ERROR,
           parentSpan.status.code,
@@ -654,7 +654,7 @@ describe('Database', () => {
         );
 
         // Ensure that the second span is a child of the first span.
-        const secondRetrySpan = spans[0];
+        const secondRetrySpan = spans[1];
         assert.ok(
           parentSpan.spanContext().traceId,
           'Expected that the initial parent span has a defined traceId'

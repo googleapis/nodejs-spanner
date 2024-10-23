@@ -459,6 +459,7 @@ describe('EndToEnd', () => {
         assert.ifError(err);
         await transaction!.run('SELECT 1');
         await transaction!.commit();
+        await transaction!.end();
         await traceExporter.forceFlush();
 
         const spans = traceExporter.getFinishedSpans();

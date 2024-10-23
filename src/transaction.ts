@@ -762,10 +762,7 @@ export class Snapshot extends EventEmitter {
           setSpanError(span, err);
           const wasAborted = isErrorAborted(err);
           if (!this.id && this._useInRunner && !wasAborted) {
-            // TODO: re-examine if this.begin() should still exist and if
-            // an await is needed: with await the generated begin span
-            // will look wonky and out of order. Please ses
-            // https://github.com/googleapis/nodejs-spanner/issues/2170
+            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
             this.begin();
           } else {
             if (wasAborted) {
@@ -1357,9 +1354,7 @@ export class Snapshot extends EventEmitter {
           const wasAborted = isErrorAborted(err);
           if (!this.id && this._useInRunner && !wasAborted) {
             span.addEvent('Stream broken. Safe to retry');
-            // TODO: Examine the consequence of not awaiting this method,
-            // as the span might appear out of order.
-            // Please see https://github.com/googleapis/nodejs-spanner/issues/2170
+            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
             this.begin();
           } else {
             if (wasAborted) {

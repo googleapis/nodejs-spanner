@@ -1131,9 +1131,7 @@ class Database extends common.GrpcServiceObject {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
       } finally {
-        if (span.isRecording()) {
-          span.end();
-        }
+        span.end();
       }
     });
   }
@@ -2104,11 +2102,8 @@ class Database extends common.GrpcServiceObject {
               });
               session!.lastError = err;
               this.pool_.release(session!);
-              this.getSnapshot(options, callback!);
-              // Explicitly requested in code review that this span.end() be
-              // moved out of this.getSnapshot, and that there will a later refactor,
-              // similar to https://github.com/googleapis/nodejs-spanner/issues/2159
               span.end();
+              this.getSnapshot(options, callback!);
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
               this.pool_.release(session!);
@@ -3084,12 +3079,10 @@ class Database extends common.GrpcServiceObject {
               dataStream.removeListener('end', endListener);
               dataStream.end();
               snapshot.end();
+              span.end();
               // Create a new data stream and add it to the end user stream.
               dataStream = this.runStream(query, options);
               dataStream.pipe(proxyStream);
-              // Explicitly invoking span.end() here,
-              // instead of inside dataStream.on('error').
-              span.end();
             } else {
               proxyStream.destroy(err);
               snapshot.end();
@@ -3219,26 +3212,6 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const retry = (span: Span) => {
-      this.runTransaction(options, (err, txn) => {
-        if (err) {
-          setSpanError(span, err);
-          span.end();
-          runFn!(err, null);
-          return;
-        }
-
-        txn!.once('end', () => {
-          span.end();
-        });
-        txn!.once('error', err => {
-          setSpanError(span, err!);
-          span.end();
-        });
-        runFn!(null, txn!);
-      });
-    };
-
     startTrace('Database.runTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
@@ -3249,7 +3222,8 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          retry(span);
+          span.end();
+          this.runTransaction(options, runFn!);
           return;
         }
 
@@ -3267,19 +3241,9 @@ class Database extends common.GrpcServiceObject {
           transaction!.excludeTxnFromChangeStreams();
         }
 
-        // Our span should only be ended if the
-        // transaction either errored or was ended.
-        transaction!.once('error', err => {
-          setSpanError(span, err!);
-          span.end();
-        });
-
-        transaction!.once('end', () => {
-          span.end();
-        });
-
         const release = () => {
           this.pool_.release(session!);
+          span.end();
         };
 
         const runner = new TransactionRunner(
@@ -3289,21 +3253,26 @@ class Database extends common.GrpcServiceObject {
           options
         );
 
-        runner.run().then(release, err => {
-          setSpanError(span, err);
+        runner
+          .run()
+          .then(release, err => {
+            setSpanError(span, err);
 
-          if (isSessionNotFoundError(err)) {
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-            release();
-            retry(span);
-          } else {
-            setImmediate(runFn!, err);
-            release();
-            span.end();
-          }
-        });
+            if (isSessionNotFoundError(err)) {
+              span.addEvent('No session available', {
+                'session.id': session?.id,
+              });
+              release();
+              this.runTransaction(options, runFn!);
+            } else {
+              release();
+              setImmediate(runFn!, err);
+            }
+          })
+          .catch(e => {
+            setSpanErrorAndException(span, e as Error);
+            throw e;
+          });
       });
     });
   }
@@ -3557,13 +3526,13 @@ class Database extends common.GrpcServiceObject {
                 // Remove the current data stream from the end user stream.
                 dataStream.unpipe(proxyStream);
                 dataStream.end();
+                span.end();
                 // Create a new stream and add it to the end user stream.
                 dataStream = this.batchWriteAtLeastOnce(
                   mutationGroups,
                   options
                 );
                 dataStream.pipe(proxyStream);
-                span.end();
               } else {
                 span.end();
                 proxyStream.destroy(err);
@@ -3662,14 +3631,8 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          // Retry this method.
-          this.writeAtLeastOnce(mutations, options, (err, resp) => {
-            if (err) {
-              setSpanError(span, err);
-            }
-            span.end();
-            cb!(err, resp);
-          });
+          span.end();
+          this.writeAtLeastOnce(mutations, options, cb!);
           return;
         }
         if (err) {
