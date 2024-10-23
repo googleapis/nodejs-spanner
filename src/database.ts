@@ -3274,8 +3274,7 @@ class Database extends common.GrpcServiceObject {
           span.end();
         });
 
-        transaction!.once('end', err => {
-          setSpanError(span, err!);
+        transaction!.once('end', () => {
           span.end();
         });
 
