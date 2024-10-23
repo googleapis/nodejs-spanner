@@ -983,7 +983,7 @@ describe('Database', () => {
     });
 
     it('with no errors', done => {
-      database.getTransaction(async (err, transaction) => {
+      database.getTransaction((err, transaction) => {
         assert.ifError(err);
         assert.strictEqual(transaction, fakeTransaction);
         transaction!.end();
