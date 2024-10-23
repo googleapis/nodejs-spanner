@@ -173,7 +173,8 @@ describe('EndToEnd', () => {
     await tracerProvider.shutdown();
     traceExporter.reset();
     spannerMock.resetRequests();
-    spanner.close();
+    // Hot-fix, do not close spanner.
+    // spanner.close();
     server.tryShutdown(() => {});
   });
 
