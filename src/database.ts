@@ -3253,26 +3253,20 @@ class Database extends common.GrpcServiceObject {
           options
         );
 
-        runner
-          .run()
-          .then(release, err => {
-            setSpanError(span, err);
+        runner.run().then(release, err => {
+          setSpanError(span, err!);
 
-            if (isSessionNotFoundError(err)) {
-              span.addEvent('No session available', {
-                'session.id': session?.id,
-              });
-              release();
-              this.runTransaction(options, runFn!);
-            } else {
-              release();
-              setImmediate(runFn!, err);
-            }
-          })
-          .catch(e => {
-            setSpanErrorAndException(span, e as Error);
-            throw e;
-          });
+          if (isSessionNotFoundError(err)) {
+            span.addEvent('No session available', {
+              'session.id': session?.id,
+            });
+            release();
+            this.runTransaction(options, runFn!);
+          } else {
+            setImmediate(runFn!, err);
+            release();
+          }
+        });
       });
     });
   }
