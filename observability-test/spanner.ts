@@ -123,42 +123,45 @@ async function setup(
   });
 }
 
-describe('EndToEnd', () => {
-  let server: grpc.Server;
-  let spanner: Spanner;
-  let database: Database;
-  let spannerMock: mock.MockSpanner;
-  let traceExporter: typeof InMemorySpanExporter;
-  let tracerProvider: typeof NodeTracerProvider;
-
+describe('EndToEnd', async () => {
   const contextManager = new AsyncHooksContextManager();
   setGlobalContextManager(contextManager);
-
   afterEach(() => {
     disableContextAndManager(contextManager);
   });
 
+  const traceExporter = new InMemorySpanExporter();
+  const sampler = new AlwaysOnSampler();
+  const tracerProvider = new NodeTracerProvider({
+    sampler: sampler,
+    exporter: traceExporter,
+  });
+  tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
+
+  const setupResult = await setup({
+    tracerProvider: tracerProvider,
+    enableExtendedTracing: false,
+  });
+
+  const server = setupResult.server;
+  const spannerMock = setupResult.spannerMock;
+  const spanner = setupResult.spanner;
+  const instance = spanner.instance('instance');
+
+  after(async () => {
+    spanner.close();
+    await server.tryShutdown(() => {});
+  });
+
+  afterEach(async () => {
+    await tracerProvider.forceFlush();
+    await traceExporter.reset();
+    spannerMock.resetRequests();
+  });
+
+  const database = instance.database('database');
+
   beforeEach(async () => {
-    traceExporter = new InMemorySpanExporter();
-    const sampler = new AlwaysOnSampler();
-    tracerProvider = new NodeTracerProvider({
-      sampler: sampler,
-      exporter: traceExporter,
-    });
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
-
-    const setupResult = await setup({
-      tracerProvider: tracerProvider,
-      enableExtendedTracing: false,
-    });
-
-    spanner = setupResult.spanner;
-    server = setupResult.server;
-    spannerMock = setupResult.spannerMock;
-
-    const instance = spanner.instance('instance');
-    database = instance.database('database');
-
     // To deflake expectations of session creation, let's
     // issue out a warm-up request request that'll ensure
     // that the SessionPool is created deterministically.
@@ -166,16 +169,6 @@ describe('EndToEnd', () => {
     // Clear out any present traces to make a clean slate for testing.
     traceExporter.forceFlush();
     traceExporter.reset();
-  });
-
-  afterEach(async () => {
-    await tracerProvider.forceFlush();
-    await tracerProvider.shutdown();
-    traceExporter.reset();
-    spannerMock.resetRequests();
-    // Hot-fix, do not close spanner.
-    // spanner.close();
-    server.tryShutdown(() => {});
   });
 
   describe('Database', () => {
@@ -325,21 +318,7 @@ describe('EndToEnd', () => {
       database
         .runStream('SELECT 1')
         .on('data', row => {})
-        .once('error', err => {
-          // TODO: Examine why this error condition is triggered
-          // after the test has finished running.
-          console.log(`\x1b[31mRogue error: ${err}\x1b[00m`);
-          /*
-	  // De-flake by ignoring grpc.status.CANCELLED as we've
-          // seen on the Github test runners, due to timing.
-          const grpcErr = err as grpc.ServiceError;
-          if (!grpcErr) {
-            assert.ifError(err);
-          } else if (grpcErr.code != grpc.status.CANCELLED) {
-            assert.ifError(err);
-          }
-	  */
-        })
+        .once('error', assert.ifError)
         .on('end', () => {
           traceExporter.forceFlush();
           const spans = traceExporter.getFinishedSpans();
