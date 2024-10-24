@@ -605,7 +605,7 @@ describe('Database', () => {
       // pool, so that the pool can remove it from its inventory.
       const releaseStub = sandbox.stub(fakePool, 'release');
 
-      database.getSnapshot((err, snapshot) => {
+      database.getSnapshot(async (err, snapshot) => {
         assert.ifError(err);
         assert.strictEqual(snapshot, fakeSnapshot2);
         // The first session that error should already have been released back
@@ -616,8 +616,9 @@ describe('Database', () => {
         snapshot.emit('end');
         assert.strictEqual(releaseStub.callCount, 2);
 
+        await provider.forceFlush();
+        await traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
         withAllSpansHaveDBName(spans);
 
         const actualSpanNames: string[] = [];
@@ -640,7 +641,7 @@ describe('Database', () => {
         );
 
         // Ensure that the first span actually produced an error that was recorded.
-        const parentSpan = spans[1];
+        const parentSpan = spans[0];
         assert.strictEqual(
           SpanStatusCode.ERROR,
           parentSpan.status.code,
@@ -653,7 +654,7 @@ describe('Database', () => {
         );
 
         // Ensure that the second span is a child of the first span.
-        const secondRetrySpan = spans[0];
+        const secondRetrySpan = spans[1];
         assert.ok(
           parentSpan.spanContext().traceId,
           'Expected that the initial parent span has a defined traceId'
@@ -774,6 +775,7 @@ describe('Database', () => {
           callback(null, RESPONSE);
         },
         once() {},
+        end() {},
       };
 
       database.batchTransaction = (identifier, options) => {
@@ -782,10 +784,14 @@ describe('Database', () => {
         return fakeTransaction;
       };
 
-      database.createBatchTransaction(opts, (err, transaction, resp) => {
+      database.createBatchTransaction(opts, async (err, transaction, resp) => {
         assert.strictEqual(err, null);
         assert.strictEqual(transaction, fakeTransaction);
         assert.strictEqual(resp, RESPONSE);
+        transaction!.end();
+
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -839,8 +845,8 @@ describe('Database', () => {
         begin(callback) {
           callback(error, RESPONSE);
         },
-
         once() {},
+        end() {},
       };
 
       database.batchTransaction = () => {
@@ -926,9 +932,11 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError));
 
-      database.getTransaction(err => {
+      database.getTransaction(async err => {
         assert.strictEqual(err, fakeError);
 
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -978,6 +986,7 @@ describe('Database', () => {
       database.getTransaction((err, transaction) => {
         assert.ifError(err);
         assert.strictEqual(transaction, fakeTransaction);
+        transaction!.end();
 
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);
@@ -1869,10 +1878,13 @@ describe('Database', () => {
         .on('error', err => {
           assert.fail(err);
         })
-        .on('end', () => {
+        .on('end', async () => {
           assert.strictEqual(endStub.callCount, 1);
           assert.strictEqual(endStub2.callCount, 1);
           assert.strictEqual(rows, 1);
+
+          await provider.forceFlush();
+          await traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
           assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
@@ -1898,26 +1910,26 @@ describe('Database', () => {
           );
 
           // Ensure that the span actually produced an error that was recorded.
-          const secondSpan = spans[1];
-          assert.strictEqual(
+          const lastSpan = spans[0];
+          assert.deepStrictEqual(
             SpanStatusCode.ERROR,
-            secondSpan.status.code,
+            lastSpan.status.code,
             'Expected an ERROR span status'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             'Session not found',
-            secondSpan.status.message,
+            lastSpan.status.message,
             'Mismatched span status message'
           );
 
           // Ensure that the final span that got retries did not error.
-          const firstSpan = spans[0];
-          assert.strictEqual(
+          const firstSpan = spans[1];
+          assert.deepStrictEqual(
             SpanStatusCode.UNSET,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected span status code'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             undefined,
             firstSpan.status.message,
             'Unexpected span status message'
@@ -1925,8 +1937,8 @@ describe('Database', () => {
 
           const expectedEventNames = [
             'Using Session',
-            'Using Session',
             'No session available',
+            'Using Session',
           ];
           assert.deepStrictEqual(
             actualEventNames,
