@@ -2114,6 +2114,7 @@ class Database extends common.GrpcServiceObject {
           }
 
           this._releaseOnEnd(session!, snapshot, span);
+          span.end();
           callback!(err, snapshot);
         });
       });

@@ -235,9 +235,9 @@ describe('EndToEnd', async () => {
 
           const expectedSpanNames = [
             'CloudSpanner.Snapshot.begin',
+            'CloudSpanner.Database.getSnapshot',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
-            'CloudSpanner.Database.getSnapshot',
           ];
           assert.deepStrictEqual(
             actualSpanNames,
@@ -248,10 +248,10 @@ describe('EndToEnd', async () => {
           const expectedEventNames = [
             'Begin Transaction',
             'Transaction Creation Done',
-            'Starting stream',
             'Acquiring session',
             'Cache hit: has usable session',
             'Acquired session',
+            'Starting stream',
           ];
           assert.deepStrictEqual(
             actualEventNames,
