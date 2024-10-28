@@ -33,7 +33,7 @@
     "samples-test-with-archived": "cd samples/ && npm link ../ && npm test-with-archived && cd ../",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "system-test": "mocha build/system-test --timeout 1600000",
-    "observability-test": "mocha build/observability-test --timeout 1600000 -g 'Benchmarking'",
+    "observability-test": "mocha build/observability-test --timeout 1600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",
     "test": "mocha build/test build/test/common build/observability-test",
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",

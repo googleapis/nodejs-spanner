@@ -27,7 +27,8 @@ const lessComparator = (a, b) => {
  */
 export async function runBenchmarks(runners: Function[], done: Function) {
   const nRuns = 10000;
-  const benchmarkValues = {_totalRuns: nRuns};
+  const nWarmups = Math.round(nRuns / 8);
+  const benchmarkValues = {_totalRuns: nRuns, _warmRuns: nWarmups};
 
   let k = 0;
   for (k = 0; k < runners.length; k++) {
@@ -38,7 +39,7 @@ export async function runBenchmarks(runners: Function[], done: Function) {
     let i = 0;
 
     // Warm up runs to ensure stable behavior.
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < nWarmups; i++) {
       const value = await fn();
     }
 

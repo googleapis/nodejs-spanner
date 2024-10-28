@@ -24,6 +24,7 @@ import {
 } from '@opentelemetry/semantic-conventions';
 
 import {
+  Attributes,
   Span,
   SpanStatusCode,
   context,
@@ -136,33 +137,30 @@ export function startTrace<T>(
     config = {} as traceConfig;
   }
 
+  const spanAttributes: Attributes = {
+    SEMATTRS_DB_SYSTEM: 'spanner',
+    ATTR_OTEL_SCOPE_NAME: TRACER_NAME,
+    ATTR_OTEL_SCOPE_VERSION: TRACER_VERSION,
+    SEMATTRS_DB_SQL_TABLE: config.tableName,
+    SEMATTRS_DB_NAME: config.dbName,
+    kind: SpanKind.CLIENT,
+  };
+
+  const allowExtendedTracing = optedInPII || config.opts?.enableExtendedTracing;
+  if (config.sql && allowExtendedTracing) {
+    const sql = config.sql;
+    if (typeof sql === 'string') {
+      spanAttributes[SEMATTRS_DB_STATEMENT] = sql as string;
+    } else {
+      const stmt = sql as SQLStatement;
+      spanAttributes[SEMATTRS_DB_STATEMENT] = stmt.sql;
+    }
+  }
+
   return getTracer(config.opts?.tracerProvider).startActiveSpan(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
-    {kind: SpanKind.CLIENT},
+    spanAttributes,
     span => {
-      span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
-      span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
-      span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
-
-      if (config.tableName) {
-        span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
-      }
-      if (config.dbName) {
-        span.setAttribute(SEMATTRS_DB_NAME, config.dbName);
-      }
-
-      const allowExtendedTracing =
-        optedInPII || config.opts?.enableExtendedTracing;
-      if (config.sql && allowExtendedTracing) {
-        const sql = config.sql;
-        if (typeof sql === 'string') {
-          span.setAttribute(SEMATTRS_DB_STATEMENT, sql as string);
-        } else {
-          const stmt = sql as SQLStatement;
-          span.setAttribute(SEMATTRS_DB_STATEMENT, stmt.sql);
-        }
-      }
-
       // If at all the invoked function throws an exception,
       // record the exception and then end this span.
       try {

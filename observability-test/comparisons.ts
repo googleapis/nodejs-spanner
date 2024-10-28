@@ -124,7 +124,7 @@ async function setup(
   });
 }
 
-describe('Benchmarking', () => {
+describe('Benchmarking Database', () => {
   if (!process.env.SPANNER_RUN_BENCHMARKS) {
     console.log(
       'Skipping micro-benchmarking because SPANNER_RUN_BENCHMARKS is not set'
@@ -289,7 +289,9 @@ describe('Benchmarking', () => {
     const untraced = await setItUp(false);
     const tracedWithOTELOn = await setItUp(true, true);
 
-    console.log(`Total Runs: ${traced['_totalRuns']}`);
+    console.log(
+      `Total Runs:   ${traced['_totalRuns']}\nWarm up runs: ${traced['_warmRuns']}`
+    );
     for (const tracedM in traced) {
       const tracedV = traced[tracedM];
       if (typeof tracedV !== 'object') {
