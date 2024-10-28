@@ -25,6 +25,7 @@ import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
 import {google} from '../protos/protos';
+import {getActiveOrNoopSpan} from './instrument';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -226,6 +227,7 @@ export abstract class Runner<T> {
     const timeout = this.options.timeout!;
 
     let lastError: grpc.ServiceError;
+    const span = getActiveOrNoopSpan();
 
     // The transaction runner should always execute at least one attempt before
     // timing out.
@@ -250,6 +252,7 @@ export abstract class Runner<T> {
       }
 
       this.attempts += 1;
+      span.addEvent('Retrying transaction');
 
       const delay = this.getNextDelay(lastError);
       await new Promise(resolve => setTimeout(resolve, delay));

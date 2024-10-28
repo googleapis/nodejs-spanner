@@ -33,6 +33,9 @@ const {
   NodeTracerProvider,
   InMemorySpanExporter,
 } = require('@opentelemetry/sdk-trace-node');
+const {
+  TraceExporter,
+} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 const {SpanStatusCode} = require('@opentelemetry/api');
@@ -40,6 +43,10 @@ const {
   disableContextAndManager,
   generateWithAllSpansHaveDBName,
   setGlobalContextManager,
+  verifySpansAndEvents,
+  batchCreateSessionsEvents,
+  waitingSessionsEvents,
+  cacheSessionEvents,
 } = require('./helper');
 const {
   AsyncHooksContextManager,
@@ -125,12 +132,14 @@ async function setup(
 
 describe('EndToEnd', async () => {
   const contextManager = new AsyncHooksContextManager();
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   setGlobalContextManager(contextManager);
   afterEach(() => {
     disableContextAndManager(contextManager);
   });
 
   const traceExporter = new InMemorySpanExporter();
+  //const traceExporter = new TraceExporter();
   const sampler = new AlwaysOnSampler();
   const tracerProvider = new NodeTracerProvider({
     sampler: sampler,
@@ -156,6 +165,7 @@ describe('EndToEnd', async () => {
   afterEach(async () => {
     await tracerProvider.forceFlush();
     await traceExporter.reset();
+    // await sleep(80000);
     spannerMock.resetRequests();
   });
 
@@ -174,186 +184,82 @@ describe('EndToEnd', async () => {
   describe('Database', () => {
     it('getSessions', async () => {
       const [rows] = await database.getSessions();
-
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
-      traceExporter.forceFlush();
-      const spans = traceExporter.getFinishedSpans();
-      assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-      withAllSpansHaveDBName(spans);
-
-      const actualSpanNames: string[] = [];
-      const actualEventNames: string[] = [];
-      spans.forEach(span => {
-        actualSpanNames.push(span.name);
-        span.events.forEach(event => {
-          actualEventNames.push(event.name);
-        });
-      });
-
       const expectedSpanNames = ['CloudSpanner.Database.getSessions'];
-      assert.deepStrictEqual(
-        actualSpanNames,
-        expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-      );
-
       const expectedEventNames = [];
-      assert.deepStrictEqual(
-        actualEventNames,
-        expectedEventNames,
-        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+
+      await verifySpansAndEvents(
+        traceExporter,
+        expectedSpanNames,
+        expectedEventNames
       );
     });
 
     it('getSnapshot', done => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
-
       database.getSnapshot((err, transaction) => {
         assert.ifError(err);
 
         transaction!.run('SELECT 1', async (err, rows) => {
           assert.ifError(err);
           transaction!.end();
-
-          await tracerProvider.forceFlush();
-          traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
           const expectedSpanNames = [
             'CloudSpanner.Snapshot.begin',
             'CloudSpanner.Database.getSnapshot',
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
           ];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
           const expectedEventNames = [
             'Begin Transaction',
             'Transaction Creation Done',
-            'Acquiring session',
-            'Cache hit: has usable session',
-            'Acquired session',
+            ...cacheSessionEvents,
             'Starting stream',
           ];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          await verifySpansAndEvents(
+            traceExporter,
+            expectedSpanNames,
+            expectedEventNames
           );
-
           done();
         });
       });
     });
 
     it('getTransaction', done => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
       database.getTransaction(async (err, transaction) => {
         assert.ifError(err);
         assert.ok(transaction);
         transaction!.end();
         transaction!.commit();
 
-        await tracerProvider.forceFlush();
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-        withAllSpansHaveDBName(spans);
-
-        const actualEventNames: string[] = [];
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
-          });
-        });
-
         const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
-        assert.deepStrictEqual(
-          actualSpanNames,
+        const expectedEventNames = [...cacheSessionEvents, 'Using Session'];
+        await verifySpansAndEvents(
+          traceExporter,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          expectedEventNames
         );
-
-        const expectedEventNames = [
-          'Acquiring session',
-          'Cache hit: has usable session',
-          'Acquired session',
-          'Using Session',
-        ];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-        );
-
         done();
       });
     });
 
     it('runStream', done => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
       database
         .runStream('SELECT 1')
         .on('data', row => {})
         .once('error', assert.ifError)
-        .on('end', () => {
-          traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
+        .on('end', async () => {
           const expectedSpanNames = [
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Database.runStream',
           ];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
           const expectedEventNames = [
             'Starting stream',
-            'Acquiring session',
-            'Cache hit: has usable session',
-            'Acquired session',
+            ...cacheSessionEvents,
             'Using Session',
           ];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          await verifySpansAndEvents(
+            traceExporter,
+            expectedSpanNames,
+            expectedEventNames
           );
 
           done();
@@ -417,9 +323,7 @@ describe('EndToEnd', async () => {
 
       const expectedEventNames = [
         'Starting stream',
-        'Acquiring session',
-        'Cache hit: has usable session',
-        'Acquired session',
+        ...cacheSessionEvents,
         'Using Session',
       ];
       assert.deepStrictEqual(
@@ -430,78 +334,37 @@ describe('EndToEnd', async () => {
     });
 
     it('runTransaction', done => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
-
       database.runTransaction(async (err, transaction) => {
         assert.ifError(err);
         await transaction!.run('SELECT 1');
         await transaction!.commit();
         await transaction!.end();
-        await traceExporter.forceFlush();
-
-        const spans = traceExporter.getFinishedSpans();
-        withAllSpansHaveDBName(spans);
-
-        const actualEventNames: string[] = [];
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
-          });
-        });
-
         const expectedSpanNames = [
           'CloudSpanner.Snapshot.runStream',
           'CloudSpanner.Snapshot.run',
           'CloudSpanner.Transaction.commit',
           'CloudSpanner.Database.runTransaction',
         ];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-
         const expectedEventNames = [
           'Starting stream',
           'Transaction Creation Done',
           'Starting Commit',
           'Commit Done',
-          'Acquiring session',
-          'Cache hit: has usable session',
-          'Acquired session',
+          ...cacheSessionEvents,
         ];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+
+        await verifySpansAndEvents(
+          traceExporter,
+          expectedSpanNames,
+          expectedEventNames
         );
         done();
       });
     });
 
     it('runTransactionAsync', async () => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
       await database.runTransactionAsync(async transaction => {
         await transaction!.run('SELECT 1');
-      });
-
-      traceExporter.forceFlush();
-      const spans = traceExporter.getFinishedSpans();
-      withAllSpansHaveDBName(spans);
-
-      const actualEventNames: string[] = [];
-      const actualSpanNames: string[] = [];
-      spans.forEach(span => {
-        actualSpanNames.push(span.name);
-        span.events.forEach(event => {
-          actualEventNames.push(event.name);
-        });
       });
 
       const expectedSpanNames = [
@@ -509,107 +372,53 @@ describe('EndToEnd', async () => {
         'CloudSpanner.Snapshot.run',
         'CloudSpanner.Database.runTransactionAsync',
       ];
-      assert.deepStrictEqual(
-        actualSpanNames,
-        expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-      );
-
       const expectedEventNames = [
         'Starting stream',
         'Transaction Creation Done',
-        'Acquiring session',
-        'Cache hit: has usable session',
-        'Acquired session',
+        ...cacheSessionEvents,
         'Using Session',
       ];
-      assert.deepStrictEqual(
-        actualEventNames,
-        expectedEventNames,
-        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      await verifySpansAndEvents(
+        traceExporter,
+        expectedSpanNames,
+        expectedEventNames
       );
     });
 
     it('writeAtLeastOnce', done => {
-      const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-        database.formattedName_
-      );
       const blankMutations = new MutationSet();
-      database.writeAtLeastOnce(blankMutations, (err, response) => {
+      database.writeAtLeastOnce(blankMutations, async (err, response) => {
         assert.ifError(err);
         assert.ok(response);
-
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-        withAllSpansHaveDBName(spans);
-
-        const actualEventNames: string[] = [];
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
-          });
-        });
-
         const expectedSpanNames = [
           'CloudSpanner.Transaction.commit',
           'CloudSpanner.Database.writeAtLeastOnce',
         ];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-
         const expectedEventNames = [
           'Starting Commit',
           'Commit Done',
-          'Acquiring session',
-          'Cache hit: has usable session',
-          'Acquired session',
+          ...cacheSessionEvents,
           'Using Session',
         ];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        await verifySpansAndEvents(
+          traceExporter,
+          expectedSpanNames,
+          expectedEventNames
         );
-
         done();
       });
     });
 
     it('batchCreateSessions', done => {
-      database.batchCreateSessions(5, (err, sessions) => {
+      database.batchCreateSessions(5, async (err, sessions) => {
         assert.ifError(err);
-
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-
-        const actualEventNames: string[] = [];
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
-          });
-        });
-
         const expectedSpanNames = ['CloudSpanner.Database.batchCreateSessions'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-
         const expectedEventNames = [];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        await verifySpansAndEvents(
+          traceExporter,
+          expectedSpanNames,
+          expectedEventNames
         );
-
         done();
       });
     });
@@ -883,9 +692,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           );
 
           const expectedEventNames = [
-            'Acquiring session',
-            'Cache hit: has usable session',
-            'Acquired session',
+            ...cacheSessionEvents,
             'Using Session',
             'Starting stream',
             'Transaction Creation Done',
@@ -994,9 +801,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             );
 
             const expectedEventNames = [
-              'Acquiring session',
-              'Cache hit: has usable session',
-              'Acquired session',
+              ...cacheSessionEvents,
               'Using Session',
               'Starting stream',
             ];
@@ -1162,14 +967,9 @@ describe('ObservabilityOptions injection and propagation', async () => {
       );
 
       const expectedEventNames = [
-        'Requesting 25 sessions',
-        'Creating 25 sessions',
-        'Requested for 25 sessions returned 25',
+        ...batchCreateSessionsEvents,
         'Starting stream',
-        'Acquiring session',
-        'Waiting for a session to become available',
-        'Acquired session',
-        'Using Session',
+        ...waitingSessionsEvents,
       ];
       assert.deepStrictEqual(
         actualEventNames,
@@ -1310,14 +1110,9 @@ describe('E2E traces with async/await', async () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
+      ...batchCreateSessionsEvents,
       'Starting stream',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      ...waitingSessionsEvents,
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -1548,14 +1343,10 @@ SELECT 1p
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
+      ...batchCreateSessionsEvents,
       'Starting stream',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      'exception',
+      ...waitingSessionsEvents,
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -1704,10 +1495,9 @@ SELECT 1p
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
+      ...batchCreateSessionsEvents,
       'Starting stream',
+      'exception',
       'Stream broken. Safe to retry',
       'Begin Transaction',
       'Transaction Creation Done',
@@ -1715,10 +1505,7 @@ SELECT 1p
       'Transaction Creation Done',
       'Starting Commit',
       'Commit Done',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      ...waitingSessionsEvents,
       'exception',
     ];
     assert.deepStrictEqual(
@@ -2101,14 +1888,10 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
                 // Finally check for the collective expected event names.
                 const expectedEventNames = [
-                  'Requesting 25 sessions',
-                  'Creating 25 sessions',
-                  'Requested for 25 sessions returned 25',
+                  ...batchCreateSessionsEvents,
                   'Starting stream',
-                  'Acquiring session',
-                  'Waiting for a session to become available',
-                  'Acquired session',
-                  'Using Session',
+                  'exception',
+                  ...waitingSessionsEvents,
                   'Transaction Creation Done',
                 ];
                 assert.deepStrictEqual(
@@ -2172,19 +1955,14 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
+      ...batchCreateSessionsEvents,
       'Starting stream',
       'Re-attempting start stream',
       'Resuming stream',
       'Resuming stream',
       'Resuming stream',
       'Resuming stream',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      ...waitingSessionsEvents,
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -2243,19 +2021,14 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
+      ...batchCreateSessionsEvents,
       'Starting stream',
       'Re-attempting start stream',
       'Begin Transaction',
       'Transaction Creation Done',
       'Starting Commit',
       'Commit Done',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      ...waitingSessionsEvents,
     ];
     assert.deepStrictEqual(
       actualEventNames,
@@ -2298,43 +2071,20 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       1,
       'runTransactionAsync.attempt must be 1'
     );
-
-    traceExporter.forceFlush();
-    const spans = traceExporter.getFinishedSpans();
-
-    const actualSpanNames: string[] = [];
-    const actualEventNames: string[] = [];
-    spans.forEach(span => {
-      actualSpanNames.push(span.name);
-      span.events.forEach(event => {
-        actualEventNames.push(event.name);
-      });
-    });
-
     const expectedSpanNames = [
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Database.runTransactionAsync',
     ];
-    assert.deepStrictEqual(
-      actualSpanNames,
-      expectedSpanNames,
-      `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-    );
 
     const expectedEventNames = [
-      'Requesting 25 sessions',
-      'Creating 25 sessions',
-      'Requested for 25 sessions returned 25',
-      'Acquiring session',
-      'Waiting for a session to become available',
-      'Acquired session',
-      'Using Session',
+      ...batchCreateSessionsEvents,
+      ...waitingSessionsEvents,
     ];
-    assert.deepStrictEqual(
-      actualEventNames,
-      expectedEventNames,
-      `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+    await verifySpansAndEvents(
+      traceExporter,
+      expectedSpanNames,
+      expectedEventNames
     );
   });
 });

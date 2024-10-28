@@ -1175,7 +1175,7 @@ describe('Database', () => {
 
     it('with error on null mutation should catch thrown error', done => {
       try {
-        database.writeAtLeastOnce(null, (err, res) => {});
+        database.writeAtLeastOnce(null, () => {});
       } catch (err) {
         // Performing a substring search on the error because
         // depending on the version of Node.js, the error might be either of:
@@ -1320,7 +1320,6 @@ describe('Database', () => {
             'Expected an ERROR span status'
           );
 
-          const errorMessage = firstSpan.status.message;
           assert.deepStrictEqual(
             firstSpan.status.message,
             sessionNotFoundError.message
@@ -1658,7 +1657,7 @@ describe('Database', () => {
         .throws(ourException);
 
       assert.rejects(async () => {
-        const value = await database.runTransactionAsync(async txn => {
+        await database.runTransactionAsync(async txn => {
           const result = await txn.run('SELECT 1');
           await txn.commit();
           return result;

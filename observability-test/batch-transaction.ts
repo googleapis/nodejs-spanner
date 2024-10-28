@@ -153,68 +153,63 @@ describe('BatchTransaction', () => {
   };
 
   it('createQueryPartitions', done => {
-    const REQUEST = sandbox.stub();
+    const res = batchTransaction.createQueryPartitions(QUERY, err => {
+      assert.ifError(err);
+      traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
 
-    const res = batchTransaction.createQueryPartitions(
-      QUERY,
-      (err, part, resp) => {
-        assert.ifError(err);
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
+      // Sort the spans by duration.
+      spans.sort((spanA, spanB) => {
+        spanA.duration < spanB.duration;
+      });
 
-        // Sort the spans by duration.
-        spans.sort((spanA, spanB) => {
-          spanA.duration < spanB.duration;
-        });
+      const actualSpanNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+      });
 
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-        });
+      const expectedSpanNames = [
+        'CloudSpanner.BatchTransaction.createPartitions_',
+        'CloudSpanner.BatchTransaction.createQueryPartitions',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
 
-        const expectedSpanNames = [
-          'CloudSpanner.BatchTransaction.createPartitions_',
-          'CloudSpanner.BatchTransaction.createQueryPartitions',
-        ];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-
-        // Ensure that createPartitions_ is a child span of createQueryPartitions.
-        const spanCreatePartitions_ = spans[0];
-        const spanCreateQueryPartitions = spans[1];
-        assert.ok(
-          spanCreateQueryPartitions.spanContext().traceId,
-          'Expected that createQueryPartitions has a defined traceId'
-        );
-        assert.ok(
-          spanCreatePartitions_.spanContext().traceId,
-          'Expected that createPartitions_ has a defined traceId'
-        );
-        assert.deepStrictEqual(
-          spanCreatePartitions_.spanContext().traceId,
-          spanCreateQueryPartitions.spanContext().traceId,
-          'Expected that both spans share a traceId'
-        );
-        assert.ok(
-          spanCreateQueryPartitions.spanContext().spanId,
-          'Expected that createQueryPartitions has a defined spanId'
-        );
-        assert.ok(
-          spanCreatePartitions_.spanContext().spanId,
-          'Expected that createPartitions_ has a defined spanId'
-        );
-        assert.deepStrictEqual(
-          spanCreatePartitions_.parentSpanId,
-          spanCreateQueryPartitions.spanContext().spanId,
-          'Expected that createQueryPartitions is the parent to createPartitions_'
-        );
-        done();
-      }
-    );
+      // Ensure that createPartitions_ is a child span of createQueryPartitions.
+      const spanCreatePartitions_ = spans[0];
+      const spanCreateQueryPartitions = spans[1];
+      assert.ok(
+        spanCreateQueryPartitions.spanContext().traceId,
+        'Expected that createQueryPartitions has a defined traceId'
+      );
+      assert.ok(
+        spanCreatePartitions_.spanContext().traceId,
+        'Expected that createPartitions_ has a defined traceId'
+      );
+      assert.deepStrictEqual(
+        spanCreatePartitions_.spanContext().traceId,
+        spanCreateQueryPartitions.spanContext().traceId,
+        'Expected that both spans share a traceId'
+      );
+      assert.ok(
+        spanCreateQueryPartitions.spanContext().spanId,
+        'Expected that createQueryPartitions has a defined spanId'
+      );
+      assert.ok(
+        spanCreatePartitions_.spanContext().spanId,
+        'Expected that createPartitions_ has a defined spanId'
+      );
+      assert.deepStrictEqual(
+        spanCreatePartitions_.parentSpanId,
+        spanCreateQueryPartitions.spanContext().spanId,
+        'Expected that createQueryPartitions is the parent to createPartitions_'
+      );
+      done();
+    });
   });
 
   it('createReadPartitions', done => {
@@ -222,34 +217,31 @@ describe('BatchTransaction', () => {
     const response = {};
     REQUEST.callsFake((_, callback) => callback(null, response));
 
-    const res = batchTransaction.createReadPartitions(
-      QUERY,
-      (err, part, resp) => {
-        assert.ifError(err);
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
+    const res = batchTransaction.createReadPartitions(QUERY, err => {
+      assert.ifError(err);
+      traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
 
-        // Sort the spans by duration.
-        spans.sort((spanA, spanB) => {
-          spanA.duration < spanB.duration;
-        });
+      // Sort the spans by duration.
+      spans.sort((spanA, spanB) => {
+        spanA.duration < spanB.duration;
+      });
 
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-        });
-        const expectedSpanNames = [
-          'CloudSpanner.BatchTransaction.createPartitions_',
-          'CloudSpanner.BatchTransaction.createReadPartitions',
-        ];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
-        done();
-      }
-    );
+      const actualSpanNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+      });
+      const expectedSpanNames = [
+        'CloudSpanner.BatchTransaction.createPartitions_',
+        'CloudSpanner.BatchTransaction.createReadPartitions',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+      done();
+    });
   });
 });

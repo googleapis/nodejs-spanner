@@ -382,7 +382,6 @@ describe('setError', () => {
 
   it('a non-empty string should set the message', () => {
     startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
-      const status1 = span.status;
       const res = setSpanError(span, 'this one');
       assert.strictEqual(res, true, 'value was set');
       span.end();
@@ -438,7 +437,6 @@ describe('setErrorAndException', () => {
 
   it('a non-empty string should set the message', () => {
     startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
-      const status1 = span.status;
       const res = setSpanErrorAndException(span, 'this one');
       assert.strictEqual(res, true, 'value was set');
       span.end();

@@ -19,6 +19,25 @@ import * as assert from 'assert';
 const {ReadableSpan} = require('@opentelemetry/sdk-trace-base');
 import {SEMATTRS_DB_NAME} from '@opentelemetry/semantic-conventions';
 
+export const batchCreateSessionsEvents = [
+  'Requesting 25 sessions',
+  'Creating 25 sessions',
+  'Requested for 25 sessions returned 25',
+];
+
+export const waitingSessionsEvents = [
+  'Acquiring session',
+  'Waiting for a session to become available',
+  'Acquired session',
+  'Using Session',
+];
+
+export const cacheSessionEvents = [
+  'Acquiring session',
+  'Cache hit: has usable session',
+  'Acquired session',
+];
+
 /**
  * This utility exists as a test helper because mocha has builtin "context"
  * and referring to context causes type/value collision errors.
@@ -46,4 +65,31 @@ export function generateWithAllSpansHaveDBName(dbName: String): Function {
       );
     });
   };
+}
+
+export async function verifySpansAndEvents(
+  traceExporter,
+  expectedSpans,
+  expectedEvents
+) {
+  await traceExporter.forceFlush();
+  const spans = traceExporter.getFinishedSpans();
+  const actualEventNames: string[] = [];
+  const actualSpanNames: string[] = [];
+  spans.forEach(span => {
+    actualSpanNames.push(span.name);
+    span.events.forEach(event => {
+      actualEventNames.push(event.name);
+    });
+  });
+  assert.deepStrictEqual(
+    actualSpanNames,
+    expectedSpans,
+    `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpans}`
+  );
+  assert.deepStrictEqual(
+    actualEventNames,
+    expectedEvents,
+    `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEvents}`
+  );
 }

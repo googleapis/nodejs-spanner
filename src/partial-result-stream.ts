@@ -28,6 +28,7 @@ import {DeadlineError, isRetryableInternalError} from './transaction-runner';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
 import * as stream from 'stream';
+import {getActiveOrNoopSpan, setSpanErrorAndException} from './instrument';
 
 export type ResumeToken = string | Uint8Array;
 
@@ -494,6 +495,7 @@ export function partialResultStream(
   let lastRequestStream: Readable;
   const startTime = Date.now();
   const timeout = options?.gaxOptions?.timeout ?? Infinity;
+  const span = getActiveOrNoopSpan();
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
@@ -568,6 +570,7 @@ export function partialResultStream(
       // checkpoint stream has queued. After that, we will destroy the
       // user's stream with the same error.
       setImmediate(() => batchAndSplitOnTokenStream.destroy(err));
+      setSpanErrorAndException(span, err as Error);
       return;
     }
 
