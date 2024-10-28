@@ -613,6 +613,53 @@ describe('EndToEnd', async () => {
         done();
       });
     });
+
+    it('runPartitionedUpdate', async () => {
+      const [rowCount] = await database.runPartitionedUpdate({
+        sql: updateSql,
+      });
+
+      await tracerProvider.forceFlush();
+      await traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+
+      const actualEventNames: string[] = [];
+      const actualSpanNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      const expectedSpanNames = [
+        'CloudSpanner.Snapshot.begin',
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Dml.runUpdate',
+        'CloudSpanner.PartitionedDml.runUpdate',
+        'CloudSpanner.Database.runPartitionedUpdate',
+      ];
+      assert.deepStrictEqual(
+        actualSpanNames,
+        expectedSpanNames,
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+      );
+
+      const expectedEventNames = [
+        'Begin Transaction',
+        'Transaction Creation Done',
+        'Starting stream',
+        'Acquiring session',
+        'Cache hit: has usable session',
+        'Acquired session',
+      ];
+      assert.deepStrictEqual(
+        actualEventNames,
+        expectedEventNames,
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+    });
   });
 });
 
