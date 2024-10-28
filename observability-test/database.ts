@@ -507,7 +507,6 @@ describe('Database', () => {
 
     let beginSnapshotStub: sinon.SinonStub;
     let getSessionStub: sinon.SinonStub;
-    let snapshotStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -524,9 +523,7 @@ describe('Database', () => {
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
-      snapshotStub = sandbox
-        .stub(fakeSession, 'snapshot')
-        .returns(fakeSnapshot);
+      sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
     });
 
     it('with error', done => {
@@ -1250,7 +1247,6 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakeDataStream: Transform;
     let getSessionStub: sinon.SinonStub;
-    let requestStreamStub: sinon.SinonStub;
 
     const options = {
       requestOptions: {
@@ -1269,9 +1265,7 @@ describe('Database', () => {
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
-      requestStreamStub = sandbox
-        .stub(database, 'requestStream')
-        .returns(fakeDataStream);
+      sandbox.stub(database, 'requestStream').returns(fakeDataStream);
     });
 
     it('on retry with "Session not found" error', done => {
@@ -1723,8 +1717,6 @@ describe('Database', () => {
     let fakeStream2: Transform;
 
     let getSessionStub: sinon.SinonStub;
-    let snapshotStub: sinon.SinonStub;
-    let runStreamStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1745,15 +1737,11 @@ describe('Database', () => {
         .onSecondCall()
         .callsFake(callback => callback(null, fakeSession2));
 
-      snapshotStub = sandbox
-        .stub(fakeSession, 'snapshot')
-        .returns(fakeSnapshot);
+      sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
 
       sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-      runStreamStub = sandbox
-        .stub(fakeSnapshot, 'runStream')
-        .returns(fakeStream);
+      sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
 
       sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
     });
@@ -1974,7 +1962,6 @@ describe('Database', () => {
 
     let getSessionStub;
     let beginStub;
-    let runUpdateStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1995,7 +1982,7 @@ describe('Database', () => {
         sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
       ).callsFake(callback => callback(null));
 
-      runUpdateStub = (
+      (
         sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
       ).callsFake((_, callback) => callback(null));
     });
@@ -2030,7 +2017,6 @@ describe('Database', () => {
 
     it('with pool errors', done => {
       const fakeError = new Error('err');
-      const fakeCallback = sandbox.spy();
 
       getSessionStub.callsFake(callback => callback(fakeError));
       database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
@@ -2131,7 +2117,7 @@ describe('Database', () => {
         sandbox.stub(fakePool, 'release') as sinon.SinonStub
       ).withArgs(fakeSession);
 
-      database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
+      database.runPartitionedUpdate(QUERY, async () => {
         const exportResults = await getTraceExportResults();
         const actualSpanNames = exportResults.spanNames;
         const spans = exportResults.spans;

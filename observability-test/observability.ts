@@ -99,7 +99,7 @@ describe('startTrace', () => {
       'aSpan',
       {opts: {tracerProvider: overridingProvider}},
       async span => {
-        await new Promise((resolve, reject) => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 400));
         span.end();
 
         const gotSpansFromGlobal = globalExporter.getFinishedSpans();
@@ -250,7 +250,7 @@ describe('startTrace', () => {
       'aSpan',
       {opts: {tracerProvider: overridingProvider}},
       async span => {
-        await new Promise((resolve, reject) => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 400));
         span.end();
 
         const gotSpansFromGlobal = globalExporter.getFinishedSpans();

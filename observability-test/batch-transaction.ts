@@ -153,7 +153,7 @@ describe('BatchTransaction', () => {
   };
 
   it('createQueryPartitions', done => {
-    const res = batchTransaction.createQueryPartitions(QUERY, err => {
+    batchTransaction.createQueryPartitions(QUERY, err => {
       assert.ifError(err);
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();
@@ -217,7 +217,7 @@ describe('BatchTransaction', () => {
     const response = {};
     REQUEST.callsFake((_, callback) => callback(null, response));
 
-    const res = batchTransaction.createReadPartitions(QUERY, err => {
+    batchTransaction.createReadPartitions(QUERY, err => {
       assert.ifError(err);
       traceExporter.forceFlush();
       const spans = traceExporter.getFinishedSpans();

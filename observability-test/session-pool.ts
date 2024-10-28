@@ -113,7 +113,7 @@ describe('SessionPool', () => {
     it('on exception from Database.batchCreateSessions', async () => {
       const ourException = new Error('this fails intentionally');
       sandbox.stub(DATABASE, 'batchCreateSessions').throws(ourException);
-      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sandbox.stub(sessionPool, 'release');
 
       assert.rejects(async () => {
         await sessionPool._createSessions(OPTIONS);
@@ -167,7 +167,7 @@ describe('SessionPool', () => {
       const RESPONSE = [[{}, {}, {}]];
 
       sandbox.stub(DATABASE, 'batchCreateSessions').resolves(RESPONSE);
-      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sandbox.stub(sessionPool, 'release');
 
       await sessionPool._createSessions(OPTIONS);
       assert.strictEqual(sessionPool.size, 3);
