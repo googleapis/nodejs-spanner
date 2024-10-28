@@ -45,7 +45,6 @@ const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
 import {promisify} from '@google-cloud/promisify';
-import {runBenchmarks} from './benchmark';
 
 const {ObservabilityOptions} = require('../src/instrument');
 import {SessionPool} from '../src/session-pool';

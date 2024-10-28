@@ -26,7 +26,7 @@ const lessComparator = (a, b) => {
  * a map of functionNames to the percentiles of RAM usage and time spent.
  */
 export async function runBenchmarks(runners: Function[], done: Function) {
-  const nRuns = 10000;
+  const nRuns = 20000;
   const nWarmups = Math.round(nRuns / 8);
   const benchmarkValues = {_totalRuns: nRuns, _warmRuns: nWarmups};
 

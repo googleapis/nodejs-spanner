@@ -34,8 +34,15 @@ const {
 } = require('@opentelemetry/sdk-trace-node');
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
 import {humanizeBytes, humanizeTime, runBenchmarks} from './benchmark';
+const {diag, DiagConsoleLogger, DiagLogLevel} = require('@opentelemetry/api');
+// diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
-const {ObservabilityOptions} = require('../src/instrument');
+const {
+  getTracer,
+  startTrace,
+  traceConfig,
+  ObservabilityOptions,
+} = require('../src/instrument');
 
 const selectSql = 'SELECT 1';
 const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
@@ -124,6 +131,16 @@ async function setup(
   });
 }
 
+interface percentiles {
+  p50: number;
+  p50_s: string;
+}
+
+interface description {
+  ram: percentiles;
+  timeSpent: percentiles;
+}
+
 describe('Benchmarking Database', () => {
   if (!process.env.SPANNER_RUN_BENCHMARKS) {
     console.log(
@@ -207,23 +224,6 @@ describe('Benchmarking Database', () => {
         });
       },
 
-      /*
-    async function databaseGetTransactionAsync() {
-      const tx = await database.getTransction();
-
-      try {
-        await tx!.begin();
-        return await tx!.runUpdate(updateSql);
-      } catch (e) {
-	console.log(e);
-        return null;
-      } finally {
-	console.log('tx.end');
-        tx!.end();
-	console.log('exiting');
-      }
-    },
-    */
       async function databaseRunTransactionAsyncTxRunUpdate() {
         const withTx = async tx => {
           await tx!.begin();
@@ -274,16 +274,6 @@ describe('Benchmarking Database', () => {
     });
   }
 
-  interface percentiles {
-    p50: number;
-    p50_s: string;
-  }
-
-  interface description {
-    ram: percentiles;
-    timeSpent: percentiles;
-  }
-
   it('Database runs compared', async () => {
     const traced = await setItUp(true);
     const untraced = await setItUp(false);
@@ -326,4 +316,152 @@ describe('Benchmarking Database', () => {
 
 function percentDiff(orig, fresh) {
   return ((Number(fresh) - Number(orig)) * 100.0) / Number(orig);
+}
+
+describe('Benchmark getTracer', () => {
+  it('No tracerProvider/global tracerProvider', async () => {
+    console.log('tracerProvider');
+    const results = await benchmarkStartTrace();
+
+    console.log(
+      `Total Runs:   ${results['_totalRuns']}\nWarm up runs: ${results['_warmRuns']}`
+    );
+
+    for (const method in results) {
+      const values = results[method];
+      if (typeof values !== 'object') {
+        continue;
+      }
+      const desc = values as description;
+      const ram = desc.ram;
+      const timeSpent = desc!.timeSpent;
+      console.log(`${method}`);
+      console.log(`\tRAM (${ram.p50_s})`);
+      console.log(`\tTimeSpent (${timeSpent.p50_s})`);
+    }
+  });
+});
+
+function benchmarkGetTracer(): Promise<Map<string, unknown>> {
+  const customTracerProvider = new NodeTracerProvider();
+  let trapDoorCalled = false;
+
+  const runners: Function[] = [
+    function getTracerNullTracerProviderUnsetGlobalTracerProvider() {
+      return getTracer(null);
+    },
+
+    function getTracerDefinedTracerProvider() {
+      return getTracer(customTracerProvider);
+    },
+
+    function getTracerRegisteredGlobally() {
+      if (!trapDoorCalled) {
+        customTracerProvider.register();
+        trapDoorCalled = true;
+      }
+      return getTracer(null);
+    },
+  ];
+
+  return new Promise(resolve => {
+    runBenchmarks(runners, results => {
+      resolve(results);
+    });
+  });
+}
+
+function benchmarkStartSpan(): Promise<Map<string, unknown>> {
+  const customTracerProvider = new NodeTracerProvider();
+  let trapDoorCalled = false;
+
+  const runners: Function[] = [
+    function withNullTracerProviderUnsetGlobalTracerProvider() {
+      return new Promise(resolve => {
+        getTracer(null).startActiveSpan('aSpan', {}, span => {
+          resolve(span);
+        });
+      });
+    },
+
+    function withTracerDefinedTracerProvider() {
+      return new Promise(resolve => {
+        getTracer(customTracerProvider).startActiveSpan('aSpan', {}, span => {
+          resolve(span);
+        });
+      });
+    },
+
+    function getTracerRegisteredGlobally() {
+      if (!trapDoorCalled) {
+        customTracerProvider.register();
+        trapDoorCalled = true;
+      }
+      return new Promise(resolve => {
+        getTracer(null).startActiveSpan('aSpan', {}, span => {
+          resolve(span);
+        });
+      });
+    },
+  ];
+
+  return new Promise(resolve => {
+    runBenchmarks(runners, results => {
+      resolve(results);
+    });
+  });
+}
+
+function benchmarkStartTrace(): Promise<Map<string, unknown>> {
+  const customTracerProvider = new NodeTracerProvider();
+  let trapDoorCalled = false;
+
+  const runners: Function[] = [
+    async function withNullTracerProviderUnsetGlobalTracerProvider() {
+      const promise = new Promise((resolve, reject) => {
+        const opts: typeof traceConfig = {
+          opts: {tracerProvider: null},
+        };
+        startTrace('aspan', null, span => {
+          span.end();
+          resolve(span);
+        });
+      });
+      return promise;
+    },
+
+    function withTracerDefinedTracerProvider() {
+      return new Promise(resolve => {
+        const opts: typeof traceConfig = {
+          opts: {tracerProvider: customTracerProvider},
+        };
+        startTrace('aspan', opts, span => {
+          span.end();
+          resolve(span);
+        });
+      });
+    },
+
+    function withTracerRegisteredGlobally() {
+      if (!trapDoorCalled) {
+        customTracerProvider.register();
+        trapDoorCalled = true;
+      }
+      return new Promise(resolve => {
+        const opts: typeof traceConfig = {
+          opts: {tracerProvider: null},
+        };
+        startTrace('aspan', opts, span => {
+          span.end();
+          resolve(span);
+        });
+      });
+    },
+  ];
+
+  return new Promise(resolve => {
+    runBenchmarks(runners, results => {
+      resolve(results);
+    });
+  });
 }
