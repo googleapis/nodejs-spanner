@@ -2858,13 +2858,27 @@ class Database extends common.GrpcServiceObject {
     query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        callback!(err as ServiceError, 0);
-        return;
-      }
+    const traceConfig = {
+      sql: query,
+      ...this._traceConfig,
+    };
+    return startTrace('Database.runPartitionedUpdate', traceConfig, span => {
+      this.pool_.getSession((err, session) => {
+        if (err) {
+          setSpanError(span, err);
+          span.end();
+          callback!(err as ServiceError, 0);
+          return;
+        }
 
-      this._runPartitionedUpdate(session!, query, callback);
+        this._runPartitionedUpdate(session!, query, (err, count) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+          callback!(err, count);
+        });
+      });
     });
   }
 
