@@ -1977,19 +1977,6 @@ describe('Database', () => {
     let beginStub;
     let runUpdateStub;
 
-    const fakeDirectedReadOptions = {
-      includeReplicas: {
-        replicaSelections: [
-          {
-            location: 'us-west1',
-            type: google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type
-              .READ_WRITE,
-          },
-        ],
-        autoFailoverDisabled: true,
-      },
-    };
-
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
