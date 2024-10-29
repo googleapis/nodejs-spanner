@@ -50,7 +50,7 @@ const alterTableWithForeignKeyDeleteCascadeCommand =
   'node table-alter-with-foreign-key-delete-cascade.js';
 const dropForeignKeyConstraintDeleteCascaseCommand =
   'node table-drop-foreign-key-constraint-delete-cascade.js';
-const traceObservabilityCommand = 'node observability-trace.js';
+const traceObservabilityCommand = 'node observability-traces.js';
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
