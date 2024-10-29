@@ -26,16 +26,6 @@ const {
   TraceIdRatioBasedSampler,
 } = require('@opentelemetry/sdk-trace-node');
 const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-const {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-} = require('@opentelemetry/semantic-conventions');
-
-/*
- * Uncomment these lines to debug OpenTelemetry.
-const {diag, DiagConsoleLogger, DiagLogLevel} = require('@opentelemetry/api');
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ALL);
-*/
 
 // Create the Google Cloud Trace exporter for OpenTelemetry.
 const {
@@ -45,9 +35,9 @@ const exporter = new TraceExporter();
 
 // Create the OpenTelemetry tracerProvider that the exporter shall be attached to.
 const provider = new NodeTracerProvider({
-    // Modify the following line to adjust the sampling rate.
-    // It is currently set to 1.0, meaning all requests will be traced.
-    sampler: new TraceIdRatioBasedSampler(1.0),
+  // Modify the following line to adjust the sampling rate.
+  // It is currently set to 1.0, meaning all requests will be traced.
+  sampler: new TraceIdRatioBasedSampler(1.0),
 });
 provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
@@ -56,7 +46,7 @@ provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 // provider.register();
 
 // Set `enableGrpcInstrumentation` to `true` to enable gRPC instrumentation.
-const enableGrpcInstrumentation = true;
+const enableGrpcInstrumentation = false;
 if (enableGrpcInstrumentation) {
   const {registerInstrumentations} = require('@opentelemetry/instrumentation');
   const {GrpcInstrumentation} = require('@opentelemetry/instrumentation-grpc');
@@ -71,7 +61,6 @@ async function main(
   instanceId = 'my-instance-id',
   databaseId = 'my-project-id'
 ) {
-
   // Create the Cloud Spanner Client.
   const {Spanner} = require('@google-cloud/spanner');
 

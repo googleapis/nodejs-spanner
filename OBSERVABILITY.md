@@ -19,13 +19,18 @@ enable OpenTelemetry with appropriate exporters at the startup of your applicati
 
 #### OpenTelemetry Dependencies
 
-Use a trace exporter of your choice, such as Google Cloud Trace like below:
-
+Add the following dependencies in your `package.json` or install them directly.
 ```javascript
-const {
-  TraceExporter,
-} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-const exporter = new TraceExporter();
+// Required packages for OpenTelemetry SDKs
+"@opentelemetry/sdk-trace-base": "^1.26.0",
+"@opentelemetry/sdk-trace-node": "^1.26.0",
+
+// Package to use Google Cloud Trace exporter
+"@google-cloud/opentelemetry-cloud-trace-exporter": "^2.4.1",
+
+// Packages to enable gRPC instrumentation
+"@opentelemetry/instrumentation": "^0.53.0",
+"@opentelemetry/instrumentation-grpc": "^0.53.0",
 ```
 
 #### OpenTelemetry Configuration
@@ -38,6 +43,10 @@ const {
 const {
   BatchSpanProcessor,
 } = require('@opentelemetry/sdk-trace-base');
+const {
+  TraceExporter,
+} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
+const exporter = new TraceExporter();
 
 // Create the tracerProvider that the exporter shall be attached to.
 const provider = new NodeTracerProvider({resource: resource});
