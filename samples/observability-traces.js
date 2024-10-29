@@ -114,8 +114,6 @@ async function main(
       resolve();
     }, 8800);
   });
-
-  // [END spanner_trace_and_export_spans]
 }
 
 process.on('unhandledRejection', err => {
