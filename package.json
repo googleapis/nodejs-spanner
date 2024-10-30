@@ -121,7 +121,7 @@
     "p-limit": "^3.0.1",
     "path-to-regexp": "6.2.2",
     "proxyquire": "^2.0.1",
-    "sinon": "^18.0.0",
+    "sinon": "^19.0.0",
     "stats-lite": "^2.1.1",
     "time-span": "^4.0.0",
     "tmp": "^0.2.0",
