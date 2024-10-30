@@ -69,18 +69,9 @@ describe('Transaction', () => {
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let Dml;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Transaction;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let PartitionedDml;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let transaction;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let snapshot;
 
   before(() => {
@@ -91,9 +82,7 @@ describe('Transaction', () => {
     });
 
     Snapshot = txns.Snapshot;
-    Dml = txns.Dml;
     Transaction = txns.Transaction;
-    PartitionedDml = txns.PartitionedDml;
   });
 
   let traceExporter: typeof InMemorySpanExporter;
@@ -246,11 +235,10 @@ describe('Transaction', () => {
       const TABLE = 'my-table-123';
 
       let fakeStream;
-      let stub;
 
       beforeEach(() => {
         fakeStream = new EventEmitter();
-        stub = sandbox.stub(snapshot, 'createReadStream').returns(fakeStream);
+        sandbox.stub(snapshot, 'createReadStream').returns(fakeStream);
       });
 
       it('with error', done => {
@@ -348,11 +336,10 @@ describe('Transaction', () => {
       const QUERY = 'SELET * FROM `MyTable`';
 
       let fakeStream;
-      let stub;
 
       beforeEach(() => {
         fakeStream = new EventEmitter();
-        stub = sandbox.stub(snapshot, 'runStream').returns(fakeStream);
+        sandbox.stub(snapshot, 'runStream').returns(fakeStream);
       });
 
       it('without error', done => {
@@ -479,7 +466,7 @@ describe('Transaction', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = ['exception'];
+          const expectedEventNames = ['Starting stream', 'exception'];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
