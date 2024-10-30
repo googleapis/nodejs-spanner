@@ -131,7 +131,6 @@ export function startTrace<T>(
   config: traceConfig | undefined,
   cb: (span: Span) => T
 ): T {
-  const origConfig = config;
   if (!config) {
     config = {} as traceConfig;
   }
