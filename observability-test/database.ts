@@ -38,7 +38,10 @@ const {
   InMemorySpanExporter,
 } = require('@opentelemetry/sdk-trace-node');
 // eslint-disable-next-line n/no-extraneous-require
-const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {
+  ReadableSpan,
+  SimpleSpanProcessor,
+} = require('@opentelemetry/sdk-trace-base');
 import * as db from '../src/database';
 import {Instance, MutationGroup, Spanner} from '../src';
 import * as pfy from '@google-cloud/promisify';
@@ -605,7 +608,7 @@ describe('Database', () => {
       // pool, so that the pool can remove it from its inventory.
       const releaseStub = sandbox.stub(fakePool, 'release');
 
-      database.getSnapshot((err, snapshot) => {
+      database.getSnapshot(async (err, snapshot) => {
         assert.ifError(err);
         assert.strictEqual(snapshot, fakeSnapshot2);
         // The first session that error should already have been released back
@@ -616,8 +619,9 @@ describe('Database', () => {
         snapshot.emit('end');
         assert.strictEqual(releaseStub.callCount, 2);
 
+        await provider.forceFlush();
+        await traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
         withAllSpansHaveDBName(spans);
 
         const actualSpanNames: string[] = [];
@@ -640,7 +644,7 @@ describe('Database', () => {
         );
 
         // Ensure that the first span actually produced an error that was recorded.
-        const parentSpan = spans[1];
+        const parentSpan = spans[0];
         assert.strictEqual(
           SpanStatusCode.ERROR,
           parentSpan.status.code,
@@ -653,7 +657,7 @@ describe('Database', () => {
         );
 
         // Ensure that the second span is a child of the first span.
-        const secondRetrySpan = spans[0];
+        const secondRetrySpan = spans[1];
         assert.ok(
           parentSpan.spanContext().traceId,
           'Expected that the initial parent span has a defined traceId'
@@ -774,6 +778,7 @@ describe('Database', () => {
           callback(null, RESPONSE);
         },
         once() {},
+        end() {},
       };
 
       database.batchTransaction = (identifier, options) => {
@@ -782,10 +787,14 @@ describe('Database', () => {
         return fakeTransaction;
       };
 
-      database.createBatchTransaction(opts, (err, transaction, resp) => {
+      database.createBatchTransaction(opts, async (err, transaction, resp) => {
         assert.strictEqual(err, null);
         assert.strictEqual(transaction, fakeTransaction);
         assert.strictEqual(resp, RESPONSE);
+        transaction!.end();
+
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -839,8 +848,8 @@ describe('Database', () => {
         begin(callback) {
           callback(error, RESPONSE);
         },
-
         once() {},
+        end() {},
       };
 
       database.batchTransaction = () => {
@@ -926,9 +935,11 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError));
 
-      database.getTransaction(err => {
+      database.getTransaction(async err => {
         assert.strictEqual(err, fakeError);
 
+        await provider.forceFlush();
+        traceExporter.forceFlush();
         const spans = traceExporter.getFinishedSpans();
         assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
         withAllSpansHaveDBName(spans);
@@ -978,6 +989,7 @@ describe('Database', () => {
       database.getTransaction((err, transaction) => {
         assert.ifError(err);
         assert.strictEqual(transaction, fakeTransaction);
+        transaction!.end();
 
         const spans = traceExporter.getFinishedSpans();
         withAllSpansHaveDBName(spans);
@@ -1869,10 +1881,13 @@ describe('Database', () => {
         .on('error', err => {
           assert.fail(err);
         })
-        .on('end', () => {
+        .on('end', async () => {
           assert.strictEqual(endStub.callCount, 1);
           assert.strictEqual(endStub2.callCount, 1);
           assert.strictEqual(rows, 1);
+
+          await provider.forceFlush();
+          await traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
           assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
@@ -1898,26 +1913,26 @@ describe('Database', () => {
           );
 
           // Ensure that the span actually produced an error that was recorded.
-          const secondSpan = spans[1];
-          assert.strictEqual(
+          const lastSpan = spans[0];
+          assert.deepStrictEqual(
             SpanStatusCode.ERROR,
-            secondSpan.status.code,
+            lastSpan.status.code,
             'Expected an ERROR span status'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             'Session not found',
-            secondSpan.status.message,
+            lastSpan.status.message,
             'Mismatched span status message'
           );
 
           // Ensure that the final span that got retries did not error.
-          const firstSpan = spans[0];
-          assert.strictEqual(
+          const firstSpan = spans[1];
+          assert.deepStrictEqual(
             SpanStatusCode.UNSET,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected span status code'
           );
-          assert.strictEqual(
+          assert.deepStrictEqual(
             undefined,
             firstSpan.status.message,
             'Unexpected span status message'
@@ -1925,8 +1940,8 @@ describe('Database', () => {
 
           const expectedEventNames = [
             'Using Session',
-            'Using Session',
             'No session available',
+            'Using Session',
           ];
           assert.deepStrictEqual(
             actualEventNames,
@@ -1940,6 +1955,222 @@ describe('Database', () => {
       fakeStream.emit('error', sessionNotFoundError);
       fakeStream2.push('row1');
       fakeStream2.push(null);
+    });
+  });
+
+  describe('runPartitionedUpdate', () => {
+    const QUERY = {
+      sql: 'INSERT INTO `MyTable` (Key, Thing) VALUES(@key, @thing)',
+      params: {
+        key: 'k999',
+        thing: 'abc',
+      },
+    };
+
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakePartitionedDml = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.PartitionedDml
+    );
+
+    let getSessionStub;
+    let beginStub;
+    let runUpdateStub;
+
+    beforeEach(() => {
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakePartitionedDml = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.PartitionedDml
+      );
+
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+      ).callsFake(callback => {
+        callback(null, fakeSession);
+      });
+
+      sandbox.stub(fakeSession, 'partitionedDml').returns(fakePartitionedDml);
+
+      beginStub = (
+        sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
+      ).callsFake(callback => callback(null));
+
+      runUpdateStub = (
+        sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
+      ).callsFake((_, callback) => callback(null));
+    });
+
+    interface traceExportResults {
+      spanNames: string[];
+      spans: (typeof ReadableSpan)[];
+      eventNames: string[];
+    }
+
+    async function getTraceExportResults(): Promise<traceExportResults> {
+      await provider.forceFlush();
+      await traceExporter.forceFlush();
+      const spans = traceExporter.getFinishedSpans();
+      withAllSpansHaveDBName(spans);
+
+      const actualSpanNames: string[] = [];
+      const actualEventNames: string[] = [];
+      spans.forEach(span => {
+        actualSpanNames.push(span.name);
+        span.events.forEach(event => {
+          actualEventNames.push(event.name);
+        });
+      });
+
+      return Promise.resolve({
+        spanNames: actualSpanNames,
+        spans: spans,
+        eventNames: actualEventNames,
+      });
+    }
+
+    it('with pool errors', done => {
+      const fakeError = new Error('err');
+      const fakeCallback = sandbox.spy();
+
+      getSessionStub.callsFake(callback => callback(fakeError));
+      database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
+        assert.strictEqual(err, fakeError);
+        assert.strictEqual(rowCount, 0);
+
+        const exportResults = await getTraceExportResults();
+        const actualSpanNames = exportResults.spanNames;
+        const spans = exportResults.spans;
+        const actualEventNames = exportResults.eventNames;
+
+        const expectedSpanNames = [
+          'CloudSpanner.Database.runPartitionedUpdate',
+        ];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        // Ensure that the first span actually produced an error that was recorded.
+        const parentSpan = spans[0];
+        assert.deepStrictEqual(
+          SpanStatusCode.ERROR,
+          parentSpan.status.code,
+          'Expected an ERROR span status'
+        );
+        assert.deepStrictEqual(
+          fakeError.message,
+          parentSpan.status.message.toString(),
+          'Mismatched span status message'
+        );
+
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+
+        done();
+      });
+    });
+
+    it('with begin errors', done => {
+      const fakeError = new Error('err');
+
+      beginStub.callsFake(callback => callback(fakeError));
+
+      const releaseStub = (
+        sandbox.stub(fakePool, 'release') as sinon.SinonStub
+      ).withArgs(fakeSession);
+
+      database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
+        assert.strictEqual(err, fakeError);
+        assert.strictEqual(rowCount, 0);
+        assert.strictEqual(releaseStub.callCount, 1);
+
+        const exportResults = await getTraceExportResults();
+        const actualSpanNames = exportResults.spanNames;
+        const spans = exportResults.spans;
+        const actualEventNames = exportResults.eventNames;
+
+        const expectedSpanNames = [
+          'CloudSpanner.Database.runPartitionedUpdate',
+        ];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        // Ensure that the first span actually produced an error that was recorded.
+        const parentSpan = spans[0];
+        assert.deepStrictEqual(
+          SpanStatusCode.ERROR,
+          parentSpan.status.code,
+          'Expected an ERROR span status'
+        );
+        assert.deepStrictEqual(
+          fakeError.message,
+          parentSpan.status.message.toString(),
+          'Mismatched span status message'
+        );
+
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+        done();
+      });
+    });
+
+    it('session released on transaction end', done => {
+      const releaseStub = (
+        sandbox.stub(fakePool, 'release') as sinon.SinonStub
+      ).withArgs(fakeSession);
+
+      database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
+        const exportResults = await getTraceExportResults();
+        const actualSpanNames = exportResults.spanNames;
+        const spans = exportResults.spans;
+        const actualEventNames = exportResults.eventNames;
+
+        const expectedSpanNames = [
+          'CloudSpanner.Database.runPartitionedUpdate',
+        ];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        );
+
+        // Ensure that the first span actually produced an error that was recorded.
+        const parentSpan = spans[0];
+        assert.deepStrictEqual(
+          SpanStatusCode.UNSET,
+          parentSpan.status.code,
+          'Unexpected span status'
+        );
+        assert.deepStrictEqual(
+          undefined,
+          parentSpan.status.message,
+          'Mismatched span status message'
+        );
+
+        const expectedEventNames = [];
+        assert.deepStrictEqual(
+          actualEventNames,
+          expectedEventNames,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        );
+        done();
+      });
+
+      fakePartitionedDml.emit('end');
+      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 });

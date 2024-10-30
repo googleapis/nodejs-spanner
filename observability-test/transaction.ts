@@ -479,7 +479,7 @@ describe('Transaction', () => {
             `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
           );
 
-          const expectedEventNames = ['exception'];
+          const expectedEventNames = ['Starting stream', 'exception'];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,

@@ -462,13 +462,11 @@ export class Snapshot extends EventEmitter {
         ) => {
           if (err) {
             setSpanError(span, err);
-            span.end();
-            callback!(err, resp);
-            return;
+          } else {
+            this._update(resp);
           }
-          this._update(resp);
           span.end();
-          callback!(null, resp);
+          callback!(err, resp);
         }
       );
     });
@@ -708,26 +706,43 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      if (this.id && transaction.begin) {
-        delete transaction.begin;
-        transaction.id = this.id;
-      }
-      return this.requestStream({
-        client: 'SpannerClient',
-        method: 'streamingRead',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
-        gaxOpts: gaxOptions,
-        headers: headers,
-      });
-    };
-
     const traceConfig = {
       tableName: table,
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
+      let attempt = 0;
+      const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        if (this.id && transaction.begin) {
+          delete transaction.begin;
+          transaction.id = this.id;
+        }
+
+        attempt++;
+
+        if (!resumeToken) {
+          if (attempt === 1) {
+            span.addEvent('Starting stream');
+          } else {
+            span.addEvent('Re-attempting start stream', {attempt: attempt});
+          }
+        } else {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
+        return this.requestStream({
+          client: 'SpannerClient',
+          method: 'streamingRead',
+          reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+          gaxOpts: gaxOptions,
+          headers: headers,
+        });
+      };
+
       const resultStream = partialResultStream(
         this._wrapWithIdWaiter(makeRequest),
         {
@@ -744,19 +759,19 @@ export class Snapshot extends EventEmitter {
           }
         })
         .on('error', err => {
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
-            this.begin();
-          }
           setSpanError(span, err);
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
+            this.begin();
+          } else {
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
+          }
+          span.end();
         })
         .on('end', err => {
           if (err) {
@@ -1281,7 +1296,23 @@ export class Snapshot extends EventEmitter {
       ...query,
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
+      let attempt = 0;
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
+        attempt++;
+
+        if (!resumeToken) {
+          if (attempt === 1) {
+            span.addEvent('Starting stream');
+          } else {
+            span.addEvent('Re-attempting start stream', {attempt: attempt});
+          }
+        } else {
+          span.addEvent('Resuming stream', {
+            resume_token: resumeToken!.toString(),
+            attempt: attempt,
+          });
+        }
+
         if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
           try {
             sanitizeRequest();
@@ -1320,18 +1351,19 @@ export class Snapshot extends EventEmitter {
         })
         .on('error', err => {
           setSpanError(span, err as Error);
-          const isServiceError =
-            err && typeof err === 'object' && 'code' in err;
-          if (
-            !this.id &&
-            this._useInRunner &&
-            !(
-              isServiceError &&
-              (err as grpc.ServiceError).code === grpc.status.ABORTED
-            )
-          ) {
+          const wasAborted = isErrorAborted(err);
+          if (!this.id && this._useInRunner && !wasAborted) {
+            span.addEvent('Stream broken. Safe to retry');
+            // TODO: resolve https://github.com/googleapis/nodejs-spanner/issues/2170
             this.begin();
+          } else {
+            if (wasAborted) {
+              span.addEvent('Stream broken. Not safe to retry', {
+                'transaction.id': this.id?.toString(),
+              });
+            }
           }
+          span.end();
         })
         .on('end', err => {
           if (err) {
@@ -2112,15 +2144,22 @@ export class Transaction extends Dml {
       } else if (!this._useInRunner) {
         reqOpts.singleUseTransaction = this._options;
       } else {
-        this.begin().then(() => {
-          this.commit(options, (err, resp) => {
-            if (err) {
-              setSpanError(span, err);
-            }
+        this.begin().then(
+          () => {
+            this.commit(options, (err, resp) => {
+              if (err) {
+                setSpanError(span, err);
+              }
+              span.end();
+              callback(err, resp);
+            });
+          },
+          err => {
+            setSpanError(span, err);
             span.end();
-            callback(err, resp);
-          });
-        }, callback);
+            callback(err, null);
+          }
+        );
         return;
       }
 
@@ -2983,6 +3022,15 @@ export class PartitionedDml extends Dml {
       });
     });
   }
+}
+
+function isErrorAborted(err): boolean {
+  return (
+    err &&
+    typeof err === 'object' &&
+    'code' in err &&
+    (err as grpc.ServiceError).code === grpc.status.ABORTED
+  );
 }
 
 /*! Developer Documentation

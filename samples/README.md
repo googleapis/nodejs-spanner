@@ -80,6 +80,7 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Observability (Tracing) with OpenTelemetry](#observability-tracing-with-opentelemetry)
   * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.](#showcase-the-rules-for-case-sensitivity-and-case-folding-for-a-spanner-postgresql-database.)
   * [Creates a PostgreSQL Database.](#creates-a-postgresql-database.)
@@ -1261,6 +1262,23 @@ __Usage:__
 
 
 `node samples/numeric-update-data.js`
+
+
+-----
+
+
+
+
+### Observability (Tracing) with OpenTelemetry
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability-traces.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>`
 
 
 -----

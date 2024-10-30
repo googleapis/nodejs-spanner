@@ -1160,6 +1160,8 @@ class Database extends common.GrpcServiceObject {
       } catch (e) {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
+      } finally {
+        span.end();
       }
     });
   }
@@ -2130,10 +2132,8 @@ class Database extends common.GrpcServiceObject {
               });
               session!.lastError = err;
               this.pool_.release(session!);
-              this.getSnapshot(options, (err, snapshot) => {
-                span.end();
-                callback!(err, snapshot);
-              });
+              span.end();
+              this.getSnapshot(options, callback!);
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
               this.pool_.release(session!);
@@ -2845,6 +2845,7 @@ class Database extends common.GrpcServiceObject {
       this.runStream(query, options)
         .on('error', err => {
           setSpanError(span, err);
+          span.end();
           callback!(err as grpc.ServiceError, rows, stats, metadata);
         })
         .on('response', response => {
@@ -2887,13 +2888,27 @@ class Database extends common.GrpcServiceObject {
     query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getSession((err, session) => {
-      if (err) {
-        callback!(err as ServiceError, 0);
-        return;
-      }
+    const traceConfig = {
+      sql: query,
+      ...this._traceConfig,
+    };
+    return startTrace('Database.runPartitionedUpdate', traceConfig, span => {
+      this.pool_.getSession((err, session) => {
+        if (err) {
+          setSpanError(span, err);
+          span.end();
+          callback!(err as ServiceError, 0);
+          return;
+        }
 
-      this._runPartitionedUpdate(session!, query, callback);
+        this._runPartitionedUpdate(session!, query, (err, count) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+          callback!(err, count);
+        });
+      });
     });
   }
 
@@ -3076,9 +3091,52 @@ class Database extends common.GrpcServiceObject {
 
         span.addEvent('Using Session', {'session.id': session?.id});
 
-      this.getSession_?.getSession((err, session) => {
-        console.log("err: ", err);
-        console.log("session: ", session);
+        const snapshot = session!.snapshot(options, this.queryOptions_);
+
+        this._releaseOnEnd(session!, snapshot, span);
+
+        let dataReceived = false;
+        let dataStream = snapshot.runStream(query);
+
+        const endListener = () => {
+          snapshot.end();
+        };
+        dataStream
+          .once('data', () => (dataReceived = true))
+          .once('error', err => {
+            setSpanError(span, err);
+
+            if (
+              !dataReceived &&
+              isSessionNotFoundError(err as grpc.ServiceError)
+            ) {
+              // If it is a 'Session not found' error and we have not yet received
+              // any data, we can safely retry the query on a new session.
+              // Register the error on the session so the pool can discard it.
+              if (session) {
+                session.lastError = err as grpc.ServiceError;
+              }
+              span.addEvent('No session available', {
+                'session.id': session?.id,
+              });
+              // Remove the current data stream from the end user stream.
+              dataStream.unpipe(proxyStream);
+              dataStream.removeListener('end', endListener);
+              dataStream.end();
+              snapshot.end();
+              span.end();
+              // Create a new data stream and add it to the end user stream.
+              dataStream = this.runStream(query, options);
+              dataStream.pipe(proxyStream);
+            } else {
+              proxyStream.destroy(err);
+              snapshot.end();
+            }
+          })
+          .on('stats', stats => proxyStream.emit('stats', stats))
+          .on('response', response => proxyStream.emit('response', response))
+          .once('end', endListener)
+          .pipe(proxyStream);
       });
       
       // if(process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS) {
@@ -3326,8 +3384,8 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          this.runTransaction(options, runFn!);
           span.end();
+          this.runTransaction(options, runFn!);
           return;
         }
 
@@ -3346,27 +3404,19 @@ class Database extends common.GrpcServiceObject {
         }
 
         const release = () => {
-          span.end();
           this.pool_.release(session!);
+          span.end();
         };
 
         const runner = new TransactionRunner(
           session!,
           transaction!,
-          (err, resp) => {
-            if (err) {
-              setSpanError(span, err!);
-            }
-            span.end();
-            runFn!(err, resp);
-          },
+          runFn!,
           options
         );
 
         runner.run().then(release, err => {
-          if (err) {
-            setSpanError(span, err!);
-          }
+          setSpanError(span, err!);
 
           if (isSessionNotFoundError(err)) {
             span.addEvent('No session available', {
@@ -3375,9 +3425,6 @@ class Database extends common.GrpcServiceObject {
             release();
             this.runTransaction(options, runFn!);
           } else {
-            if (!err) {
-              span.addEvent('Using Session', {'session.id': session!.id});
-            }
             setImmediate(runFn!, err);
             release();
           }
@@ -3635,6 +3682,7 @@ class Database extends common.GrpcServiceObject {
                 // Remove the current data stream from the end user stream.
                 dataStream.unpipe(proxyStream);
                 dataStream.end();
+                span.end();
                 // Create a new stream and add it to the end user stream.
                 dataStream = this.batchWriteAtLeastOnce(
                   mutationGroups,
@@ -3739,8 +3787,8 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
-          this.writeAtLeastOnce(mutations, options, cb!);
           span.end();
+          this.writeAtLeastOnce(mutations, options, cb!);
           return;
         }
         if (err) {
