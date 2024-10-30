@@ -35,7 +35,6 @@ import {
   ObservabilityOptions,
   startTrace,
   setSpanError,
-  setSpanErrorAndException,
   traceConfig,
 } from './instrument';
 

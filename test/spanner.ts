@@ -3553,7 +3553,7 @@ describe('Spanner with mock server', () => {
         requestOptions: {transactionTag: 'transaction-tag'},
       });
       const transaction = promise[0];
-      await transaction.run('SELECT 1').then(results => {
+      await transaction.run('SELECT 1').then(() => {
         const request = spannerMock.getRequests().find(val => {
           return (val as v1.ExecuteSqlRequest).sql;
         }) as v1.ExecuteSqlRequest;

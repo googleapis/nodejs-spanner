@@ -46,7 +46,6 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-import {error} from 'is';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -836,9 +835,8 @@ describe('Database', () => {
     });
 
     it('should return an error when passing null mutation', done => {
-      const fakeError = new Error('err');
       try {
-        database.writeAtLeastOnce(null, (err, res) => {});
+        database.writeAtLeastOnce(null, () => {});
       } catch (err) {
         const errorMessage = (err as grpc.ServiceError).message;
         assert.ok(
