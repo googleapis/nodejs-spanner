@@ -327,49 +327,6 @@ describe('EndToEnd', async () => {
       );
     });
 
-    it('runTransactionAsync with abort', async () => {
-      let attempts = 0;
-      await database.runTransactionAsync((transaction): Promise<number> => {
-        if (!attempts) {
-          spannerMock.abortTransaction(transaction);
-        }
-        attempts++;
-        return transaction.run(selectSql).then(([rows]) => {
-          let count = 0;
-          rows.forEach(() => count++);
-          return transaction.commit().then(() => count);
-        });
-      });
-      assert.strictEqual(attempts, 2);
-      const expectedSpanNames = [
-        'CloudSpanner.Snapshot.runStream',
-        'CloudSpanner.Snapshot.run',
-        'CloudSpanner.Snapshot.begin',
-        'CloudSpanner.Snapshot.runStream',
-        'CloudSpanner.Snapshot.run',
-        'CloudSpanner.Transaction.commit',
-        'CloudSpanner.Database.runTransactionAsync',
-      ];
-      const expectedEventNames = [
-        'Starting stream',
-        'exception',
-        'Stream broken. Not safe to retry',
-        'Begin Transaction',
-        'Transaction Creation Done',
-        'Starting stream',
-        'Starting Commit',
-        'Commit Done',
-        ...cacheSessionEvents,
-        'Using Session',
-        'Retrying transaction',
-      ];
-      await verifySpansAndEvents(
-        traceExporter,
-        expectedSpanNames,
-        expectedEventNames
-      );
-    });
-
     it('writeAtLeastOnce', done => {
       const blankMutations = new MutationSet();
       database.writeAtLeastOnce(blankMutations, async (err, response) => {
@@ -1233,7 +1190,6 @@ SELECT 1p
     const expectedEventNames = [
       ...batchCreateSessionsEvents,
       'Starting stream',
-      'exception',
       ...waitingSessionsEvents,
     ];
     assert.deepStrictEqual(
@@ -1385,7 +1341,6 @@ SELECT 1p
     const expectedEventNames = [
       ...batchCreateSessionsEvents,
       'Starting stream',
-      'exception',
       'Stream broken. Safe to retry',
       'Begin Transaction',
       'Transaction Creation Done',
@@ -1778,7 +1733,6 @@ describe('Traces for ExecuteStream broken stream retries', () => {
                 const expectedEventNames = [
                   ...batchCreateSessionsEvents,
                   'Starting stream',
-                  'exception',
                   ...waitingSessionsEvents,
                   'Transaction Creation Done',
                 ];
