@@ -2179,11 +2179,14 @@ describe('Database', () => {
 
     it('should send multiplexed correctly', done => {
       const multiplexed = {multiplexed: true};
-      const options = {a: 'b'};
+      const options = {a: 'b', multiplexed};
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
-        assert.deepStrictEqual(config.reqOpts.session.multiplexed, multiplexed.multiplexed);
+        assert.deepStrictEqual(
+          config.reqOpts.session.multiplexed,
+          multiplexed.multiplexed
+        );
         assert.deepStrictEqual(options, originalOptions);
         done();
       };

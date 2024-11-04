@@ -1006,6 +1006,10 @@ class Database extends common.GrpcServiceObject {
       reqOpts.session.labels = options.labels;
     }
 
+    if (options.multiplexed) {
+      reqOpts.session.multiplexed = options.multiplexed;
+    }
+
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
