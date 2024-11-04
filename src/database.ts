@@ -247,6 +247,7 @@ export interface CreateSessionOptions {
   labels?: {[k: string]: string} | null;
   databaseRole?: string | null;
   gaxOptions?: CallOptions;
+  multiplexed?: boolean;
 }
 
 export interface GetIamPolicyOptions {
@@ -979,6 +980,10 @@ class Database extends common.GrpcServiceObject {
 
     if (options.labels) {
       reqOpts.session.labels = options.labels;
+    }
+
+    if (options.multiplexed) {
+      reqOpts.session.multiplexed = options.multiplexed;
     }
 
     reqOpts.session.creatorRole =
