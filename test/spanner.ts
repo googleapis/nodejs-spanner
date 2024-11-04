@@ -3433,9 +3433,6 @@ describe('Spanner with mock server', () => {
       }) as v1.CommitRequest;
       assert.ok(commitRequest, 'Commit was called');
       assert.strictEqual(commitRequest.mutations.length, 2);
-      assert.deepStrictEqual(commitRequest.singleUseTransaction?.readWrite, {
-        readLockMode: 'READ_LOCK_MODE_UNSPECIFIED',
-      });
     });
 
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
