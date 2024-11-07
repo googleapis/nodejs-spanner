@@ -1264,6 +1264,13 @@ export class SpannerClient {
    *   request_options struct will not do anything. To set the priority for a
    *   transaction, set it on the reads and writes that are part of this
    *   transaction instead.
+   * @param {google.spanner.v1.Mutation} [request.mutationKey]
+   *   Optional. Required for read-write transactions on a multiplexed session
+   *   that commit mutations but do not perform any reads or queries. Clients
+   *   should randomly select one of the mutations from the mutation set and send
+   *   it as a part of this request.
+   *   This feature is not yet supported and will result in an UNIMPLEMENTED
+   *   error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1385,6 +1392,13 @@ export class SpannerClient {
    *   and 500 ms.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.MultiplexedSessionPrecommitToken} [request.precommitToken]
+   *   Optional. If the read-write transaction was executed on a multiplexed
+   *   session, the precommit token with the highest sequence number received in
+   *   this transaction attempt, should be included here. Failing to do so will
+   *   result in a FailedPrecondition error.
+   *   This feature is not yet supported and will result in an UNIMPLEMENTED
+   *   error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
