@@ -46,7 +46,6 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-import {error} from 'is';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -836,9 +835,8 @@ describe('Database', () => {
     });
 
     it('should return an error when passing null mutation', done => {
-      const fakeError = new Error('err');
       try {
-        database.writeAtLeastOnce(null, (err, res) => {});
+        database.writeAtLeastOnce(null, () => {});
       } catch (err) {
         const errorMessage = (err as grpc.ServiceError).message;
         assert.ok(
@@ -861,7 +859,7 @@ describe('Database', () => {
 
     it('should return CommitResponse on successful write using await', async () => {
       sinon.stub(database, 'writeAtLeastOnce').resolves([RESPONSE]);
-      const [response, err] = await database.writeAtLeastOnce(mutations, {});
+      const [response] = await database.writeAtLeastOnce(mutations, {});
       assert.deepStrictEqual(
         response.commitTimestamp,
         RESPONSE.commitTimestamp
@@ -2177,6 +2175,23 @@ describe('Database', () => {
       };
 
       database.createSession(databaseRole, assert.ifError);
+    });
+
+    it('should send multiplexed correctly', done => {
+      const multiplexed = {multiplexed: true};
+      const options = {a: 'b', multiplexed};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.multiplexed,
+          multiplexed.multiplexed
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(multiplexed, assert.ifError);
     });
 
     describe('error', () => {

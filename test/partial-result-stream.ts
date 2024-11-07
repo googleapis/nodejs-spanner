@@ -335,7 +335,7 @@ describe('PartialResultStream', () => {
       });
 
       partialResultStream(requestFnStub, {gaxOptions: {timeout: 0}})
-        .on('data', row => {})
+        .on('data', () => {})
         .on('error', err => {
           assert.strictEqual(err.code, grpc.status.DEADLINE_EXCEEDED);
           assert.strictEqual(requestFnStub.callCount, 1);

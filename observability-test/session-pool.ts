@@ -65,7 +65,7 @@ describe('SessionPool', () => {
   } as unknown as Database;
 
   const sandbox = sinon.createSandbox();
-  const shouldNotBeCalled = sandbox.stub().throws('Should not be called.');
+  sandbox.stub().throws('Should not be called.');
 
   const createSession = (name = 'id', props?): Session => {
     props = props || {};
@@ -112,10 +112,8 @@ describe('SessionPool', () => {
     const OPTIONS = 3;
     it('on exception from Database.batchCreateSessions', async () => {
       const ourException = new Error('this fails intentionally');
-      const stub = sandbox
-        .stub(DATABASE, 'batchCreateSessions')
-        .throws(ourException);
-      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sandbox.stub(DATABASE, 'batchCreateSessions').throws(ourException);
+      sandbox.stub(sessionPool, 'release');
 
       assert.rejects(async () => {
         await sessionPool._createSessions(OPTIONS);
@@ -168,10 +166,8 @@ describe('SessionPool', () => {
     it('without error', async () => {
       const RESPONSE = [[{}, {}, {}]];
 
-      const stub = sandbox
-        .stub(DATABASE, 'batchCreateSessions')
-        .resolves(RESPONSE);
-      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sandbox.stub(DATABASE, 'batchCreateSessions').resolves(RESPONSE);
+      sandbox.stub(sessionPool, 'release');
 
       await sessionPool._createSessions(OPTIONS);
       assert.strictEqual(sessionPool.size, 3);

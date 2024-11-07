@@ -3433,9 +3433,6 @@ describe('Spanner with mock server', () => {
       }) as v1.CommitRequest;
       assert.ok(commitRequest, 'Commit was called');
       assert.strictEqual(commitRequest.mutations.length, 2);
-      assert.deepStrictEqual(commitRequest.singleUseTransaction?.readWrite, {
-        readLockMode: 'READ_LOCK_MODE_UNSPECIFIED',
-      });
     });
 
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
@@ -3556,7 +3553,7 @@ describe('Spanner with mock server', () => {
         requestOptions: {transactionTag: 'transaction-tag'},
       });
       const transaction = promise[0];
-      await transaction.run('SELECT 1').then(results => {
+      await transaction.run('SELECT 1').then(() => {
         const request = spannerMock.getRequests().find(val => {
           return (val as v1.ExecuteSqlRequest).sql;
         }) as v1.ExecuteSqlRequest;
@@ -5062,6 +5059,7 @@ describe('Spanner with mock server', () => {
         'Requesting 25 sessions',
         'Creating 25 sessions',
         'Requested for 25 sessions returned 25',
+        'Starting stream',
         'Acquiring session',
         'Waiting for a session to become available',
         'Acquired session',
