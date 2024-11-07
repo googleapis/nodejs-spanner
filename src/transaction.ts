@@ -39,6 +39,7 @@ import {
   NormalCallback,
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
+  addEndtoEndTracingHeader,
 } from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
@@ -706,6 +707,8 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
+    addEndtoEndTracingHeader(headers);
+
     const traceConfig = {
       tableName: table,
       opts: this._observabilityOptions,
@@ -1289,6 +1292,8 @@ export class Snapshot extends EventEmitter {
     ) {
       addLeaderAwareRoutingHeader(headers);
     }
+
+    addEndtoEndTracingHeader(headers);
 
     const traceConfig = {
       opts: this._observabilityOptions,

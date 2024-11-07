@@ -91,6 +91,7 @@ import {
   ResourceCallback,
   Schema,
   addLeaderAwareRoutingHeader,
+  addEndtoEndTracingHeader,
 } from './common';
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -692,6 +693,7 @@ class Database extends common.GrpcServiceObject {
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
+    addEndtoEndTracingHeader(headers);
 
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
       this.request<google.spanner.v1.IBatchCreateSessionsResponse>(

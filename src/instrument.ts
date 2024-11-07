@@ -27,6 +27,7 @@ import {
   Span,
   SpanStatusCode,
   context,
+  propagation,
   trace,
   INVALID_SPAN_CONTEXT,
   ROOT_CONTEXT,
@@ -98,6 +99,8 @@ const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
 
+const {W3CTraceContextPropagator} = require('@opentelemetry/core');
+
 /*
  * This function ensures that async/await works correctly by
  * checking if context.active() returns an invalid/unset context
@@ -115,7 +118,13 @@ function ensureInitialContextManagerSet() {
     contextManager.enable();
     context.setGlobalContextManager(contextManager);
   }
+  ensureContextPropagation();
 }
+
+function ensureContextPropagation() {
+  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+}
+
 export {ensureInitialContextManagerSet};
 
 /**
