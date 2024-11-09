@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.16.0](https://github.com/googleapis/nodejs-spanner/compare/v7.15.0...v7.16.0) (2024-11-09)
+
+
+### Features
+
+* **spanner:** Add support for Cloud Spanner Default Backup Schedules ([#2135](https://github.com/googleapis/nodejs-spanner/issues/2135)) ([19f137c](https://github.com/googleapis/nodejs-spanner/commit/19f137c870796d60902be8d9d3a82f4abcfc693f))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.4.1 ([#2100](https://github.com/googleapis/nodejs-spanner/issues/2100)) ([2e94bcd](https://github.com/googleapis/nodejs-spanner/commit/2e94bcd06d99a98c7767281e8035d000e186692b))
+
 ## [7.15.0](https://github.com/googleapis/nodejs-spanner/compare/v7.14.0...v7.15.0) (2024-10-30)
 
 
