@@ -21,7 +21,7 @@ const common = require('./common-grpc/service-object');
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
-import {Database, SessionPoolConstructor} from './database';
+import {Database, MultiplexedSessionConstructor, SessionPoolConstructor} from './database';
 import {Spanner, RequestConfig} from '.';
 import {
   RequestCallback,
@@ -52,6 +52,7 @@ import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
 import {ObservabilityOptions} from './instrument';
+import { MultiplexedSessionOptions } from './multiplexed-session';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -960,7 +961,8 @@ class Instance extends common.GrpcServiceObject {
   database(
     name: string,
     poolOptions?: SessionPoolOptions | SessionPoolConstructor,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    multiplexedSessionOptions?: MultiplexedSessionOptions | MultiplexedSessionConstructor,
   ): Database {
     if (!name) {
       throw new GoogleError('A name is required to access a Database object.');
@@ -975,9 +977,13 @@ class Instance extends common.GrpcServiceObject {
       optionsKey =
         optionsKey + '/' + JSON.stringify(Object.entries(queryOptions!).sort());
     }
+    if (multiplexedSessionOptions && Object.keys(multiplexedSessionOptions).length > 0) {
+      optionsKey =
+        optionsKey + '/' + JSON.stringify(Object.entries(multiplexedSessionOptions!).sort());
+    }
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
-      const db = new Database(this, name, poolOptions, queryOptions);
+      const db = new Database(this, name, poolOptions, queryOptions, multiplexedSessionOptions);
       db._observabilityOptions = this._observabilityOptions;
       this.databases_.set(key!, db);
     }
