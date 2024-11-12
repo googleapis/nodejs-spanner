@@ -49,9 +49,6 @@ function main(instanceId, projectId) {
           },
           defaultBackupScheduleType:
               protos.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.NONE,
-          defaultBackupScheduleType:
-            protos.google.spanner.admin.instance.v1.Instance
-              .DefaultBackupScheduleType.NONE,
         },
       });
       await operation.promise();
