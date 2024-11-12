@@ -69,7 +69,7 @@ and automatic, synchronous replication for high availability.
   * [Updates an instance.](#updates-an-instance.)
   * [Updates instance default backup schedule type.](#update-instance-default-backup-schedule-type.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
-  * [Create instance without default backup schedules.](#create-instance-withoutdefault-backup-schedules.)
+  * [Creates instance without default backup schedules.](#create-instance-without-default-backup-schedules.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -1082,7 +1082,7 @@ __Usage:__
 
 
 
-### Create instance without default backup schedules.
+### Creates instance without default backup schedules.
 
 View the
 [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-instance-without-default-backup-schedules.js).
@@ -1091,7 +1091,7 @@ View the
 
 **Usage:**
 
-`node create-instance-withoutdefault-backup-schedules.js <INSTANCE_ID> <PROJECT_ID>`
+`node create-instance-without-default-backup-schedules.js <INSTANCE_ID> <PROJECT_ID>`
 
 ------
 
