@@ -43,8 +43,8 @@ function main(instanceId, projectId) {
         instance: {
           name: instanceAdminClient.instancePath(projectId, instanceId),
           defaultBackupScheduleType:
-              protos.google.spanner.admin.instance.v1.Instance
-                  .DefaultBackupScheduleType.AUTOMATIC,  // optional
+            protos.google.spanner.admin.instance.v1.Instance
+              .DefaultBackupScheduleType.AUTOMATIC, // optional
         },
         // Field mask specifying fields that should get updated in an Instance
         fieldMask: (protos.google.protobuf.FieldMask = {
@@ -57,9 +57,9 @@ function main(instanceId, projectId) {
         name: instanceAdminClient.instancePath(projectId, instanceId),
       });
       console.log(
-          `Instance ${instanceId} has been updated with the ${
-              metadata.defaultBackupScheduleType}` +
-          ' default backup schedule type.');
+        `Instance ${instanceId} has been updated with the ${metadata.defaultBackupScheduleType}` +
+          ' default backup schedule type.'
+      );
     } catch (err) {
       console.error('ERROR:', err);
     }

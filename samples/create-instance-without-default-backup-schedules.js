@@ -40,21 +40,25 @@ function main(instanceId, projectId) {
         parent: instanceAdminClient.projectPath(projectId),
         instance: {
           config: instanceAdminClient.instanceConfigPath(
-              projectId, 'regional-me-central2'),
+            projectId,
+            'regional-me-central2'
+          ),
           nodeCount: 1,
           displayName: 'Display name for the instance.',
           labels: {
             cloud_spanner_samples: 'true',
-            created: Math.round(Date.now() / 1000).toString(),  // current time
+            created: Math.round(Date.now() / 1000).toString(), // current time
           },
           defaultBackupScheduleType:
-              protos.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.NONE,
+            protos.google.spanner.admin.instance.v1.Instance
+              .DefaultBackupScheduleType.NONE,
         },
       });
       await operation.promise();
 
       console.log(
-          `Created instance ${instanceId} without default backup schedules.`);
+        `Created instance ${instanceId} without default backup schedules.`
+      );
     } catch (err) {
       console.error('ERROR:', err);
     }
