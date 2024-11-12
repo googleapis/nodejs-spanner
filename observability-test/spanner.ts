@@ -142,6 +142,11 @@ describe('EndToEnd', async () => {
     tracerProvider: tracerProvider,
     enableExtendedTracing: false,
   });
+  let dbCounter = 1;
+
+  function newTestDatabase(): Database {
+    return instance.database(`database-${dbCounter++}`,);
+  }
 
   const server = setupResult.server;
   const spannerMock = setupResult.spannerMock;
@@ -305,6 +310,7 @@ describe('EndToEnd', async () => {
     });
 
     it('runTransactionAsync', async () => {
+      
       await database.runTransactionAsync(async transaction => {
         await transaction!.run('SELECT 1');
       });
@@ -325,6 +331,105 @@ describe('EndToEnd', async () => {
         expectedSpanNames,
         expectedEventNames
       );
+    });
+
+    it.only('runTransaction with abort', done => {
+      let attempts = 0;
+      let rowCount = 0;
+      const database = newTestDatabase();
+      database.runTransaction(async (err, transaction) => {
+        assert.ifError(err);
+        if (!attempts) {
+          spannerMock.abortTransaction(transaction!);
+        }
+        attempts++;
+        transaction!.run(selectSql, (err, rows) => {
+          assert.ifError(err);
+          rows.forEach(() => rowCount++);
+          transaction!
+            .commit()
+            .catch(done)
+            .then(async () => {
+              const expectedSpanNames = [
+                'CloudSpanner.Database.batchCreateSessions',
+                'CloudSpanner.SessionPool.createSessions',
+                'CloudSpanner.Snapshot.runStream',
+                'CloudSpanner.Snapshot.run',
+                'CloudSpanner.Snapshot.runStream',
+                'CloudSpanner.Snapshot.run',
+                'CloudSpanner.Transaction.commit',
+                'CloudSpanner.Snapshot.begin',
+                'CloudSpanner.Database.runTransaction',
+              ];
+              const expectedEventNames = [
+                ...waitingSessionsEvents,
+                'Retrying Transaction',
+                'Starting stream',
+                'exception',
+                'Stream broken. Not safe to retry',
+                'Begin Transaction',
+                'Transaction Creation Done',
+                'Starting stream',
+                'Starting Commit',
+                'Commit Done',
+              ];
+              await verifySpansAndEvents(traceExporter, expectedSpanNames, expectedEventNames)
+              database
+                .close()
+                .catch(done)
+                .then(() => done());
+            });
+        });
+          });
+    });
+
+    it('runTransactionAsync with abort', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      await database.runTransactionAsync((transaction): Promise<number> => {
+        if (!attempts) {
+          spannerMock.abortTransaction(transaction);
+        }
+        attempts++;
+        return transaction.run(selectSql).then(([rows]) => {
+          let count = 0;
+          rows.forEach(() => count++);
+          return transaction.commit().then(() => count);
+        });
+      });
+      assert.strictEqual(attempts, 2);
+      const expectedSpanNames = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.SessionPool.createSessions',
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Snapshot.begin',
+        'CloudSpanner.Snapshot.runStream',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Transaction.commit',
+        'CloudSpanner.Database.runTransactionAsync',
+      ];
+      const expectedEventNames = [
+        'Requesting 25 sessions',
+        'Creating 25 sessions',
+        'Requested for 25 sessions returned 25',
+        'Starting stream',
+        'exception',
+        'Stream broken. Not safe to retry',
+        'Begin Transaction',
+        'Transaction Creation Done',
+        'Starting stream',
+        'Starting Commit',
+        'Commit Done',
+        ...waitingSessionsEvents,
+        'Retrying transaction',
+      ];
+      await verifySpansAndEvents(
+        traceExporter,
+        expectedSpanNames,
+        expectedEventNames
+      );
+      await database.close();
     });
 
     it('writeAtLeastOnce', done => {
