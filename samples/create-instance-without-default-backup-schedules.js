@@ -16,7 +16,6 @@
 'use strict';
 
 function main(instanceId, projectId) {
-
   async function createInstanceWithoutDefaultBackupSchedules() {
     // [START spanner_create_instance_without_default_backup_schedule]
     /**
@@ -50,6 +49,9 @@ function main(instanceId, projectId) {
           },
           defaultBackupScheduleType:
               protos.google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType.NONE,
+          defaultBackupScheduleType:
+            protos.google.spanner.admin.instance.v1.Instance
+              .DefaultBackupScheduleType.NONE,
         },
       });
       await operation.promise();
