@@ -2204,11 +2204,6 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('Using Session', {'session.id': session?.id});
           transaction!._observabilityOptions = this._observabilityOptions;
           this._releaseOnEnd(session!, transaction!, span);
-        } else if (isSessionNotFoundError(err as grpc.ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': session?.id,
-          });
-          setSpanError(span, err);
         } else {
           setSpanError(span, err);
         }
@@ -2486,11 +2481,7 @@ class Database extends common.GrpcServiceObject {
       pool.getSession((err, session_) => {
         const span = getActiveOrNoopSpan();
         if (err) {
-          if (isSessionNotFoundError(err as grpc.ServiceError)) {
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-          }
+          setSpanError(span, err as ServiceError);
           destroyStream(err as ServiceError);
           return;
         }
@@ -3411,10 +3402,11 @@ class Database extends common.GrpcServiceObject {
               this.pool_.release(session);
             }
           } catch (e) {
-            if (!isSessionNotFoundError(e as ServiceError)) {
+            if (isSessionNotFoundError(e as ServiceError)) {
               span.addEvent('No session available', {
                 'session.id': sessionId,
               });
+            } else {
               span.end();
               throw e;
             }
