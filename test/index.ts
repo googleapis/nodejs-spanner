@@ -94,6 +94,7 @@ const fakePfy = extend({}, pfy, {
       'pgJsonb',
       'operation',
       'timestamp',
+      'interval',
       'getInstanceAdminClient',
       'getDatabaseAdminClient',
     ]);
@@ -638,6 +639,27 @@ describe('Spanner', () => {
 
       const pgJsonb = Spanner.pgJsonb(value);
       assert.strictEqual(pgJsonb, customValue);
+    });
+  });
+
+  describe('interval', () => {
+    it('should create an Interval instance', () => {
+      const months = 18;
+      const days = -25;
+      const nanos = BigInt('1234567891234');
+      const customValue = {};
+
+      fakeCodec.Interval = class {
+        constructor(months_, days_, nanoseconds_) {
+          assert.strictEqual(months_, months);
+          assert.strictEqual(days_, days);
+          assert.strictEqual(nanoseconds_, nanos);
+          return customValue;
+        }
+      };
+
+      const interval = Spanner.interval(months, days, nanos);
+      assert.strictEqual(interval, customValue);
     });
   });
 
