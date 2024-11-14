@@ -34,6 +34,7 @@ and automatic, synchronous replication for high availability.
   * [Batch](#batch)
   * [Creates a full backup schedule](#creates-a-full-backup-schedule)
   * [Creates an incremental backup schedule](#creates-an-incremental-backup-schedule)
+  * [Create-instance-without-default-backup-schedules](#create-instance-without-default-backup-schedules)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
@@ -67,9 +68,7 @@ and automatic, synchronous replication for high availability.
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
   * [Updates an instance.](#updates-an-instance.)
-  * [Updates instance default backup schedule type.](#update-instance-default-backup-schedule-type.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
-  * [Creates instance without default backup schedules.](#create-instance-without-default-backup-schedules.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -133,6 +132,7 @@ and automatic, synchronous replication for high availability.
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
   * [Updates a backup schedule](#updates-a-backup-schedule)
+  * [Updates an instance.](#updates-an-instance.)
 
 ## Before you begin
 
@@ -482,6 +482,23 @@ __Usage:__
 
 
 `node create-incremental-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Create-instance-without-default-backup-schedules
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-instance-without-default-backup-schedules.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-instance-without-default-backup-schedules.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/create-instance-without-default-backup-schedules.js`
 
 
 -----
@@ -1050,21 +1067,6 @@ __Usage:__
 
 
 
-### Updates instance default backup schedule type.
-
-View the
-[source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/update-instance-default-backup-schedule-type.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/update-instance-default-backup-schedule-type.js,samples/README.md)
-
-**Usage:**
-
-`node update-instance-default-backup-schedule-type.js <INSTANCE_ID> <PROJECT_ID>`
-
-------
-
-
-
 ### Creates a instance with autoscaling config.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
@@ -1079,20 +1081,6 @@ __Usage:__
 
 -----
 
-
-
-### Creates instance without default backup schedules.
-
-View the
-[source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-instance-without-default-backup-schedules.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-instance-without-default-backup-schedules.js,samples/README.md)
-
-**Usage:**
-
-`node create-instance-without-default-backup-schedules.js <INSTANCE_ID> <PROJECT_ID>`
-
-------
 
 
 
@@ -2160,6 +2148,23 @@ __Usage:__
 
 
 `node update-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Updates an instance.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/update-instance-default-backup-schedule-type.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/update-instance-default-backup-schedule-type.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 
