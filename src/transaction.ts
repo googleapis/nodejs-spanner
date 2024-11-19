@@ -1093,33 +1093,23 @@ export class Snapshot extends EventEmitter {
     let stats: google.spanner.v1.ResultSetStats;
     let metadata: google.spanner.v1.ResultSetMetadata;
 
-    const traceConfig = {
-      sql: query,
-      opts: this._observabilityOptions,
-      dbName: this._dbName!,
-    };
-    startTrace('Snapshot.run', traceConfig, span => {
-      return this.runStream(query)
-        .on('error', (err, rows, stats, metadata) => {
-          setSpanError(span, err);
-          span.end();
-          callback!(err, rows, stats, metadata);
-        })
-        .on('response', response => {
-          if (response.metadata) {
-            metadata = response.metadata;
-            if (metadata.transaction && !this.id) {
-              this._update(metadata.transaction);
-            }
+    this.runStream(query)
+      .on('error', (err, rows, stats, metadata) => {
+        callback!(err, rows, stats, metadata);
+      })
+      .on('response', response => {
+        if (response.metadata) {
+          metadata = response.metadata;
+          if (metadata.transaction && !this.id) {
+            this._update(metadata.transaction);
           }
-        })
-        .on('data', row => rows.push(row))
-        .on('stats', _stats => (stats = _stats))
-        .on('end', () => {
-          span.end();
-          callback!(null, rows, stats, metadata);
-        });
-    });
+        }
+      })
+      .on('data', row => rows.push(row))
+      .on('stats', _stats => (stats = _stats))
+      .on('end', () => {
+        callback!(null, rows, stats, metadata);
+      });
   }
 
   /**

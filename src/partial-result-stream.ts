@@ -569,7 +569,7 @@ export function partialResultStream(
       // checkpoint stream has queued. After that, we will destroy the
       // user's stream with the same error.
       setImmediate(() => batchAndSplitOnTokenStream.destroy(err));
-      setSpanErrorAndException(span, err as Error);
+      // setSpanErrorAndException(span, err as Error);
       return;
     }
 

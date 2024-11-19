@@ -323,7 +323,6 @@ export class TransactionRunner extends Runner<void> {
           }
 
           stream.unpipe(proxyStream);
-          // proxyStream.emit('error', err);
           reject(err);
         })
         .pipe(proxyStream);
