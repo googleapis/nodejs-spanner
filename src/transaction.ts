@@ -287,6 +287,7 @@ export class Snapshot extends EventEmitter {
   readTimestampProto?: spannerClient.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
+  resultStream?: PartialResultStream;
   session: Session;
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
@@ -751,6 +752,7 @@ export class Snapshot extends EventEmitter {
           maxResumeRetries,
           columnsMetadata,
           gaxOptions,
+          span,
         }
       )
         ?.on('response', response => {
@@ -789,6 +791,7 @@ export class Snapshot extends EventEmitter {
         });
       }
 
+      this.resultStream = resultStream;
       return resultStream;
     });
   }
@@ -1332,6 +1335,7 @@ export class Snapshot extends EventEmitter {
           maxResumeRetries,
           columnsMetadata,
           gaxOptions,
+          span,
         }
       )
         .on('response', response => {
@@ -1371,6 +1375,7 @@ export class Snapshot extends EventEmitter {
         });
       }
 
+      this.resultStream = resultStream;
       return resultStream;
     });
   }

@@ -23,7 +23,7 @@ import {Session} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
-import {getActiveOrNoopSpan} from './instrument';
+import {getActiveOrNoopSpan, setSpanErrorAndEnd} from './instrument';
 import {Database} from './database';
 import {google} from '../protos/protos';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
@@ -314,9 +314,12 @@ export class TransactionRunner extends Runner<void> {
     transaction.requestStream = (config: object) => {
       const proxyStream = through.obj();
       const stream = requestStream(config);
+      const resultStream = transaction.resultStream;
 
       stream
         .on('error', (err: grpc.ServiceError) => {
+          resultStream?.options.span &&
+            setSpanErrorAndEnd(resultStream?.options.span, err);
           if (!this.shouldRetry(err)) {
             proxyStream.destroy(err);
             return;

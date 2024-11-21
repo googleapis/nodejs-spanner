@@ -225,7 +225,7 @@ describe('EndToEnd', async () => {
         transaction!.commit();
 
         const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
-        const expectedEventNames = [...cacheSessionEvents, 'Using Session'];
+        const expectedEventNames = [...cacheSessionEvents];
         await verifySpansAndEvents(
           traceExporter,
           expectedSpanNames,
@@ -245,11 +245,7 @@ describe('EndToEnd', async () => {
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Database.runStream',
           ];
-          const expectedEventNames = [
-            'Starting stream',
-            ...cacheSessionEvents,
-            'Using Session',
-          ];
+          const expectedEventNames = ['Starting stream', ...cacheSessionEvents];
           await verifySpansAndEvents(
             traceExporter,
             expectedSpanNames,
@@ -267,11 +263,7 @@ describe('EndToEnd', async () => {
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
       ];
-      const expectedEventNames = [
-        'Starting stream',
-        ...cacheSessionEvents,
-        'Using Session',
-      ];
+      const expectedEventNames = ['Starting stream', ...cacheSessionEvents];
       await verifySpansAndEvents(
         traceExporter,
         expectedSpanNames,
@@ -319,7 +311,6 @@ describe('EndToEnd', async () => {
       const expectedEventNames = [
         'Starting stream',
         ...cacheSessionEvents,
-        'Using Session',
         'Transaction Creation Done',
       ];
       await verifySpansAndEvents(
@@ -350,22 +341,21 @@ describe('EndToEnd', async () => {
                 'CloudSpanner.Database.batchCreateSessions',
                 'CloudSpanner.SessionPool.createSessions',
                 'CloudSpanner.Snapshot.runStream',
+                'CloudSpanner.Snapshot.begin',
                 'CloudSpanner.Snapshot.runStream',
                 'CloudSpanner.Transaction.commit',
-                'CloudSpanner.Snapshot.begin',
                 'CloudSpanner.Database.runTransaction',
               ];
               const expectedEventNames = [
-                ...waitingSessionsEvents,
-                'Retrying Transaction',
+                ...batchCreateSessionsEvents,
                 'Starting stream',
-                'exception',
-                'Stream broken. Not safe to retry',
                 'Begin Transaction',
                 'Transaction Creation Done',
                 'Starting stream',
                 'Starting Commit',
                 'Commit Done',
+                ...waitingSessionsEvents,
+                'Retrying transaction',
               ];
               await verifySpansAndEvents(
                 traceExporter,
@@ -381,7 +371,7 @@ describe('EndToEnd', async () => {
       });
     });
 
-    it.skip('runTransactionAsync with abort', async () => {
+    it('runTransactionAsync with abort', async () => {
       let attempts = 0;
       const database = newTestDatabase();
       await database.runTransactionAsync((transaction): Promise<number> => {
@@ -406,11 +396,8 @@ describe('EndToEnd', async () => {
         'CloudSpanner.Database.runTransactionAsync',
       ];
       const expectedEventNames = [
-        'Requesting 25 sessions',
-        'Creating 25 sessions',
-        'Requested for 25 sessions returned 25',
+        ...batchCreateSessionsEvents,
         'Starting stream',
-        'exception',
         'Stream broken. Not safe to retry',
         'Begin Transaction',
         'Transaction Creation Done',
@@ -441,7 +428,6 @@ describe('EndToEnd', async () => {
           'Starting Commit',
           'Commit Done',
           ...cacheSessionEvents,
-          'Using Session',
         ];
         await verifySpansAndEvents(
           traceExporter,
@@ -639,7 +625,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
           const expectedEventNames = [
             ...cacheSessionEvents,
-            'Using Session',
             'Starting stream',
             'Transaction Creation Done',
           ];
@@ -747,7 +732,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
             const expectedEventNames = [
               ...cacheSessionEvents,
-              'Using Session',
               'Starting stream',
             ];
             assert.deepStrictEqual(
