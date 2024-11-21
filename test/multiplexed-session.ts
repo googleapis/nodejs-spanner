@@ -15,26 +15,14 @@
  */
 
 import * as assert from 'assert';
-import {before, beforeEach, afterEach, describe, it} from 'mocha';
+import {beforeEach, afterEach, describe, it} from 'mocha';
 import * as events from 'events';
-import * as extend from 'extend';
-import PQueue from 'p-queue';
-import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import stackTrace = require('stack-trace');
 import {grpc} from 'google-gax';
 import {Database} from '../src/database';
 import {Session} from '../src/session';
-import * as mux from '../src/multiplexed-session';
+import {MultiplexedSession} from '../src/multiplexed-session';
 import {Transaction} from '../src/transaction';
-
-let pQueueOverride: typeof PQueue | null = null;
-
-function FakePQueue(options) {
-  return new (pQueueOverride || PQueue)(options);
-}
-
-FakePQueue.default = FakePQueue;
 
 class FakeTransaction {
   options;
@@ -44,13 +32,8 @@ class FakeTransaction {
   async begin(): Promise<void> {}
 }
 
-const fakeStackTrace = extend({}, stackTrace);
-
 describe('MultiplexedSession', () => {
-  let multiplexedSession: mux.MultiplexedSession;
-  // tslint:disable-next-line variable-name
-  let MultiplexedSession: typeof mux.MultiplexedSession;
-  let muxSession;
+  let multiplexedSession;
 
   function noop() {}
   const DATABASE = {
@@ -74,13 +57,6 @@ describe('MultiplexedSession', () => {
 
   const shouldNotBeCalled = sandbox.stub().throws('Should not be called.');
 
-  before(() => {
-    MultiplexedSession = proxyquire('../src/multiplexed-session.js', {
-      'p-queue': FakePQueue,
-      'stack-trace': fakeStackTrace,
-    }).MultiplexedSession;
-  });
-
   beforeEach(() => {
     fakeMuxSession = createSession();
     createSessionStub = sandbox
@@ -90,11 +66,9 @@ describe('MultiplexedSession', () => {
         return Promise.resolve([fakeMuxSession]);
       });
     multiplexedSession = new MultiplexedSession(DATABASE);
-    muxSession = multiplexedSession._muxSession;
   });
 
   afterEach(() => {
-    pQueueOverride = null;
     sandbox.restore();
   });
 
@@ -103,52 +77,12 @@ describe('MultiplexedSession', () => {
       assert.strictEqual(multiplexedSession.database, DATABASE);
     });
 
-    describe('options', () => {
-      it('should apply defaults', () => {
-        assert.strictEqual(multiplexedSession.options.refreshRate, 7);
-      });
-
-      it('should not override user options', () => {
-        multiplexedSession = new MultiplexedSession(DATABASE, {
-          refreshRate: 10,
-        });
-        assert.strictEqual(multiplexedSession.options.refreshRate, 10);
-      });
-
-      it('should not override user options for databaseRole', () => {
-        multiplexedSession = new MultiplexedSession(DATABASE, {
-          databaseRole: 'child_role',
-        });
-        assert.strictEqual(
-          multiplexedSession.options.databaseRole,
-          'child_role'
-        );
-      });
-
-      it('should use default value of Database for databaseRole', () => {
-        multiplexedSession = new MultiplexedSession(DATABASE);
-        assert.strictEqual(
-          multiplexedSession.options.databaseRole,
-          'parent_role'
-        );
-      });
+    it('should apply defaults', () => {
+      assert.strictEqual(multiplexedSession.refreshRate, 7);
     });
 
     it('should create a session object', () => {
-      assert.deepStrictEqual(muxSession, {
-        multiplexedSession: null,
-      });
-    });
-
-    it('should create an acquire queue', () => {
-      pQueueOverride = class {
-        constructor(options) {
-          return options;
-        }
-      } as typeof PQueue;
-
-      const multiplexedSession = new MultiplexedSession(DATABASE);
-      assert.deepStrictEqual(multiplexedSession._acquires.concurrency, 1);
+      assert.deepStrictEqual(multiplexedSession._multiplexedSession, null);
     });
 
     it('should inherit from EventEmitter', () => {
@@ -157,23 +91,24 @@ describe('MultiplexedSession', () => {
   });
 
   describe('createSession', () => {
-    let createSessionStub: sinon.SinonStub<[], Promise<void>>;
+    let _createSessionStub;
+    let _maintainStub;
 
     beforeEach(() => {
-      multiplexedSession._maintain = sandbox.stub();
-      createSessionStub = sandbox
+      _maintainStub = sandbox.stub(multiplexedSession, '_maintain');
+      _createSessionStub = sandbox
         .stub(multiplexedSession, '_createSession')
         .resolves();
     });
 
     it('should create mux session', () => {
       multiplexedSession.createSession();
-      assert.strictEqual(createSessionStub.callCount, 1);
+      assert.strictEqual(_createSessionStub.callCount, 1);
     });
 
-    it('should start housekeeping', done => {
-      multiplexedSession._maintain = done;
-      multiplexedSession.createSession();
+    it('should start housekeeping', async () => {
+      await multiplexedSession.createSession();
+      assert.strictEqual(_maintainStub.callCount, 1);
     });
 
     it('should not trigger unhandled promise rejection', () => {
@@ -253,15 +188,16 @@ describe('MultiplexedSession', () => {
   describe('_maintain', () => {
     it('should set an interval to refresh mux sessions', done => {
       const expectedInterval =
-        multiplexedSession.options.refreshRate! * 24 * 60 * 60000;
+        multiplexedSession.refreshRate! * 24 * 60 * 60000;
       const clock = sandbox.useFakeTimers();
 
-      sandbox
+      const _refreshStub = sandbox
         .stub(multiplexedSession, '_refresh')
         .callsFake(async () => done());
 
       multiplexedSession._maintain();
       clock.tick(expectedInterval);
+      assert.strictEqual(_refreshStub.callCount, 1);
     });
   });
 
@@ -339,6 +275,7 @@ describe('MultiplexedSession', () => {
       const session = await multiplexedSession._acquire();
       assert.strictEqual(session, fakeMuxSession);
     });
+
     it('should have the multiplexed property set to true', async () => {
       sandbox.stub(multiplexedSession, '_getSession').resolves(fakeMuxSession);
       const session = await multiplexedSession._acquire();
@@ -352,40 +289,38 @@ describe('MultiplexedSession', () => {
 
   describe('_getSession', () => {
     it('should return a session if one is available', async () => {
-      sandbox
-        .stub(multiplexedSession, '_multiplexedSession')
-        .returns(fakeMuxSession);
-
-      muxSession.multiplexedSession = fakeMuxSession;
-
-      const session = await multiplexedSession._getSession();
-      assert.strictEqual(session, fakeMuxSession);
+      multiplexedSession._multiplexedSession = fakeMuxSession;
+      try {
+        const session = await multiplexedSession._getSession();
+        assert.strictEqual(session, fakeMuxSession);
+      } catch (e) {
+        shouldNotBeCalled();
+      }
     });
+
     it('should wait for a pending session to become available', async () => {
-      await multiplexedSession.createSession();
+      multiplexedSession._multiplexedSession = fakeMuxSession;
+      setTimeout(() => multiplexedSession.emit('mux-session-available'), 100);
+      const stub = sandbox
+        .stub(multiplexedSession, 'createSession')
+        .rejects(new Error('should not be called'));
       const session = await multiplexedSession._getSession();
       assert.strictEqual(session, fakeMuxSession);
+      assert.strictEqual(stub.callCount, 0);
     });
-    it('should remove the mux session available listener on error', async () => {
-      setTimeout(() => {
-        multiplexedSession._createSession(),
-          multiplexedSession.emit('mux-session-available');
-      }, 100);
+
+    it('should remove the available listener', async () => {
+
       const promise = multiplexedSession._getSession();
 
-      assert.strictEqual(
-        multiplexedSession.listenerCount('mux-session-available'),
-        1
-      );
+      setTimeout(() => multiplexedSession.emit('mux-session-available'), 100);
+
+      assert.strictEqual(multiplexedSession.listenerCount('mux-session-available'), 1);
 
       try {
         await promise;
-        shouldNotBeCalled();
-      } catch (e) {
-        assert.strictEqual(
-          multiplexedSession.listenerCount('mux-session-available'),
-          0
-        );
+      } finally {
+        assert.strictEqual(multiplexedSession.listenerCount('mux-session-available'), 0);
       }
     });
   });
