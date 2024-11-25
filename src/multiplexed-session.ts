@@ -113,7 +113,7 @@ export class MultiplexedSession
    * @returns {Promise<void>} A Promise that resolves when the session has been successfully created and assigned, an event
    * `mux-session-available` will be emitted to signal that the session is ready.
    *
-   * In case of error, we will be emitting the error along with the erorr event.
+   * In case of error, an error will get emitted along with the erorr event.
    *
    * @private
    */

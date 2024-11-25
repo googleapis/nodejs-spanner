@@ -18,19 +18,12 @@ import * as assert from 'assert';
 import {beforeEach, afterEach, describe, it} from 'mocha';
 import * as events from 'events';
 import * as sinon from 'sinon';
-import {grpc} from 'google-gax';
+import {grpc, Status} from 'google-gax';
 import {Database} from '../src/database';
 import {Session} from '../src/session';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {Transaction} from '../src/transaction';
-
-class FakeTransaction {
-  options;
-  constructor(options?) {
-    this.options = options;
-  }
-  async begin(): Promise<void> {}
-}
+import { FakeTransaction } from './session-pool';
 
 describe('MultiplexedSession', () => {
   let multiplexedSession;
@@ -106,82 +99,76 @@ describe('MultiplexedSession', () => {
       assert.strictEqual(_createSessionStub.callCount, 1);
     });
 
-    it('should start housekeeping', async () => {
-      await multiplexedSession.createSession();
-      assert.strictEqual(_maintainStub.callCount, 1);
-    });
-
-    it('should not trigger unhandled promise rejection', () => {
-      const error = {
-        code: grpc.status.PERMISSION_DENIED,
-        message: 'spanner.sessions.create',
-      } as grpc.ServiceError;
-
-      sandbox.restore();
-      sandbox.stub(multiplexedSession, '_createSession').rejects(error);
-
-      const originalRejection = process.listeners('unhandledRejection').pop();
-      if (originalRejection) {
-        process.removeListener('unhandledRejection', originalRejection!);
-      }
-
-      process.once('unhandledRejection', err => {
-        assert.ifError(err);
-      });
-
+    it('should start housekeeping', done => {
       multiplexedSession.createSession();
+      setImmediate(() => {
+        try {
+          assert.strictEqual(_maintainStub.callCount, 1);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
 
-      if (originalRejection) {
-        process.listeners('unhandledRejection').push(originalRejection!);
+    it('should not propagate instance and database not found errors for Multiplexed Session', () => {
+      const multiplexedSession = new MultiplexedSession(DATABASE);
+      const error = {
+        code: Status.NOT_FOUND,
+        message: 'Database not found',
+      } as grpc.ServiceError;
+      sandbox.stub(multiplexedSession, '_createSession').rejects(error);
+      try {
+        multiplexedSession.createSession();
+      } catch (e) {
+        shouldNotBeCalled();
       }
     });
 
-    it('should not trigger unhandled promise rejection when default credentials not set', () => {
+    it('should not propagate errors for Multiplexed Session when default credentials not set', () => {
+      const multiplexedSession = new MultiplexedSession(DATABASE);
       const error = {
         message: 'Could not load the default credentials',
       } as grpc.ServiceError;
-
-      sandbox.restore();
       sandbox.stub(multiplexedSession, '_createSession').rejects(error);
-
-      const originalRejection = process.listeners('unhandledRejection').pop();
-      if (originalRejection) {
-        process.removeListener('unhandledRejection', originalRejection!);
-      }
-
-      process.once('unhandledRejection', err => {
-        assert.ifError(err);
-      });
-
-      multiplexedSession.createSession();
-
-      if (originalRejection) {
-        process.listeners('unhandledRejection').push(originalRejection!);
+      try {
+        multiplexedSession.createSession();
+      } catch (e) {
+        shouldNotBeCalled();
       }
     });
 
-    it('should not trigger unhandled promise rejection when projectId not set', () => {
+    it('should not propagate errors for Multiplexed Session when projectId not set', () => {
+      const multiplexedSession = new MultiplexedSession(DATABASE);
       const error = {
+        code: Status.NOT_FOUND,
         message: 'Unable to detect a Project Id in the current environment',
       } as grpc.ServiceError;
-
-      sandbox.restore();
       sandbox.stub(multiplexedSession, '_createSession').rejects(error);
-
-      const originalRejection = process.listeners('unhandledRejection').pop();
-      if (originalRejection) {
-        process.removeListener('unhandledRejection', originalRejection!);
+      try {
+        multiplexedSession.createSession();
+      } catch (e) {
+        shouldNotBeCalled();
       }
+    });
 
-      process.once('unhandledRejection', err => {
-        assert.ifError(err);
+    it('should propagate errors for Multiplexed Session which gets emitted', async () => {
+      const multiplexedSession = new MultiplexedSession(DATABASE);
+      const fakeError = new Error();
+      sandbox.stub(multiplexedSession, '_createSession').rejects(fakeError);
+      const errorPromise = new Promise<void>((resolve, reject) => {
+        multiplexedSession.once('error', err => {
+          if (err === fakeError) {
+            resolve();
+          } else {
+            reject(new Error('Unexpected error emitted'));
+          }
+        });
       });
 
       multiplexedSession.createSession();
 
-      if (originalRejection) {
-        process.listeners('unhandledRejection').push(originalRejection!);
-      }
+      await errorPromise;
     });
   });
 
@@ -310,17 +297,22 @@ describe('MultiplexedSession', () => {
     });
 
     it('should remove the available listener', async () => {
-
       const promise = multiplexedSession._getSession();
 
       setTimeout(() => multiplexedSession.emit('mux-session-available'), 100);
 
-      assert.strictEqual(multiplexedSession.listenerCount('mux-session-available'), 1);
+      assert.strictEqual(
+        multiplexedSession.listenerCount('mux-session-available'),
+        1
+      );
 
       try {
         await promise;
       } finally {
-        assert.strictEqual(multiplexedSession.listenerCount('mux-session-available'), 0);
+        assert.strictEqual(
+          multiplexedSession.listenerCount('mux-session-available'),
+          0
+        );
       }
     });
   });
