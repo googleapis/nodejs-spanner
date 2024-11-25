@@ -8065,6 +8065,13 @@
                     "dataBoostEnabled": {
                       "type": "bool",
                       "id": 16
+                    },
+                    "lastStatement": {
+                      "type": "bool",
+                      "id": 17,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
@@ -8126,6 +8133,13 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 5
+                    },
+                    "lastStatements": {
+                      "type": "bool",
+                      "id": 6,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
