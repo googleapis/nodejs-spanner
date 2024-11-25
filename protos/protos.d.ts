@@ -29515,6 +29515,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
+
+                /** ExecuteSqlRequest lastStatement */
+                lastStatement?: (boolean|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -29564,6 +29567,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;
+
+                /** ExecuteSqlRequest lastStatement. */
+                public lastStatement: boolean;
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -29775,6 +29781,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteBatchDmlRequest lastStatements */
+                lastStatements?: (boolean|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -29800,6 +29809,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteBatchDmlRequest lastStatements. */
+                public lastStatements: boolean;
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
