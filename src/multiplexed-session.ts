@@ -17,14 +17,16 @@
 import {EventEmitter} from 'events';
 import {Database} from './database';
 import {Session} from './session';
-import {
-  isDatabaseNotFoundError,
-  isInstanceNotFoundError,
-  isCreateSessionPermissionError,
-  isDefaultCredentialsNotSetError,
-  isProjectIdNotSetInEnvironmentError,
-} from './helper';
 import {GetSessionCallback} from './session-pool';
+import {
+  ObservabilityOptions,
+  getActiveOrNoopSpan,
+  setSpanError,
+  startTrace,
+} from './instrument';
+
+export const MUX_SESSION_AVAILABLE = 'mux-session-available';
+export const MUX_SESSION_CREATE_ERROR = 'mux-session-create-error';
 
 /**
  * Interface for implementing multiplexed session logic, it should extend the
@@ -70,14 +72,15 @@ export class MultiplexedSession
   // frequency to create new mux session
   refreshRate: number;
   _multiplexedSession: Session | null;
-  _pingHandle!: NodeJS.Timer;
   _refreshHandle!: NodeJS.Timer;
+  _observabilityOptions?: ObservabilityOptions;
   constructor(database: Database) {
     super();
     this.database = database;
     // default frequency is 7 days
     this.refreshRate = 7;
     this._multiplexedSession = null;
+    this._observabilityOptions = database._observabilityOptions;
   }
 
   /**
@@ -91,15 +94,6 @@ export class MultiplexedSession
         this._maintain();
       })
       .catch(err => {
-        if (
-          isDatabaseNotFoundError(err) ||
-          isInstanceNotFoundError(err) ||
-          isCreateSessionPermissionError(err) ||
-          isDefaultCredentialsNotSetError(err) ||
-          isProjectIdNotSetInEnvironmentError(err)
-        ) {
-          return;
-        }
         this.emit('error', err);
       });
   }
@@ -118,15 +112,33 @@ export class MultiplexedSession
    * @private
    */
   async _createSession(): Promise<void> {
-    try {
-      const [createSessionResponse] = await this.database.createSession({
-        multiplexed: true,
-      });
-      this._multiplexedSession = createSessionResponse;
-      this.emit('mux-session-available');
-    } catch (e) {
-      this.emit('error', e);
-    }
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this.database.formattedName_,
+    };
+    return startTrace(
+      'MultiplexedSession.createSession',
+      traceConfig,
+      async span => {
+        span.addEvent('Requesting a multiplexed session');
+        try {
+          const [createSessionResponse] = await this.database.createSession({
+            multiplexed: true,
+          });
+          this._multiplexedSession = createSessionResponse;
+          span.addEvent(
+            `Created multiplexed session ${this._multiplexedSession.formattedName_}`
+          );
+          this.emit(MUX_SESSION_AVAILABLE);
+        } catch (e) {
+          setSpanError(span, e as Error);
+          this.emit(MUX_SESSION_CREATE_ERROR, e);
+          throw e;
+        } finally {
+          span.end();
+        }
+      }
+    );
   }
 
   /**
@@ -135,40 +147,22 @@ export class MultiplexedSession
    * This method sets up a periodic refresh interval for maintaining the session. The interval duration
    * is determined by the @param refreshRate option, which is provided in days.
    * The default value is 7 days.
+   * @throws {Error} In case the multiplexed session creation will get fail, and an error occurs within `_createSession`,
+   * it is caught and ignored.
    *
    * @returns {void} This method does not return any value.
    *
-   * @throws {Error} If the `refreshRate` option is not defined, this method could throw an error.
    */
   _maintain(): void {
     const refreshRate = this.refreshRate! * 24 * 60 * 60000;
-    this._refreshHandle = setInterval(() => this._refresh(), refreshRate);
+    this._refreshHandle = setInterval(async () => {
+      try {
+        await this._createSession();
+      } catch (err) {
+        return;
+      }
+    }, refreshRate);
     this._refreshHandle.unref();
-  }
-
-  /**
-   * Refreshes the session by checking its expiration time and recreating the session if expired.
-   * Every 7th day a new Multiplexed Session will get created. However, a Multiplexed Session will
-   * be alive for 30 days in the backend.
-   *
-   * @returns {Promise<void>} A Promise that resolves once the refresh process is completed.
-   *                          If the session is expired, a new session will be created.
-   *
-   * @throws {Error} If there is an issue with retrieving the session metadata or calculating the expiration time.
-   */
-  async _refresh(): Promise<void> {
-    const metadata = await this._multiplexedSession?.getMetadata();
-    const createTime =
-      parseInt(metadata![0].createTime.seconds) * 1000 +
-      metadata![0].createTime.nanos / 1000000;
-
-    // Calculate expiration time (7 days after session creation)
-    const expireTime = createTime + this.refreshRate * 24 * 60 * 60 * 1000;
-
-    // If the current time exceeds the expiration time, create a new session
-    if (Date.now() > expireTime) {
-      this.createSession();
-    }
   }
 
   /**
@@ -207,33 +201,53 @@ export class MultiplexedSession
   /**
    * Attempts to get a session, waiting for it to become available if necessary.
    *
-   * Waits for the `mux-session-available` event to be emitted if the multiplexed session is not yet available.
-   * The method listens for these events, and once `mux-session-available` is emitted, it resolves and returns
+   * Waits for the `MUX_SESSION_AVAILABLE` event or for the `MUX_SESSION_CREATE_ERROR`
+   * to be emitted if the multiplexed session is not yet available. The method listens
+   * for these events, and once `mux-session-available` is emitted, it resolves and returns
    * the session.
    *
    * @returns {Promise<Session | null>} A promise that resolves with the current multiplexed session if available,
    * or `null` if the session is not available.
    *
    * @private
+   *
    */
   async _getSession(): Promise<Session | null> {
+    const span = getActiveOrNoopSpan();
     // Check if the multiplexed session is already available
     if (this._multiplexedSession !== null) {
+      span.addEvent('Cache hit: has usable multiplexed session');
       return this._multiplexedSession;
     }
 
     // Define event and promises to wait for the session to become available
-    const availableEvent = 'mux-session-available';
-    let removeListener: Function;
-    const promise = new Promise(resolve => {
-      this.once(availableEvent, resolve);
-      removeListener = this.removeListener.bind(this, availableEvent, resolve);
-    });
+    span.addEvent('Waiting for a multiplexed session to become available');
+    let removeAvailableListener: Function;
+    let removeErrorListener: Function;
+    const promises = [
+      new Promise((_, reject) => {
+        this.once(MUX_SESSION_CREATE_ERROR, reject);
+        removeErrorListener = this.removeListener.bind(
+          this,
+          MUX_SESSION_CREATE_ERROR,
+          reject
+        );
+      }),
+      new Promise(resolve => {
+        this.once(MUX_SESSION_AVAILABLE, resolve);
+        removeAvailableListener = this.removeListener.bind(
+          this,
+          MUX_SESSION_AVAILABLE,
+          resolve
+        );
+      }),
+    ];
 
     try {
-      await promise;
+      await Promise.race(promises);
     } finally {
-      removeListener!();
+      removeAvailableListener!();
+      removeErrorListener!();
     }
     // Return the multiplexed session after it becomes available
     return this._multiplexedSession;

@@ -343,6 +343,7 @@ class Database extends common.GrpcServiceObject {
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
+  labels?: {[k: string]: string} | null;
   databaseDialect?: EnumKey<
     typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
   > | null;
@@ -460,6 +461,7 @@ class Database extends common.GrpcServiceObject {
     }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
+      this.labels = poolOptions.labels || null;
     }
     this.formattedName_ = formattedName_;
     this.instance = instance;
@@ -978,10 +980,6 @@ class Database extends common.GrpcServiceObject {
 
     reqOpts.session = {};
 
-    if (options.labels) {
-      reqOpts.session.labels = options.labels;
-    }
-
     if (options.multiplexed) {
       reqOpts.session.multiplexed = options.multiplexed;
     }
@@ -989,29 +987,36 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
+    reqOpts.session.labels = options.labels || this.labels || null;
+
     const headers = this.resourceHeader_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    this.request<google.spanner.v1.ISession>(
-      {
-        client: 'SpannerClient',
-        method: 'createSession',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (err) {
-          callback(err, null, resp!);
-          return;
+    startTrace('Database.createSession', this._traceConfig, span => {
+      this.request<google.spanner.v1.ISession>(
+        {
+          client: 'SpannerClient',
+          method: 'createSession',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback(err, null, resp!);
+            return;
+          }
+          const session = this.session(resp!.name!);
+          session.metadata = resp;
+          span.end();
+          callback(null, session, resp!);
         }
-        const session = this.session(resp!.name!);
-        session.metadata = resp;
-        callback(null, session, resp!);
-      }
-    );
+      );
+    });
   }
   /**
    * @typedef {array} CreateTableResponse
