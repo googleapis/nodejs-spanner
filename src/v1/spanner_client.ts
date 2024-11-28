@@ -895,6 +895,16 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {boolean} [request.lastStatement]
+   *   Optional. If set to true, this statement marks the end of the transaction.
+   *   The transaction should be committed or aborted after this statement
+   *   executes, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   For DML statements, setting this option may cause some error reporting to
+   *   be deferred until commit time (e.g. validation of unique constraints).
+   *   Given this, successful execution of a DML statement should not be assumed
+   *   until a subsequent Commit call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1010,6 +1020,16 @@ export class SpannerClient {
    *   handled requests will yield the same response as the first execution.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} [request.lastStatements]
+   *   Optional. If set to true, this request marks the end of the transaction.
+   *   The transaction should be committed or aborted after these statements
+   *   execute, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   Setting this option may cause some error reporting to be deferred until
+   *   commit time (e.g. validation of unique constraints). Given this, successful
+   *   execution of statements should not be assumed until a subsequent Commit
+   *   call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1906,6 +1926,16 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {boolean} [request.lastStatement]
+   *   Optional. If set to true, this statement marks the end of the transaction.
+   *   The transaction should be committed or aborted after this statement
+   *   executes, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   For DML statements, setting this option may cause some error reporting to
+   *   be deferred until commit time (e.g. validation of unique constraints).
+   *   Given this, successful execution of a DML statement should not be assumed
+   *   until a subsequent Commit call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
