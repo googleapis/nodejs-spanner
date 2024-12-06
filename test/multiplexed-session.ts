@@ -153,6 +153,13 @@ describe('MultiplexedSession', () => {
       });
     });
 
+    it('should emit the MUX_SESSION_AVAILABLE event on successfully creating mux session', done => {
+      multiplexedSession.on(MUX_SESSION_AVAILABLE, () => {
+        done();
+      });
+      multiplexedSession._createSession();
+    });
+
     it('should reject with any request errors', async () => {
       const error = new Error(MUX_SESSION_CREATE_ERROR);
       createSessionStub.rejects(error);
@@ -165,27 +172,21 @@ describe('MultiplexedSession', () => {
       }
     });
 
-    it('should emit the MUX_SESSION_AVAILABLE event on successfully creating mux session', done => {
-      multiplexedSession.on(MUX_SESSION_AVAILABLE, () => {
-        done();
-      });
-      multiplexedSession._createSession();
-    });
-
     it('should emit the error event on failed creation of mux session', done => {
       const error = new Error(MUX_SESSION_CREATE_ERROR);
       createSessionStub.rejects(error);
       multiplexedSession.on(MUX_SESSION_CREATE_ERROR, () => {
         done();
       });
-      multiplexedSession._createSession();
+      multiplexedSession._createSession().catch(err => {
+        assert.strictEqual(err, error);
+      });
     });
   });
 
   describe('getSession', () => {
     it('should acquire a session', done => {
       sandbox.stub(multiplexedSession, '_acquire').resolves(fakeMuxSession);
-
       multiplexedSession.getSession((err, session) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeMuxSession);
@@ -204,11 +205,8 @@ describe('MultiplexedSession', () => {
 
     it('should pass back the session and txn', done => {
       const fakeTxn = new FakeTransaction() as unknown as Transaction;
-
       fakeMuxSession.txn = fakeTxn;
-
       sandbox.stub(multiplexedSession, '_acquire').resolves(fakeMuxSession);
-
       multiplexedSession.getSession((err, session, txn) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeMuxSession);
