@@ -980,10 +980,6 @@ class Database extends common.GrpcServiceObject {
 
     reqOpts.session = {};
 
-    if (options.labels) {
-      reqOpts.session.labels = options.labels;
-    }
-
     if (options.multiplexed) {
       reqOpts.session.multiplexed = options.multiplexed;
     }
