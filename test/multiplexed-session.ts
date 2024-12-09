@@ -108,10 +108,11 @@ describe('MultiplexedSession', () => {
       sandbox.stub(multiplexedSession, '_createSession').rejects(fakeError);
       const errorPromise = new Promise<void>((resolve, reject) => {
         multiplexedSession.once('error', err => {
-          if (err === fakeError) {
+          try {
+            assert.strictEqual(err, fakeError);
             resolve();
-          } else {
-            reject(new Error('Unexpected error emitted'));
+          } catch (e) {
+            reject(e);
           }
         });
       });
@@ -125,15 +126,18 @@ describe('MultiplexedSession', () => {
   describe('_maintain', () => {
     let clock;
     let createSessionStub;
+
     beforeEach(() => {
       createSessionStub = sandbox
         .stub(multiplexedSession, '_createSession')
         .resolves();
       clock = sandbox.useFakeTimers();
     });
+
     afterEach(() => {
       clock.restore();
     });
+
     it('should set an interval to refresh mux sessions', () => {
       const expectedInterval =
         multiplexedSession.refreshRate! * 24 * 60 * 60000;
@@ -155,6 +159,10 @@ describe('MultiplexedSession', () => {
 
     it('should emit the MUX_SESSION_AVAILABLE event on successfully creating mux session', done => {
       multiplexedSession.on(MUX_SESSION_AVAILABLE, () => {
+        assert.strictEqual(
+          multiplexedSession._multiplexedSession,
+          fakeMuxSession
+        );
         done();
       });
       multiplexedSession._createSession();

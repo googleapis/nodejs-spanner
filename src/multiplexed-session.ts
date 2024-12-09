@@ -107,7 +107,7 @@ export class MultiplexedSession
    * @returns {Promise<void>} A Promise that resolves when the session has been successfully created and assigned, an event
    * `mux-session-available` will be emitted to signal that the session is ready.
    *
-   * In case of error, an error will get emitted along with the erorr event.
+   * In case of error, an error will get emitted along with the error event.
    *
    * @private
    */
@@ -127,7 +127,7 @@ export class MultiplexedSession
           });
           this._multiplexedSession = createSessionResponse;
           span.addEvent(
-            `Created multiplexed session ${this._multiplexedSession.formattedName_}`
+            `Created multiplexed session ${this._multiplexedSession.id}`
           );
           this.emit(MUX_SESSION_AVAILABLE);
         } catch (e) {
@@ -147,8 +147,10 @@ export class MultiplexedSession
    * This method sets up a periodic refresh interval for maintaining the session. The interval duration
    * is determined by the @param refreshRate option, which is provided in days.
    * The default value is 7 days.
-   * @throws {Error} In case the multiplexed session creation will get fail, and an error occurs within `_createSession`,
-   * it is caught and ignored.
+   *
+   * @throws {Error} If the multiplexed session creation fails in `_createSession`, the error is caught
+   * and ignored. This is because the currently active multiplexed session has a 30-day expiry, providing
+   * the maintainer with four opportunities (one every 7 days) to refresh the active session.
    *
    * @returns {void} This method does not return any value.
    *
@@ -206,6 +208,8 @@ export class MultiplexedSession
    * for these events, and once `mux-session-available` is emitted, it resolves and returns
    * the session.
    *
+   * In case of an error, the promise will get rejected and the error will get bubble up to the parent method.
+   *
    * @returns {Promise<Session | null>} A promise that resolves with the current multiplexed session if available,
    * or `null` if the session is not available.
    *
@@ -220,7 +224,7 @@ export class MultiplexedSession
       return this._multiplexedSession;
     }
 
-    // Define event and promises to wait for the session to become available
+    // Define event and promises to wait for the session to become available or for the error
     span.addEvent('Waiting for a multiplexed session to become available');
     let removeAvailableListener: Function;
     let removeErrorListener: Function;
