@@ -2096,6 +2096,7 @@ describe('Database', () => {
           database: database.formattedName_,
           session: {
             creatorRole: database.databaseRole,
+            labels: null,
           },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
@@ -2119,6 +2120,7 @@ describe('Database', () => {
           database: database.formattedName_,
           session: {
             creatorRole: database.databaseRole,
+            labels: null,
           },
         });
 
