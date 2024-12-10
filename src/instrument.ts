@@ -60,6 +60,7 @@ interface SQLStatement {
 interface ObservabilityOptions {
   tracerProvider: TracerProvider;
   enableExtendedTracing?: boolean;
+  enableEndToEndTracing?: boolean;
 }
 
 export type {ObservabilityOptions};
@@ -118,7 +119,6 @@ function ensureInitialContextManagerSet() {
     contextManager.enable();
     context.setGlobalContextManager(contextManager);
   }
-  ensureContextPropagation();
 }
 
 function ensureContextPropagation() {
@@ -126,6 +126,8 @@ function ensureContextPropagation() {
 }
 
 export {ensureInitialContextManagerSet};
+
+export {ensureContextPropagation};
 
 /**
  * startTrace begins an active span in the current active context

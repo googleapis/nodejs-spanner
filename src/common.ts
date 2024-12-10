@@ -84,7 +84,7 @@ export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
 /*
  * END TO END TRACING  header.
  */
-export const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
+const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
 
 /**
  * Add Leader aware routing header to existing header list.
@@ -95,9 +95,20 @@ export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
 }
 
 /**
- * Add end to end tracing header to enable.
- * @param headers Existing header list.
+ * Returns common headers to add.
+ * @param headers Common header list.
  */
-export function addEndtoEndTracingHeader(headers: {[k: string]: string}) {
-  headers[END_TO_END_TRACING_HEADER] = 'true';
+export function getCommonHeaders(
+  resourceName: string,
+  enableTracing?: boolean
+) {
+  const headers: {[k: string]: string} = {};
+
+  if (process.env.SPANNER_ENABLE_EXTENDED_TRACING === 'true' || enableTracing) {
+    headers[END_TO_END_TRACING_HEADER] = 'true';
+  }
+
+  headers[CLOUD_RESOURCE_HEADER] = resourceName;
+
+  return headers;
 }

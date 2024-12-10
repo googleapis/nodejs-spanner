@@ -37,9 +37,8 @@ import {getActiveOrNoopSpan} from './instrument';
 import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
-  CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
-  addEndtoEndTracingHeader,
+  getCommonHeaders,
 } from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
@@ -290,7 +289,7 @@ export class Snapshot extends EventEmitter {
   requestStream: (config: {}) => Readable;
   session: Session;
   queryOptions?: IQueryOptions;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
   _observabilityOptions?: ObservabilityOptions;
   protected _dbName?: string;
@@ -354,12 +353,13 @@ export class Snapshot extends EventEmitter {
     const readOnly = Snapshot.encodeTimestampBounds(options || {});
     this._options = {readOnly};
     this._dbName = (this.session.parent as Database).formattedName_;
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this._dbName,
-    };
     this._waitingRequests = [];
     this._inlineBeginStarted = false;
     this._observabilityOptions = session._observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this._dbName,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
   }
 
   /**
@@ -433,7 +433,7 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (
       this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
@@ -698,7 +698,7 @@ export class Snapshot extends EventEmitter {
       }
     );
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (
       this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
@@ -706,8 +706,6 @@ export class Snapshot extends EventEmitter {
     ) {
       addLeaderAwareRoutingHeader(headers);
     }
-
-    addEndtoEndTracingHeader(headers);
 
     const traceConfig = {
       tableName: table,
@@ -1284,7 +1282,7 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (
       this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
@@ -1292,8 +1290,6 @@ export class Snapshot extends EventEmitter {
     ) {
       addLeaderAwareRoutingHeader(headers);
     }
-
-    addEndtoEndTracingHeader(headers);
 
     const traceConfig = {
       opts: this._observabilityOptions,
@@ -1961,7 +1957,7 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -2187,7 +2183,7 @@ export class Transaction extends Dml {
         this.requestOptions
       );
 
-      const headers = this.resourceHeader_;
+      const headers = this.commonHeaders_;
       if (this._getSpanner().routeToLeaderEnabled) {
         addLeaderAwareRoutingHeader(headers);
       }
@@ -2537,7 +2533,7 @@ export class Transaction extends Dml {
         transactionId,
       };
 
-      const headers = this.resourceHeader_;
+      const headers = this.commonHeaders_;
       if (this._getSpanner().routeToLeaderEnabled) {
         addLeaderAwareRoutingHeader(headers);
       }
