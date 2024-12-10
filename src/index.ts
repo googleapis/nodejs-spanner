@@ -39,10 +39,7 @@ import {
   IProtoMessageParams,
   IProtoEnumParams,
 } from './codec';
-import {
-  context,
-  propagation,
-} from '@opentelemetry/api';
+import {context, propagation} from '@opentelemetry/api';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -1539,8 +1536,8 @@ class Spanner extends GrpcService {
       // Do context propagation
       propagation.inject(context.active(), config.headers, {
         set: (carrier, key, value) => {
-            carrier[key] = value // Set the span context (trace and span ID)
-        }
+          carrier[key] = value; // Set the span context (trace and span ID)
+        },
       });
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
