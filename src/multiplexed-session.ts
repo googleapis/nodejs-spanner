@@ -17,7 +17,7 @@
 import {EventEmitter} from 'events';
 import {Database} from './database';
 import {Session} from './session';
-import {GetSessionCallback} from './session-pool';
+import {GetSessionCallback} from './session-factory';
 import {
   ObservabilityOptions,
   getActiveOrNoopSpan,
@@ -38,7 +38,7 @@ export const MUX_SESSION_CREATE_ERROR = 'mux-session-create-error';
  * @constructs MultiplexedSessionInterface
  * @param {Database} database The database to create a multiplexed session for.
  */
-export interface MultiplexedSessionInterface {
+export interface MultiplexedSessionInterface extends EventEmitter {
   /**
    * When called creates a multiplexed session.
    *

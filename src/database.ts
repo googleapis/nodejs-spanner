@@ -102,6 +102,7 @@ import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
+import {SessionFactory, SessionFactoryInterface} from './session-factory';
 import {
   ObservabilityOptions,
   Span,
@@ -339,6 +340,7 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  sessionFactory_: SessionFactoryInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
@@ -450,22 +452,12 @@ class Database extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    this.pool_ =
-      typeof poolOptions === 'function'
-        ? new (poolOptions as SessionPoolConstructor)(this, null)
-        : new SessionPool(this, poolOptions);
-    const sessionPoolInstance = this.pool_ as SessionPool;
-    if (sessionPoolInstance) {
-      sessionPoolInstance._observabilityOptions =
-        instance._observabilityOptions;
-    }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
       this.labels = poolOptions.labels || null;
     }
     this.formattedName_ = formattedName_;
     this.instance = instance;
-    this._observabilityOptions = instance._observabilityOptions;
     this._traceConfig = {
       opts: this._observabilityOptions,
       dbName: this.formattedName_,
@@ -478,8 +470,14 @@ class Database extends common.GrpcServiceObject {
     this._observabilityOptions = instance._observabilityOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
-    this.pool_.on('error', this.emit.bind(this, 'error'));
-    this.pool_.open();
+    this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
+    this.pool_ = this.sessionFactory_.getPool();
+    this.multiplexedSession_ = this.sessionFactory_.getMultiplexedSession();
+    const sessionPoolInstance = this.pool_ as SessionPool;
+    if (sessionPoolInstance) {
+      sessionPoolInstance._observabilityOptions =
+        instance._observabilityOptions;
+    }
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
