@@ -26,6 +26,7 @@ import * as mockInstanceAdmin from '../test/mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from '../test/mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {Row} from '../src/partial-result-stream';
+import {END_TO_END_TRACING_HEADER} from '../src/common';
 const {
   AlwaysOnSampler,
   NodeTracerProvider,
@@ -1928,5 +1929,61 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       expectedSpanNames,
       expectedEventNames
     );
+  });
+});
+
+describe('End to end tracing headers', () => {
+  let server: grpc.Server;
+  let spanner: Spanner;
+  let spannerMock: mock.MockSpanner;
+  let observabilityOptions: typeof ObservabilityOptions;
+
+  beforeEach(async () => {
+    observabilityOptions = {
+      enableEndToEndTracing: true,
+    };
+
+    const setupResult = await setup(observabilityOptions);
+    spanner = setupResult.spanner;
+    server = setupResult.server;
+    spannerMock = setupResult.spannerMock;
+  });
+
+  afterEach(async () => {
+    spannerMock.resetRequests();
+    spanner.close();
+    server.tryShutdown(() => {});
+  });
+
+  it('run', done => {
+    const instance = spanner.instance('instance');
+    const database = instance.database('database');
+    database.getTransaction((err, tx) => {
+      assert.ifError(err);
+
+      tx!.run('SELECT 1', async () => {
+        tx!.end();
+        let metadataCountWithE2EHeader = 0;
+        let metadataCountWithTraceParent = 0;
+        spannerMock.getMetadata().forEach(metadata => {
+          if (metadata.get(END_TO_END_TRACING_HEADER)[0] !== undefined) {
+            metadataCountWithE2EHeader++;
+            assert.strictEqual(
+              metadata.get(END_TO_END_TRACING_HEADER)[0],
+              'true'
+            );
+          }
+          if (metadata.get('traceparent')[0] !== undefined) {
+            metadataCountWithTraceParent++;
+          }
+        });
+
+        // Batch Create Session request and Select 1 request.
+        assert.strictEqual(spannerMock.getRequests().length, 2);
+        assert.strictEqual(metadataCountWithE2EHeader, 2);
+        assert.strictEqual(metadataCountWithTraceParent, 2);
+        done();
+      });
+    });
   });
 });

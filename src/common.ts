@@ -84,7 +84,7 @@ export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
 /*
  * END TO END TRACING  header.
  */
-const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
+export const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
 
 /**
  * Add Leader aware routing header to existing header list.
@@ -104,7 +104,10 @@ export function getCommonHeaders(
 ) {
   const headers: {[k: string]: string} = {};
 
-  if (process.env.SPANNER_ENABLE_EXTENDED_TRACING === 'true' || enableTracing) {
+  if (
+    process.env.SPANNER_ENABLE_END_TO_END_TRACING === 'true' ||
+    enableTracing
+  ) {
     headers[END_TO_END_TRACING_HEADER] = 'true';
   }
 
