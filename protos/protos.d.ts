@@ -34373,7 +34373,8 @@ export namespace google {
                 JSON = 11,
                 PROTO = 13,
                 ENUM = 14,
-                INTERVAL = 16
+                INTERVAL = 16,
+                UUID = 17
             }
 
             /** TypeAnnotationCode enum. */
