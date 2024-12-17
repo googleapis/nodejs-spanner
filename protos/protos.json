@@ -4117,7 +4117,9 @@
                         "InstanceConfig": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/InstanceConfig",
-                            "(google.api.resource).pattern": "projects/{project}/instanceConfigs/{instance_config}"
+                            "(google.api.resource).pattern": "projects/{project}/instanceConfigs/{instance_config}",
+                            "(google.api.resource).plural": "instanceConfigs",
+                            "(google.api.resource).singular": "instanceConfig"
                           },
                           "fields": {
                             "name": {
@@ -4182,6 +4184,27 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "freeInstanceAvailability": {
+                              "type": "FreeInstanceAvailability",
+                              "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "quorumType": {
+                              "type": "QuorumType",
+                              "id": 18,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "storageLimitPerProcessingUnit": {
+                              "type": "int64",
+                              "id": 19,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -4197,6 +4220,23 @@
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
                                 "READY": 2
+                              }
+                            },
+                            "FreeInstanceAvailability": {
+                              "values": {
+                                "FREE_INSTANCE_AVAILABILITY_UNSPECIFIED": 0,
+                                "AVAILABLE": 1,
+                                "UNSUPPORTED": 2,
+                                "DISABLED": 3,
+                                "QUOTA_EXCEEDED": 4
+                              }
+                            },
+                            "QuorumType": {
+                              "values": {
+                                "QUORUM_TYPE_UNSPECIFIED": 0,
+                                "REGION": 1,
+                                "DUAL_REGION": 2,
+                                "MULTI_REGION": 3
                               }
                             }
                           }
@@ -4349,7 +4389,9 @@
                         "Instance": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/Instance",
-                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}"
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}",
+                            "(google.api.resource).plural": "instances",
+                            "(google.api.resource).singular": "instance"
                           },
                           "fields": {
                             "name": {
@@ -4409,6 +4451,10 @@
                               "type": "string",
                               "id": 7
                             },
+                            "instanceType": {
+                              "type": "InstanceType",
+                              "id": 10
+                            },
                             "endpointUris": {
                               "rule": "repeated",
                               "type": "string",
@@ -4427,6 +4473,10 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "freeInstanceMetadata": {
+                              "type": "FreeInstanceMetadata",
+                              "id": 13
                             },
                             "edition": {
                               "type": "Edition",
@@ -4449,6 +4499,13 @@
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
                                 "READY": 2
+                              }
+                            },
+                            "InstanceType": {
+                              "values": {
+                                "INSTANCE_TYPE_UNSPECIFIED": 0,
+                                "PROVISIONED": 1,
+                                "FREE_INSTANCE": 2
                               }
                             },
                             "Edition": {
@@ -4788,6 +4845,37 @@
                             }
                           }
                         },
+                        "FreeInstanceMetadata": {
+                          "fields": {
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "upgradeTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "expireBehavior": {
+                              "type": "ExpireBehavior",
+                              "id": 3
+                            }
+                          },
+                          "nested": {
+                            "ExpireBehavior": {
+                              "values": {
+                                "EXPIRE_BEHAVIOR_UNSPECIFIED": 0,
+                                "FREE_TO_PROVISIONED": 1,
+                                "REMOVE_AFTER_GRACE_PERIOD": 2
+                              }
+                            }
+                          }
+                        },
                         "CreateInstanceConfigMetadata": {
                           "fields": {
                             "instanceConfig": {
@@ -4823,7 +4911,9 @@
                         "InstancePartition": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/InstancePartition",
-                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}"
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}",
+                            "(google.api.resource).plural": "instancePartitions",
+                            "(google.api.resource).singular": "instancePartition"
                           },
                           "oneofs": {
                             "computeCapacity": {
@@ -4898,6 +4988,7 @@
                               "type": "string",
                               "id": 11,
                               "options": {
+                                "deprecated": true,
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
