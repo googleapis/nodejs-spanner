@@ -203,7 +203,9 @@ describe('SessionFactory', () => {
   describe('getMultiplexedSession', () => {
     it('should return an instance of MultiplexedSession', () => {
       const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-      assert(sessionFactory.getMultiplexedSession() instanceof MultiplexedSession);
+      assert(
+        sessionFactory.getMultiplexedSession() instanceof MultiplexedSession
+      );
     });
   });
 });

@@ -615,7 +615,9 @@ describe('ObservabilityOptions injection and propagation', async () => {
         tx!
           .runStream(selectSql)
           .on('data', () => rowCount++)
-          .on('error', () => {assert.ifError})
+          .on('error', () => {
+            assert.ifError;
+          })
           .on('stats', () => {})
           .on('end', async () => {
             tx!.end();
