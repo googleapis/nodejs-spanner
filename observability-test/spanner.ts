@@ -505,7 +505,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       db.formattedName_
     );
 
-    it('run', () => {
+    it('run', done => {
       database.getTransaction((err, tx) => {
         assert.ifError(err);
 
@@ -549,6 +549,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
             true,
             `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
           );
+
+          done();
         });
       });
     });
@@ -608,16 +610,14 @@ describe('ObservabilityOptions injection and propagation', async () => {
       });
     });
 
-    it('runStream', () => {
+    it('runStream', done => {
       let rowCount = 0;
       database.getTransaction((err, tx) => {
         assert.ifError(err);
         tx!
           .runStream(selectSql)
           .on('data', () => rowCount++)
-          .on('error', () => {
-            assert.ifError;
-          })
+          .on('error', assert.ifError)
           .on('stats', () => {})
           .on('end', async () => {
             tx!.end();
@@ -657,6 +657,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
               expectedEventNames,
               `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
             );
+
+            done();
           });
       });
     });

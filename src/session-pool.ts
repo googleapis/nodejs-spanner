@@ -24,14 +24,13 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
-import {GetSessionCallback} from './session-factory';
 import {
   ObservabilityOptions,
   getActiveOrNoopSpan,
   setSpanErrorAndException,
   startTrace,
 } from './instrument';
-
+import {GetSessionCallback} from './session-factory';
 import {
   isDatabaseNotFoundError,
   isInstanceNotFoundError,

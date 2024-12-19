@@ -36,6 +36,7 @@ import {
 } from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
+import {SessionFactory, SessionFactoryInterface} from './session-factory';
 import {
   google as databaseAdmin,
   google,
@@ -102,7 +103,6 @@ import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
-import {SessionFactory, SessionFactoryInterface} from './session-factory';
 import {
   ObservabilityOptions,
   Span,
@@ -112,7 +112,6 @@ import {
   setSpanErrorAndException,
   traceConfig,
 } from './instrument';
-
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -458,6 +457,7 @@ class Database extends common.GrpcServiceObject {
     }
     this.formattedName_ = formattedName_;
     this.instance = instance;
+    this._observabilityOptions = instance._observabilityOptions;
     this._traceConfig = {
       opts: this._observabilityOptions,
       dbName: this.formattedName_,
@@ -472,7 +472,6 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
     this.pool_ = this.sessionFactory_.getPool();
-    this.multiplexedSession_ = this.sessionFactory_.getMultiplexedSession();
     const sessionPoolInstance = this.pool_ as SessionPool;
     if (sessionPoolInstance) {
       sessionPoolInstance._observabilityOptions =

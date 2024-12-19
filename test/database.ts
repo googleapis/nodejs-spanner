@@ -46,7 +46,7 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-
+import {SessionFactory} from '../src/session-factory';
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -91,7 +91,7 @@ function fakePartialResultStream(this: Function & {calledWith_: IArguments}) {
   return this;
 }
 
-class FakeSession {
+export class FakeSession {
   calledWith_: IArguments;
   formattedName_: any;
   constructor() {
@@ -106,23 +106,6 @@ class FakeSession {
     return new FakeTransaction(
       {} as google.spanner.v1.TransactionOptions.ReadOnly
     );
-  }
-}
-
-export class FakeSessionFactory extends EventEmitter {
-  calledWith_: IArguments;
-  constructor() {
-    super();
-    this.calledWith_ = arguments;
-  }
-  getSession(): FakeSession {
-    return new FakeSession();
-  }
-  getPool(): FakeSessionPool {
-    return new FakeSessionPool();
-  }
-  getMultiplexedSession(): FakeMultiplexedSession {
-    return new FakeMultiplexedSession();
   }
 }
 
@@ -145,6 +128,27 @@ export class FakeMultiplexedSession extends EventEmitter {
   }
   createSession() {}
   getSession() {}
+}
+
+export class FakeSessionFactory extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  getSession(): FakeSession | FakeMultiplexedSession {
+    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS) {
+      return new FakeSession();
+    } else {
+      return new FakeMultiplexedSession();
+    }
+  }
+  getPool(): FakeSessionPool {
+    return new FakeSessionPool();
+  }
+  getMultiplexedSession(): FakeMultiplexedSession {
+    return new FakeMultiplexedSession();
+  }
 }
 
 class FakeTable {
@@ -269,8 +273,9 @@ describe('Database', () => {
       './batch-transaction': {BatchTransaction: FakeBatchTransaction},
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
-      './session': {Session: FakeSession},
+      './session-pool': {SessionPool: FakeSessionPool},
       './session-factory': {SessionFactory: FakeSessionFactory},
+      './session': {Session: FakeSession},
       './table': {Table: FakeTable},
       './transaction-runner': {
         TransactionRunner: FakeTransactionRunner,
@@ -320,6 +325,32 @@ describe('Database', () => {
 
       const database = new Database(INSTANCE, NAME);
       assert(database.formattedName_, formattedName);
+    });
+
+    it('should re-emit SessionPool errors', done => {
+      const error = new Error('err');
+
+      const sessionFactory = new SessionFactory(database, NAME);
+
+      database.on('error', err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+
+      sessionFactory.pool_.emit('error', error);
+    });
+
+    it('should re-emit Multiplexed Session errors', done => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      const error = new Error('err');
+
+      const sessionFactory = new SessionFactory(database, NAME);
+
+      database.on('error', err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+      sessionFactory.multiplexedSession_?.emit('error', error);
     });
 
     it('should inherit from ServiceObject', done => {

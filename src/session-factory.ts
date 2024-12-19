@@ -42,12 +42,28 @@ export interface GetSessionCallback {
   ): void;
 }
 
+/**
+ * Interface for implementing session-factory logic.
+ *
+ * @interface SessionFactoryInterface
+ */
 export interface SessionFactoryInterface {
   getSession(callback: GetSessionCallback): void;
   getPool(): SessionPoolInterface;
-  getMultiplexedSession(): MultiplexedSessionInterface | undefined;
+  release(session: Session): void;
 }
 
+/**
+ * Creates a SessionFactory object to manage the creation of
+ *      session-pool and multiplexed session.
+ *
+ * @class
+ *
+ * @param {Database} database Database object.
+ * @param {String} name Name of the database.
+ * @param {SessionPoolOptions|SessionPoolInterface} options Session pool
+ *     configuration options or custom pool interface.
+ */
 export class SessionFactory
   extends common.GrpcServiceObject
   implements SessionFactoryInterface
@@ -67,33 +83,61 @@ export class SessionFactory
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(database, null)
         : new SessionPool(database, poolOptions);
-    this.multiplexedSession_ = new MultiplexedSession(database);
-    this.pool_.on('error', this.emit.bind(this, 'error'));
+    this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
-    // multiplexed session should only get created if the env varaible is enabled
+    // multiplexed session should only get created if the env variable is enabled
     if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true') {
-      this.multiplexedSession_.on('error', this.emit.bind(this, 'error'));
+      this.multiplexedSession_ = new MultiplexedSession(database);
+      this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
       this.multiplexedSession_.createSession();
     }
   }
 
+  /**
+   * Retrieves the session, either the regular session or the multiplexed session based upon the environment varibale
+   * If the environment variable GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is set to `true` the method will attempt to
+   * retrieve the multiplexed session. Otherwise it will retrieve the session from the pool.
+   *
+   * The session is returned asynchronously via the provided callback, which will receive either an error or the session object.
+   * @param callback
+   */
+
   getSession(callback: GetSessionCallback): void {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true') {
-      this.multiplexedSession_?.getSession((err, session) => {
-        err ? callback(err, null) : callback(null, session);
-      });
-    } else {
-      this.pool_?.getSession((err, session) => {
-        err ? callback(err, null) : callback(null, session);
-      });
-    }
+    const sessionHandler =
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+        ? this.multiplexedSession_
+        : this.pool_;
+    sessionHandler?.getSession((err, session) => callback(err, session));
   }
+
+  /**
+   * Returns the SessionPoolInterface used by the current instance, which provide access to the session pool
+   * for obtaining database sessions.
+   *
+   * @returns {SessionPoolInterface} The session pool used by current instance.
+   * This object allows interaction with the pool for acquiring and managing sessions.
+   */
 
   getPool(): SessionPoolInterface {
     return this.pool_;
   }
 
-  getMultiplexedSession(): MultiplexedSessionInterface | undefined {
-    return this.multiplexedSession_;
+  /**
+   * Releases the session back to the pool.
+   *
+   * This method is used to return the session back to the pool after it is no longer needed.
+   *
+   * It only performs the operation if the Multiplexed Session is disabled which is controlled via the
+   * env variable GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS.
+   *
+   * @param session The session to be released. This should be an instance of `Session` that was previously
+   * acquired from the session pool.
+   *
+   * @throws {Error} Throws an error if the session is invalid or cannot be released.
+   */
+  release(session: Session): void {
+    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
+      this.pool_.release(session);
+    }
   }
 }
