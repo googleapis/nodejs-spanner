@@ -146,6 +146,8 @@ class BatchTransaction extends Snapshot {
       'BatchTransaction.createQueryPartitions',
       traceConfig,
       span => {
+        const database = this.session.parent as Database;
+        const nthRequest = database._nextNthRequest();
         const headers: {[k: string]: string} = {};
         if (this._getSpanner().routeToLeaderEnabled) {
           addLeaderAwareRoutingHeader(headers);
@@ -157,7 +159,11 @@ class BatchTransaction extends Snapshot {
             method: 'partitionQuery',
             reqOpts,
             gaxOpts: query.gaxOptions,
-            headers: headers,
+            headers: this.session._metadataWithRequestId(
+              nthRequest,
+              1,
+              headers
+            ),
           },
           (err, partitions, resp) => {
             if (err) {
@@ -201,11 +207,16 @@ class BatchTransaction extends Snapshot {
           transaction: {id: this.id},
         });
         config.reqOpts = extend({}, query);
-        config.headers = {
-          [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database)
-            .formattedName_,
+        const database = this.session.parent as Database;
+        const headers = {
+          [CLOUD_RESOURCE_HEADER]: database.formattedName_,
         };
-        delete query.partitionOptions;
+        (config.headers = this.session._metadataWithRequestId(
+          database._nextNthRequest(),
+          1,
+          headers
+        )),
+          delete query.partitionOptions;
         this.session.request(config, (err, resp) => {
           if (err) {
             setSpanError(span, err);
@@ -286,14 +297,18 @@ class BatchTransaction extends Snapshot {
         if (this._getSpanner().routeToLeaderEnabled) {
           addLeaderAwareRoutingHeader(headers);
         }
-
+        const database = this.session.parent as Database;
         this.createPartitions_(
           {
             client: 'SpannerClient',
             method: 'partitionRead',
             reqOpts,
             gaxOpts: options.gaxOptions,
-            headers: headers,
+            headers: this.session._metadataWithRequestId(
+              database._nextNthRequest(),
+              1,
+              headers
+            ),
           },
           (err, partitions, resp) => {
             if (err) {

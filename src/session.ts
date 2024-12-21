@@ -44,7 +44,6 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
-
 export type GetSessionResponse = [Session, r.Response];
 
 /**
@@ -317,13 +316,18 @@ export class Session extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'deleteSession',
         reqOpts,
         gaxOpts,
-        headers: this.commonHeaders_,
+        headers: database._metadataWithRequestId(
+          database._nextNthRequest(),
+          1,
+          this.commonHeaders_
+        ),
       },
       callback!
     );
@@ -389,13 +393,18 @@ export class Session extends common.GrpcServiceObject {
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: headers,
+        headers: database._metadataWithRequestId(
+          database._nextNthRequest(),
+          1,
+          headers
+        ),
       },
       (err, resp) => {
         if (resp) {
@@ -441,17 +450,33 @@ export class Session extends common.GrpcServiceObject {
       session: this.formattedName_,
       sql: 'SELECT 1',
     };
+
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'executeSql',
         reqOpts,
         gaxOpts,
-        headers: this.commonHeaders_,
+        headers: database._metadataWithRequestId(
+          database._nextNthRequest(),
+          1,
+          this.commonHeaders_
+        ),
       },
       callback!
     );
   }
+
+  public _metadataWithRequestId(
+    nthRequest: number,
+    attempt: number,
+    priorMetadata?: {[k: string]: string}
+  ): {[k: string]: string} {
+    const database = this.parent as Database;
+    return database._metadataWithRequestId(nthRequest, attempt, priorMetadata);
+  }
+
   /**
    * Create a PartitionedDml transaction.
    *
@@ -533,6 +558,11 @@ export class Session extends common.GrpcServiceObject {
    */
   private _getSpanner(): Spanner {
     return this.parent.parent.parent as Spanner;
+  }
+
+  private channelId(): number {
+    // TODO: Infer channelId from the actual gRPC channel.
+    return 1;
   }
 }
 

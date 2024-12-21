@@ -86,6 +86,7 @@ import {
   ObservabilityOptions,
   ensureInitialContextManagerSet,
 } from './instrument';
+import {AtomicCounter, nextSpannerClientId} from './request_id_header';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -248,6 +249,7 @@ class Spanner extends GrpcService {
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   _observabilityOptions: ObservabilityOptions | undefined;
+  _nthClientId: number;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -377,6 +379,7 @@ class Spanner extends GrpcService {
       this._observabilityOptions?.enableEndToEndTracing
     );
     ensureInitialContextManagerSet();
+    this._nthClientId = nextSpannerClientId();
   }
 
   /**

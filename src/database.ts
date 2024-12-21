@@ -112,6 +112,13 @@ import {
   setSpanErrorAndException,
   traceConfig,
 } from './instrument';
+import {
+  AtomicCounter,
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+  newAtomicCounter,
+} from './request_id_header';
+
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -350,6 +357,8 @@ class Database extends common.GrpcServiceObject {
   > | null;
   _observabilityOptions?: ObservabilityOptions; // TODO: exmaine if we can remove it
   private _traceConfig: traceConfig;
+  private _nthRequest: AtomicCounter;
+  public _clientId: number;
   constructor(
     instance: Instance,
     name: string,
@@ -483,7 +492,14 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
+    this._nthRequest = newAtomicCounter(0);
+    this._clientId = 0;
   }
+
+  _nextNthRequest(): number {
+    return this._nthRequest.increment();
+  }
+
   /**
    * @typedef {array} SetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -699,7 +715,11 @@ class Database extends common.GrpcServiceObject {
           method: 'batchCreateSessions',
           reqOpts,
           gaxOpts: options.gaxOptions,
-          headers: headers,
+          headers: this._metadataWithRequestId(
+            this._nextNthRequest(),
+            1,
+            headers
+          ),
         },
         (err, resp) => {
           if (err) {
@@ -721,6 +741,31 @@ class Database extends common.GrpcServiceObject {
         }
       );
     });
+  }
+
+  private channelId(): number {
+    // TODO: Infer channelId from the actual gRPC channel.
+    return 1;
+  }
+
+  public _metadataWithRequestId(
+    nthRequest: number,
+    attempt: number,
+    priorMetadata?: {[k: string]: string}
+  ): {[k: string]: string} {
+    if (!priorMetadata) {
+      priorMetadata = {};
+    }
+    const withReqId = {
+      ...priorMetadata,
+    };
+    withReqId[X_GOOG_SPANNER_REQUEST_ID_HEADER] = craftRequestId(
+      this._clientId,
+      this.channelId(),
+      nthRequest,
+      attempt
+    );
+    return withReqId;
   }
 
   /**

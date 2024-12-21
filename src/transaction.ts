@@ -446,6 +446,7 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
+    const database = this.session.parent as Database;
     return startTrace('Snapshot.begin', traceConfig, span => {
       span.addEvent('Begin Transaction');
 
@@ -455,7 +456,11 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
           gaxOpts,
-          headers: headers,
+          headers: this.session._metadataWithRequestId(
+            database._nextNthRequest(),
+            1,
+            headers
+          ),
         },
         (
           err: null | grpc.ServiceError,
@@ -712,8 +717,12 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
+
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = database._nextNthRequest();
+
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         if (this.id && transaction.begin) {
           delete transaction.begin;
@@ -740,7 +749,11 @@ export class Snapshot extends EventEmitter {
           method: 'streamingRead',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: this.session._metadataWithRequestId(
+            nthRequest,
+            attempt,
+            headers
+          ),
         });
       };
 
@@ -1298,6 +1311,8 @@ export class Snapshot extends EventEmitter {
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = database._nextNthRequest();
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         attempt++;
 
@@ -1331,7 +1346,11 @@ export class Snapshot extends EventEmitter {
           method: 'executeStreamingSql',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: this.session._metadataWithRequestId(
+            nthRequest,
+            attempt,
+            headers
+          ),
         });
       };
 
