@@ -26,6 +26,7 @@ import {
   Spanner,
   Transaction,
 } from '../src';
+import {MetadataValue} from '@grpc/grpc-js';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -5091,6 +5092,42 @@ describe('Spanner with mock server', () => {
         assert.ifError(err);
         done();
       });
+    });
+  });
+
+  describe("XGoogRequestId", () => {
+    it('with retry on aborted query', async() => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      let rowCount = 0;
+      await database.runTransactionAsync(async (transaction) => {
+        if (!attempts) {
+          spannerMock.abortTransaction(transaction!);
+        }
+        attempts++;
+        const [rows] = await transaction!.run(selectSql);
+        rows.forEach(() => rowCount++);
+        assert.strictEqual(rowCount, 3);
+        assert.strictEqual(attempts, 2);
+        await transaction!.commit();
+      });
+
+      const sentMetadata = spannerMock.getMetadata();
+      const sentRequests = spannerMock.getRequests();
+      var xGoogRequestHeaders: MetadataValue[] = [];
+      for (const index in sentMetadata) {
+          const req = sentRequests[index];
+          console.log(index, "req", req.constructor.name);
+      }
+
+      for (const md of sentMetadata) {
+        const got = md.get("x-goog-spanner-request-id");
+        if (got) {
+           xGoogRequestHeaders.push(...got);
+        }
+      }
+      console.log("xGoogHeaders", xGoogRequestHeaders!);
+      await database.close();
     });
   });
 });

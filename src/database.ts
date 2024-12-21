@@ -473,6 +473,8 @@ class Database extends common.GrpcServiceObject {
     };
 
     this.request = instance.request;
+    this._nthRequest = newAtomicCounter(0);
+    this._clientId = (this.parent.parent as Spanner)._nthClientId;
     this._observabilityOptions = instance._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.formattedName_,
@@ -492,8 +494,6 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this._nthRequest = newAtomicCounter(0);
-    this._clientId = 0;
   }
 
   _nextNthRequest(): number {
@@ -708,6 +708,12 @@ class Database extends common.GrpcServiceObject {
       addLeaderAwareRoutingHeader(headers);
     }
 
+    const allHeaders = this._metadataWithRequestId(
+            this._nextNthRequest(),
+            1,
+            headers
+    );
+
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
       this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
         {
@@ -715,11 +721,7 @@ class Database extends common.GrpcServiceObject {
           method: 'batchCreateSessions',
           reqOpts,
           gaxOpts: options.gaxOptions,
-          headers: this._metadataWithRequestId(
-            this._nextNthRequest(),
-            1,
-            headers
-          ),
+          headers: allHeaders,
         },
         (err, resp) => {
           if (err) {
@@ -743,11 +745,6 @@ class Database extends common.GrpcServiceObject {
     });
   }
 
-  private channelId(): number {
-    // TODO: Infer channelId from the actual gRPC channel.
-    return 1;
-  }
-
   public _metadataWithRequestId(
     nthRequest: number,
     attempt: number,
@@ -761,7 +758,7 @@ class Database extends common.GrpcServiceObject {
     };
     withReqId[X_GOOG_SPANNER_REQUEST_ID_HEADER] = craftRequestId(
       this._clientId,
-      this.channelId(),
+      1, // TODO: Properly infer the channelId
       nthRequest,
       attempt
     );
