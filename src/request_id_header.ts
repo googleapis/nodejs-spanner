@@ -88,6 +88,8 @@ function newAtomicCounter(n?: number): AtomicCounter {
   return new AtomicCounter(n);
 }
 
+const X_GOOG_REQ_ID_REGEX = /(\d+\.){5}\d+/;
+
 interface withHeaders {
   headers: {[k: string]: string};
 }
