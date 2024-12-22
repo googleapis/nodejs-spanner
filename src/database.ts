@@ -474,7 +474,11 @@ class Database extends common.GrpcServiceObject {
 
     this.request = instance.request;
     this._nthRequest = newAtomicCounter(0);
-    this._clientId = (this.parent.parent as Spanner)._nthClientId;
+    if (this.parent && this.parent.parent) {
+      this._clientId = (this.parent.parent as Spanner)._nthClientId;
+    } else {
+      this._clientId = instance._nthClientId;
+    }
     this._observabilityOptions = instance._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.formattedName_,
@@ -1030,7 +1034,11 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    const headers = this.commonHeaders_;
+    const headers = this._metadataWithRequestId(
+      this._nextNthRequest(),
+      1,
+      this.commonHeaders_,
+    );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -1950,6 +1958,12 @@ class Database extends common.GrpcServiceObject {
       delete (gaxOpts as GetSessionsOptions).pageSize;
       delete (gaxOpts as GetSessionsOptions).pageToken;
     }
+
+    const headers = this._metadataWithRequestId(
+      this._nextNthRequest(),
+      1,
+      this.resourceHeader_
+    );
 
     return startTrace('Database.getSessions', this._traceConfig, span => {
       this.request<

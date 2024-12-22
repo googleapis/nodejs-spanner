@@ -103,9 +103,12 @@ describe('Spanner with mock server', () => {
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
-  const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor();
+  const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor([
+    '/google.spanner.admin',
+    '/google.spanner.admin.database.v1.DatabaseAdmin',
+  ]);
   const server = new grpc.Server({
-    interceptors: [xGoogReqIDInterceptor.serverInterceptor],
+    interceptors: [xGoogReqIDInterceptor.generateServerInterceptor()],
   });
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
@@ -118,6 +121,10 @@ describe('Spanner with mock server', () => {
   function newTestDatabase(options?: SessionPoolOptions): Database {
     return instance.database(`database-${dbCounter++}`, options);
   }
+
+  beforeEach(() => {
+    xGoogReqIDInterceptor.reset();
+  });
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -5119,7 +5126,7 @@ describe('Spanner with mock server', () => {
 
       const sentMetadata = spannerMock.getMetadata();
       const sentRequests = spannerMock.getRequests();
-      const xGoogRequestHeaders = [];
+      const xGoogRequestHeaders: grpc.MetadataValue[] = [];
       for (const index in sentMetadata) {
         const req = sentRequests[index];
         console.log(index, 'req', req.constructor.name);
@@ -5128,7 +5135,9 @@ describe('Spanner with mock server', () => {
       for (const md of sentMetadata) {
         const got = md.get('x-goog-spanner-request-id');
         if (got) {
-          xGoogRequestHeaders.push(...got);
+          for (const value of got) {
+            xGoogRequestHeaders.push(value);
+          }
         }
       }
       console.log('xGoogHeaders', xGoogRequestHeaders!);

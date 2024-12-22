@@ -1976,7 +1976,13 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const headers = this.commonHeaders_;
+    const database = this.session.parent as Database;
+    const headers = this.session._metadataWithRequestId(
+      database._nextNthRequest(),
+      1,
+      this.commonHeaders_,
+      this.resourceHeader_
+    );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -2209,13 +2215,18 @@ export class Transaction extends Dml {
 
       span.addEvent('Starting Commit');
 
+      const database = this.session.parent as Database;
       this.request(
         {
           client: 'SpannerClient',
           method: 'commit',
           reqOpts,
           gaxOpts: gaxOpts,
-          headers: headers,
+          headers: this.session._metadataWithRequestId(
+            database._nextNthRequest(),
+            1,
+            headers
+          ),
         },
         (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
           this.end();

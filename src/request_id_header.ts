@@ -80,11 +80,13 @@ class XGoogRequestHeaderInterceptor {
   private nUnary: number;
   private streamCalls: any[];
   private unaryCalls: any[];
-  constructor() {
+  private prefixesToIgnore?: string[];
+  constructor(prefixesToIgnore?: string[]) {
     this.nStream = 0;
     this.streamCalls = [];
     this.nUnary = 0;
     this.unaryCalls = [];
+    this.prefixesToIgnore = prefixesToIgnore || [];
   }
 
   assertHasHeader(call): string | unknown {
@@ -118,13 +120,36 @@ class XGoogRequestHeaderInterceptor {
     next(call);
   }
 
+  generateServerInterceptor() {
+    return this.serverInterceptor.bind(this);
+  }
+
+  reset() {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+  }
+
   serverInterceptor(methodDescriptor, call) {
     const method = call.handler.path;
     const isUnary = call.handler.type === 'unary';
+    const that = this;
     const listener = new grpc.ServerListenerBuilder()
       .withOnReceiveMetadata((metadata, next) => {
-        const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
-        if (!gotReqId) {
+        let i = 0;
+        const prefixesToIgnore: string[] = that.prefixesToIgnore || [];
+        for (i = 0; i < prefixesToIgnore.length; i++) {
+          const prefix = prefixesToIgnore[i];
+          console.log(`prefix: ${prefix}\nmethod: ${method}`);
+          if (method.startsWith(prefix)) {
+            next(metadata);
+            return;
+          }
+        }
+
+        const gotReqIds = metadata.get(X_GOOG_SPANNER_REQUEST_ID_HEADER);
+        if (!(gotReqIds && gotReqIds.length > 0)) {
           call.sendStatus({
             code: grpc.status.INVALID_ARGUMENT,
             details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
@@ -132,21 +157,32 @@ class XGoogRequestHeaderInterceptor {
           return;
         }
 
+        if (gotReqIds.length !== 1) {
+          call.sendStatus({
+            code: grpc.status.INVALID_ARGUMENT,
+            details: `${method} set multiple ${X_GOOG_SPANNER_REQUEST_ID_HEADER} headers: ${gotReqIds}`,
+          });
+          return;
+        }
+
+        const gotReqId = gotReqIds[0].toString();
         if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
           call.sendStatus({
             code: grpc.status.INVALID_ARGUMENT,
             details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
           });
+          return;
         }
 
-        // Otherwise it matched all good.
         if (isUnary) {
-          this.unaryCalls.push({method: method, reqId: gotReqId});
-          this.nUnary++;
+          that.unaryCalls.push({method: method, reqId: gotReqId});
+          that.nUnary++;
         } else {
-          this.streamCalls.push({method: method, reqId: gotReqId});
-          this.nStream++;
+          that.streamCalls.push({method: method, reqId: gotReqId});
+          that.nStream++;
         }
+
+        next(metadata);
       })
       .build();
 
