@@ -15,6 +15,7 @@
  */
 
 import {randomBytes} from 'crypto';
+import * as grpc from '@grpc/grpc-js';
 const randIdForProcess = randomBytes(8).readBigUint64LE(0).toString();
 const X_GOOG_SPANNER_REQUEST_ID_HEADER = 'x-goog-spanner-request-id';
 
@@ -72,10 +73,95 @@ function newAtomicCounter(n?: number): AtomicCounter {
   return new AtomicCounter(n);
 }
 
+const X_GOOG_REQ_ID_REGEX = /(\d+\.){5}\d+/;
+
+class XGoogRequestHeaderInterceptor {
+  private nStream: number;
+  private nUnary: number;
+  private streamCalls: any[];
+  private unaryCalls: any[];
+  constructor() {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+  }
+
+  assertHasHeader(call): string | unknown {
+    const metadata = call.metadata;
+    const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+    if (!gotReqId) {
+      throw new Error(
+        `${call.method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`
+      );
+    }
+
+    if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+      throw new Error(
+        `${call.method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`
+      );
+    }
+    return gotReqId;
+  }
+
+  interceptUnary(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.unaryCalls.push({method: call.method, reqId: gotReqId});
+    this.nUnary++;
+    next(call);
+  }
+
+  interceptStream(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.streamCalls.push({method: call.method, reqId: gotReqId});
+    this.nStream++;
+    next(call);
+  }
+
+  serverInterceptor(methodDescriptor, call) {
+    const method = call.handler.path;
+    const isUnary = call.handler.type === 'unary';
+    const listener = new grpc.ServerListenerBuilder()
+      .withOnReceiveMetadata((metadata, next) => {
+        const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+        if (!gotReqId) {
+          call.sendStatus({
+            code: grpc.status.INVALID_ARGUMENT,
+            details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
+          });
+          return;
+        }
+
+        if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+          call.sendStatus({
+            code: grpc.status.INVALID_ARGUMENT,
+            details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
+          });
+        }
+
+        // Otherwise it matched all good.
+        if (isUnary) {
+          this.unaryCalls.push({method: method, reqId: gotReqId});
+          this.nUnary++;
+        } else {
+          this.streamCalls.push({method: method, reqId: gotReqId});
+          this.nStream++;
+        }
+      })
+      .build();
+
+    const responder = new grpc.ResponderBuilder()
+      .withStart(next => next(listener))
+      .build();
+    return new grpc.ServerInterceptingCall(call, responder);
+  }
+}
+
 export {
   AtomicCounter,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
   craftRequestId,
   nextSpannerClientId,
   newAtomicCounter,
+  XGoogRequestHeaderInterceptor,
 };

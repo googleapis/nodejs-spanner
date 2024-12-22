@@ -26,7 +26,6 @@ import {
   Spanner,
   Transaction,
 } from '../src';
-import {MetadataValue} from '@grpc/grpc-js';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -56,6 +55,7 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {XGoogRequestHeaderInterceptor} from '../src/request_id_header';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -103,7 +103,10 @@ describe('Spanner with mock server', () => {
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
-  const server = new grpc.Server();
+  const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor();
+  const server = new grpc.Server({
+    interceptors: [xGoogReqIDInterceptor.serverInterceptor],
+  });
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
@@ -168,6 +171,8 @@ describe('Spanner with mock server', () => {
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
+      streamInterceptors: [xGoogReqIDInterceptor.interceptStream],
+      unaryInterceptors: [xGoogReqIDInterceptor.interceptUnary],
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
@@ -5100,7 +5105,7 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       let rowCount = 0;
-      await database.runTransactionAsync(async (transaction) => {
+      await database.runTransactionAsync(async transaction => {
         if (!attempts) {
           spannerMock.abortTransaction(transaction!);
         }
@@ -5114,19 +5119,19 @@ describe('Spanner with mock server', () => {
 
       const sentMetadata = spannerMock.getMetadata();
       const sentRequests = spannerMock.getRequests();
-      var xGoogRequestHeaders: MetadataValue[] = [];
+      const xGoogRequestHeaders = [];
       for (const index in sentMetadata) {
-          const req = sentRequests[index];
-          console.log(index, "req", req.constructor.name);
+        const req = sentRequests[index];
+        console.log(index, 'req', req.constructor.name);
       }
 
       for (const md of sentMetadata) {
-        const got = md.get("x-goog-spanner-request-id");
+        const got = md.get('x-goog-spanner-request-id');
         if (got) {
-           xGoogRequestHeaders.push(...got);
+          xGoogRequestHeaders.push(...got);
         }
       }
-      console.log("xGoogHeaders", xGoogRequestHeaders!);
+      console.log('xGoogHeaders', xGoogRequestHeaders!);
       await database.close();
     });
   });

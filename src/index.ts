@@ -147,6 +147,8 @@ export interface SpannerOptions extends GrpcClientOptions {
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
   observabilityOptions?: ObservabilityOptions;
+  unaryInterceptors?: any[];
+  streamInterceptors?: any[];
 }
 export interface RequestConfig {
   client: string;
@@ -311,6 +313,14 @@ class Spanner extends GrpcService {
         }
       }
     }
+
+    let unaryInterceptors: any[] = [];
+    let streamInterceptors: any[] = [];
+    if (options) {
+      unaryInterceptors = options.unaryInterceptors || [];
+      streamInterceptors = options.streamInterceptors || [];
+    }
+
     options = Object.assign(
       {
         libName: 'gccl',
@@ -323,6 +333,11 @@ class Spanner extends GrpcService {
         'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
         'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
         'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
+
+        // TODO: Negotiate with the Google team to plumb gRPC
+        // settings such as interceptors to the gRPC client.
+        'grpc.unaryInterceptors': unaryInterceptors,
+        'grpc.streamInterceptors': streamInterceptors,
         grpc,
       },
       options || {}

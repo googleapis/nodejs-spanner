@@ -709,9 +709,9 @@ class Database extends common.GrpcServiceObject {
     }
 
     const allHeaders = this._metadataWithRequestId(
-            this._nextNthRequest(),
-            1,
-            headers
+      this._nextNthRequest(),
+      1,
+      headers
     );
 
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
