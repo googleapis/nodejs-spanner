@@ -113,6 +113,10 @@ class XGoogRequestHeaderInterceptor {
     next(call);
   }
 
+  generateClientInterceptor() {
+    return this.interceptUnary.bind(this);
+  }
+
   interceptStream(call, next) {
     const gotReqId = this.assertHasHeader(call);
     this.streamCalls.push({method: call.method, reqId: gotReqId});
@@ -131,6 +135,27 @@ class XGoogRequestHeaderInterceptor {
     this.unaryCalls = [];
   }
 
+  loggingClientInterceptor(options, call) {
+    const listener = new grpc.ListenerBuilder().withOnReceiveMessage(
+      (next, message) => {
+        console.log('Received message', JSON.stringify(message));
+        next(message);
+      }
+    );
+
+    const requester = new grpc.RequesterBuilder()
+      .withSendMessage((next, message) => {
+        console.log('Requesting', call.method, JSON.stringify(message));
+        next(message);
+      })
+      .build();
+    return new grpc.InterceptingCall(call(options), requester);
+  }
+
+  generateLoggingClientInterceptor() {
+    return this.loggingClientInterceptor.bind(this);
+  }
+
   serverInterceptor(methodDescriptor, call) {
     const method = call.handler.path;
     const isUnary = call.handler.type === 'unary';
@@ -141,7 +166,7 @@ class XGoogRequestHeaderInterceptor {
         const prefixesToIgnore: string[] = that.prefixesToIgnore || [];
         for (i = 0; i < prefixesToIgnore.length; i++) {
           const prefix = prefixesToIgnore[i];
-          console.log(`prefix: ${prefix}\nmethod: ${method}`);
+          // console.log(`prefix: ${prefix}\nmethod: ${method}`);
           if (method.startsWith(prefix)) {
             next(metadata);
             return;
@@ -193,11 +218,100 @@ class XGoogRequestHeaderInterceptor {
   }
 }
 
+interface withHeaders {
+  headers: {[k: string]: string};
+}
+
+function extractRequestID(config: any): string {
+  if (!config) {
+    return '';
+  }
+
+  const hdrs = config as withHeaders;
+  if (hdrs && hdrs.headers) {
+    return hdrs.headers[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+  }
+  return '';
+}
+
+function injectRequestIDIntoError(config: any, err: Error) {
+  if (!err) {
+    return;
+  }
+
+  // Inject that RequestID into the actual
+  // error object regardless of the type.
+  Object.assign(err, {requestID: extractRequestID(config)});
+}
+
+interface withNextNthRequest {
+  _nextNthRequest: Function;
+}
+
+interface withMetadataWithRequestId {
+  _nthClientId: number;
+  _channelId: number;
+}
+
+function injectRequestIDIntoHeaders(
+  headers: {[k: string]: string},
+  session: any,
+  nthRequest?: number,
+  attempt?: number
+) {
+  if (!session) {
+    return headers;
+  }
+
+  if (!nthRequest) {
+    const database = session.parent as withNextNthRequest;
+    if (!(database && typeof database._nextNthRequest === 'function')) {
+      return headers;
+    }
+    console.log('database', database);
+    nthRequest = database._nextNthRequest();
+  }
+
+  attempt = attempt || 1;
+  return _metadataWithRequestId(session, nthRequest!, attempt, headers);
+}
+
+function _metadataWithRequestId(
+  session: any,
+  nthRequest: number,
+  attempt: number,
+  priorMetadata?: {[k: string]: string}
+): {[k: string]: string} {
+  if (!priorMetadata) {
+    priorMetadata = {};
+  }
+  const withReqId = {
+    ...priorMetadata,
+  };
+  const database = session.parent as withMetadataWithRequestId;
+  let clientId = 1;
+  let channelId = 1;
+  if (database) {
+    clientId = database._nthClientId || 1;
+    channelId = database._channelId || 1;
+  }
+  withReqId[X_GOOG_SPANNER_REQUEST_ID_HEADER] = craftRequestId(
+    clientId,
+    channelId,
+    nthRequest,
+    attempt
+  );
+  return withReqId;
+}
+
 export {
   AtomicCounter,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  XGoogRequestHeaderInterceptor,
   craftRequestId,
+  extractRequestID,
+  injectRequestIDIntoError,
+  injectRequestIDIntoHeaders,
   nextSpannerClientId,
   newAtomicCounter,
-  XGoogRequestHeaderInterceptor,
 };

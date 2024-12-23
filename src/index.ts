@@ -23,6 +23,7 @@ import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
+import {EventEmitter} from 'events';
 import * as through from 'through2';
 import {
   codec,
@@ -86,7 +87,10 @@ import {
   ObservabilityOptions,
   ensureInitialContextManagerSet,
 } from './instrument';
-import {AtomicCounter, nextSpannerClientId} from './request_id_header';
+import {
+  injectRequestIDIntoError,
+  nextSpannerClientId,
+} from './request_id_header';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -147,8 +151,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
   observabilityOptions?: ObservabilityOptions;
-  unaryInterceptors?: any[];
-  streamInterceptors?: any[];
+  interceptors?: any[];
 }
 export interface RequestConfig {
   client: string;
@@ -314,11 +317,9 @@ class Spanner extends GrpcService {
       }
     }
 
-    let unaryInterceptors: any[] = [];
-    let streamInterceptors: any[] = [];
+    let interceptors: any[] = [];
     if (options) {
-      unaryInterceptors = options.unaryInterceptors || [];
-      streamInterceptors = options.streamInterceptors || [];
+      interceptors = options.interceptors || [];
     }
 
     options = Object.assign(
@@ -336,8 +337,7 @@ class Spanner extends GrpcService {
 
         // TODO: Negotiate with the Google team to plumb gRPC
         // settings such as interceptors to the gRPC client.
-        'grpc.unaryInterceptors': unaryInterceptors,
-        'grpc.streamInterceptors': streamInterceptors,
+        // 'grpc.interceptors': interceptors,
         grpc,
       },
       options || {}
@@ -358,6 +358,7 @@ class Spanner extends GrpcService {
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
     }
+    // console.log('options.interceptors', options.interceptors);
     const config = {
       baseUrl:
         options.apiEndpoint ||
@@ -1569,7 +1570,55 @@ class Spanner extends GrpcService {
           },
         })
       );
-      callback(null, requestFn);
+
+      const wrapped = (...args) => {
+        const hasCallback =
+          args &&
+          args.length > 0 &&
+          typeof args[args.length - 1] === 'function';
+
+        // console.log(config.method, "wrapped args", args, "requestFn", requestFn);
+        switch (hasCallback) {
+          case true:
+            const cb = args[args.length - 1];
+            const priorArgs = args.slice(0, args.length - 1);
+            requestFn(...priorArgs, (...results) => {
+              if (results && results.length > 0) {
+                const err = results[0] as Error;
+                injectRequestIDIntoError(config, err);
+              }
+
+              // console.log("wrapped with args and callback", results);
+              cb(...results);
+            });
+            return;
+
+          case false:
+            const res = requestFn(...args);
+            const stream = res as EventEmitter;
+            if (stream) {
+              stream.on('error', err => {
+                injectRequestIDIntoError(config, err as Error);
+              });
+            }
+
+            const originallyPromise = res instanceof Promise;
+            if (!originallyPromise) {
+              return res;
+            }
+
+            return new Promise((resolve, reject) => {
+              requestFn(...args)
+                .then(resolve)
+                .catch(err => {
+                  injectRequestIDIntoError(config, err as Error);
+                  reject(err);
+                });
+            });
+        }
+      };
+
+      callback(null, wrapped);
     });
   }
 
@@ -1597,6 +1646,7 @@ class Spanner extends GrpcService {
     } else {
       return new Promise((resolve, reject) => {
         this.prepareGapicRequest_(config, (err, requestFn) => {
+          console.log('request.error', err, 'requestFn', requestFn);
           if (err) {
             reject(err);
           } else {

@@ -52,6 +52,7 @@ import {
   setSpanError,
   setSpanErrorAndException,
 } from './instrument';
+import {injectRequestIDIntoHeaders} from './request_id_header';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -456,11 +457,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
           gaxOpts,
-          headers: this.session._metadataWithRequestId(
-            database._nextNthRequest(),
-            1,
-            headers
-          ),
+          headers: injectRequestIDIntoHeaders(headers, this.session),
         },
         (
           err: null | grpc.ServiceError,
@@ -721,8 +718,7 @@ export class Snapshot extends EventEmitter {
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       let attempt = 0;
       const database = this.session.parent as Database;
-      const nthRequest = database._nextNthRequest();
-
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         if (this.id && transaction.begin) {
           delete transaction.begin;
@@ -749,10 +745,11 @@ export class Snapshot extends EventEmitter {
           method: 'streamingRead',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: this.session._metadataWithRequestId(
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
             nthRequest,
-            attempt,
-            headers
+            attempt
           ),
         });
       };
@@ -1312,7 +1309,7 @@ export class Snapshot extends EventEmitter {
     return startTrace('Snapshot.runStream', traceConfig, span => {
       let attempt = 0;
       const database = this.session.parent as Database;
-      const nthRequest = database._nextNthRequest();
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         attempt++;
 
@@ -1346,10 +1343,11 @@ export class Snapshot extends EventEmitter {
           method: 'executeStreamingSql',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: this.session._metadataWithRequestId(
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
             nthRequest,
-            attempt,
-            headers
+            attempt
           ),
         });
       };
@@ -3062,6 +3060,13 @@ function isErrorAborted(err): boolean {
     'code' in err &&
     (err as grpc.ServiceError).code === grpc.status.ABORTED
   );
+}
+
+function nextNthRequest(database): number {
+  if (!(database && typeof database._nextNthRequest === 'function')) {
+    return 1;
+  }
+  return database._nextNthRequest();
 }
 
 /*! Developer Documentation
