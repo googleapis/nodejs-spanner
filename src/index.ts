@@ -358,7 +358,6 @@ class Spanner extends GrpcService {
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
     }
-    // console.log('options.interceptors', options.interceptors);
     const config = {
       baseUrl:
         options.apiEndpoint ||
@@ -1577,7 +1576,6 @@ class Spanner extends GrpcService {
           args.length > 0 &&
           typeof args[args.length - 1] === 'function';
 
-        // console.log(config.method, "wrapped args", args, "requestFn", requestFn);
         switch (hasCallback) {
           case true:
             const cb = args[args.length - 1];
@@ -1588,7 +1586,6 @@ class Spanner extends GrpcService {
                 injectRequestIDIntoError(config, err);
               }
 
-              // console.log("wrapped with args and callback", results);
               cb(...results);
             });
             return;
@@ -1646,7 +1643,6 @@ class Spanner extends GrpcService {
     } else {
       return new Promise((resolve, reject) => {
         this.prepareGapicRequest_(config, (err, requestFn) => {
-          console.log('request.error', err, 'requestFn', requestFn);
           if (err) {
             reject(err);
           } else {

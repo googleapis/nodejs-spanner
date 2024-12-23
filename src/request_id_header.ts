@@ -268,7 +268,6 @@ function injectRequestIDIntoHeaders(
     if (!(database && typeof database._nextNthRequest === 'function')) {
       return headers;
     }
-    console.log('database', database);
     nthRequest = database._nextNthRequest();
   }
 

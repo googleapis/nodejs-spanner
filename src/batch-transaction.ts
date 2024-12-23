@@ -148,7 +148,6 @@ class BatchTransaction extends Snapshot {
       traceConfig,
       span => {
         const database = this.session.parent as Database;
-        const nthRequest = database._nextNthRequest();
         const headers: {[k: string]: string} = {};
         if (this._getSpanner().routeToLeaderEnabled) {
           addLeaderAwareRoutingHeader(headers);
@@ -160,11 +159,7 @@ class BatchTransaction extends Snapshot {
             method: 'partitionQuery',
             reqOpts,
             gaxOpts: query.gaxOptions,
-            headers: this.session._metadataWithRequestId(
-              nthRequest,
-              1,
-              headers
-            ),
+            headers: injectRequestIDIntoHeaders(headers, this.session),
           },
           (err, partitions, resp) => {
             if (err) {
@@ -212,11 +207,7 @@ class BatchTransaction extends Snapshot {
         const headers = {
           [CLOUD_RESOURCE_HEADER]: database.formattedName_,
         };
-        config.headers = this.session._metadataWithRequestId(
-          database._nextNthRequest(),
-          1,
-          headers
-        );
+        config.headers = injectRequestIDIntoHeaders(headers, this.session);
         delete query.partitionOptions;
         this.session.request(config, (err, resp) => {
           if (err) {

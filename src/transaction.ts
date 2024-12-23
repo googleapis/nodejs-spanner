@@ -1975,11 +1975,11 @@ export class Transaction extends Dml {
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
     const database = this.session.parent as Database;
-    const headers = this.session._metadataWithRequestId(
-      database._nextNthRequest(),
-      1,
+    const headers = injectRequestIDIntoHeaders(
       this.commonHeaders_,
-      this.resourceHeader_
+      this.session,
+      nextNthRequest(database),
+      1
     );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
@@ -2220,10 +2220,11 @@ export class Transaction extends Dml {
           method: 'commit',
           reqOpts,
           gaxOpts: gaxOpts,
-          headers: this.session._metadataWithRequestId(
-            database._nextNthRequest(),
-            1,
-            headers
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nextNthRequest(database),
+            1
           ),
         },
         (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
