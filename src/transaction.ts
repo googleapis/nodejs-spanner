@@ -52,7 +52,7 @@ import {
   setSpanError,
   setSpanErrorAndException,
 } from './instrument';
-import {injectRequestIDIntoHeaders} from './request_id_header';
+import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -3061,13 +3061,6 @@ function isErrorAborted(err): boolean {
     'code' in err &&
     (err as grpc.ServiceError).code === grpc.status.ABORTED
   );
-}
-
-function nextNthRequest(database): number {
-  if (!(database && typeof database._nextNthRequest === 'function')) {
-    return 1;
-  }
-  return database._nextNthRequest();
 }
 
 /*! Developer Documentation

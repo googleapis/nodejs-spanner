@@ -44,6 +44,7 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
+import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
 export type GetSessionResponse = [Session, r.Response];
 
 /**
@@ -323,10 +324,11 @@ export class Session extends common.GrpcServiceObject {
         method: 'deleteSession',
         reqOpts,
         gaxOpts,
-        headers: database._metadataWithRequestId(
-          database._nextNthRequest(),
-          1,
-          this.commonHeaders_
+        headers: injectRequestIDIntoHeaders(
+          this.commonHeaders_,
+          this.session,
+          nextNthRequest(database),
+          1
         ),
       },
       callback!
@@ -400,10 +402,11 @@ export class Session extends common.GrpcServiceObject {
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: database._metadataWithRequestId(
-          database._nextNthRequest(),
-          1,
-          headers
+        headers: injectRequestIDIntoHeaders(
+          headers,
+          this.session,
+          nextNthRequest(database),
+          1
         ),
       },
       (err, resp) => {

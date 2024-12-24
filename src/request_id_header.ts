@@ -303,6 +303,13 @@ function _metadataWithRequestId(
   return withReqId;
 }
 
+function nextNthRequest(database): number {
+  if (!(database && typeof database._nextNthRequest === 'function')) {
+    return 1;
+  }
+  return database._nextNthRequest();
+}
+
 export {
   AtomicCounter,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
@@ -311,6 +318,7 @@ export {
   extractRequestID,
   injectRequestIDIntoError,
   injectRequestIDIntoHeaders,
+  nextNthRequest,
   nextSpannerClientId,
   newAtomicCounter,
 };
