@@ -27,6 +27,7 @@ import {
   Span,
   SpanStatusCode,
   context,
+  propagation,
   trace,
   INVALID_SPAN_CONTEXT,
   ROOT_CONTEXT,
@@ -59,6 +60,7 @@ interface SQLStatement {
 interface ObservabilityOptions {
   tracerProvider: TracerProvider;
   enableExtendedTracing?: boolean;
+  enableEndToEndTracing?: boolean;
 }
 
 export type {ObservabilityOptions};
@@ -98,6 +100,8 @@ const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
 
+const {W3CTraceContextPropagator} = require('@opentelemetry/core');
+
 /*
  * This function ensures that async/await works correctly by
  * checking if context.active() returns an invalid/unset context
@@ -116,7 +120,14 @@ function ensureInitialContextManagerSet() {
     context.setGlobalContextManager(contextManager);
   }
 }
+
+function ensureContextPropagation() {
+  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+}
+
 export {ensureInitialContextManagerSet};
+
+export {ensureContextPropagation};
 
 /**
  * startTrace begins an active span in the current active context

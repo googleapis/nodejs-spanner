@@ -81,10 +81,37 @@ export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
  */
 export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
 
+/*
+ * END TO END TRACING  header.
+ */
+export const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
+
 /**
  * Add Leader aware routing header to existing header list.
  * @param headers Existing header list.
  */
 export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
   headers[LEADER_AWARE_ROUTING_HEADER] = 'true';
+}
+
+/**
+ * Returns common headers to add.
+ * @param headers Common header list.
+ */
+export function getCommonHeaders(
+  resourceName: string,
+  enableTracing?: boolean
+) {
+  const headers: {[k: string]: string} = {};
+
+  if (
+    process.env.SPANNER_ENABLE_END_TO_END_TRACING === 'true' ||
+    enableTracing
+  ) {
+    headers[END_TO_END_TRACING_HEADER] = 'true';
+  }
+
+  headers[CLOUD_RESOURCE_HEADER] = resourceName;
+
+  return headers;
 }
