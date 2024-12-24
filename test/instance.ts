@@ -174,8 +174,8 @@ describe('Instance', () => {
       calledWith.createMethod(null, options, done);
     });
 
-    it('should set the resourceHeader_', () => {
-      assert.deepStrictEqual(instance.resourceHeader_, {
+    it('should set the commonHeaders_', () => {
+      assert.deepStrictEqual(instance.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: instance.formattedName_,
       });
     });
@@ -218,7 +218,7 @@ describe('Instance', () => {
           createStatement: 'CREATE DATABASE `' + NAME + '`',
         });
         assert.strictEqual(config.gaxOpts, undefined);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
 
         done();
       };
@@ -556,7 +556,7 @@ describe('Instance', () => {
           name: instance.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
         callback(); // done()
       };
 
@@ -930,7 +930,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
 
         done();
       };
@@ -1120,7 +1120,7 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
 
         return returnValue;
       };
@@ -1221,7 +1221,7 @@ describe('Instance', () => {
           name: instance.formattedName_,
         });
         assert.strictEqual(config.gaxOpts, undefined);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
         return requestReturnValue;
       };
 
@@ -1317,7 +1317,7 @@ describe('Instance', () => {
 
         assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
 
         assert.strictEqual(callback_, callback);
 
@@ -1369,7 +1369,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
         done();
       };
 
@@ -1555,7 +1555,7 @@ describe('Instance', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
 
         return returnValue;
       };
@@ -1822,7 +1822,7 @@ describe('Instance', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
-        assert.deepStrictEqual(config.headers, instance.resourceHeader_);
+        assert.deepStrictEqual(config.headers, instance.commonHeaders_);
         done();
       };
 
