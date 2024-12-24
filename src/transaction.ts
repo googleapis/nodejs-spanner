@@ -447,7 +447,6 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
-    const database = this.session.parent as Database;
     return startTrace('Snapshot.begin', traceConfig, span => {
       span.addEvent('Begin Transaction');
 

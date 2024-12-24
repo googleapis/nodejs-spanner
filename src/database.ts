@@ -761,7 +761,7 @@ class Database extends common.GrpcServiceObject {
       ...priorMetadata,
     };
     withReqId[X_GOOG_SPANNER_REQUEST_ID_HEADER] = craftRequestId(
-      this._clientId,
+      this._clientId || 1,
       1, // TODO: Properly infer the channelId
       nthRequest,
       attempt
@@ -1037,7 +1037,7 @@ class Database extends common.GrpcServiceObject {
     const headers = this._metadataWithRequestId(
       this._nextNthRequest(),
       1,
-      this.commonHeaders_,
+      this.commonHeaders_
     );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);

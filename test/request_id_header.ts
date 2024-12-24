@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable prefer-rest-params */
+import * as assert from 'assert';
 import {AtomicCounter} from '../src/request_id_header';
 
 describe('AtomicCounter', () => {
@@ -35,13 +36,13 @@ describe('AtomicCounter', () => {
     const ac1 = new AtomicCounter(1);
     assert.strictEqual(ac1.value(), 1);
     assert.strictEqual(
-      ac0.increment(1 << 32),
-      (1 << 32) + 1,
+      ac1.increment(1 << 27),
+      (1 << 27) + 1,
       'increment should return the added value'
     );
     assert.strictEqual(
-      ac0.value(),
-      (1 << 32) + 1,
+      ac1.value(),
+      (1 << 27) + 1,
       'increment should have modified the value'
     );
     done();

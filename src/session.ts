@@ -325,8 +325,8 @@ export class Session extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
         headers: injectRequestIDIntoHeaders(
-          this.commonHeaders_,
-          this.session,
+          this.resourceHeader_,
+          this,
           nextNthRequest(database),
           1
         ),
@@ -461,23 +461,15 @@ export class Session extends common.GrpcServiceObject {
         method: 'executeSql',
         reqOpts,
         gaxOpts,
-        headers: database._metadataWithRequestId(
-          database._nextNthRequest(),
-          1,
-          this.commonHeaders_
+        headers: injectRequestIDIntoHeaders(
+          this.commonHeaders_,
+          this,
+          nextNthRequest(database),
+          1
         ),
       },
       callback!
     );
-  }
-
-  public _metadataWithRequestId(
-    nthRequest: number,
-    attempt: number,
-    priorMetadata?: {[k: string]: string}
-  ): {[k: string]: string} {
-    const database = this.parent as Database;
-    return database._metadataWithRequestId(nthRequest, attempt, priorMetadata);
   }
 
   /**

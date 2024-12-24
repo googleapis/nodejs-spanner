@@ -1570,7 +1570,9 @@ class Spanner extends GrpcService {
         })
       );
 
-      const wrapped = (...args) => {
+      // Wrap requestFn so as to inject the spanner request id into
+      // every returned error, so that users can have debugging continuity.
+      const wrappedRequestFn = (...args) => {
         const hasCallback =
           args &&
           args.length > 0 &&
@@ -1615,7 +1617,7 @@ class Spanner extends GrpcService {
         }
       };
 
-      callback(null, wrapped);
+      callback(null, wrappedRequestFn);
     });
   }
 

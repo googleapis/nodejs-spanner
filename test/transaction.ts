@@ -1428,7 +1428,7 @@ describe('Transaction', () => {
           Object.assign(
             {
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
-              [LEADER_AWARE_ROUTING_HEADER]: true,
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
             },
             transaction.commonHeaders_
           )

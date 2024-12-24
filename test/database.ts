@@ -2141,7 +2141,7 @@ describe('Database', () => {
           config.headers,
           Object.assign(
             {
-              [LEADER_AWARE_ROUTING_HEADER]: true,
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
             },
             database.commonHeaders_
