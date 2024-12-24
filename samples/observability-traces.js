@@ -76,6 +76,7 @@ async function main(
     observabilityOptions: {
       tracerProvider: provider,
       enableExtendedTracing: true,
+      enableEndToEndTracing: true,
     },
   });
 
