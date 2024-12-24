@@ -377,8 +377,8 @@ describe('Database', () => {
       calledWith.createMethod(null, options, done);
     });
 
-    it('should set the resourceHeader_', () => {
-      assert.deepStrictEqual(database.resourceHeader_, {
+    it('should set the commonHeaders_', () => {
+      assert.deepStrictEqual(database.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: database.formattedName_,
       });
     });
@@ -419,7 +419,7 @@ describe('Database', () => {
         headers,
         Object.assign(
           {[LEADER_AWARE_ROUTING_HEADER]: true},
-          database.resourceHeader_
+          database.commonHeaders_
         )
       );
     });
@@ -550,7 +550,7 @@ describe('Database', () => {
 
         assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
 
         assert.strictEqual(callback_, callback);
 
@@ -695,7 +695,7 @@ describe('Database', () => {
       assert.strictEqual(args.method, 'batchWrite');
       assert.deepStrictEqual(args.reqOpts, expectedReqOpts);
       assert.deepStrictEqual(args.gaxOpts, expectedGaxOpts);
-      assert.deepStrictEqual(args.headers, database.resourceHeader_);
+      assert.deepStrictEqual(args.headers, database.commonHeaders_);
     });
 
     it('should return error when passing an empty list of mutationGroups', done => {
@@ -1133,7 +1133,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         assert.strictEqual(callback, assert.ifError);
       };
 
@@ -1405,7 +1405,7 @@ describe('Database', () => {
           name: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         return requestReturnValue;
       };
 
@@ -1432,7 +1432,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 
@@ -2057,7 +2057,7 @@ describe('Database', () => {
           statements: STATEMENTS,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         assert.strictEqual(callback, assert.ifError);
         return requestReturnValue;
       };
@@ -2123,7 +2123,7 @@ describe('Database', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            database.resourceHeader_
+            database.commonHeaders_
           )
         );
 
@@ -2510,7 +2510,7 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.deepStrictEqual(config.gaxOpts, gaxOpts);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 
@@ -2683,7 +2683,7 @@ describe('Database', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         return returnValue;
       };
 
@@ -3290,7 +3290,7 @@ describe('Database', () => {
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 

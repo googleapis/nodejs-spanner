@@ -92,6 +92,7 @@ import {
   ResourceCallback,
   Schema,
   addLeaderAwareRoutingHeader,
+  getCommonHeaders,
 } from './common';
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -341,7 +342,7 @@ class Database extends common.GrpcServiceObject {
   pool_: SessionPoolInterface;
   sessionFactory_: SessionFactoryInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
   labels?: {[k: string]: string} | null;
@@ -463,11 +464,13 @@ class Database extends common.GrpcServiceObject {
       dbName: this.formattedName_,
     };
 
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this.formattedName_,
-    };
     this.request = instance.request;
     this._observabilityOptions = instance._observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this.formattedName_,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
     this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
@@ -579,7 +582,7 @@ class Database extends common.GrpcServiceObject {
         method: 'updateDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );
@@ -685,7 +688,7 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -986,7 +989,7 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -1212,7 +1215,7 @@ class Database extends common.GrpcServiceObject {
           method: 'dropDatabase',
           reqOpts,
           gaxOpts,
-          headers: this.resourceHeader_,
+          headers: this.commonHeaders_,
         },
         callback!
       );
@@ -1444,7 +1447,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         if (resp) {
@@ -1698,7 +1701,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabaseDdl',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
@@ -1778,7 +1781,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getIamPolicy',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         callback!(err, resp);
@@ -1917,7 +1920,7 @@ class Database extends common.GrpcServiceObject {
           method: 'listSessions',
           reqOpts,
           gaxOpts,
-          headers: this.resourceHeader_,
+          headers: this.commonHeaders_,
         },
         (err, sessions, nextPageRequest, ...args) => {
           if (err) {
@@ -2010,7 +2013,7 @@ class Database extends common.GrpcServiceObject {
       method: 'listSessionsStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -2402,7 +2405,7 @@ class Database extends common.GrpcServiceObject {
         method: 'listDatabaseRoles',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, roles, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -2612,7 +2615,7 @@ class Database extends common.GrpcServiceObject {
         method: 'restoreDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -3511,7 +3514,7 @@ class Database extends common.GrpcServiceObject {
             method: 'batchWrite',
             reqOpts,
             gaxOpts,
-            headers: this.resourceHeader_,
+            headers: this.commonHeaders_,
           });
           dataStream
             .once('data', () => (dataReceived = true))
@@ -3793,7 +3796,7 @@ class Database extends common.GrpcServiceObject {
         method: 'setIamPolicy',
         reqOpts,
         gaxOpts: gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         callback!(err, resp);
@@ -3923,7 +3926,7 @@ class Database extends common.GrpcServiceObject {
         method: 'updateDatabaseDdl',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );

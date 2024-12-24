@@ -38,8 +38,8 @@ import {
 import {ServiceObjectConfig} from '@google-cloud/common';
 import {
   NormalCallback,
-  CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
+  getCommonHeaders,
 } from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
@@ -117,7 +117,7 @@ export class Session extends common.GrpcServiceObject {
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -259,9 +259,10 @@ export class Session extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,
-    };
+    this.commonHeaders_ = getCommonHeaders(
+      (this.parent as Database).formattedName_,
+      database._observabilityOptions?.enableEndToEndTracing
+    );
     this.request = database.request;
     this.requestStream = database.requestStream;
 
@@ -322,7 +323,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'deleteSession',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );
@@ -384,7 +385,7 @@ export class Session extends common.GrpcServiceObject {
       name: this.formattedName_,
     };
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -446,7 +447,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'executeSql',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );
