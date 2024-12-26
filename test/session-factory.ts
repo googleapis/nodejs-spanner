@@ -78,42 +78,48 @@ describe('SessionFactory', () => {
   });
 
   describe('instantiation', () => {
-    describe('SessionPool', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
-      it('should create a SessionPool object', () => {
-        assert(sessionFactory.pool_ instanceof SessionPool);
-      });
-
-      it('should accept a custom Pool class', () => {
-        function FakePool() {}
-        FakePool.prototype.on = util.noop;
-        FakePool.prototype.open = util.noop;
-
-        const sessionFactory = new SessionFactory(
-          DATABASE,
-          NAME,
-          FakePool as {} as db.SessionPoolConstructor
-        );
-        assert(sessionFactory.pool_ instanceof FakePool);
-      });
-
-      it('should open the pool', () => {
-        const openStub = sandbox
-          .stub(SessionPool.prototype, 'open')
-          .callsFake(() => {});
-
-        new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-
-        assert.strictEqual(openStub.callCount, 1);
-      });
+    before(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     });
 
-    describe('MultiplexedSession', () => {
+    it('should create a SessionPool object', () => {
+      assert(sessionFactory.pool_ instanceof SessionPool);
+    });
+
+    it('should accept a custom Pool class', () => {
+      function FakePool() {}
+      FakePool.prototype.on = util.noop;
+      FakePool.prototype.open = util.noop;
+
+      const sessionFactory = new SessionFactory(
+        DATABASE,
+        NAME,
+        FakePool as {} as db.SessionPoolConstructor
+      );
+      assert(sessionFactory.pool_ instanceof FakePool);
+    });
+
+    it('should open the pool', () => {
+      const openStub = sandbox
+        .stub(SessionPool.prototype, 'open')
+        .callsFake(() => {});
+
+      new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+
+      assert.strictEqual(openStub.callCount, 1);
+    });
+
+    it('should set the isMuxCreated to be false if env is disabled', () => {
+      assert.strictEqual(sessionFactory.isMuxCreated, false);
+    });
+
+    describe('when env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+
+      it('should set the isMuxCreated to be true if env is enabled', () => {
+        assert.strictEqual(sessionFactory.isMuxCreated, true);
       });
 
       it('should create a MultiplexedSession object', () => {

@@ -70,6 +70,7 @@ export class SessionFactory
 {
   multiplexedSession_?: MultiplexedSessionInterface;
   pool_: SessionPoolInterface;
+  isMuxCreated: boolean;
   constructor(
     database: Database,
     name: String,
@@ -85,8 +86,10 @@ export class SessionFactory
         : new SessionPool(database, poolOptions);
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
+    this.isMuxCreated = false;
     // multiplexed session should only get created if the env variable is enabled
     if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true') {
+      this.isMuxCreated = true;
       this.multiplexedSession_ = new MultiplexedSession(database);
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
       this.multiplexedSession_.createSession();
@@ -103,10 +106,10 @@ export class SessionFactory
    */
 
   getSession(callback: GetSessionCallback): void {
-    const sessionHandler =
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
-        ? this.multiplexedSession_
-        : this.pool_;
+    const sessionHandler = this.isMuxCreated
+      ? this.multiplexedSession_
+      : this.pool_;
+
     sessionHandler!.getSession((err, session) => callback(err, session));
   }
 
@@ -136,7 +139,7 @@ export class SessionFactory
    * @throws {Error} Throws an error if the session is invalid or cannot be released.
    */
   release(session: Session): void {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
+    if (!this.isMuxCreated) {
       this.pool_.release(session);
     }
   }

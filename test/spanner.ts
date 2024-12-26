@@ -5081,18 +5081,16 @@ describe('Spanner with mock server', () => {
     after(() => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     });
-    it('should execute table mutations without leaking sessions', () => {
+
+    it('should not throw error when enabling env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS after client initialization', done => {
       const database = newTestDatabase();
+      // enable env after database creation
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       const sessionFactory = database.sessionFactory_ as SessionFactory;
-      try {
-        sessionFactory.getSession(() => {});
-      } catch (e) {
-        assert.strictEqual(
-          (e as TypeError).message,
-          "Cannot read properties of undefined (reading 'getSession')"
-        );
-      }
+      sessionFactory.getSession((err, _) => {
+        assert.ifError(err);
+        done();
+      });
     });
   });
 });
