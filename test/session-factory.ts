@@ -109,17 +109,9 @@ describe('SessionFactory', () => {
       assert.strictEqual(openStub.callCount, 1);
     });
 
-    it('should set the isMuxCreated to be false if env is disabled', () => {
-      assert.strictEqual(sessionFactory.isMuxCreated, false);
-    });
-
     describe('when env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
-
-      it('should set the isMuxCreated to be true if env is enabled', () => {
-        assert.strictEqual(sessionFactory.isMuxCreated, true);
       });
 
       it('should create a MultiplexedSession object', () => {

@@ -68,9 +68,8 @@ export class SessionFactory
   extends common.GrpcServiceObject
   implements SessionFactoryInterface
 {
-  multiplexedSession_?: MultiplexedSessionInterface;
+  multiplexedSession_: MultiplexedSessionInterface;
   pool_: SessionPoolInterface;
-  isMuxCreated: boolean;
   constructor(
     database: Database,
     name: String,
@@ -86,11 +85,9 @@ export class SessionFactory
         : new SessionPool(database, poolOptions);
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
-    this.isMuxCreated = false;
+    this.multiplexedSession_ = new MultiplexedSession(database);
     // multiplexed session should only get created if the env variable is enabled
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true') {
-      this.isMuxCreated = true;
-      this.multiplexedSession_ = new MultiplexedSession(database);
+    if ((this.multiplexedSession_ as MultiplexedSession).isMultiplexedEnabled) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
       this.multiplexedSession_.createSession();
     }
@@ -106,7 +103,8 @@ export class SessionFactory
    */
 
   getSession(callback: GetSessionCallback): void {
-    const sessionHandler = this.isMuxCreated
+    const sessionHandler = (this.multiplexedSession_ as MultiplexedSession)
+      .isMultiplexedEnabled
       ? this.multiplexedSession_
       : this.pool_;
 
