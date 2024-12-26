@@ -2331,6 +2331,15 @@ describe('Database', () => {
       });
     });
 
+    it('should pass when maxStaleness is undefined', () => {
+      const fakeTimestampBounds = {minReadTimestamp: undefined};
+
+      database.getSnapshot(fakeTimestampBounds, assert.ifError);
+
+      const bounds = snapshotStub.lastCall.args[0];
+      assert.strictEqual(bounds, fakeTimestampBounds);
+    });
+
     it('should begin a snapshot', () => {
       beginSnapshotStub.callsFake(() => {});
 
