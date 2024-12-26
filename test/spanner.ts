@@ -5082,7 +5082,7 @@ describe('Spanner with mock server', () => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     });
 
-    it('should not throw error when enabling env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS after client initialization', done => {
+    it('should not propagate any error when enabling GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS after client initialization', done => {
       const database = newTestDatabase();
       // enable env after database creation
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';

@@ -109,7 +109,7 @@ describe('SessionFactory', () => {
       assert.strictEqual(openStub.callCount, 1);
     });
 
-    describe('when env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       });
@@ -120,7 +120,7 @@ describe('SessionFactory', () => {
         );
       });
 
-      it('should initiate the multiplexed session creation if the env is enabled', () => {
+      it('should initiate the multiplexed session creation if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
         const createSessionStub = sandbox
           .stub(MultiplexedSession.prototype, 'createSession')
           .callsFake(() => {});
@@ -133,12 +133,12 @@ describe('SessionFactory', () => {
   });
 
   describe('getSession', () => {
-    describe('for regular session', () => {
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
 
-      it('should return the regular session if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS env is disabled', done => {
+      it('should retrieve a regular session from the pool', done => {
         (
           sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
         ).callsFake(callback => callback(null, fakeSession));
@@ -149,7 +149,7 @@ describe('SessionFactory', () => {
         });
       });
 
-      it('should return the error from getSession if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS env is disabled and regular session creation get failed', done => {
+      it('should propagate errors when regular session retrieval fails', done => {
         const fakeError = new Error();
         (
           sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
@@ -162,12 +162,12 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('for multiplexed session', () => {
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       });
 
-      it('should return the multiplexed session if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS env is enabled', done => {
+      it('should return the multiplexed session', done => {
         (
           sandbox.stub(
             sessionFactory.multiplexedSession_,
@@ -183,7 +183,7 @@ describe('SessionFactory', () => {
         });
       });
 
-      it('should return the error from getSession if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS env is enabled and multiplexed session creation get failed', done => {
+      it('should propagate error when multiplexed session return fails', done => {
         const fakeError = new Error();
         (
           sandbox.stub(
@@ -209,29 +209,44 @@ describe('SessionFactory', () => {
   });
 
   describe('release', () => {
-    before(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-    });
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
 
-    it('should call the release method to release a regular session', () => {
-      const releaseStub = sandbox.stub(sessionFactory.pool_, 'release');
-      const fakeSession = createSession();
-      sessionFactory.release(fakeSession);
-      assert.strictEqual(releaseStub.callCount, 1);
-    });
-
-    it('should throw an error if encounters any error during release', () => {
-      const fakeSession = createSession();
-      try {
+      it('should not call the release method', () => {
+        const releaseStub = sandbox.stub(sessionFactory.pool_, 'release');
+        const fakeSession = createSession();
         sessionFactory.release(fakeSession);
-        assert.fail('Expected error was not thrown');
-      } catch (error) {
-        assert.strictEqual(
-          (error as ReleaseError).message,
-          'Unable to release unknown resource.'
-        );
-        assert.strictEqual((error as ReleaseError).resource, fakeSession);
-      }
+        assert.strictEqual(releaseStub.callCount, 0);
+      });
+    });
+
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      it('should call the release method to release a regular session', () => {
+        const releaseStub = sandbox.stub(sessionFactory.pool_, 'release');
+        const fakeSession = createSession();
+        sessionFactory.release(fakeSession);
+        assert.strictEqual(releaseStub.callCount, 1);
+      });
+
+      it('should propagate an error when release fails', () => {
+        const fakeSession = createSession();
+        try {
+          sessionFactory.release(fakeSession);
+          assert.fail('Expected error was not thrown');
+        } catch (error) {
+          assert.strictEqual(
+            (error as ReleaseError).message,
+            'Unable to release unknown resource.'
+          );
+          assert.strictEqual((error as ReleaseError).resource, fakeSession);
+        }
+      });
     });
   });
 });

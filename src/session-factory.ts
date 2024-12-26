@@ -48,8 +48,27 @@ export interface GetSessionCallback {
  * @interface SessionFactoryInterface
  */
 export interface SessionFactoryInterface {
+  /**
+   * When called returns a session.
+   *
+   * @name SessionFactoryInterface#getSession
+   * @param {GetSessionCallback} callback The callback function.
+   */
   getSession(callback: GetSessionCallback): void;
+
+  /**
+   * When called returns the pool object.
+   *
+   * @name SessionFactoryInterface#getPool
+   */
   getPool(): SessionPoolInterface;
+
+  /**
+   * To be called when releasing a session.
+   *
+   * @name SessionFactoryInterface#release
+   * @param {Session} session The session to be released.
+   */
   release(session: Session): void;
 }
 
@@ -86,7 +105,7 @@ export class SessionFactory
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
-    // multiplexed session should only get created if the env variable is enabled
+    // Multiplexed sessions should only be created if its enabled.
     if ((this.multiplexedSession_ as MultiplexedSession).isMultiplexedEnabled) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
       this.multiplexedSession_.createSession();
@@ -94,12 +113,12 @@ export class SessionFactory
   }
 
   /**
-   * Retrieves the session, either the regular session or the multiplexed session based upon the environment varibale
-   * If the environment variable GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is set to `true` the method will attempt to
-   * retrieve the multiplexed session. Otherwise it will retrieve the session from the pool.
+   * Retrieves a session, either a regular session or a multiplexed session, based on the environment variable configuration.
    *
-   * The session is returned asynchronously via the provided callback, which will receive either an error or the session object.
-   * @param callback
+   * If the environment variable `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS` is set to `true`, the method will attempt to
+   * retrieve a multiplexed session. Otherwise, it will retrieve a session from the regular pool.
+   *
+   * @param {GetSessionCallback} callback The callback function.
    */
 
   getSession(callback: GetSessionCallback): void {
@@ -112,11 +131,9 @@ export class SessionFactory
   }
 
   /**
-   * Returns the SessionPoolInterface used by the current instance, which provide access to the session pool
-   * for obtaining database sessions.
+   * Returns the regular session pool object.
    *
    * @returns {SessionPoolInterface} The session pool used by current instance.
-   * This object allows interaction with the pool for acquiring and managing sessions.
    */
 
   getPool(): SessionPoolInterface {
@@ -124,20 +141,20 @@ export class SessionFactory
   }
 
   /**
-   * Releases the session back to the pool.
+   * Releases a session back to the session pool.
    *
-   * This method is used to return the session back to the pool after it is no longer needed.
+   * This method returns a session to the pool after it is no longer needed.
+   * It is a no-op for multiplexed sessions.
    *
-   * It only performs the operation if the Multiplexed Session is disabled which is controlled via the
-   * env variable GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS.
+   * @param {Session} session - The session to be released. This should be an instance of `Session` that was
+   * previously acquired from the session pool.
    *
-   * @param session The session to be released. This should be an instance of `Session` that was previously
-   * acquired from the session pool.
-   *
-   * @throws {Error} Throws an error if the session is invalid or cannot be released.
+   * @throws {Error} If the session is invalid or cannot be released.
    */
   release(session: Session): void {
-    if (!this.isMuxCreated) {
+    if (
+      !(this.multiplexedSession_ as MultiplexedSession).isMultiplexedEnabled
+    ) {
       this.pool_.release(session);
     }
   }

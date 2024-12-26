@@ -137,7 +137,7 @@ export class FakeSessionFactory extends EventEmitter {
     this.calledWith_ = arguments;
   }
   getSession(): FakeSession | FakeMultiplexedSession {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS) {
+    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
       return new FakeSession();
     } else {
       return new FakeMultiplexedSession();
@@ -325,6 +325,16 @@ describe('Database', () => {
 
       const database = new Database(INSTANCE, NAME);
       assert(database.formattedName_, formattedName);
+    });
+
+    it('should accept a custom Pool class', () => {
+      function FakePool() {}
+      const database = new Database(
+        INSTANCE,
+        NAME,
+        FakePool as {} as db.SessionPoolConstructor
+      );
+      assert(database.pool_ instanceof FakeSessionPool);
     });
 
     it('should re-emit SessionPool errors', done => {
