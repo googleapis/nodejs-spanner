@@ -107,7 +107,7 @@ export class SessionFactory
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
         ? this.multiplexedSession_
         : this.pool_;
-    sessionHandler?.getSession((err, session) => callback(err, session));
+    sessionHandler!.getSession((err, session) => callback(err, session));
   }
 
   /**

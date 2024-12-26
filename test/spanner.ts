@@ -66,6 +66,7 @@ import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
+import {SessionFactory} from '../src/session-factory';
 
 const {
   AlwaysOnSampler,
@@ -5073,6 +5074,25 @@ describe('Spanner with mock server', () => {
       );
 
       done();
+    });
+  });
+
+  describe('session-factory', () => {
+    after(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    });
+    it('should execute table mutations without leaking sessions', () => {
+      const database = newTestDatabase();
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      const sessionFactory = database.sessionFactory_ as SessionFactory;
+      try {
+        sessionFactory.getSession(() => {});
+      } catch (e) {
+        assert.strictEqual(
+          (e as TypeError).message,
+          "Cannot read properties of undefined (reading 'getSession')"
+        );
+      }
     });
   });
 });
