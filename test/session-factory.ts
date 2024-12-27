@@ -25,7 +25,6 @@ import {FakeTransaction} from './session-pool';
 import {ReleaseError} from '../src/session-pool';
 
 describe('SessionFactory', () => {
-  process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
   let sessionFactory;
   let fakeSession;
   let fakeMuxSession;
@@ -78,35 +77,37 @@ describe('SessionFactory', () => {
   });
 
   describe('instantiation', () => {
-    before(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-    });
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
 
-    it('should create a SessionPool object', () => {
-      assert(sessionFactory.pool_ instanceof SessionPool);
-    });
+      it('should create a SessionPool object', () => {
+        assert(sessionFactory.pool_ instanceof SessionPool);
+      });
 
-    it('should accept a custom Pool class', () => {
-      function FakePool() {}
-      FakePool.prototype.on = util.noop;
-      FakePool.prototype.open = util.noop;
+      it('should accept a custom Pool class', () => {
+        function FakePool() {}
+        FakePool.prototype.on = util.noop;
+        FakePool.prototype.open = util.noop;
 
-      const sessionFactory = new SessionFactory(
-        DATABASE,
-        NAME,
-        FakePool as {} as db.SessionPoolConstructor
-      );
-      assert(sessionFactory.pool_ instanceof FakePool);
-    });
+        const sessionFactory = new SessionFactory(
+          DATABASE,
+          NAME,
+          FakePool as {} as db.SessionPoolConstructor
+        );
+        assert(sessionFactory.pool_ instanceof FakePool);
+      });
 
-    it('should open the pool', () => {
-      const openStub = sandbox
-        .stub(SessionPool.prototype, 'open')
-        .callsFake(() => {});
+      it('should open the pool', () => {
+        const openStub = sandbox
+          .stub(SessionPool.prototype, 'open')
+          .callsFake(() => {});
 
-      new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
 
-      assert.strictEqual(openStub.callCount, 1);
+        assert.strictEqual(openStub.callCount, 1);
+      });
     });
 
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
@@ -120,7 +121,7 @@ describe('SessionFactory', () => {
         );
       });
 
-      it('should initiate the multiplexed session creation if GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      it('should initiate the multiplexed session creation', () => {
         const createSessionStub = sandbox
           .stub(MultiplexedSession.prototype, 'createSession')
           .callsFake(() => {});

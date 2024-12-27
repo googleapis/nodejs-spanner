@@ -81,7 +81,7 @@ export interface SessionFactoryInterface {
  * @param {Database} database Database object.
  * @param {String} name Name of the database.
  * @param {SessionPoolOptions|SessionPoolInterface} options Session pool
- *     configuration options or custom pool interface.
+ *     configuration options or custom pool inteface.
  */
 export class SessionFactory
   extends common.GrpcServiceObject
