@@ -86,7 +86,6 @@ import {
   LongRunningCallback,
   NormalCallback,
   PagedOptionsWithFilter,
-  CLOUD_RESOURCE_HEADER,
   PagedResponse,
   RequestCallback,
   ResourceCallback,
@@ -2091,6 +2090,26 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object'
         ? (optionsOrCallback as TimestampBounds)
         : {};
+
+    if (
+      ('maxStaleness' in options &&
+        options.maxStaleness !== null &&
+        options.maxStaleness !== undefined) ||
+      ('minReadTimestamp' in options &&
+        options.minReadTimestamp !== null &&
+        options.minReadTimestamp !== undefined)
+    ) {
+      const error = Object.assign(
+        new Error(
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        ),
+        {
+          code: 3, // invalid argument
+        }
+      ) as ServiceError;
+      callback!(error);
+      return;
+    }
 
     return startTrace('Database.getSnapshot', this._traceConfig, span => {
       this.pool_.getSession((err, session) => {
