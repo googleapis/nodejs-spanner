@@ -17,7 +17,7 @@
 import {EventEmitter} from 'events';
 import {Database} from './database';
 import {Session} from './session';
-import {GetSessionCallback} from './session-pool';
+import {GetSessionCallback} from './session-factory';
 import {
   ObservabilityOptions,
   getActiveOrNoopSpan,
@@ -38,7 +38,7 @@ export const MUX_SESSION_CREATE_ERROR = 'mux-session-create-error';
  * @constructs MultiplexedSessionInterface
  * @param {Database} database The database to create a multiplexed session for.
  */
-export interface MultiplexedSessionInterface {
+export interface MultiplexedSessionInterface extends EventEmitter {
   /**
    * When called creates a multiplexed session.
    *
@@ -71,6 +71,7 @@ export class MultiplexedSession
   database: Database;
   // frequency to create new mux session
   refreshRate: number;
+  isMultiplexedEnabled: boolean;
   _multiplexedSession: Session | null;
   _refreshHandle!: NodeJS.Timer;
   _observabilityOptions?: ObservabilityOptions;
@@ -81,6 +82,9 @@ export class MultiplexedSession
     this.refreshRate = 7;
     this._multiplexedSession = null;
     this._observabilityOptions = database._observabilityOptions;
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+      ? (this.isMultiplexedEnabled = true)
+      : (this.isMultiplexedEnabled = false);
   }
 
   /**

@@ -46,7 +46,7 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-
+import {SessionFactory} from '../src/session-factory';
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -78,7 +78,7 @@ class FakeBatchTransaction {
   }
 }
 
-class FakeGrpcServiceObject extends EventEmitter {
+export class FakeGrpcServiceObject extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
     super();
@@ -91,7 +91,7 @@ function fakePartialResultStream(this: Function & {calledWith_: IArguments}) {
   return this;
 }
 
-class FakeSession {
+export class FakeSession {
   calledWith_: IArguments;
   formattedName_: any;
   constructor() {
@@ -109,7 +109,7 @@ class FakeSession {
   }
 }
 
-class FakeSessionPool extends EventEmitter {
+export class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
     super();
@@ -118,6 +118,37 @@ class FakeSessionPool extends EventEmitter {
   open() {}
   getSession() {}
   release() {}
+}
+
+export class FakeMultiplexedSession extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  createSession() {}
+  getSession() {}
+}
+
+export class FakeSessionFactory extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  getSession(): FakeSession | FakeMultiplexedSession {
+    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
+      return new FakeSession();
+    } else {
+      return new FakeMultiplexedSession();
+    }
+  }
+  getPool(): FakeSessionPool {
+    return new FakeSessionPool();
+  }
+  getMultiplexedSession(): FakeMultiplexedSession {
+    return new FakeMultiplexedSession();
+  }
 }
 
 class FakeTable {
@@ -243,6 +274,7 @@ describe('Database', () => {
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
       './session-pool': {SessionPool: FakeSessionPool},
+      './session-factory': {SessionFactory: FakeSessionFactory},
       './session': {Session: FakeSession},
       './table': {Table: FakeTable},
       './transaction-runner': {
@@ -295,43 +327,40 @@ describe('Database', () => {
       assert(database.formattedName_, formattedName);
     });
 
-    it('should create a SessionPool object', () => {
-      assert(database.pool_ instanceof FakeSessionPool);
-      assert.strictEqual(database.pool_.calledWith_[0], database);
-      assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
-    });
-
     it('should accept a custom Pool class', () => {
       function FakePool() {}
-      FakePool.prototype.on = util.noop;
-      FakePool.prototype.open = util.noop;
-
       const database = new Database(
         INSTANCE,
         NAME,
         FakePool as {} as db.SessionPoolConstructor
       );
-      assert(database.pool_ instanceof FakePool);
+      assert(database.pool_ instanceof FakeSessionPool);
     });
 
     it('should re-emit SessionPool errors', done => {
       const error = new Error('err');
+
+      const sessionFactory = new SessionFactory(database, NAME);
 
       database.on('error', err => {
         assert.strictEqual(err, error);
         done();
       });
 
-      database.pool_.emit('error', error);
+      sessionFactory.pool_.emit('error', error);
     });
 
-    it('should open the pool', done => {
-      FakeSessionPool.prototype.open = () => {
-        FakeSessionPool.prototype.open = util.noop;
-        done();
-      };
+    it('should re-emit Multiplexed Session errors', done => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      const error = new Error('err');
 
-      new Database(INSTANCE, NAME);
+      const sessionFactory = new SessionFactory(database, NAME);
+
+      database.on('error', err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+      sessionFactory.multiplexedSession_?.emit('error', error);
     });
 
     it('should inherit from ServiceObject', done => {
