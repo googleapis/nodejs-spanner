@@ -55,7 +55,10 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
-import {XGoogRequestHeaderInterceptor} from '../src/request_id_header';
+import {
+  XGoogRequestHeaderInterceptor,
+  randIdForProcess,
+} from '../src/request_id_header';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -5111,35 +5114,69 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       let rowCount = 0;
+      const maxAttempts = 4;
       await database.runTransactionAsync(async transaction => {
-        if (!attempts) {
+        attempts++;
+        if (attempts < maxAttempts) {
           spannerMock.abortTransaction(transaction!);
         }
-        attempts++;
         const [rows] = await transaction!.run(selectSql);
         rows.forEach(() => rowCount++);
         assert.strictEqual(rowCount, 3);
-        assert.strictEqual(attempts, 2);
+        assert.strictEqual(attempts, 4);
         await transaction!.commit();
       });
 
-      const sentMetadata = spannerMock.getMetadata();
-      const sentRequests = spannerMock.getRequests();
-      const xGoogRequestHeaders: grpc.MetadataValue[] = [];
-      for (const index in sentMetadata) {
-        const req = sentRequests[index];
-        console.log(index, 'req', req.constructor.name);
-      }
+      const wantUnaryCallsWithoutBatchCreateSessions = [
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.3.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.5.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.7.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/Commit',
+          reqId: `1.${randIdForProcess}.1.1.9.1`,
+        },
+      ];
+      const gotUnaryCalls = xGoogReqIDInterceptor.getUnaryCalls();
+      assert.deepStrictEqual(
+        gotUnaryCalls[0].method,
+        '/google.spanner.v1.Spanner/BatchCreateSessions'
+      );
+      // It is non-deterministic to try to get the exact clientId used to invoke .BatchCreateSessions
+      // given that these tests run as a collective and sessions are pooled.
+      assert.deepStrictEqual(
+        gotUnaryCalls.slice(1),
+        wantUnaryCallsWithoutBatchCreateSessions
+      );
 
-      for (const md of sentMetadata) {
-        const got = md.get('x-goog-spanner-request-id');
-        if (got) {
-          for (const value of got) {
-            xGoogRequestHeaders.push(value);
-          }
-        }
-      }
-      console.log('xGoogHeaders', xGoogRequestHeaders!);
+      const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
+      const wantStreamingCalls = [
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.2.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.4.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.6.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.8.1`,
+        },
+      ];
+      assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
       await database.close();
     });
   });

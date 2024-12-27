@@ -135,6 +135,14 @@ class XGoogRequestHeaderInterceptor {
     this.unaryCalls = [];
   }
 
+  public getUnaryCalls() {
+    return this.unaryCalls;
+  }
+
+  public getStreamingCalls() {
+    return this.streamCalls;
+  }
+
   loggingClientInterceptor(options, call) {
     const listener = new grpc.ListenerBuilder().withOnReceiveMessage(
       (next, message) => {
@@ -321,4 +329,5 @@ export {
   nextNthRequest,
   nextSpannerClientId,
   newAtomicCounter,
+  randIdForProcess,
 };
