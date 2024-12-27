@@ -2095,8 +2095,12 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     if (
-      options !== null &&
-      (options['maxStaleness'] !== null || options['minReadTimestamp'] !== null)
+      ('maxStaleness' in options &&
+        options.maxStaleness !== null &&
+        options.maxStaleness !== undefined) ||
+      ('minReadTimestamp' in options &&
+        options.minReadTimestamp !== null &&
+        options.minReadTimestamp !== undefined)
     ) {
       const error = Object.assign(
         new Error(
