@@ -73,7 +73,7 @@ describe('MultiplexedSession', () => {
       assert(multiplexedSession instanceof events.EventEmitter);
     });
 
-    it('should correctly initialize the multiplexedEnabled field when env is enabled', () => {
+    it('should correctly initialize the isMultiplexedEnabled field when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       const multiplexedSession = new MultiplexedSession(DATABASE);
       assert.strictEqual(
@@ -82,7 +82,7 @@ describe('MultiplexedSession', () => {
       );
     });
 
-    it('should correctly initialize the multiplexedEnabled field when env is disabled', () => {
+    it('should correctly initialize the isMultiplexedEnabled field when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       const multiplexedSession = new MultiplexedSession(DATABASE);
       assert.strictEqual(
