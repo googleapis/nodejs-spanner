@@ -2307,6 +2307,39 @@ describe('Database', () => {
       assert.strictEqual(bounds, fakeTimestampBounds);
     });
 
+    it('should throw error if maxStaleness is passed in the timestamp bounds to the snapshot', () => {
+      const fakeTimestampBounds = {maxStaleness: 10};
+
+      database.getSnapshot(fakeTimestampBounds, err => {
+        assert.strictEqual(err.code, 3);
+        assert.strictEqual(
+          err.message,
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        );
+      });
+    });
+
+    it('should throw error if minReadTimestamp is passed in the timestamp bounds to the snapshot', () => {
+      const fakeTimestampBounds = {minReadTimestamp: 10};
+
+      database.getSnapshot(fakeTimestampBounds, err => {
+        assert.strictEqual(err.code, 3);
+        assert.strictEqual(
+          err.message,
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        );
+      });
+    });
+
+    it('should pass when maxStaleness is undefined', () => {
+      const fakeTimestampBounds = {minReadTimestamp: undefined};
+
+      database.getSnapshot(fakeTimestampBounds, assert.ifError);
+
+      const bounds = snapshotStub.lastCall.args[0];
+      assert.strictEqual(bounds, fakeTimestampBounds);
+    });
+
     it('should begin a snapshot', () => {
       beginSnapshotStub.callsFake(() => {});
 
