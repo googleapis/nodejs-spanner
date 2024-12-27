@@ -5106,8 +5106,8 @@ describe('Spanner with mock server', () => {
     });
   });
 
-  describe("XGoogRequestId", () => {
-    it('with retry on aborted query', async() => {
+  describe('XGoogRequestId', () => {
+    it('with retry on aborted query', async () => {
       let attempts = 0;
       const database = newTestDatabase();
       let rowCount = 0;

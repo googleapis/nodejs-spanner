@@ -325,7 +325,7 @@ export class Session extends common.GrpcServiceObject {
         reqOpts,
         gaxOpts,
         headers: injectRequestIDIntoHeaders(
-          this.resourceHeader_,
+          this.commonHeaders_,
           this,
           nextNthRequest(database),
           1

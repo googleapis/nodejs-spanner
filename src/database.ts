@@ -1962,7 +1962,7 @@ class Database extends common.GrpcServiceObject {
     const headers = this._metadataWithRequestId(
       this._nextNthRequest(),
       1,
-      this.resourceHeader_
+      this.commonHeaders_
     );
 
     return startTrace('Database.getSessions', this._traceConfig, span => {
@@ -1975,7 +1975,7 @@ class Database extends common.GrpcServiceObject {
           method: 'listSessions',
           reqOpts,
           gaxOpts,
-          headers: this.commonHeaders_,
+          headers: headers,
         },
         (err, sessions, nextPageRequest, ...args) => {
           if (err) {
