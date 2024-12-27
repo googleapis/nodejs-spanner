@@ -56,8 +56,10 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {
+  RequestIDError,
   XGoogRequestHeaderInterceptor,
   randIdForProcess,
+  resetNthClientId,
 } from '../src/request_id_header';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -126,6 +128,7 @@ describe('Spanner with mock server', () => {
   }
 
   beforeEach(() => {
+    resetNthClientId();
     xGoogReqIDInterceptor.reset();
   });
 
@@ -288,6 +291,10 @@ describe('Spanner with mock server', () => {
         // Ignore the fact that streaming read is unimplemented on the mock
         // server. We just want to verify that the correct request is sent.
         assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.3.1`
+        );
       } finally {
         snapshot.end();
         await database.close();
@@ -447,6 +454,10 @@ describe('Spanner with mock server', () => {
             // Ignore the fact that streaming read is unimplemented on the mock
             // server. We just want to verify that the correct request is sent.
             assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             return undefined;
           } finally {
             tx.end();
@@ -1143,6 +1154,10 @@ describe('Spanner with mock server', () => {
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
         );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
+        );
       } finally {
         await database.close();
       }
@@ -1196,6 +1211,11 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '14 UNAVAILABLE: Transient error'
+        );
+        // Ensure that we have a requestID returned and it was on the 2nd request.
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();
@@ -1418,6 +1438,10 @@ describe('Spanner with mock server', () => {
               (e as ServiceError).message,
               '2 UNKNOWN: Test error'
             );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
           }
           await database.close();
         });
@@ -1456,6 +1480,10 @@ describe('Spanner with mock server', () => {
           database.run(selectSql, err => {
             assert.ok(err, 'Missing expected error');
             assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+            assert.deepStrictEqual(
+              (err as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             database
               .close()
               .catch(done)
@@ -1479,6 +1507,10 @@ describe('Spanner with mock server', () => {
             .on('error', err => {
               assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
               assert.strictEqual(receivedRows.length, index);
+              assert.deepStrictEqual(
+                (err as RequestIDError).requestID,
+                `1.${randIdForProcess}.1.1.2.1`
+              );
               database
                 .close()
                 .catch(done)
@@ -1559,6 +1591,10 @@ describe('Spanner with mock server', () => {
         attempts++;
         tx!.runUpdate(insertSql, err => {
           assert.ok(err, 'Missing expected error');
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
           assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
           // transaction.
@@ -2566,6 +2602,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing invalid sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2580,6 +2617,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              true
             );
           }
         }
@@ -2609,6 +2650,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing an invalid streaming sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2623,6 +2665,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              true
             );
           }
         }
@@ -2702,6 +2748,7 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             'No resources available.'
           );
+          // assert.deepStrictEqual((e as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
         }
       } finally {
         if (tx1) {
@@ -2776,6 +2823,7 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (err) {
         assert.strictEqual((err as ServiceError).code, Status.NOT_FOUND);
+        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -2837,6 +2885,7 @@ describe('Spanner with mock server', () => {
           (err as ServiceError).code,
           Status.PERMISSION_DENIED
         );
+        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -3247,6 +3296,10 @@ describe('Spanner with mock server', () => {
           assert.ok(
             (err as ServiceError).message.includes('Generic internal error')
           );
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         } finally {
           await database.close();
         }
@@ -3359,6 +3412,10 @@ describe('Spanner with mock server', () => {
         } catch (err) {
           assert(err, 'Expected an error to be thrown');
           assert.match((err as Error).message, /Table FOO not found/);
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         }
       });
     });
@@ -3782,6 +3839,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3839,6 +3900,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3866,6 +3931,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
             );
           }
           await tx.run(selectSql);
@@ -3906,6 +3975,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.4.1`
         );
       } finally {
         await database.close();
@@ -3994,6 +4067,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();

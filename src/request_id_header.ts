@@ -46,6 +46,10 @@ class AtomicCounter {
   public toString(): string {
     return `${this.value()}`;
   }
+
+  public reset(value: number) {
+    Atomics.store(this.backingBuffer, 0, 0);
+  }
 }
 
 function craftRequestId(
@@ -58,6 +62,11 @@ function craftRequestId(
 }
 
 const nthClientId = new AtomicCounter();
+
+// Only exported for deterministic testing.
+export function resetNthClientId() {
+  nthClientId.reset(0);
+}
 
 /*
  * nextSpannerClientId increments the internal
@@ -316,6 +325,10 @@ function nextNthRequest(database): number {
     return 1;
   }
   return database._nextNthRequest();
+}
+
+export interface RequestIDError extends grpc.ServiceError {
+  requestID: string;
 }
 
 export {
