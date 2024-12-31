@@ -70,6 +70,8 @@ export interface SessionFactoryInterface {
    * @param {Session} session The session to be released.
    */
   release(session: Session): void;
+
+  isMultiplexedEnabled(): boolean;
 }
 
 /**
@@ -89,6 +91,7 @@ export class SessionFactory
 {
   multiplexedSession_: MultiplexedSessionInterface;
   pool_: SessionPoolInterface;
+  isMultiplexed: boolean;
   constructor(
     database: Database,
     name: String,
@@ -105,8 +108,11 @@ export class SessionFactory
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+      ? (this.isMultiplexed = true)
+      : (this.isMultiplexed = false);
     // Multiplexed sessions should only be created if its enabled.
-    if ((this.multiplexedSession_ as MultiplexedSession).isMultiplexedEnabled) {
+    if (this.isMultiplexed) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
       this.multiplexedSession_.createSession();
     }
@@ -122,12 +128,13 @@ export class SessionFactory
    */
 
   getSession(callback: GetSessionCallback): void {
-    const sessionHandler = (this.multiplexedSession_ as MultiplexedSession)
-      .isMultiplexedEnabled
+    const sessionHandler = this.isMultiplexed
       ? this.multiplexedSession_
       : this.pool_;
 
-    sessionHandler!.getSession((err, session) => callback(err, session));
+    sessionHandler!.getSession((err, session, transaction) =>
+      callback(err, session, transaction)
+    );
   }
 
   /**
@@ -152,10 +159,12 @@ export class SessionFactory
    * @throws {Error} If the session is invalid or cannot be released.
    */
   release(session: Session): void {
-    if (
-      !(this.multiplexedSession_ as MultiplexedSession).isMultiplexedEnabled
-    ) {
+    if (!this.isMultiplexed) {
       this.pool_.release(session);
     }
+  }
+
+  isMultiplexedEnabled(): boolean {
+    return this.isMultiplexed;
   }
 }

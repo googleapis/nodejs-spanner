@@ -1135,7 +1135,7 @@ class Database extends common.GrpcServiceObject {
   private _releaseOnEnd(session: Session, transaction: Snapshot, span: Span) {
     transaction.once('end', () => {
       try {
-        this.pool_.release(session);
+        this.sessionFactory_.release(session);
       } catch (e) {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
@@ -2112,7 +2112,7 @@ class Database extends common.GrpcServiceObject {
     }
 
     return startTrace('Database.getSnapshot', this._traceConfig, span => {
-      this.pool_.getSession((err, session) => {
+      this.sessionFactory_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
           span.end();
@@ -2125,17 +2125,28 @@ class Database extends common.GrpcServiceObject {
         snapshot.begin(err => {
           if (err) {
             setSpanError(span, err);
-            if (isSessionNotFoundError(err)) {
+            if (
+              isSessionNotFoundError(err) &&
+              !this.sessionFactory_.isMultiplexedEnabled()
+            ) {
               span.addEvent('No session available', {
                 'session.id': session?.id,
               });
               session!.lastError = err;
-              this.pool_.release(session!);
+              this.sessionFactory_.release(session!);
               span.end();
               this.getSnapshot(options, callback!);
+            } else if (this.sessionFactory_.isMultiplexedEnabled()) {
+              span.addEvent('No session available', {
+                'session.id': session?.id,
+              });
+              session!.lastError = err;
+              this.sessionFactory_.release(session!);
+              span.end();
+              callback!(err);
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
-              this.pool_.release(session!);
+              this.sessionFactory_.release(session!);
               span.end();
               callback!(err);
             }
@@ -3071,7 +3082,7 @@ class Database extends common.GrpcServiceObject {
       ...this._traceConfig,
     };
     return startTrace('Database.runStream', traceConfig, span => {
-      this.pool_.getSession((err, session) => {
+      this.sessionFactory_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
           proxyStream.destroy(err);
@@ -3098,7 +3109,8 @@ class Database extends common.GrpcServiceObject {
 
             if (
               !dataReceived &&
-              isSessionNotFoundError(err as grpc.ServiceError)
+              isSessionNotFoundError(err as grpc.ServiceError) &&
+              !this.sessionFactory_.isMultiplexedEnabled()
             ) {
               // If it is a 'Session not found' error and we have not yet received
               // any data, we can safely retry the query on a new session.
@@ -3656,8 +3668,12 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
-      this.pool_.getSession((err, session?, transaction?) => {
-        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+      this.sessionFactory_.getSession((err, session?, transaction?) => {
+        if (
+          err &&
+          isSessionNotFoundError(err as grpc.ServiceError) &&
+          !this.sessionFactory_.isMultiplexedEnabled()
+        ) {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
