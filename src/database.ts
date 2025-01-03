@@ -36,6 +36,7 @@ import {
 } from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
+import {SessionFactory, SessionFactoryInterface} from './session-factory';
 import {
   google as databaseAdmin,
   google,
@@ -111,7 +112,6 @@ import {
   setSpanErrorAndException,
   traceConfig,
 } from './instrument';
-
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -339,6 +339,7 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  sessionFactory_: SessionFactoryInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   commonHeaders_: {[k: string]: string};
   request: DatabaseRequest;
@@ -450,15 +451,6 @@ class Database extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    this.pool_ =
-      typeof poolOptions === 'function'
-        ? new (poolOptions as SessionPoolConstructor)(this, null)
-        : new SessionPool(this, poolOptions);
-    const sessionPoolInstance = this.pool_ as SessionPool;
-    if (sessionPoolInstance) {
-      sessionPoolInstance._observabilityOptions =
-        instance._observabilityOptions;
-    }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
       this.labels = poolOptions.labels || null;
@@ -480,8 +472,13 @@ class Database extends common.GrpcServiceObject {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
-    this.pool_.on('error', this.emit.bind(this, 'error'));
-    this.pool_.open();
+    this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
+    this.pool_ = this.sessionFactory_.getPool();
+    const sessionPoolInstance = this.pool_ as SessionPool;
+    if (sessionPoolInstance) {
+      sessionPoolInstance._observabilityOptions =
+        instance._observabilityOptions;
+    }
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
