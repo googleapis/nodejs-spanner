@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.17.1](https://github.com/googleapis/nodejs-spanner/compare/v7.17.0...v7.17.1) (2025-01-03)
+
+
+### Bug Fixes
+
+* Remove default global trace context propagator ([#2209](https://github.com/googleapis/nodejs-spanner/issues/2209)) ([7898e0c](https://github.com/googleapis/nodejs-spanner/commit/7898e0ce0477e2d4327822ac26a2674203b47a64)), closes [#2208](https://github.com/googleapis/nodejs-spanner/issues/2208)
+
 ## [7.17.0](https://github.com/googleapis/nodejs-spanner/compare/v7.16.0...v7.17.0) (2024-12-27)
 
 
