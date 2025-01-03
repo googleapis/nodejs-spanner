@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.17.0](https://github.com/googleapis/nodejs-spanner/compare/v7.16.0...v7.17.0) (2024-12-27)
+
+
+### Features
+
+* Add the last statement option to ExecuteSqlRequest and ExecuteBatchDmlRequest ([#2196](https://github.com/googleapis/nodejs-spanner/issues/2196)) ([223f167](https://github.com/googleapis/nodejs-spanner/commit/223f167c1c9bc4da26155637eabbcabce5487ede))
+* Enable e2e tracing ([#2202](https://github.com/googleapis/nodejs-spanner/issues/2202)) ([3cc257e](https://github.com/googleapis/nodejs-spanner/commit/3cc257e99925594776b9a1886f0173ce2dfe904f))
+
+
+### Bug Fixes
+
+* Span events Issue 2166 ([#2184](https://github.com/googleapis/nodejs-spanner/issues/2184)) ([97ed577](https://github.com/googleapis/nodejs-spanner/commit/97ed5776dbdf5e90f8398fffea08e2a968045f9b))
+
 ## [7.16.0](https://github.com/googleapis/nodejs-spanner/compare/v7.15.0...v7.16.0) (2024-11-09)
 
 
