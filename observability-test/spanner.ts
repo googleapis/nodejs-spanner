@@ -47,6 +47,7 @@ const {
 const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
+import {promisify} from '@google-cloud/promisify';
 
 const {ObservabilityOptions} = require('../src/instrument');
 const selectSql = 'SELECT 1';
