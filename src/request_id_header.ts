@@ -47,7 +47,7 @@ class AtomicCounter {
     return `${this.value()}`;
   }
 
-  public reset(value: number) {
+  public reset() {
     Atomics.store(this.backingBuffer, 0, 0);
   }
 }
@@ -65,7 +65,7 @@ const nthClientId = new AtomicCounter();
 
 // Only exported for deterministic testing.
 export function resetNthClientId() {
-  nthClientId.reset(0);
+  nthClientId.reset();
 }
 
 /*
@@ -150,27 +150,6 @@ class XGoogRequestHeaderInterceptor {
 
   public getStreamingCalls() {
     return this.streamCalls;
-  }
-
-  loggingClientInterceptor(options, call) {
-    const listener = new grpc.ListenerBuilder().withOnReceiveMessage(
-      (next, message) => {
-        console.log('Received message', JSON.stringify(message));
-        next(message);
-      }
-    );
-
-    const requester = new grpc.RequesterBuilder()
-      .withSendMessage((next, message) => {
-        console.log('Requesting', call.method, JSON.stringify(message));
-        next(message);
-      })
-      .build();
-    return new grpc.InterceptingCall(call(options), requester);
-  }
-
-  generateLoggingClientInterceptor() {
-    return this.loggingClientInterceptor.bind(this);
   }
 
   serverInterceptor(methodDescriptor, call) {
@@ -258,7 +237,10 @@ function injectRequestIDIntoError(config: any, err: Error) {
 
   // Inject that RequestID into the actual
   // error object regardless of the type.
-  Object.assign(err, {requestID: extractRequestID(config)});
+  const requestID = extractRequestID(config);
+  if (requestID) {
+    Object.assign(err, {requestID: requestID});
+  }
 }
 
 interface withNextNthRequest {
@@ -336,7 +318,6 @@ export {
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
   XGoogRequestHeaderInterceptor,
   craftRequestId,
-  extractRequestID,
   injectRequestIDIntoError,
   injectRequestIDIntoHeaders,
   nextNthRequest,

@@ -184,7 +184,7 @@ describe('Spanner with mock server', () => {
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
-      interceptors: [xGoogReqIDInterceptor.generateLoggingClientInterceptor()],
+      // interceptors: [xGoogReqIDInterceptor.generateLoggingClientInterceptor()],
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
