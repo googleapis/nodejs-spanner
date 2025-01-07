@@ -41,6 +41,11 @@ const provider = new NodeTracerProvider({
 });
 provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
+// Set global propagator to propogate the trace context for end to end tracing.
+const {propagation} = require('@opentelemetry/api');
+const {W3CTraceContextPropagator} = require('@opentelemetry/core');
+propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+
 // Uncomment following line to register global tracerProvider instead
 // of passing it into SpannerOptions.observabilityOptions.
 // provider.register();
