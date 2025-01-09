@@ -511,340 +511,304 @@ describe('Database', () => {
     let beginSnapshotStub: sinon.SinonStub;
     let getSessionStub: sinon.SinonStub;
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is enabled', () => {
-      beforeEach(() => {
-        fakeSessionFactory = database.sessionFactory_;
-        fakeMultiplexedSession = new FakeMultiplexedSession();
-        fakeSnapshot = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
+    const muxEnabled = [true, false];
 
-        beginSnapshotStub = (
-          sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
-        ).callsFake(callback => callback(null));
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+                  'false');
+          });
 
-        getSessionStub = (
-          sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => callback(null, fakeMultiplexedSession));
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSnapshot = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.ReadOnly
+            );
+            beginSnapshotStub = (
+              sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
+            ).callsFake(callback => callback(null));
 
-        (
-          sandbox.stub(fakeMultiplexedSession, 'snapshot') as sinon.SinonStub
-        ).returns(fakeSnapshot);
+            if (isMuxEnabled) {
+              fakeMultiplexedSession = new FakeMultiplexedSession();
+              getSessionStub = (
+                sandbox.stub(
+                  fakeSessionFactory,
+                  'getSession'
+                ) as sinon.SinonStub
+              ).callsFake(callback => callback(null, fakeMultiplexedSession));
+              (
+                sandbox.stub(
+                  fakeMultiplexedSession,
+                  'snapshot'
+                ) as sinon.SinonStub
+              ).returns(fakeSnapshot);
 
-        sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(true);
-      });
+              sandbox
+                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
+                .returns(true);
+            } else {
+              fakeSession = new FakeSession();
+              getSessionStub = (
+                sandbox.stub(
+                  fakeSessionFactory,
+                  'getSession'
+                ) as sinon.SinonStub
+              ).callsFake(callback => callback(null, fakeSession));
 
-      it('with error', done => {
-        const fakeError = new Error('our snapshot error');
+              sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
 
-        getSessionStub.callsFake(callback => callback(fakeError, null));
+              sandbox
+                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
+                .returns(false);
+            }
+          });
 
-        database.getSnapshot(err => {
-          assert.strictEqual(err, fakeError);
-          traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
+          it('with error', done => {
+            const fakeError = new Error('our snapshot error');
 
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
+            getSessionStub.callsFake(callback => callback(fakeError, null));
+
+            database.getSnapshot(err => {
+              assert.strictEqual(err, fakeError);
+              traceExporter.forceFlush();
+              const spans = traceExporter.getFinishedSpans();
+              assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+              withAllSpansHaveDBName(spans);
+
+              const actualSpanNames: string[] = [];
+              const actualEventNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
+              });
+
+              const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
+
+              // Ensure that the span actually produced an error that was recorded.
+              const firstSpan = spans[0];
+              assert.strictEqual(
+                SpanStatusCode.ERROR,
+                firstSpan.status.code,
+                'Expected an ERROR span status'
+              );
+              assert.strictEqual(
+                'our snapshot error',
+                firstSpan.status.message,
+                'Mismatched span status message'
+              );
+
+              // We don't expect events.
+              const expectedEventNames = [];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
+
+              done();
             });
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
+          if (isMuxEnabled) {
+            it('should not retry on `begin` errors with `Session not found`', done => {
+              const fakeError = {
+                code: grpc.status.NOT_FOUND,
+                message: 'Session not found',
+              } as MockError;
 
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'our snapshot error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
+              getSessionStub
+                .onFirstCall()
+                .callsFake(callback => callback(null, fakeMultiplexedSession));
 
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
+              beginSnapshotStub.callsFake(callback => callback(fakeError));
 
-          done();
-        });
-      });
+              database.getSnapshot((err, _) => {
+                assert.strictEqual(err, fakeError);
 
-      it('with retries on `begin` errors with `Session not found`', done => {
-        const fakeError = {
-          code: grpc.status.NOT_FOUND,
-          message: 'Session not found',
-        } as MockError;
+                provider.forceFlush();
+                traceExporter.forceFlush();
+                const spans = traceExporter.getFinishedSpans();
+                withAllSpansHaveDBName(spans);
 
-        getSessionStub
-          .onFirstCall()
-          .callsFake(callback => callback(null, fakeMultiplexedSession));
+                assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
 
-        beginSnapshotStub.callsFake(callback => callback(fakeError));
+                const actualSpanNames: string[] = [];
+                const actualEventNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
 
-        database.getSnapshot((err, _) => {
-          assert.strictEqual(err, fakeError);
+                const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
 
-          provider.forceFlush();
-          traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          withAllSpansHaveDBName(spans);
+                // Ensure that the first span actually produced an error that was recorded.
+                const parentSpan = spans[0];
+                assert.strictEqual(
+                  SpanStatusCode.ERROR,
+                  parentSpan.status.code,
+                  'Expected an ERROR span status'
+                );
+                assert.strictEqual(
+                  'Session not found',
+                  parentSpan.status.message.toString(),
+                  'Mismatched span status message'
+                );
+                assert.ok(
+                  parentSpan.spanContext().traceId,
+                  'Expected that the initial parent span has a defined traceId'
+                );
+                assert.ok(
+                  parentSpan.spanContext().spanId,
+                  'Expected that the initial parent span has a defined spanId'
+                );
 
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+                const expectedEventNames = ['No session available'];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
 
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
+                done();
+              });
             });
-          });
+          } else {
+            it('with retries on `begin` errors with `Session not found`', done => {
+              const fakeError = {
+                code: grpc.status.NOT_FOUND,
+                message: 'Session not found',
+              } as MockError;
 
-          const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
+              const fakeSession2 = new FakeSession();
+              const fakeSnapshot2 = new FakeTransaction(
+                {} as google.spanner.v1.TransactionOptions.ReadOnly
+              );
+              (
+                sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub
+              ).callsFake(callback => callback(null));
+              sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-          // Ensure that the first span actually produced an error that was recorded.
-          const parentSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            parentSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'Session not found',
-            parentSpan.status.message.toString(),
-            'Mismatched span status message'
-          );
-          assert.ok(
-            parentSpan.spanContext().traceId,
-            'Expected that the initial parent span has a defined traceId'
-          );
-          assert.ok(
-            parentSpan.spanContext().spanId,
-            'Expected that the initial parent span has a defined spanId'
-          );
+              getSessionStub
+                .onFirstCall()
+                .callsFake(callback => callback(null, fakeSession))
+                .onSecondCall()
+                .callsFake(callback => callback(null, fakeSession2));
+              beginSnapshotStub.callsFake(callback => callback(fakeError));
 
-          const expectedEventNames = ['No session available'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
+              // The first session that was not found should be released back into the
+              // pool, so that the pool can remove it from its inventory.
+              const releaseStub = sandbox.stub(fakeSessionFactory, 'release');
 
-          done();
-        });
-      });
-    });
+              database.getSnapshot(async (err, snapshot) => {
+                assert.ifError(err);
+                assert.strictEqual(snapshot, fakeSnapshot2);
+                // The first session that error should already have been released back
+                // to the pool.
+                assert.strictEqual(releaseStub.callCount, 1);
+                // Ending the valid snapshot will release its session back into the
+                // pool.
+                snapshot.emit('end');
+                assert.strictEqual(releaseStub.callCount, 2);
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is disable', () => {
-      beforeEach(() => {
-        fakeSessionFactory = database.sessionFactory_;
-        fakeSession = new FakeSession();
-        fakeSnapshot = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
+                await provider.forceFlush();
+                await traceExporter.forceFlush();
+                const spans = traceExporter.getFinishedSpans();
+                withAllSpansHaveDBName(spans);
 
-        beginSnapshotStub = (
-          sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
-        ).callsFake(callback => callback(null));
+                const actualSpanNames: string[] = [];
+                const actualEventNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
 
-        getSessionStub = (
-          sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => callback(null, fakeSession));
+                const expectedSpanNames = [
+                  'CloudSpanner.Database.getSnapshot',
+                  'CloudSpanner.Database.getSnapshot',
+                ];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
 
-        sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
+                // Ensure that the first span actually produced an error that was recorded.
+                const parentSpan = spans[0];
+                assert.strictEqual(
+                  SpanStatusCode.ERROR,
+                  parentSpan.status.code,
+                  'Expected an ERROR span status'
+                );
+                assert.strictEqual(
+                  'Session not found',
+                  parentSpan.status.message.toString(),
+                  'Mismatched span status message'
+                );
 
-        sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(false);
-      });
+                // Ensure that the second span is a child of the first span.
+                const secondRetrySpan = spans[1];
+                assert.ok(
+                  parentSpan.spanContext().traceId,
+                  'Expected that the initial parent span has a defined traceId'
+                );
+                assert.ok(
+                  secondRetrySpan.spanContext().traceId,
+                  'Expected that the second retry span has a defined traceId'
+                );
+                assert.deepStrictEqual(
+                  parentSpan.spanContext().traceId,
+                  secondRetrySpan.spanContext().traceId,
+                  'Expected that both spans share a traceId'
+                );
+                assert.ok(
+                  parentSpan.spanContext().spanId,
+                  'Expected that the initial parent span has a defined spanId'
+                );
+                assert.ok(
+                  secondRetrySpan.spanContext().spanId,
+                  'Expected that the second retry span has a defined spanId'
+                );
+                assert.deepStrictEqual(
+                  secondRetrySpan.parentSpanId,
+                  parentSpan.spanContext().spanId,
+                  'Expected that secondRetrySpan is the child to parentSpan'
+                );
 
-      it('with error', done => {
-        const fakeError = new Error('our snapshot error');
+                const expectedEventNames = ['No session available'];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
 
-        getSessionStub.callsFake(callback => callback(fakeError, null));
-
-        database.getSnapshot(err => {
-          assert.strictEqual(err, fakeError);
-          traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
+                done();
+              });
             });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.getSnapshot'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'our snapshot error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-      });
-
-      it('with retries on `begin` errors with `Session not found`', done => {
-        const fakeError = {
-          code: grpc.status.NOT_FOUND,
-          message: 'Session not found',
-        } as MockError;
-
-        const fakeSession2 = new FakeSession();
-        const fakeSnapshot2 = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
-        (sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub).callsFake(
-          callback => callback(null)
-        );
-        sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
-
-        getSessionStub
-          .onFirstCall()
-          .callsFake(callback => callback(null, fakeSession))
-          .onSecondCall()
-          .callsFake(callback => callback(null, fakeSession2));
-        beginSnapshotStub.callsFake(callback => callback(fakeError));
-
-        // The first session that was not found should be released back into the
-        // pool, so that the pool can remove it from its inventory.
-        const releaseStub = sandbox.stub(fakeSessionFactory, 'release');
-
-        database.getSnapshot(async (err, snapshot) => {
-          assert.ifError(err);
-          assert.strictEqual(snapshot, fakeSnapshot2);
-          // The first session that error should already have been released back
-          // to the pool.
-          assert.strictEqual(releaseStub.callCount, 1);
-          // Ending the valid snapshot will release its session back into the
-          // pool.
-          snapshot.emit('end');
-          assert.strictEqual(releaseStub.callCount, 2);
-
-          await provider.forceFlush();
-          await traceExporter.forceFlush();
-          const spans = traceExporter.getFinishedSpans();
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = [
-            'CloudSpanner.Database.getSnapshot',
-            'CloudSpanner.Database.getSnapshot',
-          ];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the first span actually produced an error that was recorded.
-          const parentSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            parentSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'Session not found',
-            parentSpan.status.message.toString(),
-            'Mismatched span status message'
-          );
-
-          // Ensure that the second span is a child of the first span.
-          const secondRetrySpan = spans[1];
-          assert.ok(
-            parentSpan.spanContext().traceId,
-            'Expected that the initial parent span has a defined traceId'
-          );
-          assert.ok(
-            secondRetrySpan.spanContext().traceId,
-            'Expected that the second retry span has a defined traceId'
-          );
-          assert.deepStrictEqual(
-            parentSpan.spanContext().traceId,
-            secondRetrySpan.spanContext().traceId,
-            'Expected that both spans share a traceId'
-          );
-          assert.ok(
-            parentSpan.spanContext().spanId,
-            'Expected that the initial parent span has a defined spanId'
-          );
-          assert.ok(
-            secondRetrySpan.spanContext().spanId,
-            'Expected that the second retry span has a defined spanId'
-          );
-          assert.deepStrictEqual(
-            secondRetrySpan.parentSpanId,
-            parentSpan.spanContext().spanId,
-            'Expected that secondRetrySpan is the child to parentSpan'
-          );
-
-          const expectedEventNames = ['No session available'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-      });
+          }
+        }
+      );
     });
   });
 
@@ -1204,437 +1168,283 @@ describe('Database', () => {
 
     let sessionFactory: FakeSessionFactory;
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true';
-      });
+    const muxEnabled = [true, false];
 
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'false';
-      });
-
-      beforeEach(() => {
-        sessionFactory = database.sessionFactory_;
-        (
-          sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => {
-          callback(null, MULTIPLEXEDSESSION, TRANSACTION);
-        });
-        sandbox.stub(sessionFactory, 'isMultiplexedEnabled').returns(true);
-      });
-
-      it('should return any errors getting a multiplexed session', done => {
-        const fakeErr = new Error('getting session error');
-
-        (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
-          callback(fakeErr, null, null)
-        );
-
-        database.writeAtLeastOnce(mutations, err => {
-          assert.deepStrictEqual(err, fakeErr);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+                  'false');
+          });
+          beforeEach(() => {
+            sessionFactory = database.sessionFactory_;
+            if (isMuxEnabled) {
+              (
+                sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
+              ).callsFake(callback => {
+                callback(null, MULTIPLEXEDSESSION, TRANSACTION);
+              });
+              sandbox
+                .stub(sessionFactory, 'isMultiplexedEnabled')
+                .returns(true);
+            } else {
+              (
+                sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
+              ).callsFake(callback => {
+                callback(null, SESSION, TRANSACTION);
+              });
+              sandbox
+                .stub(sessionFactory, 'isMultiplexedEnabled')
+                .returns(false);
+            }
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
+          it('should return any errors getting a session', done => {
+            const fakeErr = new Error('getting session error');
 
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'getting session error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-      });
-
-      it('should not retry a transaction on `Session Not Found`', done => {
-        const sessionNotFoundError = {
-          code: grpc.status.NOT_FOUND,
-          message: 'Session not found',
-        } as grpc.ServiceError;
-
-        (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
-          callback(sessionNotFoundError, null, null)
-        );
-
-        database.writeAtLeastOnce(mutations, err => {
-          assert.deepStrictEqual(err, sessionNotFoundError);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'Session not found',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-      });
-
-      it('with empty mutation should return successful CommitResponse', done => {
-        const fakeMutations = new MutationSet();
-        try {
-          database.writeAtLeastOnce(fakeMutations, (err, response) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              response.commitTimestamp,
-              RESPONSE.commitTimestamp
+            (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
+              callback(fakeErr, null, null)
             );
 
-            const spans = traceExporter.getFinishedSpans();
-            assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-            withAllSpansHaveDBName(spans);
+            database.writeAtLeastOnce(mutations, err => {
+              assert.deepStrictEqual(err, fakeErr);
 
-            const actualEventNames: string[] = [];
-            const actualSpanNames: string[] = [];
-            spans.forEach(span => {
-              actualSpanNames.push(span.name);
-              span.events.forEach(event => {
-                actualEventNames.push(event.name);
+              const spans = traceExporter.getFinishedSpans();
+              assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+              withAllSpansHaveDBName(spans);
+
+              const actualEventNames: string[] = [];
+              const actualSpanNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
+              });
+
+              const expectedSpanNames = [
+                'CloudSpanner.Database.writeAtLeastOnce',
+              ];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
+
+              // Ensure that the span actually produced an error that was recorded.
+              const firstSpan = spans[0];
+              assert.strictEqual(
+                SpanStatusCode.ERROR,
+                firstSpan.status.code,
+                'Expected an ERROR span status'
+              );
+              assert.strictEqual(
+                'getting session error',
+                firstSpan.status.message,
+                'Mismatched span status message'
+              );
+
+              // We don't expect events.
+              const expectedEventNames = [];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
+
+              done();
+            });
+          });
+
+          it('with empty mutation should return successful CommitResponse', done => {
+            const fakeMutations = new MutationSet();
+            try {
+              database.writeAtLeastOnce(fakeMutations, (err, response) => {
+                assert.ifError(err);
+                assert.deepStrictEqual(
+                  response.commitTimestamp,
+                  RESPONSE.commitTimestamp
+                );
+
+                const spans = traceExporter.getFinishedSpans();
+                assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+                withAllSpansHaveDBName(spans);
+
+                const actualEventNames: string[] = [];
+                const actualSpanNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
+
+                const expectedSpanNames = [
+                  'CloudSpanner.Database.writeAtLeastOnce',
+                ];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
+
+                // Ensure that the span actually produced an error that was recorded.
+                const firstSpan = spans[0];
+                assert.strictEqual(
+                  SpanStatusCode.UNSET,
+                  firstSpan.status.code,
+                  'Unexpected span status code'
+                );
+                assert.strictEqual(
+                  undefined,
+                  firstSpan.status.message,
+                  'Unexpected span status message'
+                );
+
+                const expectedEventNames = ['Using Session'];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
+
+                done();
+              });
+            } catch (error) {
+              assert(error instanceof Error);
+            }
+          });
+
+          it('with error on null mutation should catch thrown error', done => {
+            try {
+              database.writeAtLeastOnce(null, () => {});
+            } catch (err) {
+              // Performing a substring search on the error because
+              // depending on the version of Node.js, the error might be either of:
+              //  * Cannot read properties of null (reading 'proto')
+              //  * Cannot read property 'proto' of null
+              (err as grpc.ServiceError).message.includes(
+                'Cannot read propert'
+              );
+              (err as grpc.ServiceError).message.includes('of null');
+
+              const spans = traceExporter.getFinishedSpans();
+              assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+              withAllSpansHaveDBName(spans);
+
+              const actualSpanNames: string[] = [];
+              const actualEventNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
+              });
+
+              const expectedSpanNames = [
+                'CloudSpanner.Database.writeAtLeastOnce',
+              ];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
+
+              // Ensure that the span actually produced an error that was recorded.
+              const firstSpan = spans[0];
+              assert.strictEqual(
+                SpanStatusCode.ERROR,
+                firstSpan.status.code,
+                'Expected an ERROR span status'
+              );
+
+              const errorMessage = firstSpan.status.message;
+              assert.ok(
+                errorMessage.includes(
+                  "Cannot read properties of null (reading 'proto')"
+                ) ||
+                  errorMessage.includes("Cannot read property 'proto' of null")
+              );
+
+              // We expect an exception to have been caught as well as a Session event.
+              const expectedEventNames = ['Using Session', 'exception'];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
+
+              done();
+            }
+          });
+
+          if (isMuxEnabled) {
+            it('should not retry a transaction on `Session Not Found`', done => {
+              const sessionNotFoundError = {
+                code: grpc.status.NOT_FOUND,
+                message: 'Session not found',
+              } as grpc.ServiceError;
+
+              (sessionFactory.getSession as sinon.SinonStub).callsFake(
+                callback => callback(sessionNotFoundError, null, null)
+              );
+
+              database.writeAtLeastOnce(mutations, err => {
+                assert.deepStrictEqual(err, sessionNotFoundError);
+
+                const spans = traceExporter.getFinishedSpans();
+                assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+                withAllSpansHaveDBName(spans);
+
+                const actualEventNames: string[] = [];
+                const actualSpanNames: string[] = [];
+                spans.forEach(span => {
+                  actualSpanNames.push(span.name);
+                  span.events.forEach(event => {
+                    actualEventNames.push(event.name);
+                  });
+                });
+
+                const expectedSpanNames = [
+                  'CloudSpanner.Database.writeAtLeastOnce',
+                ];
+                assert.deepStrictEqual(
+                  actualSpanNames,
+                  expectedSpanNames,
+                  `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                );
+
+                // Ensure that the span actually produced an error that was recorded.
+                const firstSpan = spans[0];
+                assert.strictEqual(
+                  SpanStatusCode.ERROR,
+                  firstSpan.status.code,
+                  'Expected an ERROR span status'
+                );
+                assert.strictEqual(
+                  'Session not found',
+                  firstSpan.status.message,
+                  'Mismatched span status message'
+                );
+
+                const expectedEventNames = ['No session available'];
+                assert.deepStrictEqual(
+                  actualEventNames,
+                  expectedEventNames,
+                  `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                );
+
+                done();
               });
             });
-
-            const expectedSpanNames = [
-              'CloudSpanner.Database.writeAtLeastOnce',
-            ];
-            assert.deepStrictEqual(
-              actualSpanNames,
-              expectedSpanNames,
-              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-            );
-
-            // Ensure that the span actually produced an error that was recorded.
-            const firstSpan = spans[0];
-            assert.strictEqual(
-              SpanStatusCode.UNSET,
-              firstSpan.status.code,
-              'Unexpected span status code'
-            );
-            assert.strictEqual(
-              undefined,
-              firstSpan.status.message,
-              'Unexpected span status message'
-            );
-
-            const expectedEventNames = ['Using Session'];
-            assert.deepStrictEqual(
-              actualEventNames,
-              expectedEventNames,
-              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-            );
-
-            done();
-          });
-        } catch (error) {
-          assert(error instanceof Error);
+          }
         }
-      });
-
-      it('with error on null mutation should catch thrown error', done => {
-        try {
-          database.writeAtLeastOnce(null, () => {});
-        } catch (err) {
-          // Performing a substring search on the error because
-          // depending on the version of Node.js, the error might be either of:
-          //  * Cannot read properties of null (reading 'proto')
-          //  * Cannot read property 'proto' of null
-          (err as grpc.ServiceError).message.includes('Cannot read propert');
-          (err as grpc.ServiceError).message.includes('of null');
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-
-          const errorMessage = firstSpan.status.message;
-          assert.ok(
-            errorMessage.includes(
-              "Cannot read properties of null (reading 'proto')"
-            ) || errorMessage.includes("Cannot read property 'proto' of null")
-          );
-
-          // We expect an exception to have been caught as well as a Session event.
-          const expectedEventNames = ['Using Session', 'exception'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        }
-      });
-    });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is disable', () => {
-      beforeEach(() => {
-        sessionFactory = database.sessionFactory_;
-        (
-          sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => {
-          callback(null, SESSION, TRANSACTION);
-        });
-      });
-
-      it('should return any errors getting a session', done => {
-        const fakeErr = new Error('getting session error');
-
-        (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
-          callback(fakeErr, null, null)
-        );
-
-        database.writeAtLeastOnce(mutations, err => {
-          assert.deepStrictEqual(err, fakeErr);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'getting session error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-      });
-
-      it('with empty mutation should return successful CommitResponse', done => {
-        const fakeMutations = new MutationSet();
-        try {
-          database.writeAtLeastOnce(fakeMutations, (err, response) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              response.commitTimestamp,
-              RESPONSE.commitTimestamp
-            );
-
-            const spans = traceExporter.getFinishedSpans();
-            assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-            withAllSpansHaveDBName(spans);
-
-            const actualEventNames: string[] = [];
-            const actualSpanNames: string[] = [];
-            spans.forEach(span => {
-              actualSpanNames.push(span.name);
-              span.events.forEach(event => {
-                actualEventNames.push(event.name);
-              });
-            });
-
-            const expectedSpanNames = [
-              'CloudSpanner.Database.writeAtLeastOnce',
-            ];
-            assert.deepStrictEqual(
-              actualSpanNames,
-              expectedSpanNames,
-              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-            );
-
-            // Ensure that the span actually produced an error that was recorded.
-            const firstSpan = spans[0];
-            assert.strictEqual(
-              SpanStatusCode.UNSET,
-              firstSpan.status.code,
-              'Unexpected span status code'
-            );
-            assert.strictEqual(
-              undefined,
-              firstSpan.status.message,
-              'Unexpected span status message'
-            );
-
-            const expectedEventNames = ['Using Session'];
-            assert.deepStrictEqual(
-              actualEventNames,
-              expectedEventNames,
-              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-            );
-
-            done();
-          });
-        } catch (error) {
-          assert(error instanceof Error);
-        }
-      });
-
-      it('with error on null mutation should catch thrown error', done => {
-        try {
-          database.writeAtLeastOnce(null, () => {});
-        } catch (err) {
-          // Performing a substring search on the error because
-          // depending on the version of Node.js, the error might be either of:
-          //  * Cannot read properties of null (reading 'proto')
-          //  * Cannot read property 'proto' of null
-          (err as grpc.ServiceError).message.includes('Cannot read propert');
-          (err as grpc.ServiceError).message.includes('of null');
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.writeAtLeastOnce'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-
-          const errorMessage = firstSpan.status.message;
-          assert.ok(
-            errorMessage.includes(
-              "Cannot read properties of null (reading 'proto')"
-            ) || errorMessage.includes("Cannot read property 'proto' of null")
-          );
-
-          // We expect an exception to have been caught as well as a Session event.
-          const expectedEventNames = ['Using Session', 'exception'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        }
-      });
+      );
     });
   });
 
@@ -2128,454 +1938,373 @@ describe('Database', () => {
 
     let getSessionStub: sinon.SinonStub;
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true';
-      });
+    const muxEnabled = [true, false];
 
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'false';
-      });
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+                  'false');
+          });
+          beforeEach(() => {
+            sandbox.restore();
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSnapshot = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.ReadOnly
+            );
+            fakeSnapshot2 = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.ReadOnly
+            );
+            fakeStream = through.obj();
+            fakeStream2 = through.obj();
 
-      beforeEach(() => {
-        fakeSessionFactory = database.sessionFactory_;
-        fakeMultiplexedSession = new FakeMultiplexedSession();
-        fakeMultiplexedSession2 = new FakeMultiplexedSession();
-        fakeSnapshot = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
-        fakeSnapshot2 = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
-        fakeStream = through.obj();
-        fakeStream2 = through.obj();
+            sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
 
-        getSessionStub = (
-          sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        )
-          .onFirstCall()
-          .callsFake(callback => callback(null, fakeMultiplexedSession))
-          .onSecondCall()
-          .callsFake(callback => callback(null, fakeMultiplexedSession2));
+            sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
 
-        (
-          sandbox.stub(fakeMultiplexedSession, 'snapshot') as sinon.SinonStub
-        ).returns(fakeSnapshot);
+            if (isMuxEnabled) {
+              fakeMultiplexedSession = new FakeMultiplexedSession();
+              fakeMultiplexedSession2 = new FakeMultiplexedSession();
+              getSessionStub = (
+                sandbox.stub(
+                  fakeSessionFactory,
+                  'getSession'
+                ) as sinon.SinonStub
+              )
+                .onFirstCall()
+                .callsFake(callback => callback(null, fakeMultiplexedSession))
+                .onSecondCall()
+                .callsFake(callback => callback(null, fakeMultiplexedSession2));
 
-        sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
+              (
+                sandbox.stub(
+                  fakeMultiplexedSession,
+                  'snapshot'
+                ) as sinon.SinonStub
+              ).returns(fakeSnapshot);
 
-        sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
+              (
+                sandbox.stub(
+                  fakeMultiplexedSession2,
+                  'snapshot'
+                ) as sinon.SinonStub
+              ).returns(fakeSnapshot2);
+              sandbox
+                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
+                .returns(true);
+            } else {
+              fakeSession = new FakeSession();
+              fakeSession2 = new FakeSession();
 
-        sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(true);
-      });
+              getSessionStub = (
+                sandbox.stub(
+                  fakeSessionFactory,
+                  'getSession'
+                ) as sinon.SinonStub
+              )
+                .onFirstCall()
+                .callsFake(callback => callback(null, fakeSession))
+                .onSecondCall()
+                .callsFake(callback => callback(null, fakeSession2));
 
-      it('with error on `getSession`', done => {
-        const fakeError = new Error('getSession error');
+              sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
 
-        getSessionStub.onFirstCall().callsFake(callback => callback(fakeError));
+              sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-        database.runStream(QUERY).on('error', err => {
-          assert.strictEqual(err, fakeError);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
+              sandbox
+                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
+                .returns(false);
+            }
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.runStream'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
+          it('with error on `getSession`', done => {
+            const fakeError = new Error('getSession error');
 
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'getSession error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
+            getSessionStub
+              .onFirstCall()
+              .callsFake(callback => callback(fakeError));
 
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
+            database.runStream(QUERY).on('error', err => {
+              assert.strictEqual(err, fakeError);
 
-          done();
-        });
-      });
+              const spans = traceExporter.getFinishedSpans();
+              assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+              withAllSpansHaveDBName(spans);
 
-      it('propagation on stream/transaction errors', done => {
-        const fakeError = new Error('propagation err');
-        const endStub = sandbox.stub(fakeSnapshot, 'end');
-
-        database.runStream(QUERY).on('error', err => {
-          assert.strictEqual(err, fakeError);
-          assert.strictEqual(endStub.callCount, 1);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.runStream'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'propagation err',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          const expectedEventNames = ['Using Session'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-
-        fakeStream.destroy(fakeError);
-      });
-
-      it('should not retry on "Session not found" error', done => {
-        const sessionNotFoundError = {
-          code: grpc.status.NOT_FOUND,
-          message: 'Session not found',
-        } as grpc.ServiceError;
-        const endStub = sandbox.stub(fakeSnapshot, 'end');
-        const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
-        let rows = 0;
-
-        database
-          .runStream(QUERY)
-          .on('data', () => rows++)
-          .on('error', err => {
-            assert.strictEqual(err, sessionNotFoundError);
-            assert.strictEqual(endStub.callCount, 1);
-            assert.strictEqual(endStub2.callCount, 0);
-            assert.strictEqual(rows, 0);
-
-            provider.forceFlush();
-            traceExporter.forceFlush();
-
-            const spans = traceExporter.getFinishedSpans();
-            assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-            withAllSpansHaveDBName(spans);
-
-            const actualSpanNames: string[] = [];
-            const actualEventNames: string[] = [];
-            spans.forEach(span => {
-              actualSpanNames.push(span.name);
-              span.events.forEach(event => {
-                actualEventNames.push(event.name);
+              const actualEventNames: string[] = [];
+              const actualSpanNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
               });
-            });
 
-            const expectedSpanNames = ['CloudSpanner.Database.runStream'];
-            assert.deepStrictEqual(
-              actualSpanNames,
-              expectedSpanNames,
-              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-            );
+              const expectedSpanNames = ['CloudSpanner.Database.runStream'];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
 
-            // Ensure that the span actually produced an error that was recorded.
-            const lastSpan = spans[0];
-            assert.deepStrictEqual(
-              SpanStatusCode.ERROR,
-              lastSpan.status.code,
-              'Expected an ERROR span status'
-            );
-            assert.deepStrictEqual(
-              'Session not found',
-              lastSpan.status.message,
-              'Mismatched span status message'
-            );
+              // Ensure that the span actually produced an error that was recorded.
+              const firstSpan = spans[0];
+              assert.strictEqual(
+                SpanStatusCode.ERROR,
+                firstSpan.status.code,
+                'Expected an ERROR span status'
+              );
+              assert.strictEqual(
+                'getSession error',
+                firstSpan.status.message,
+                'Mismatched span status message'
+              );
 
-            const expectedEventNames = ['Using Session'];
-            assert.deepStrictEqual(
-              actualEventNames,
-              expectedEventNames,
-              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-            );
+              // We don't expect events.
+              const expectedEventNames = [];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
 
-            done();
-          });
-
-        fakeStream.emit('error', sessionNotFoundError);
-        fakeStream2.push('row1');
-        fakeStream2.push(null);
-      });
-    });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is disable', () => {
-      beforeEach(() => {
-        fakeSessionFactory = database.sessionFactory_;
-        fakeSession = new FakeSession();
-        fakeSession2 = new FakeSession();
-        fakeSnapshot = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
-        fakeSnapshot2 = new FakeTransaction(
-          {} as google.spanner.v1.TransactionOptions.ReadOnly
-        );
-        fakeStream = through.obj();
-        fakeStream2 = through.obj();
-
-        getSessionStub = (
-          sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        )
-          .onFirstCall()
-          .callsFake(callback => callback(null, fakeSession))
-          .onSecondCall()
-          .callsFake(callback => callback(null, fakeSession2));
-
-        sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
-
-        sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
-
-        sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
-
-        sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
-
-        sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(false);
-      });
-
-      it('with error on `getSession`', done => {
-        const fakeError = new Error('getSession error');
-
-        getSessionStub.onFirstCall().callsFake(callback => callback(fakeError));
-
-        database.runStream(QUERY).on('error', err => {
-          assert.strictEqual(err, fakeError);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
+              done();
             });
           });
 
-          const expectedSpanNames = ['CloudSpanner.Database.runStream'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
+          it('propagation on stream/transaction errors', done => {
+            const fakeError = new Error('propagation err');
+            const endStub = sandbox.stub(fakeSnapshot, 'end');
 
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'getSession error',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
+            database.runStream(QUERY).on('error', err => {
+              assert.strictEqual(err, fakeError);
+              assert.strictEqual(endStub.callCount, 1);
 
-          // We don't expect events.
-          const expectedEventNames = [];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
+              const spans = traceExporter.getFinishedSpans();
+              assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+              withAllSpansHaveDBName(spans);
 
-          done();
-        });
-      });
-
-      it('propagation on stream/transaction errors', done => {
-        const fakeError = new Error('propagation err');
-        const endStub = sandbox.stub(fakeSnapshot, 'end');
-
-        database.runStream(QUERY).on('error', err => {
-          assert.strictEqual(err, fakeError);
-          assert.strictEqual(endStub.callCount, 1);
-
-          const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-          withAllSpansHaveDBName(spans);
-
-          const actualEventNames: string[] = [];
-          const actualSpanNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
-          });
-
-          const expectedSpanNames = ['CloudSpanner.Database.runStream'];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-          );
-
-          // Ensure that the span actually produced an error that was recorded.
-          const firstSpan = spans[0];
-          assert.strictEqual(
-            SpanStatusCode.ERROR,
-            firstSpan.status.code,
-            'Expected an ERROR span status'
-          );
-          assert.strictEqual(
-            'propagation err',
-            firstSpan.status.message,
-            'Mismatched span status message'
-          );
-
-          const expectedEventNames = ['Using Session'];
-          assert.deepStrictEqual(
-            actualEventNames,
-            expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-          );
-
-          done();
-        });
-
-        fakeStream.destroy(fakeError);
-      });
-
-      it('retries with "Session not found" error', done => {
-        const sessionNotFoundError = {
-          code: grpc.status.NOT_FOUND,
-          message: 'Session not found',
-        } as grpc.ServiceError;
-        const endStub = sandbox.stub(fakeSnapshot, 'end');
-        const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
-        let rows = 0;
-
-        database
-          .runStream(QUERY)
-          .on('data', () => rows++)
-          .on('error', err => {
-            assert.fail(err);
-          })
-          .on('end', async () => {
-            assert.strictEqual(endStub.callCount, 1);
-            assert.strictEqual(endStub2.callCount, 1);
-            assert.strictEqual(rows, 1);
-
-            await provider.forceFlush();
-            await traceExporter.forceFlush();
-
-            const spans = traceExporter.getFinishedSpans();
-            assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
-            withAllSpansHaveDBName(spans);
-
-            const actualSpanNames: string[] = [];
-            const actualEventNames: string[] = [];
-            spans.forEach(span => {
-              actualSpanNames.push(span.name);
-              span.events.forEach(event => {
-                actualEventNames.push(event.name);
+              const actualEventNames: string[] = [];
+              const actualSpanNames: string[] = [];
+              spans.forEach(span => {
+                actualSpanNames.push(span.name);
+                span.events.forEach(event => {
+                  actualEventNames.push(event.name);
+                });
               });
+
+              const expectedSpanNames = ['CloudSpanner.Database.runStream'];
+              assert.deepStrictEqual(
+                actualSpanNames,
+                expectedSpanNames,
+                `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+              );
+
+              // Ensure that the span actually produced an error that was recorded.
+              const firstSpan = spans[0];
+              assert.strictEqual(
+                SpanStatusCode.ERROR,
+                firstSpan.status.code,
+                'Expected an ERROR span status'
+              );
+              assert.strictEqual(
+                'propagation err',
+                firstSpan.status.message,
+                'Mismatched span status message'
+              );
+
+              const expectedEventNames = ['Using Session'];
+              assert.deepStrictEqual(
+                actualEventNames,
+                expectedEventNames,
+                `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+              );
+
+              done();
             });
 
-            const expectedSpanNames = [
-              'CloudSpanner.Database.runStream',
-              'CloudSpanner.Database.runStream',
-            ];
-            assert.deepStrictEqual(
-              actualSpanNames,
-              expectedSpanNames,
-              `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-            );
-
-            // Ensure that the span actually produced an error that was recorded.
-            const lastSpan = spans[0];
-            assert.deepStrictEqual(
-              SpanStatusCode.ERROR,
-              lastSpan.status.code,
-              'Expected an ERROR span status'
-            );
-            assert.deepStrictEqual(
-              'Session not found',
-              lastSpan.status.message,
-              'Mismatched span status message'
-            );
-
-            // Ensure that the final span that got retries did not error.
-            const firstSpan = spans[1];
-            assert.deepStrictEqual(
-              SpanStatusCode.UNSET,
-              firstSpan.status.code,
-              'Unexpected span status code'
-            );
-            assert.deepStrictEqual(
-              undefined,
-              firstSpan.status.message,
-              'Unexpected span status message'
-            );
-
-            const expectedEventNames = [
-              'Using Session',
-              'No session available',
-              'Using Session',
-            ];
-            assert.deepStrictEqual(
-              actualEventNames,
-              expectedEventNames,
-              `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-            );
-
-            done();
+            fakeStream.destroy(fakeError);
           });
 
-        fakeStream.emit('error', sessionNotFoundError);
-        fakeStream2.push('row1');
-        fakeStream2.push(null);
-      });
+          if (isMuxEnabled) {
+            it('should not retry on "Session not found" error', done => {
+              const sessionNotFoundError = {
+                code: grpc.status.NOT_FOUND,
+                message: 'Session not found',
+              } as grpc.ServiceError;
+              const endStub = sandbox.stub(fakeSnapshot, 'end');
+              const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
+              let rows = 0;
+
+              database
+                .runStream(QUERY)
+                .on('data', () => rows++)
+                .on('error', err => {
+                  assert.strictEqual(err, sessionNotFoundError);
+                  assert.strictEqual(endStub.callCount, 1);
+                  assert.strictEqual(endStub2.callCount, 0);
+                  assert.strictEqual(rows, 0);
+
+                  provider.forceFlush();
+                  traceExporter.forceFlush();
+
+                  const spans = traceExporter.getFinishedSpans();
+                  assert.strictEqual(
+                    spans.length,
+                    1,
+                    'Exactly 1 span expected'
+                  );
+                  withAllSpansHaveDBName(spans);
+
+                  const actualSpanNames: string[] = [];
+                  const actualEventNames: string[] = [];
+                  spans.forEach(span => {
+                    actualSpanNames.push(span.name);
+                    span.events.forEach(event => {
+                      actualEventNames.push(event.name);
+                    });
+                  });
+
+                  const expectedSpanNames = ['CloudSpanner.Database.runStream'];
+                  assert.deepStrictEqual(
+                    actualSpanNames,
+                    expectedSpanNames,
+                    `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                  );
+
+                  // Ensure that the span actually produced an error that was recorded.
+                  const lastSpan = spans[0];
+                  assert.deepStrictEqual(
+                    SpanStatusCode.ERROR,
+                    lastSpan.status.code,
+                    'Expected an ERROR span status'
+                  );
+                  assert.deepStrictEqual(
+                    'Session not found',
+                    lastSpan.status.message,
+                    'Mismatched span status message'
+                  );
+
+                  const expectedEventNames = [
+                    'Using Session',
+                    'No session available',
+                  ];
+                  assert.deepStrictEqual(
+                    actualEventNames,
+                    expectedEventNames,
+                    `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                  );
+
+                  done();
+                });
+
+              fakeStream.emit('error', sessionNotFoundError);
+              fakeStream2.push('row1');
+              fakeStream2.push(null);
+            });
+          } else {
+            it('retries with "Session not found" error', done => {
+              const sessionNotFoundError = {
+                code: grpc.status.NOT_FOUND,
+                message: 'Session not found',
+              } as grpc.ServiceError;
+              const endStub = sandbox.stub(fakeSnapshot, 'end');
+              const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
+              let rows = 0;
+
+              database
+                .runStream(QUERY)
+                .on('data', () => rows++)
+                .on('error', err => {
+                  assert.fail(err);
+                })
+                .on('end', async () => {
+                  assert.strictEqual(endStub.callCount, 1);
+                  assert.strictEqual(endStub2.callCount, 1);
+                  assert.strictEqual(rows, 1);
+
+                  await provider.forceFlush();
+                  await traceExporter.forceFlush();
+
+                  const spans = traceExporter.getFinishedSpans();
+                  assert.strictEqual(
+                    spans.length,
+                    2,
+                    'Exactly 2 spans expected'
+                  );
+                  withAllSpansHaveDBName(spans);
+
+                  const actualSpanNames: string[] = [];
+                  const actualEventNames: string[] = [];
+                  spans.forEach(span => {
+                    actualSpanNames.push(span.name);
+                    span.events.forEach(event => {
+                      actualEventNames.push(event.name);
+                    });
+                  });
+
+                  const expectedSpanNames = [
+                    'CloudSpanner.Database.runStream',
+                    'CloudSpanner.Database.runStream',
+                  ];
+                  assert.deepStrictEqual(
+                    actualSpanNames,
+                    expectedSpanNames,
+                    `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+                  );
+
+                  // Ensure that the span actually produced an error that was recorded.
+                  const lastSpan = spans[0];
+                  assert.deepStrictEqual(
+                    SpanStatusCode.ERROR,
+                    lastSpan.status.code,
+                    'Expected an ERROR span status'
+                  );
+                  assert.deepStrictEqual(
+                    'Session not found',
+                    lastSpan.status.message,
+                    'Mismatched span status message'
+                  );
+
+                  // Ensure that the final span that got retries did not error.
+                  const firstSpan = spans[1];
+                  assert.deepStrictEqual(
+                    SpanStatusCode.UNSET,
+                    firstSpan.status.code,
+                    'Unexpected span status code'
+                  );
+                  assert.deepStrictEqual(
+                    undefined,
+                    firstSpan.status.message,
+                    'Unexpected span status message'
+                  );
+
+                  const expectedEventNames = [
+                    'Using Session',
+                    'No session available',
+                    'Using Session',
+                  ];
+                  assert.deepStrictEqual(
+                    actualEventNames,
+                    expectedEventNames,
+                    `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+                  );
+
+                  done();
+                });
+
+              fakeStream.emit('error', sessionNotFoundError);
+              fakeStream2.push('row1');
+              fakeStream2.push(null);
+            });
+          }
+        }
+      );
     });
   });
 

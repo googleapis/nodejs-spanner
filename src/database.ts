@@ -2125,25 +2125,18 @@ class Database extends common.GrpcServiceObject {
         snapshot.begin(err => {
           if (err) {
             setSpanError(span, err);
-            if (
-              isSessionNotFoundError(err) &&
-              !this.sessionFactory_.isMultiplexedEnabled()
-            ) {
+            if (isSessionNotFoundError(err)) {
               span.addEvent('No session available', {
                 'session.id': session?.id,
               });
               session!.lastError = err;
               this.sessionFactory_.release(session!);
               span.end();
-              this.getSnapshot(options, callback!);
-            } else if (this.sessionFactory_.isMultiplexedEnabled()) {
-              span.addEvent('No session available', {
-                'session.id': session?.id,
-              });
-              session!.lastError = err;
-              this.sessionFactory_.release(session!);
-              span.end();
-              callback!(err);
+              if (!this.sessionFactory_.isMultiplexedEnabled()) {
+                this.getSnapshot(options, callback!);
+              } else {
+                callback!(err);
+              }
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
               this.sessionFactory_.release(session!);
@@ -3109,8 +3102,7 @@ class Database extends common.GrpcServiceObject {
 
             if (
               !dataReceived &&
-              isSessionNotFoundError(err as grpc.ServiceError) &&
-              !this.sessionFactory_.isMultiplexedEnabled()
+              isSessionNotFoundError(err as grpc.ServiceError)
             ) {
               // If it is a 'Session not found' error and we have not yet received
               // any data, we can safely retry the query on a new session.
@@ -3127,9 +3119,13 @@ class Database extends common.GrpcServiceObject {
               dataStream.end();
               snapshot.end();
               span.end();
-              // Create a new data stream and add it to the end user stream.
-              dataStream = this.runStream(query, options);
-              dataStream.pipe(proxyStream);
+              if (!this.sessionFactory_.isMultiplexedEnabled()) {
+                // Create a new data stream and add it to the end user stream.
+                dataStream = this.runStream(query, options);
+                dataStream.pipe(proxyStream);
+              } else {
+                proxyStream.destroy(err);
+              }
             } else {
               proxyStream.destroy(err);
               snapshot.end();
@@ -3669,16 +3665,18 @@ class Database extends common.GrpcServiceObject {
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
       this.sessionFactory_.getSession((err, session?, transaction?) => {
-        if (
-          err &&
-          isSessionNotFoundError(err as grpc.ServiceError) &&
-          !this.sessionFactory_.isMultiplexedEnabled()
-        ) {
+        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
+          if (!this.sessionFactory_.isMultiplexedEnabled()) {
+            this.writeAtLeastOnce(mutations, options, cb!);
+          } else {
+            setSpanError(span, err);
+            span.end();
+            cb!(err as grpc.ServiceError);
+          }
           span.end();
-          this.writeAtLeastOnce(mutations, options, cb!);
           return;
         }
         if (err) {

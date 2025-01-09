@@ -71,6 +71,11 @@ export interface SessionFactoryInterface {
    */
   release(session: Session): void;
 
+  /**
+   * When called returns if the multiplexed is enabled or not.
+   *
+   * @name SessionFactoryInterface#isMultiplexedEnabled
+   */
   isMultiplexedEnabled(): boolean;
 }
 
@@ -108,6 +113,7 @@ export class SessionFactory
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
+    // set the isMulttiplexed property to true if multiplexed session is enabled, otherwise set the property to false
     process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
       ? (this.isMultiplexed = true)
       : (this.isMultiplexed = false);
@@ -164,6 +170,14 @@ export class SessionFactory
     }
   }
 
+  /**
+   * Returns if a multiplexed is enabled or not.
+   *
+   * This method returns true if multiplexed session is enabled, otherwise reutrns false if
+   * multiplexed sesison is disabled.
+   *
+   * @returns {boolean}
+   */
   isMultiplexedEnabled(): boolean {
     return this.isMultiplexed;
   }
