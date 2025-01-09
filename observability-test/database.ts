@@ -503,7 +503,6 @@ describe('Database', () => {
   });
 
   describe('getSnapshot', () => {
-    let fakePool: FakeSessionPool;
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeMultiplexedSession: FakeMultiplexedSession;
@@ -2117,12 +2116,11 @@ describe('Database', () => {
       a: 'b',
       c: 'd',
     };
-
-    let fakePool: FakeSessionPool;
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeSession2: FakeSession;
     let fakeMultiplexedSession: FakeMultiplexedSession;
+    let fakeMultiplexedSession2: FakeMultiplexedSession;
     let fakeSnapshot: FakeTransaction;
     let fakeSnapshot2: FakeTransaction;
     let fakeStream: Transform;
@@ -2142,22 +2140,31 @@ describe('Database', () => {
       beforeEach(() => {
         fakeSessionFactory = database.sessionFactory_;
         fakeMultiplexedSession = new FakeMultiplexedSession();
+        fakeMultiplexedSession2 = new FakeMultiplexedSession();
         fakeSnapshot = new FakeTransaction(
           {} as google.spanner.v1.TransactionOptions.ReadOnly
         );
+        fakeSnapshot2 = new FakeTransaction(
+          {} as google.spanner.v1.TransactionOptions.ReadOnly
+        );
         fakeStream = through.obj();
+        fakeStream2 = through.obj();
 
         getSessionStub = (
           sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
         )
           .onFirstCall()
-          .callsFake(callback => callback(null, fakeMultiplexedSession));
+          .callsFake(callback => callback(null, fakeMultiplexedSession))
+          .onSecondCall()
+          .callsFake(callback => callback(null, fakeMultiplexedSession2));
 
         (
           sandbox.stub(fakeMultiplexedSession, 'snapshot') as sinon.SinonStub
         ).returns(fakeSnapshot);
 
         sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
+
+        sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
 
         sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(true);
       });
@@ -2274,6 +2281,8 @@ describe('Database', () => {
           code: grpc.status.NOT_FOUND,
           message: 'Session not found',
         } as grpc.ServiceError;
+        const endStub = sandbox.stub(fakeSnapshot, 'end');
+        const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
         let rows = 0;
 
         database
@@ -2281,6 +2290,8 @@ describe('Database', () => {
           .on('data', () => rows++)
           .on('error', err => {
             assert.strictEqual(err, sessionNotFoundError);
+            assert.strictEqual(endStub.callCount, 1);
+            assert.strictEqual(endStub2.callCount, 0);
             assert.strictEqual(rows, 0);
 
             provider.forceFlush();
@@ -2330,12 +2341,13 @@ describe('Database', () => {
           });
 
         fakeStream.emit('error', sessionNotFoundError);
+        fakeStream2.push('row1');
+        fakeStream2.push(null);
       });
     });
 
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is disable', () => {
       beforeEach(() => {
-        fakePool = database.pool_;
         fakeSessionFactory = database.sessionFactory_;
         fakeSession = new FakeSession();
         fakeSession2 = new FakeSession();
@@ -2498,7 +2510,7 @@ describe('Database', () => {
             await traceExporter.forceFlush();
 
             const spans = traceExporter.getFinishedSpans();
-            assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
+            assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
             withAllSpansHaveDBName(spans);
 
             const actualSpanNames: string[] = [];

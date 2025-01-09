@@ -85,6 +85,7 @@ import * as v1 from './v1';
 import {
   ObservabilityOptions,
   ensureInitialContextManagerSet,
+  ensureContextPropagation,
 } from './instrument';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -377,6 +378,7 @@ class Spanner extends GrpcService {
       this._observabilityOptions?.enableEndToEndTracing
     );
     ensureInitialContextManagerSet();
+    ensureContextPropagation();
   }
 
   /**
