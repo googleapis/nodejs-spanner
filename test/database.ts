@@ -2025,7 +2025,8 @@ describe('Database', () => {
 
         getSessionStub = (
           sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        ).onFirstCall()
+        )
+          .onFirstCall()
           .callsFake(callback => callback(null, fakeMultiplexedSession))
           .onSecondCall()
           .callsFake(callback => callback(null, fakeMultiplexedSession2));
@@ -2033,8 +2034,10 @@ describe('Database', () => {
         snapshotStub = sandbox
           .stub(fakeMultiplexedSession, 'snapshot')
           .returns(fakeSnapshot);
-        
-        sandbox.stub(fakeMultiplexedSession2, 'snapshot').returns(fakeSnapshot2);
+
+        sandbox
+          .stub(fakeMultiplexedSession2, 'snapshot')
+          .returns(fakeSnapshot2);
 
         runStreamStub = sandbox
           .stub(fakeSnapshot, 'runStream')
@@ -2116,7 +2119,7 @@ describe('Database', () => {
         } as grpc.ServiceError;
         const endStub = sandbox.stub(fakeSnapshot, 'end');
         const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
-        let rows = 0;
+        const rows = 0;
 
         database.runStream(QUERY).on('error', err => {
           assert.strictEqual(err, sessionNotFoundError);
