@@ -1726,7 +1726,7 @@ describe('Spanner with mock server', () => {
         spannerMock.createSession,
         SimulatedExecutionTime.ofError(err)
       );
-      const database = newTestDatabase().on('error', err => { 
+      const database = newTestDatabase().on('error', err => {
         assert.strictEqual(err.code, Status.NOT_FOUND);
       });
       try {
