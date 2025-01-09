@@ -1992,7 +1992,6 @@ describe('Database', () => {
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeSession2: FakeSession;
-    let fakePool: FakeSessionPool;
     let fakeMultiplexedSession: FakeMultiplexedSession;
     let fakeMultiplexedSession2: FakeMultiplexedSession;
     let fakeSnapshot: FakeTransaction;
@@ -2018,21 +2017,30 @@ describe('Database', () => {
         fakeSnapshot = new FakeTransaction(
           {} as google.spanner.v1.TransactionOptions.ReadOnly
         );
+        fakeSnapshot2 = new FakeTransaction(
+          {} as google.spanner.v1.TransactionOptions.ReadOnly
+        );
         fakeStream = through.obj();
+        fakeStream2 = through.obj();
 
         getSessionStub = (
           sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
-        )
-          .onFirstCall()
-          .callsFake(callback => callback(null, fakeMultiplexedSession));
+        ).onFirstCall()
+          .callsFake(callback => callback(null, fakeMultiplexedSession))
+          .onSecondCall()
+          .callsFake(callback => callback(null, fakeMultiplexedSession2));
 
         snapshotStub = sandbox
           .stub(fakeMultiplexedSession, 'snapshot')
           .returns(fakeSnapshot);
+        
+        sandbox.stub(fakeMultiplexedSession2, 'snapshot').returns(fakeSnapshot2);
 
         runStreamStub = sandbox
           .stub(fakeSnapshot, 'runStream')
           .returns(fakeStream);
+
+        sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
 
         sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(true);
       });
@@ -2101,25 +2109,32 @@ describe('Database', () => {
         fakeStream.destroy(fakeError);
       });
 
-      it('should throw an error on "Session not found"', done => {
+      it('should not retry on "Session not found" error', done => {
         const sessionNotFoundError = {
           code: grpc.status.NOT_FOUND,
           message: 'Session not found',
         } as grpc.ServiceError;
+        const endStub = sandbox.stub(fakeSnapshot, 'end');
+        const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
+        let rows = 0;
 
         database.runStream(QUERY).on('error', err => {
           assert.strictEqual(err, sessionNotFoundError);
+          assert.strictEqual(endStub.callCount, 1);
+          assert.strictEqual(endStub2.callCount, 0);
+          assert.strictEqual(rows, 0);
           done();
         });
 
         fakeStream.emit('error', sessionNotFoundError);
+        fakeStream2.push('row1');
+        fakeStream2.push(null);
       });
     });
 
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is disable', () => {
       beforeEach(() => {
         fakeSessionFactory = database.sessionFactory_;
-        fakePool = database.pool_;
         fakeSession = new FakeSession();
         fakeSession2 = new FakeSession();
         fakeSnapshot = new FakeTransaction(
