@@ -143,6 +143,24 @@ describe('startTrace', () => {
       );
 
       assert.equal(
+        span.attributes['gcp.client.service'],
+        'spanner',
+        'Missing gcp.client.service attribute'
+      );
+
+      assert.equal(
+        span.attributes['gcp.client.version'],
+        TRACER_VERSION,
+        'Missing gcp.client.version attribute'
+      );
+
+      assert.equal(
+        span.attributes['gcp.client.repo'],
+        'googleapis/nodejs-spanner',
+        'Missing gcp.client.repo attribute'
+      );
+
+      assert.equal(
         span.attributes[SEMATTRS_DB_SYSTEM],
         'spanner',
         'Missing DB_SYSTEM attribute'

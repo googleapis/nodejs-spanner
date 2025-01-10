@@ -27,7 +27,6 @@ import {
   Span,
   SpanStatusCode,
   context,
-  propagation,
   trace,
   INVALID_SPAN_CONTEXT,
   ROOT_CONTEXT,
@@ -100,8 +99,6 @@ const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
 
-const {W3CTraceContextPropagator} = require('@opentelemetry/core');
-
 /*
  * This function ensures that async/await works correctly by
  * checking if context.active() returns an invalid/unset context
@@ -121,13 +118,7 @@ function ensureInitialContextManagerSet() {
   }
 }
 
-function ensureContextPropagation() {
-  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
-}
-
 export {ensureInitialContextManagerSet};
-
-export {ensureContextPropagation};
 
 /**
  * startTrace begins an active span in the current active context
@@ -153,6 +144,9 @@ export function startTrace<T>(
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
       span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
       span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
+      span.setAttribute('gcp.client.service', 'spanner');
+      span.setAttribute('gcp.client.version', TRACER_VERSION);
+      span.setAttribute('gcp.client.repo', 'googleapis/nodejs-spanner');
 
       if (config.tableName) {
         span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
