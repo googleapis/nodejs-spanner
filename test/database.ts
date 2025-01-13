@@ -129,18 +129,6 @@ export class FakeMultiplexedSession extends EventEmitter {
   }
   createSession() {}
   getSession() {}
-  snapshot(): FakeTransaction {
-    return new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.ReadOnly
-    );
-  }
-  isMultiplexedEnabled(): boolean {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
-      return false;
-    } else {
-      return true;
-    }
-  }
 }
 
 export class FakeSessionFactory extends EventEmitter {
@@ -149,13 +137,7 @@ export class FakeSessionFactory extends EventEmitter {
     super();
     this.calledWith_ = arguments;
   }
-  getSession(): FakeSession | FakeMultiplexedSession {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
-      return new FakeSession();
-    } else {
-      return new FakeMultiplexedSession();
-    }
-  }
+  getSession() {}
   getPool(): FakeSessionPool {
     return new FakeSessionPool();
   }
@@ -292,9 +274,9 @@ describe('Database', () => {
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
       './session-pool': {SessionPool: FakeSessionPool},
+      './multiplexed-session': {MultiplexedSession: FakeMultiplexedSession},
       './session-factory': {SessionFactory: FakeSessionFactory},
       './session': {Session: FakeSession},
-      './multiplexed-session': {MultiplexedSession: FakeMultiplexedSession},
       './table': {Table: FakeTable},
       './transaction-runner': {
         TransactionRunner: FakeTransactionRunner,
@@ -836,16 +818,15 @@ describe('Database', () => {
       Thing: 'xyz',
     });
 
-    const muxEnabled = [true, false];
-
     const SESSION = new FakeSession();
-    const MULTIPLEXEDSESSION = new FakeMultiplexedSession();
     const RESPONSE = {commitTimestamp: {seconds: 1, nanos: 0}};
     const TRANSACTION = new FakeTransaction(
       {} as google.spanner.v1.TransactionOptions.ReadWrite
     );
 
     let sessionFactory: FakeSessionFactory;
+
+    const muxEnabled = [true, false];
 
     muxEnabled.forEach(isMuxEnabled => {
       describe(
@@ -858,23 +839,17 @@ describe('Database', () => {
               : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
                   'false');
           });
+
           beforeEach(() => {
             sandbox.restore();
             sessionFactory = database.sessionFactory_;
-            if (isMuxEnabled) {
-              (
-                sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
-              ).callsFake(callback => {
-                callback(null, MULTIPLEXEDSESSION, TRANSACTION);
-              });
-            } else {
-              (
-                sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
-              ).callsFake(callback => {
-                callback(null, SESSION, TRANSACTION);
-              });
-            }
+            (
+              sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, SESSION, TRANSACTION);
+            });
           });
+
           it('should return any errors getting a session', done => {
             const fakeErr = new Error('err');
 
@@ -1937,8 +1912,6 @@ describe('Database', () => {
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeSession2: FakeSession;
-    let fakeMultiplexedSession: FakeMultiplexedSession;
-    let fakeMultiplexedSession2: FakeMultiplexedSession;
     let fakeSnapshot: FakeTransaction;
     let fakeSnapshot2: FakeTransaction;
     let fakeStream: Transform;
@@ -1962,8 +1935,9 @@ describe('Database', () => {
                   'false');
           });
           beforeEach(() => {
-            sandbox.restore();
             fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
+            fakeSession2 = new FakeSession();
             fakeSnapshot = new FakeTransaction(
               {} as google.spanner.v1.TransactionOptions.ReadOnly
             );
@@ -1972,68 +1946,30 @@ describe('Database', () => {
             );
             fakeStream = through.obj();
             fakeStream2 = through.obj();
-            if (isMuxEnabled) {
-              fakeMultiplexedSession = new FakeMultiplexedSession();
-              fakeMultiplexedSession2 = new FakeMultiplexedSession();
 
-              getSessionStub = (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'getSession'
-                ) as sinon.SinonStub
-              )
-                .onFirstCall()
-                .callsFake(callback => callback(null, fakeMultiplexedSession))
-                .onSecondCall()
-                .callsFake(callback => callback(null, fakeMultiplexedSession2));
+            getSessionStub = (
+              sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
+            )
+              .onFirstCall()
+              .callsFake(callback => callback(null, fakeSession))
+              .onSecondCall()
+              .callsFake(callback => callback(null, fakeSession2));
 
-              snapshotStub = sandbox
-                .stub(fakeMultiplexedSession, 'snapshot')
-                .returns(fakeSnapshot);
+            snapshotStub = sandbox
+              .stub(fakeSession, 'snapshot')
+              .returns(fakeSnapshot);
 
-              sandbox
-                .stub(fakeMultiplexedSession2, 'snapshot')
-                .returns(fakeSnapshot2);
+            sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-              runStreamStub = sandbox
-                .stub(fakeSnapshot, 'runStream')
-                .returns(fakeStream);
+            runStreamStub = sandbox
+              .stub(fakeSnapshot, 'runStream')
+              .returns(fakeStream);
 
-              sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
+            sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
 
-              sandbox
-                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
-                .returns(true);
-            } else {
-              fakeSession = new FakeSession();
-              fakeSession2 = new FakeSession();
-              getSessionStub = (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'getSession'
-                ) as sinon.SinonStub
-              )
-                .onFirstCall()
-                .callsFake(callback => callback(null, fakeSession))
-                .onSecondCall()
-                .callsFake(callback => callback(null, fakeSession2));
-
-              snapshotStub = sandbox
-                .stub(fakeSession, 'snapshot')
-                .returns(fakeSnapshot);
-
-              sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
-
-              runStreamStub = sandbox
-                .stub(fakeSnapshot, 'runStream')
-                .returns(fakeStream);
-
-              sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
-
-              sandbox
-                .stub(fakeSessionFactory, 'isMultiplexedEnabled')
-                .returns(false);
-            }
+            sandbox
+              .stub(fakeSessionFactory, 'isMultiplexedEnabled')
+              .returns(isMuxEnabled ? true : false);
           });
 
           it('should get a read session via `getSession`', () => {
@@ -2115,7 +2051,9 @@ describe('Database', () => {
               database.runStream(QUERY).on('error', err => {
                 assert.strictEqual(err, sessionNotFoundError);
                 assert.strictEqual(endStub.callCount, 1);
+                // make sure it is not retrying the stream
                 assert.strictEqual(endStub2.callCount, 0);
+                // row count should be 0
                 assert.strictEqual(rows, 0);
                 done();
               });
@@ -2417,7 +2355,6 @@ describe('Database', () => {
   describe('getSnapshot', () => {
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
-    let fakeMultiplexedSession: FakeMultiplexedSession;
     let fakeSnapshot: FakeTransaction;
 
     let beginSnapshotStub: sinon.SinonStub;
@@ -2440,6 +2377,7 @@ describe('Database', () => {
 
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
             fakeSnapshot = new FakeTransaction(
               {} as google.spanner.v1.TransactionOptions.ReadOnly
             );
@@ -2448,61 +2386,21 @@ describe('Database', () => {
               sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
             ).callsFake(callback => callback(null));
 
-            if (isMuxEnabled) {
-              fakeMultiplexedSession = new FakeMultiplexedSession();
-              getSessionStub = (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'getSession'
-                ) as sinon.SinonStub
-              ).callsFake(callback => callback(null, fakeMultiplexedSession));
+            getSessionStub = (
+              sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
+            ).callsFake(callback => callback(null, fakeSession));
 
-              snapshotStub = (
-                sandbox.stub(
-                  fakeMultiplexedSession,
-                  'snapshot'
-                ) as sinon.SinonStub
-              ).returns(fakeSnapshot);
+            snapshotStub = (
+              sandbox.stub(fakeSession, 'snapshot') as sinon.SinonStub
+            ).returns(fakeSnapshot);
 
-              (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'isMultiplexedEnabled'
-                ) as sinon.SinonStub
-              ).returns(true);
-            } else {
-              fakeSession = new FakeSession();
-              getSessionStub = (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'getSession'
-                ) as sinon.SinonStub
-              ).callsFake(callback => callback(null, fakeSession));
-
-              snapshotStub = sandbox
-                .stub(fakeSession, 'snapshot')
-                .returns(fakeSnapshot);
-
-              (
-                sandbox.stub(
-                  fakeSessionFactory,
-                  'isMultiplexedEnabled'
-                ) as sinon.SinonStub
-              ).returns(false);
-            }
+            (
+              sandbox.stub(
+                fakeSessionFactory,
+                'isMultiplexedEnabled'
+              ) as sinon.SinonStub
+            ).returns(isMuxEnabled ? true : false);
           });
-
-          it(
-            'should call through to ' +
-              `${isMuxEnabled ? 'MultiplexedSession#getSession' : 'SessionPool#getSession'}`,
-            () => {
-              getSessionStub.callsFake(() => {});
-
-              database.getSnapshot(assert.ifError);
-
-              assert.strictEqual(getSessionStub.callCount, 1);
-            }
-          );
 
           it(
             'should return any ' +
@@ -2560,14 +2458,6 @@ describe('Database', () => {
 
             const bounds = snapshotStub.lastCall.args[0];
             assert.strictEqual(bounds, fakeTimestampBounds);
-          });
-
-          it('should begin a snapshot', () => {
-            beginSnapshotStub.callsFake(() => {});
-
-            database.getSnapshot(assert.ifError);
-
-            assert.strictEqual(beginSnapshotStub.callCount, 1);
           });
 
           it('should return the `snapshot`', done => {
@@ -2630,6 +2520,7 @@ describe('Database', () => {
                 .callsFake(callback => callback(null, fakeSession))
                 .onSecondCall()
                 .callsFake(callback => callback(null, fakeSession2));
+
               beginSnapshotStub.callsFake(callback => callback(fakeError));
 
               // The first session that was not found should be released back into the
@@ -2677,7 +2568,6 @@ describe('Database', () => {
     let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'false';
       fakePool = database.pool_;
       fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();

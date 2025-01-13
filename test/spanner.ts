@@ -1744,7 +1744,7 @@ describe('Spanner with mock server', () => {
       }
     });
 
-    it('should fail the transaction, if query return session not found error', done => {
+    it('should fail the transaction, if query returns session not found error', done => {
       const query = {
         sql: selectSql,
       } as ExecuteSqlRequest;

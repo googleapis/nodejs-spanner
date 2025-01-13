@@ -113,7 +113,7 @@ export class SessionFactory
     this.pool_.on('error', this.emit.bind(database, 'error'));
     this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
-    // set the isMulttiplexed property to true if multiplexed session is enabled, otherwise set the property to false
+    // set the isMultiplexed property to true if multiplexed session is enabled, otherwise set the property to false
     process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
       ? (this.isMultiplexed = true)
       : (this.isMultiplexed = false);
