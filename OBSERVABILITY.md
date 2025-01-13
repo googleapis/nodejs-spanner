@@ -88,8 +88,9 @@ const spanner = new Spanner({
 
 In addition to client-side tracing, you can opt in for end-to-end tracing. End-to-end tracing helps you understand and debug latency issues that are specific to Spanner. Refer [here](https://cloud.google.com/spanner/docs/tracing-overview) for more information.
 
-You can opt-in by either:
+To configure end-to-end tracing.
 
+1. Opt in for end-to-end tracing. You can opt-in by either:
 * Setting the environment variable `SPANNER_ENABLE_END_TO_END_TRACING=true` before your application is started
 * In code, setting `enableEndToEndTracing: true` in your SpannerOptions before creating the Cloud Spanner client
 
@@ -101,6 +102,13 @@ const spanner = new Spanner({
     enableEndToEndTracing: true,
   }
 }),
+```
+
+2. Set the trace context propagation in OpenTelemetry.
+```javascript
+const {propagation} = require('@opentelemetry/api');
+const {W3CTraceContextPropagator} = require('@opentelemetry/core');
+propagation.setGlobalPropagator(new W3CTraceContextPropagator());
 ```
 
 #### OpenTelemetry gRPC instrumentation
