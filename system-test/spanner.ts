@@ -3952,10 +3952,10 @@ describe('Spanner', () => {
       const [sessions] = await dbNewRole.batchCreateSessions({count});
 
       assert.strictEqual(sessions.length, count);
-      sessions.forEach(session =>
-        session.getMetadata((err, metadata) => {
-          assert.ifError(err);
-          assert.strictEqual('parent_role', metadata?.databaseRole);
+      await Promise.all(
+        sessions.map(async session => {
+          const metadata = await session.getMetadata();
+          assert.strictEqual('parent_role', metadata[0].databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
@@ -3972,10 +3972,10 @@ describe('Spanner', () => {
       });
 
       assert.strictEqual(sessions.length, count);
-      sessions.forEach(session =>
-        session.getMetadata((err, metadata) => {
-          assert.ifError(err);
-          assert.strictEqual('child_role', metadata?.databaseRole);
+      await Promise.all(
+        sessions.map(async session => {
+          const metadata = await session.getMetadata();
+          assert.strictEqual('child_role', metadata[0].databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
@@ -3992,10 +3992,10 @@ describe('Spanner', () => {
       });
 
       assert.strictEqual(sessions.length, count);
-      sessions.forEach(session =>
-        session.getMetadata((err, metadata) => {
-          assert.ifError(err);
-          assert.strictEqual('orphan_role', metadata?.databaseRole);
+      await Promise.all(
+        sessions.map(async session => {
+          const metadata = await session.getMetadata();
+          assert.strictEqual('orphan_role', metadata[0].databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
