@@ -47,6 +47,7 @@ import {Instance, MutationGroup, Spanner} from '../src';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {MockError} from '../test/mockserver/mockspanner';
+import {FakeSessionFactory} from '../test/database';
 const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
@@ -234,6 +235,7 @@ describe('Database', () => {
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
       './session-pool': {SessionPool: FakeSessionPool},
+      './session-factory': {SessionFactory: FakeSessionFactory},
       './session': {Session: FakeSession},
       './table': {Table: FakeTable},
       './transaction-runner': {

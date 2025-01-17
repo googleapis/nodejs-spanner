@@ -17,7 +17,7 @@
   "dependencies": {
     "@google-cloud/kms": "^4.0.0",
     "@google-cloud/precise-date": "^4.0.0",
-    "@google-cloud/spanner": "^7.16.0",
+    "@google-cloud/spanner": "^7.17.1",
     "protobufjs": "^7.0.0",
     "yargs": "^17.0.0"
   },
@@ -27,6 +27,8 @@
     "@opentelemetry/instrumentation-grpc": "^0.54.0",
     "@opentelemetry/sdk-trace-base": "^1.26.0",
     "@opentelemetry/sdk-trace-node": "^1.26.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/core": "^1.27.0",
     "chai": "^4.2.0",
     "mocha": "^9.0.0",
     "p-limit": "^3.0.1"

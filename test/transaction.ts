@@ -148,8 +148,8 @@ describe('Transaction', () => {
         assert.strictEqual(REQUEST_STREAM.callCount, 1);
       });
 
-      it('should set the resourceHeader_', () => {
-        assert.deepStrictEqual(snapshot.resourceHeader_, {
+      it('should set the commonHeaders_', () => {
+        assert.deepStrictEqual(snapshot.commonHeaders_, {
           [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
         });
       });
@@ -170,7 +170,7 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'beginTransaction');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(gaxOpts, {});
-        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
       });
 
       it('should accept gaxOptions', done => {
@@ -273,7 +273,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'streamingRead');
-        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
       });
 
       it('should use the transaction id if present', () => {
@@ -624,7 +624,7 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeStreamingSql');
-        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
       });
 
       it('should use the transaction id if present', () => {
@@ -1417,7 +1417,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -1553,7 +1553,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -1600,7 +1600,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -1624,7 +1624,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -2006,7 +2006,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -2180,7 +2180,7 @@ describe('Transaction', () => {
             config.headers,
             Object.assign(
               {[LEADER_AWARE_ROUTING_HEADER]: true},
-              transaction.resourceHeader_
+              transaction.commonHeaders_
             )
           );
           done();
@@ -2228,7 +2228,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.resourceHeader_
+            transaction.commonHeaders_
           )
         );
       });
@@ -2297,7 +2297,7 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            pdml.resourceHeader_
+            pdml.commonHeaders_
           )
         );
       });

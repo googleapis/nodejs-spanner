@@ -30,7 +30,7 @@ import {
   setSpanErrorAndException,
   startTrace,
 } from './instrument';
-
+import {GetSessionCallback} from './session-factory';
 import {
   isDatabaseNotFoundError,
   isInstanceNotFoundError,
@@ -52,20 +52,6 @@ export type GetReadSessionCallback = NormalCallback<Session>;
 
 /** @deprecated. Use GetSessionCallback instead. */
 export interface GetWriteSessionCallback {
-  (
-    err: Error | null,
-    session?: Session | null,
-    transaction?: Transaction | null
-  ): void;
-}
-
-/**
- * @callback GetSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-write session.
- * @param {Transaction} transaction The transaction object.
- */
-export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,

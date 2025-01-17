@@ -46,7 +46,7 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-
+import {SessionFactory} from '../src/session-factory';
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -78,7 +78,7 @@ class FakeBatchTransaction {
   }
 }
 
-class FakeGrpcServiceObject extends EventEmitter {
+export class FakeGrpcServiceObject extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
     super();
@@ -91,7 +91,7 @@ function fakePartialResultStream(this: Function & {calledWith_: IArguments}) {
   return this;
 }
 
-class FakeSession {
+export class FakeSession {
   calledWith_: IArguments;
   formattedName_: any;
   constructor() {
@@ -109,7 +109,7 @@ class FakeSession {
   }
 }
 
-class FakeSessionPool extends EventEmitter {
+export class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
     super();
@@ -118,6 +118,37 @@ class FakeSessionPool extends EventEmitter {
   open() {}
   getSession() {}
   release() {}
+}
+
+export class FakeMultiplexedSession extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  createSession() {}
+  getSession() {}
+}
+
+export class FakeSessionFactory extends EventEmitter {
+  calledWith_: IArguments;
+  constructor() {
+    super();
+    this.calledWith_ = arguments;
+  }
+  getSession(): FakeSession | FakeMultiplexedSession {
+    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
+      return new FakeSession();
+    } else {
+      return new FakeMultiplexedSession();
+    }
+  }
+  getPool(): FakeSessionPool {
+    return new FakeSessionPool();
+  }
+  getMultiplexedSession(): FakeMultiplexedSession {
+    return new FakeMultiplexedSession();
+  }
 }
 
 class FakeTable {
@@ -243,6 +274,7 @@ describe('Database', () => {
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
       './session-pool': {SessionPool: FakeSessionPool},
+      './session-factory': {SessionFactory: FakeSessionFactory},
       './session': {Session: FakeSession},
       './table': {Table: FakeTable},
       './transaction-runner': {
@@ -295,43 +327,40 @@ describe('Database', () => {
       assert(database.formattedName_, formattedName);
     });
 
-    it('should create a SessionPool object', () => {
-      assert(database.pool_ instanceof FakeSessionPool);
-      assert.strictEqual(database.pool_.calledWith_[0], database);
-      assert.strictEqual(database.pool_.calledWith_[1], POOL_OPTIONS);
-    });
-
     it('should accept a custom Pool class', () => {
       function FakePool() {}
-      FakePool.prototype.on = util.noop;
-      FakePool.prototype.open = util.noop;
-
       const database = new Database(
         INSTANCE,
         NAME,
         FakePool as {} as db.SessionPoolConstructor
       );
-      assert(database.pool_ instanceof FakePool);
+      assert(database.pool_ instanceof FakeSessionPool);
     });
 
     it('should re-emit SessionPool errors', done => {
       const error = new Error('err');
+
+      const sessionFactory = new SessionFactory(database, NAME);
 
       database.on('error', err => {
         assert.strictEqual(err, error);
         done();
       });
 
-      database.pool_.emit('error', error);
+      sessionFactory.pool_.emit('error', error);
     });
 
-    it('should open the pool', done => {
-      FakeSessionPool.prototype.open = () => {
-        FakeSessionPool.prototype.open = util.noop;
-        done();
-      };
+    it('should re-emit Multiplexed Session errors', done => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      const error = new Error('err');
 
-      new Database(INSTANCE, NAME);
+      const sessionFactory = new SessionFactory(database, NAME);
+
+      database.on('error', err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+      sessionFactory.multiplexedSession_?.emit('error', error);
     });
 
     it('should inherit from ServiceObject', done => {
@@ -358,8 +387,8 @@ describe('Database', () => {
       calledWith.createMethod(null, options, done);
     });
 
-    it('should set the resourceHeader_', () => {
-      assert.deepStrictEqual(database.resourceHeader_, {
+    it('should set the commonHeaders_', () => {
+      assert.deepStrictEqual(database.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: database.formattedName_,
       });
     });
@@ -400,7 +429,7 @@ describe('Database', () => {
         headers,
         Object.assign(
           {[LEADER_AWARE_ROUTING_HEADER]: true},
-          database.resourceHeader_
+          database.commonHeaders_
         )
       );
     });
@@ -531,7 +560,7 @@ describe('Database', () => {
 
         assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
 
         assert.strictEqual(callback_, callback);
 
@@ -676,7 +705,7 @@ describe('Database', () => {
       assert.strictEqual(args.method, 'batchWrite');
       assert.deepStrictEqual(args.reqOpts, expectedReqOpts);
       assert.deepStrictEqual(args.gaxOpts, expectedGaxOpts);
-      assert.deepStrictEqual(args.headers, database.resourceHeader_);
+      assert.deepStrictEqual(args.headers, database.commonHeaders_);
     });
 
     it('should return error when passing an empty list of mutationGroups', done => {
@@ -1114,7 +1143,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         assert.strictEqual(callback, assert.ifError);
       };
 
@@ -1386,7 +1415,7 @@ describe('Database', () => {
           name: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         return requestReturnValue;
       };
 
@@ -1413,7 +1442,7 @@ describe('Database', () => {
           database: database.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 
@@ -2038,7 +2067,7 @@ describe('Database', () => {
           statements: STATEMENTS,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         assert.strictEqual(callback, assert.ifError);
         return requestReturnValue;
       };
@@ -2104,7 +2133,7 @@ describe('Database', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            database.resourceHeader_
+            database.commonHeaders_
           )
         );
 
@@ -2307,6 +2336,39 @@ describe('Database', () => {
       assert.strictEqual(bounds, fakeTimestampBounds);
     });
 
+    it('should throw error if maxStaleness is passed in the timestamp bounds to the snapshot', () => {
+      const fakeTimestampBounds = {maxStaleness: 10};
+
+      database.getSnapshot(fakeTimestampBounds, err => {
+        assert.strictEqual(err.code, 3);
+        assert.strictEqual(
+          err.message,
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        );
+      });
+    });
+
+    it('should throw error if minReadTimestamp is passed in the timestamp bounds to the snapshot', () => {
+      const fakeTimestampBounds = {minReadTimestamp: 10};
+
+      database.getSnapshot(fakeTimestampBounds, err => {
+        assert.strictEqual(err.code, 3);
+        assert.strictEqual(
+          err.message,
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        );
+      });
+    });
+
+    it('should pass when maxStaleness is undefined', () => {
+      const fakeTimestampBounds = {minReadTimestamp: undefined};
+
+      database.getSnapshot(fakeTimestampBounds, assert.ifError);
+
+      const bounds = snapshotStub.lastCall.args[0];
+      assert.strictEqual(bounds, fakeTimestampBounds);
+    });
+
     it('should begin a snapshot', () => {
       beginSnapshotStub.callsFake(() => {});
 
@@ -2491,7 +2553,7 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.deepStrictEqual(config.gaxOpts, gaxOpts);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 
@@ -2664,7 +2726,7 @@ describe('Database', () => {
         assert.notStrictEqual(config.reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         return returnValue;
       };
 
@@ -3271,7 +3333,7 @@ describe('Database', () => {
         assert.notStrictEqual(config.reqOpts, QUERY);
         assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(config.headers, database.commonHeaders_);
         done();
       };
 
