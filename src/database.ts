@@ -1011,6 +1011,7 @@ class Database extends common.GrpcServiceObject {
           }
           const session = this.session(resp!.name!);
           session.metadata = resp;
+          session._observabilityOptions = this._traceConfig!.opts;
           span.end();
           callback(null, session, resp!);
         }

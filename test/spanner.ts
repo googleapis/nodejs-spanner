@@ -68,7 +68,6 @@ import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
-import {BatchTransaction} from '../src/batch-transaction';
 
 const {
   AlwaysOnSampler,

@@ -45,12 +45,6 @@ if [[ $KOKORO_BUILD_ARTIFACTS_SUBDIR = *"continuous"* ]] || [[ $KOKORO_BUILD_ART
   trap cleanup EXIT HUP
 fi
 
-# If tests are running with enabled multiplexed session, configure env
-# GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-if [[ $GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS = *"true"* ]]; then
-  export GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS=true
-fi
-
 npm run system-test
 
 # codecov combines coverage across integration and unit tests. Include
