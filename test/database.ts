@@ -830,13 +830,13 @@ describe('Database', () => {
 
     muxEnabled.forEach(isMuxEnabled => {
       describe(
-        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is ' +
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
           `${isMuxEnabled ? 'enabled' : 'disable'}`,
         () => {
           before(() => {
             isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
                   'false');
           });
 
@@ -1930,8 +1930,8 @@ describe('Database', () => {
         () => {
           before(() => {
             isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
                   'false');
           });
           beforeEach(() => {
@@ -2365,13 +2365,13 @@ describe('Database', () => {
 
     muxEnabled.forEach(isMuxEnabled => {
       describe(
-        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION is ' +
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
           `${isMuxEnabled ? 'enabled' : 'disable'}`,
         () => {
           before(() => {
             isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSION =
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
                   'false');
           });
 
