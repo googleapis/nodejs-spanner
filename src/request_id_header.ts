@@ -15,6 +15,7 @@
  */
 
 import {randomBytes} from 'crypto';
+// eslint-disable-next-line n/no-extraneous-import
 import * as grpc from '@grpc/grpc-js';
 const randIdForProcess = randomBytes(8).readBigUint64LE(0).toString();
 const X_GOOG_SPANNER_REQUEST_ID_HEADER = 'x-goog-spanner-request-id';
@@ -155,11 +156,10 @@ class XGoogRequestHeaderInterceptor {
   serverInterceptor(methodDescriptor, call) {
     const method = call.handler.path;
     const isUnary = call.handler.type === 'unary';
-    const that = this;
     const listener = new grpc.ServerListenerBuilder()
       .withOnReceiveMetadata((metadata, next) => {
         let i = 0;
-        const prefixesToIgnore: string[] = that.prefixesToIgnore || [];
+        const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
         for (i = 0; i < prefixesToIgnore.length; i++) {
           const prefix = prefixesToIgnore[i];
           // console.log(`prefix: ${prefix}\nmethod: ${method}`);
@@ -196,11 +196,11 @@ class XGoogRequestHeaderInterceptor {
         }
 
         if (isUnary) {
-          that.unaryCalls.push({method: method, reqId: gotReqId});
-          that.nUnary++;
+          this.unaryCalls.push({method: method, reqId: gotReqId});
+          this.nUnary++;
         } else {
-          that.streamCalls.push({method: method, reqId: gotReqId});
-          that.nStream++;
+          this.streamCalls.push({method: method, reqId: gotReqId});
+          this.nStream++;
         }
 
         next(metadata);
