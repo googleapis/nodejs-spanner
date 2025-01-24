@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright 2025 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ const randIdForProcess = randomBytes(8).readBigUint64LE(0).toString();
 const X_GOOG_SPANNER_REQUEST_ID_HEADER = 'x-goog-spanner-request-id';
 
 class AtomicCounter {
-  private backingBuffer: Uint32Array;
+  private readonly backingBuffer: Uint32Array;
 
   constructor(initialValue?: number) {
     this.backingBuffer = new Uint32Array(
@@ -53,13 +53,15 @@ class AtomicCounter {
   }
 }
 
+const REQUEST_HEADER_VERSION = 1;
+
 function craftRequestId(
   nthClientId: number,
   channelId: number,
   nthRequest: number,
   attempt: number
 ) {
-  return `1.${randIdForProcess}.${nthClientId}.${channelId}.${nthRequest}.${attempt}`;
+  return `${REQUEST_HEADER_VERSION}.${randIdForProcess}.${nthClientId}.${channelId}.${nthRequest}.${attempt}`;
 }
 
 const nthClientId = new AtomicCounter();
@@ -162,7 +164,6 @@ class XGoogRequestHeaderInterceptor {
         const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
         for (i = 0; i < prefixesToIgnore.length; i++) {
           const prefix = prefixesToIgnore[i];
-          // console.log(`prefix: ${prefix}\nmethod: ${method}`);
           if (method.startsWith(prefix)) {
             next(metadata);
             return;
