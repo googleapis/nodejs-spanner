@@ -84,6 +84,9 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             cloud_spanner_samples: 'true',
             created: Math.round(Date.now() / 1000).toString(), // current time
           },
+          // Managed autoscaler is available only for ENTERPRISE edition
+          edition:
+            protos.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE,
         },
       });
 
