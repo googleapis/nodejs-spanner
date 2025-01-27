@@ -13841,6 +13841,15 @@ export namespace google {
 
                         /** InstanceConfig state */
                         state?: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State|null);
+
+                        /** InstanceConfig freeInstanceAvailability */
+                        freeInstanceAvailability?: (google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|null);
+
+                        /** InstanceConfig quorumType */
+                        quorumType?: (google.spanner.admin.instance.v1.InstanceConfig.QuorumType|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.QuorumType|null);
+
+                        /** InstanceConfig storageLimitPerProcessingUnit */
+                        storageLimitPerProcessingUnit?: (number|Long|string|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -13884,6 +13893,15 @@ export namespace google {
 
                         /** InstanceConfig state. */
                         public state: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State);
+
+                        /** InstanceConfig freeInstanceAvailability. */
+                        public freeInstanceAvailability: (google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability);
+
+                        /** InstanceConfig quorumType. */
+                        public quorumType: (google.spanner.admin.instance.v1.InstanceConfig.QuorumType|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.QuorumType);
+
+                        /** InstanceConfig storageLimitPerProcessingUnit. */
+                        public storageLimitPerProcessingUnit: (number|Long|string);
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
@@ -13977,6 +13995,23 @@ export namespace google {
                             STATE_UNSPECIFIED = 0,
                             CREATING = 1,
                             READY = 2
+                        }
+
+                        /** FreeInstanceAvailability enum. */
+                        enum FreeInstanceAvailability {
+                            FREE_INSTANCE_AVAILABILITY_UNSPECIFIED = 0,
+                            AVAILABLE = 1,
+                            UNSUPPORTED = 2,
+                            DISABLED = 3,
+                            QUOTA_EXCEEDED = 4
+                        }
+
+                        /** QuorumType enum. */
+                        enum QuorumType {
+                            QUORUM_TYPE_UNSPECIFIED = 0,
+                            REGION = 1,
+                            DUAL_REGION = 2,
+                            MULTI_REGION = 3
                         }
                     }
 
@@ -14667,6 +14702,9 @@ export namespace google {
                         /** Instance labels */
                         labels?: ({ [k: string]: string }|null);
 
+                        /** Instance instanceType */
+                        instanceType?: (google.spanner.admin.instance.v1.Instance.InstanceType|keyof typeof google.spanner.admin.instance.v1.Instance.InstanceType|null);
+
                         /** Instance endpointUris */
                         endpointUris?: (string[]|null);
 
@@ -14675,6 +14713,9 @@ export namespace google {
 
                         /** Instance updateTime */
                         updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance freeInstanceMetadata */
+                        freeInstanceMetadata?: (google.spanner.admin.instance.v1.IFreeInstanceMetadata|null);
 
                         /** Instance edition */
                         edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
@@ -14719,6 +14760,9 @@ export namespace google {
                         /** Instance labels. */
                         public labels: { [k: string]: string };
 
+                        /** Instance instanceType. */
+                        public instanceType: (google.spanner.admin.instance.v1.Instance.InstanceType|keyof typeof google.spanner.admin.instance.v1.Instance.InstanceType);
+
                         /** Instance endpointUris. */
                         public endpointUris: string[];
 
@@ -14727,6 +14771,9 @@ export namespace google {
 
                         /** Instance updateTime. */
                         public updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance freeInstanceMetadata. */
+                        public freeInstanceMetadata?: (google.spanner.admin.instance.v1.IFreeInstanceMetadata|null);
 
                         /** Instance edition. */
                         public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
@@ -14819,6 +14866,13 @@ export namespace google {
                             STATE_UNSPECIFIED = 0,
                             CREATING = 1,
                             READY = 2
+                        }
+
+                        /** InstanceType enum. */
+                        enum InstanceType {
+                            INSTANCE_TYPE_UNSPECIFIED = 0,
+                            PROVISIONED = 1,
+                            FREE_INSTANCE = 2
                         }
 
                         /** Edition enum. */
@@ -16579,6 +16633,125 @@ export namespace google {
                          * @returns The default type url
                          */
                         public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a FreeInstanceMetadata. */
+                    interface IFreeInstanceMetadata {
+
+                        /** FreeInstanceMetadata expireTime */
+                        expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata upgradeTime */
+                        upgradeTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata expireBehavior */
+                        expireBehavior?: (google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|keyof typeof google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|null);
+                    }
+
+                    /** Represents a FreeInstanceMetadata. */
+                    class FreeInstanceMetadata implements IFreeInstanceMetadata {
+
+                        /**
+                         * Constructs a new FreeInstanceMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IFreeInstanceMetadata);
+
+                        /** FreeInstanceMetadata expireTime. */
+                        public expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata upgradeTime. */
+                        public upgradeTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata expireBehavior. */
+                        public expireBehavior: (google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|keyof typeof google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior);
+
+                        /**
+                         * Creates a new FreeInstanceMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns FreeInstanceMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IFreeInstanceMetadata): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Encodes the specified FreeInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.FreeInstanceMetadata.verify|verify} messages.
+                         * @param message FreeInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IFreeInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified FreeInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.FreeInstanceMetadata.verify|verify} messages.
+                         * @param message FreeInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IFreeInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a FreeInstanceMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns FreeInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Decodes a FreeInstanceMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns FreeInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Verifies a FreeInstanceMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a FreeInstanceMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns FreeInstanceMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Creates a plain object from a FreeInstanceMetadata message. Also converts values to other types if specified.
+                         * @param message FreeInstanceMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.FreeInstanceMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this FreeInstanceMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for FreeInstanceMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace FreeInstanceMetadata {
+
+                        /** ExpireBehavior enum. */
+                        enum ExpireBehavior {
+                            EXPIRE_BEHAVIOR_UNSPECIFIED = 0,
+                            FREE_TO_PROVISIONED = 1,
+                            REMOVE_AFTER_GRACE_PERIOD = 2
+                        }
                     }
 
                     /** Properties of a CreateInstanceConfigMetadata. */
@@ -34373,7 +34546,8 @@ export namespace google {
                 JSON = 11,
                 PROTO = 13,
                 ENUM = 14,
-                INTERVAL = 16
+                INTERVAL = 16,
+                UUID = 17
             }
 
             /** TypeAnnotationCode enum. */
