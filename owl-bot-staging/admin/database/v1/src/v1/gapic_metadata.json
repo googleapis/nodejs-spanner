@@ -55,6 +55,11 @@
                 "deleteBackup"
               ]
             },
+            "AddSplitPoints": {
+              "methods": [
+                "addSplitPoints"
+              ]
+            },
             "CreateBackupSchedule": {
               "methods": [
                 "createBackupSchedule"
@@ -195,6 +200,11 @@
             "DeleteBackup": {
               "methods": [
                 "deleteBackup"
+              ]
+            },
+            "AddSplitPoints": {
+              "methods": [
+                "addSplitPoints"
               ]
             },
             "CreateBackupSchedule": {

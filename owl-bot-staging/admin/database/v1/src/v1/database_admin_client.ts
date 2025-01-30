@@ -331,7 +331,7 @@ export class DatabaseAdminClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const databaseAdminStubMethods =
-        ['listDatabases', 'createDatabase', 'getDatabase', 'updateDatabase', 'updateDatabaseDdl', 'dropDatabase', 'getDatabaseDdl', 'setIamPolicy', 'getIamPolicy', 'testIamPermissions', 'createBackup', 'copyBackup', 'getBackup', 'updateBackup', 'deleteBackup', 'listBackups', 'restoreDatabase', 'listDatabaseOperations', 'listBackupOperations', 'listDatabaseRoles', 'createBackupSchedule', 'getBackupSchedule', 'updateBackupSchedule', 'deleteBackupSchedule', 'listBackupSchedules'];
+        ['listDatabases', 'createDatabase', 'getDatabase', 'updateDatabase', 'updateDatabaseDdl', 'dropDatabase', 'getDatabaseDdl', 'setIamPolicy', 'getIamPolicy', 'testIamPermissions', 'createBackup', 'copyBackup', 'getBackup', 'updateBackup', 'deleteBackup', 'listBackups', 'restoreDatabase', 'listDatabaseOperations', 'listBackupOperations', 'listDatabaseRoles', 'addSplitPoints', 'createBackupSchedule', 'getBackupSchedule', 'updateBackupSchedule', 'deleteBackupSchedule', 'listBackupSchedules'];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
         stub => (...args: Array<{}>) => {
@@ -1116,6 +1116,84 @@ export class DatabaseAdminClient {
     });
     this.initialize();
     return this.innerApiCalls.deleteBackup(request, options, callback);
+  }
+/**
+ * Adds split points to specified tables, indexes of a database.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.database
+ *   Required. The database on whose tables/indexes split points are to be
+ *   added. Values are of the form
+ *   `projects/<project>/instances/<instance>/databases/<database>`.
+ * @param {number[]} request.splitPoints
+ *   Required. The split points to add.
+ * @param {string} [request.initiator]
+ *   Optional. A user-supplied tag associated with the split points.
+ *   For example, "intital_data_load", "special_event_1".
+ *   Defaults to "CloudAddSplitPointsAPI" if not specified.
+ *   The length of the tag must not exceed 50 characters,else will be trimmed.
+ *   Only valid UTF8 characters are allowed.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.AddSplitPointsResponse|AddSplitPointsResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ */
+  addSplitPoints(
+      request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+        protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|undefined, {}|undefined
+      ]>;
+  addSplitPoints(
+      request: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|null|undefined,
+          {}|null|undefined>): void;
+  addSplitPoints(
+      request: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+      callback: Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|null|undefined,
+          {}|null|undefined>): void;
+  addSplitPoints(
+      request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+        protos.google.spanner.admin.database.v1.IAddSplitPointsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'database': request.database ?? '',
+    });
+    this.initialize();
+    return this.innerApiCalls.addSplitPoints(request, options, callback);
   }
 /**
  * Creates a new backup schedule.

@@ -8762,6 +8762,39 @@
                              */
     
                             /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|addSplitPoints}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef AddSplitPointsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.AddSplitPointsResponse} [response] AddSplitPointsResponse
+                             */
+    
+                            /**
+                             * Calls AddSplitPoints.
+                             * @function addSplitPoints
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest} request AddSplitPointsRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.AddSplitPointsCallback} callback Node-style callback called with the error, if any, and AddSplitPointsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.addSplitPoints = function addSplitPoints(request, callback) {
+                                return this.rpcCall(addSplitPoints, $root.google.spanner.admin.database.v1.AddSplitPointsRequest, $root.google.spanner.admin.database.v1.AddSplitPointsResponse, request, callback);
+                            }, "name", { value: "AddSplitPoints" });
+    
+                            /**
+                             * Calls AddSplitPoints.
+                             * @function addSplitPoints
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest} request AddSplitPointsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.AddSplitPointsResponse>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackupSchedule}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef CreateBackupScheduleCallback
@@ -15623,6 +15656,961 @@
                             };
     
                             return ListDatabaseRolesResponse;
+                        })();
+    
+                        v1.AddSplitPointsRequest = (function() {
+    
+                            /**
+                             * Properties of an AddSplitPointsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IAddSplitPointsRequest
+                             * @property {string|null} [database] AddSplitPointsRequest database
+                             * @property {Array.<google.spanner.admin.database.v1.ISplitPoints>|null} [splitPoints] AddSplitPointsRequest splitPoints
+                             * @property {string|null} [initiator] AddSplitPointsRequest initiator
+                             */
+    
+                            /**
+                             * Constructs a new AddSplitPointsRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an AddSplitPointsRequest.
+                             * @implements IAddSplitPointsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest=} [properties] Properties to set
+                             */
+                            function AddSplitPointsRequest(properties) {
+                                this.splitPoints = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * AddSplitPointsRequest database.
+                             * @member {string} database
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @instance
+                             */
+                            AddSplitPointsRequest.prototype.database = "";
+    
+                            /**
+                             * AddSplitPointsRequest splitPoints.
+                             * @member {Array.<google.spanner.admin.database.v1.ISplitPoints>} splitPoints
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @instance
+                             */
+                            AddSplitPointsRequest.prototype.splitPoints = $util.emptyArray;
+    
+                            /**
+                             * AddSplitPointsRequest initiator.
+                             * @member {string} initiator
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @instance
+                             */
+                            AddSplitPointsRequest.prototype.initiator = "";
+    
+                            /**
+                             * Creates a new AddSplitPointsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsRequest} AddSplitPointsRequest instance
+                             */
+                            AddSplitPointsRequest.create = function create(properties) {
+                                return new AddSplitPointsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified AddSplitPointsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest} message AddSplitPointsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AddSplitPointsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.database != null && Object.hasOwnProperty.call(message, "database"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.database);
+                                if (message.splitPoints != null && message.splitPoints.length)
+                                    for (var i = 0; i < message.splitPoints.length; ++i)
+                                        $root.google.spanner.admin.database.v1.SplitPoints.encode(message.splitPoints[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.initiator != null && Object.hasOwnProperty.call(message, "initiator"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.initiator);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified AddSplitPointsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsRequest} message AddSplitPointsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AddSplitPointsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an AddSplitPointsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsRequest} AddSplitPointsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AddSplitPointsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.AddSplitPointsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            if (!(message.splitPoints && message.splitPoints.length))
+                                                message.splitPoints = [];
+                                            message.splitPoints.push($root.google.spanner.admin.database.v1.SplitPoints.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.initiator = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an AddSplitPointsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsRequest} AddSplitPointsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AddSplitPointsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an AddSplitPointsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            AddSplitPointsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    if (!$util.isString(message.database))
+                                        return "database: string expected";
+                                if (message.splitPoints != null && message.hasOwnProperty("splitPoints")) {
+                                    if (!Array.isArray(message.splitPoints))
+                                        return "splitPoints: array expected";
+                                    for (var i = 0; i < message.splitPoints.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.SplitPoints.verify(message.splitPoints[i]);
+                                        if (error)
+                                            return "splitPoints." + error;
+                                    }
+                                }
+                                if (message.initiator != null && message.hasOwnProperty("initiator"))
+                                    if (!$util.isString(message.initiator))
+                                        return "initiator: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an AddSplitPointsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsRequest} AddSplitPointsRequest
+                             */
+                            AddSplitPointsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.AddSplitPointsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.AddSplitPointsRequest();
+                                if (object.database != null)
+                                    message.database = String(object.database);
+                                if (object.splitPoints) {
+                                    if (!Array.isArray(object.splitPoints))
+                                        throw TypeError(".google.spanner.admin.database.v1.AddSplitPointsRequest.splitPoints: array expected");
+                                    message.splitPoints = [];
+                                    for (var i = 0; i < object.splitPoints.length; ++i) {
+                                        if (typeof object.splitPoints[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.AddSplitPointsRequest.splitPoints: object expected");
+                                        message.splitPoints[i] = $root.google.spanner.admin.database.v1.SplitPoints.fromObject(object.splitPoints[i]);
+                                    }
+                                }
+                                if (object.initiator != null)
+                                    message.initiator = String(object.initiator);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an AddSplitPointsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.AddSplitPointsRequest} message AddSplitPointsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            AddSplitPointsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.splitPoints = [];
+                                if (options.defaults) {
+                                    object.database = "";
+                                    object.initiator = "";
+                                }
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    object.database = message.database;
+                                if (message.splitPoints && message.splitPoints.length) {
+                                    object.splitPoints = [];
+                                    for (var j = 0; j < message.splitPoints.length; ++j)
+                                        object.splitPoints[j] = $root.google.spanner.admin.database.v1.SplitPoints.toObject(message.splitPoints[j], options);
+                                }
+                                if (message.initiator != null && message.hasOwnProperty("initiator"))
+                                    object.initiator = message.initiator;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this AddSplitPointsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            AddSplitPointsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for AddSplitPointsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            AddSplitPointsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.AddSplitPointsRequest";
+                            };
+    
+                            return AddSplitPointsRequest;
+                        })();
+    
+                        v1.AddSplitPointsResponse = (function() {
+    
+                            /**
+                             * Properties of an AddSplitPointsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IAddSplitPointsResponse
+                             */
+    
+                            /**
+                             * Constructs a new AddSplitPointsResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an AddSplitPointsResponse.
+                             * @implements IAddSplitPointsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsResponse=} [properties] Properties to set
+                             */
+                            function AddSplitPointsResponse(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * Creates a new AddSplitPointsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsResponse} AddSplitPointsResponse instance
+                             */
+                            AddSplitPointsResponse.create = function create(properties) {
+                                return new AddSplitPointsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified AddSplitPointsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsResponse} message AddSplitPointsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AddSplitPointsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified AddSplitPointsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IAddSplitPointsResponse} message AddSplitPointsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AddSplitPointsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an AddSplitPointsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsResponse} AddSplitPointsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AddSplitPointsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.AddSplitPointsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an AddSplitPointsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsResponse} AddSplitPointsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AddSplitPointsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an AddSplitPointsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            AddSplitPointsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an AddSplitPointsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.AddSplitPointsResponse} AddSplitPointsResponse
+                             */
+                            AddSplitPointsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.AddSplitPointsResponse)
+                                    return object;
+                                return new $root.google.spanner.admin.database.v1.AddSplitPointsResponse();
+                            };
+    
+                            /**
+                             * Creates a plain object from an AddSplitPointsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.AddSplitPointsResponse} message AddSplitPointsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            AddSplitPointsResponse.toObject = function toObject() {
+                                return {};
+                            };
+    
+                            /**
+                             * Converts this AddSplitPointsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            AddSplitPointsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for AddSplitPointsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.AddSplitPointsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            AddSplitPointsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.AddSplitPointsResponse";
+                            };
+    
+                            return AddSplitPointsResponse;
+                        })();
+    
+                        v1.SplitPoints = (function() {
+    
+                            /**
+                             * Properties of a SplitPoints.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ISplitPoints
+                             * @property {string|null} [table] SplitPoints table
+                             * @property {string|null} [index] SplitPoints index
+                             * @property {Array.<google.spanner.admin.database.v1.SplitPoints.IKey>|null} [keys] SplitPoints keys
+                             * @property {google.protobuf.ITimestamp|null} [expireTime] SplitPoints expireTime
+                             */
+    
+                            /**
+                             * Constructs a new SplitPoints.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a SplitPoints.
+                             * @implements ISplitPoints
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ISplitPoints=} [properties] Properties to set
+                             */
+                            function SplitPoints(properties) {
+                                this.keys = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * SplitPoints table.
+                             * @member {string} table
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @instance
+                             */
+                            SplitPoints.prototype.table = "";
+    
+                            /**
+                             * SplitPoints index.
+                             * @member {string} index
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @instance
+                             */
+                            SplitPoints.prototype.index = "";
+    
+                            /**
+                             * SplitPoints keys.
+                             * @member {Array.<google.spanner.admin.database.v1.SplitPoints.IKey>} keys
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @instance
+                             */
+                            SplitPoints.prototype.keys = $util.emptyArray;
+    
+                            /**
+                             * SplitPoints expireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} expireTime
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @instance
+                             */
+                            SplitPoints.prototype.expireTime = null;
+    
+                            /**
+                             * Creates a new SplitPoints instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ISplitPoints=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.SplitPoints} SplitPoints instance
+                             */
+                            SplitPoints.create = function create(properties) {
+                                return new SplitPoints(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified SplitPoints message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ISplitPoints} message SplitPoints message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            SplitPoints.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.table != null && Object.hasOwnProperty.call(message, "table"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.table);
+                                if (message.index != null && Object.hasOwnProperty.call(message, "index"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.index);
+                                if (message.keys != null && message.keys.length)
+                                    for (var i = 0; i < message.keys.length; ++i)
+                                        $root.google.spanner.admin.database.v1.SplitPoints.Key.encode(message.keys[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.expireTime != null && Object.hasOwnProperty.call(message, "expireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.expireTime, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified SplitPoints message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ISplitPoints} message SplitPoints message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            SplitPoints.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a SplitPoints message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.SplitPoints} SplitPoints
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            SplitPoints.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.SplitPoints();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.table = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.index = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            if (!(message.keys && message.keys.length))
+                                                message.keys = [];
+                                            message.keys.push($root.google.spanner.admin.database.v1.SplitPoints.Key.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a SplitPoints message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.SplitPoints} SplitPoints
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            SplitPoints.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a SplitPoints message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            SplitPoints.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.table != null && message.hasOwnProperty("table"))
+                                    if (!$util.isString(message.table))
+                                        return "table: string expected";
+                                if (message.index != null && message.hasOwnProperty("index"))
+                                    if (!$util.isString(message.index))
+                                        return "index: string expected";
+                                if (message.keys != null && message.hasOwnProperty("keys")) {
+                                    if (!Array.isArray(message.keys))
+                                        return "keys: array expected";
+                                    for (var i = 0; i < message.keys.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.SplitPoints.Key.verify(message.keys[i]);
+                                        if (error)
+                                            return "keys." + error;
+                                    }
+                                }
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.expireTime);
+                                    if (error)
+                                        return "expireTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a SplitPoints message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.SplitPoints} SplitPoints
+                             */
+                            SplitPoints.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.SplitPoints)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.SplitPoints();
+                                if (object.table != null)
+                                    message.table = String(object.table);
+                                if (object.index != null)
+                                    message.index = String(object.index);
+                                if (object.keys) {
+                                    if (!Array.isArray(object.keys))
+                                        throw TypeError(".google.spanner.admin.database.v1.SplitPoints.keys: array expected");
+                                    message.keys = [];
+                                    for (var i = 0; i < object.keys.length; ++i) {
+                                        if (typeof object.keys[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.SplitPoints.keys: object expected");
+                                        message.keys[i] = $root.google.spanner.admin.database.v1.SplitPoints.Key.fromObject(object.keys[i]);
+                                    }
+                                }
+                                if (object.expireTime != null) {
+                                    if (typeof object.expireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.SplitPoints.expireTime: object expected");
+                                    message.expireTime = $root.google.protobuf.Timestamp.fromObject(object.expireTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a SplitPoints message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {google.spanner.admin.database.v1.SplitPoints} message SplitPoints
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            SplitPoints.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.keys = [];
+                                if (options.defaults) {
+                                    object.table = "";
+                                    object.index = "";
+                                    object.expireTime = null;
+                                }
+                                if (message.table != null && message.hasOwnProperty("table"))
+                                    object.table = message.table;
+                                if (message.index != null && message.hasOwnProperty("index"))
+                                    object.index = message.index;
+                                if (message.keys && message.keys.length) {
+                                    object.keys = [];
+                                    for (var j = 0; j < message.keys.length; ++j)
+                                        object.keys[j] = $root.google.spanner.admin.database.v1.SplitPoints.Key.toObject(message.keys[j], options);
+                                }
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime"))
+                                    object.expireTime = $root.google.protobuf.Timestamp.toObject(message.expireTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this SplitPoints to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            SplitPoints.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for SplitPoints
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.SplitPoints
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            SplitPoints.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.SplitPoints";
+                            };
+    
+                            SplitPoints.Key = (function() {
+    
+                                /**
+                                 * Properties of a Key.
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints
+                                 * @interface IKey
+                                 * @property {google.protobuf.IListValue|null} [keyParts] Key keyParts
+                                 */
+    
+                                /**
+                                 * Constructs a new Key.
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints
+                                 * @classdesc Represents a Key.
+                                 * @implements IKey
+                                 * @constructor
+                                 * @param {google.spanner.admin.database.v1.SplitPoints.IKey=} [properties] Properties to set
+                                 */
+                                function Key(properties) {
+                                    if (properties)
+                                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                            if (properties[keys[i]] != null)
+                                                this[keys[i]] = properties[keys[i]];
+                                }
+    
+                                /**
+                                 * Key keyParts.
+                                 * @member {google.protobuf.IListValue|null|undefined} keyParts
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @instance
+                                 */
+                                Key.prototype.keyParts = null;
+    
+                                /**
+                                 * Creates a new Key instance using the specified properties.
+                                 * @function create
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {google.spanner.admin.database.v1.SplitPoints.IKey=} [properties] Properties to set
+                                 * @returns {google.spanner.admin.database.v1.SplitPoints.Key} Key instance
+                                 */
+                                Key.create = function create(properties) {
+                                    return new Key(properties);
+                                };
+    
+                                /**
+                                 * Encodes the specified Key message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                                 * @function encode
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {google.spanner.admin.database.v1.SplitPoints.IKey} message Key message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                Key.encode = function encode(message, writer) {
+                                    if (!writer)
+                                        writer = $Writer.create();
+                                    if (message.keyParts != null && Object.hasOwnProperty.call(message, "keyParts"))
+                                        $root.google.protobuf.ListValue.encode(message.keyParts, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                    return writer;
+                                };
+    
+                                /**
+                                 * Encodes the specified Key message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                                 * @function encodeDelimited
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {google.spanner.admin.database.v1.SplitPoints.IKey} message Key message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                Key.encodeDelimited = function encodeDelimited(message, writer) {
+                                    return this.encode(message, writer).ldelim();
+                                };
+    
+                                /**
+                                 * Decodes a Key message from the specified reader or buffer.
+                                 * @function decode
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @param {number} [length] Message length if known beforehand
+                                 * @returns {google.spanner.admin.database.v1.SplitPoints.Key} Key
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                Key.decode = function decode(reader, length) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = $Reader.create(reader);
+                                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.SplitPoints.Key();
+                                    while (reader.pos < end) {
+                                        var tag = reader.uint32();
+                                        switch (tag >>> 3) {
+                                        case 1: {
+                                                message.keyParts = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                                break;
+                                            }
+                                        default:
+                                            reader.skipType(tag & 7);
+                                            break;
+                                        }
+                                    }
+                                    return message;
+                                };
+    
+                                /**
+                                 * Decodes a Key message from the specified reader or buffer, length delimited.
+                                 * @function decodeDelimited
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @returns {google.spanner.admin.database.v1.SplitPoints.Key} Key
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                Key.decodeDelimited = function decodeDelimited(reader) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = new $Reader(reader);
+                                    return this.decode(reader, reader.uint32());
+                                };
+    
+                                /**
+                                 * Verifies a Key message.
+                                 * @function verify
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {Object.<string,*>} message Plain object to verify
+                                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                                 */
+                                Key.verify = function verify(message) {
+                                    if (typeof message !== "object" || message === null)
+                                        return "object expected";
+                                    if (message.keyParts != null && message.hasOwnProperty("keyParts")) {
+                                        var error = $root.google.protobuf.ListValue.verify(message.keyParts);
+                                        if (error)
+                                            return "keyParts." + error;
+                                    }
+                                    return null;
+                                };
+    
+                                /**
+                                 * Creates a Key message from a plain object. Also converts values to their respective internal types.
+                                 * @function fromObject
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {Object.<string,*>} object Plain object
+                                 * @returns {google.spanner.admin.database.v1.SplitPoints.Key} Key
+                                 */
+                                Key.fromObject = function fromObject(object) {
+                                    if (object instanceof $root.google.spanner.admin.database.v1.SplitPoints.Key)
+                                        return object;
+                                    var message = new $root.google.spanner.admin.database.v1.SplitPoints.Key();
+                                    if (object.keyParts != null) {
+                                        if (typeof object.keyParts !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.SplitPoints.Key.keyParts: object expected");
+                                        message.keyParts = $root.google.protobuf.ListValue.fromObject(object.keyParts);
+                                    }
+                                    return message;
+                                };
+    
+                                /**
+                                 * Creates a plain object from a Key message. Also converts values to other types if specified.
+                                 * @function toObject
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {google.spanner.admin.database.v1.SplitPoints.Key} message Key
+                                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                                 * @returns {Object.<string,*>} Plain object
+                                 */
+                                Key.toObject = function toObject(message, options) {
+                                    if (!options)
+                                        options = {};
+                                    var object = {};
+                                    if (options.defaults)
+                                        object.keyParts = null;
+                                    if (message.keyParts != null && message.hasOwnProperty("keyParts"))
+                                        object.keyParts = $root.google.protobuf.ListValue.toObject(message.keyParts, options);
+                                    return object;
+                                };
+    
+                                /**
+                                 * Converts this Key to JSON.
+                                 * @function toJSON
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @instance
+                                 * @returns {Object.<string,*>} JSON object
+                                 */
+                                Key.prototype.toJSON = function toJSON() {
+                                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                                };
+    
+                                /**
+                                 * Gets the default type url for Key
+                                 * @function getTypeUrl
+                                 * @memberof google.spanner.admin.database.v1.SplitPoints.Key
+                                 * @static
+                                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                                 * @returns {string} The default type url
+                                 */
+                                Key.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                    if (typeUrlPrefix === undefined) {
+                                        typeUrlPrefix = "type.googleapis.com";
+                                    }
+                                    return typeUrlPrefix + "/google.spanner.admin.database.v1.SplitPoints.Key";
+                                };
+    
+                                return Key;
+                            })();
+    
+                            return SplitPoints;
                         })();
     
                         return v1;
@@ -34431,6 +35419,879 @@
                 };
     
                 return Timestamp;
+            })();
+    
+            protobuf.Struct = (function() {
+    
+                /**
+                 * Properties of a Struct.
+                 * @memberof google.protobuf
+                 * @interface IStruct
+                 * @property {Object.<string,google.protobuf.IValue>|null} [fields] Struct fields
+                 */
+    
+                /**
+                 * Constructs a new Struct.
+                 * @memberof google.protobuf
+                 * @classdesc Represents a Struct.
+                 * @implements IStruct
+                 * @constructor
+                 * @param {google.protobuf.IStruct=} [properties] Properties to set
+                 */
+                function Struct(properties) {
+                    this.fields = {};
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Struct fields.
+                 * @member {Object.<string,google.protobuf.IValue>} fields
+                 * @memberof google.protobuf.Struct
+                 * @instance
+                 */
+                Struct.prototype.fields = $util.emptyObject;
+    
+                /**
+                 * Creates a new Struct instance using the specified properties.
+                 * @function create
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {google.protobuf.IStruct=} [properties] Properties to set
+                 * @returns {google.protobuf.Struct} Struct instance
+                 */
+                Struct.create = function create(properties) {
+                    return new Struct(properties);
+                };
+    
+                /**
+                 * Encodes the specified Struct message. Does not implicitly {@link google.protobuf.Struct.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {google.protobuf.IStruct} message Struct message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Struct.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.fields != null && Object.hasOwnProperty.call(message, "fields"))
+                        for (var keys = Object.keys(message.fields), i = 0; i < keys.length; ++i) {
+                            writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                            $root.google.protobuf.Value.encode(message.fields[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                        }
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified Struct message, length delimited. Does not implicitly {@link google.protobuf.Struct.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {google.protobuf.IStruct} message Struct message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Struct.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a Struct message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.protobuf.Struct} Struct
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Struct.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Struct(), key, value;
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1: {
+                                if (message.fields === $util.emptyObject)
+                                    message.fields = {};
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = null;
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = $root.google.protobuf.Value.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
+                                }
+                                message.fields[key] = value;
+                                break;
+                            }
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a Struct message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.protobuf.Struct} Struct
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Struct.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a Struct message.
+                 * @function verify
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                Struct.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.fields != null && message.hasOwnProperty("fields")) {
+                        if (!$util.isObject(message.fields))
+                            return "fields: object expected";
+                        var key = Object.keys(message.fields);
+                        for (var i = 0; i < key.length; ++i) {
+                            var error = $root.google.protobuf.Value.verify(message.fields[key[i]]);
+                            if (error)
+                                return "fields." + error;
+                        }
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a Struct message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.protobuf.Struct} Struct
+                 */
+                Struct.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.protobuf.Struct)
+                        return object;
+                    var message = new $root.google.protobuf.Struct();
+                    if (object.fields) {
+                        if (typeof object.fields !== "object")
+                            throw TypeError(".google.protobuf.Struct.fields: object expected");
+                        message.fields = {};
+                        for (var keys = Object.keys(object.fields), i = 0; i < keys.length; ++i) {
+                            if (typeof object.fields[keys[i]] !== "object")
+                                throw TypeError(".google.protobuf.Struct.fields: object expected");
+                            message.fields[keys[i]] = $root.google.protobuf.Value.fromObject(object.fields[keys[i]]);
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a Struct message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {google.protobuf.Struct} message Struct
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Struct.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.objects || options.defaults)
+                        object.fields = {};
+                    var keys2;
+                    if (message.fields && (keys2 = Object.keys(message.fields)).length) {
+                        object.fields = {};
+                        for (var j = 0; j < keys2.length; ++j)
+                            object.fields[keys2[j]] = $root.google.protobuf.Value.toObject(message.fields[keys2[j]], options);
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this Struct to JSON.
+                 * @function toJSON
+                 * @memberof google.protobuf.Struct
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Struct.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Struct
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Struct.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Struct";
+                };
+    
+                return Struct;
+            })();
+    
+            protobuf.Value = (function() {
+    
+                /**
+                 * Properties of a Value.
+                 * @memberof google.protobuf
+                 * @interface IValue
+                 * @property {google.protobuf.NullValue|null} [nullValue] Value nullValue
+                 * @property {number|null} [numberValue] Value numberValue
+                 * @property {string|null} [stringValue] Value stringValue
+                 * @property {boolean|null} [boolValue] Value boolValue
+                 * @property {google.protobuf.IStruct|null} [structValue] Value structValue
+                 * @property {google.protobuf.IListValue|null} [listValue] Value listValue
+                 */
+    
+                /**
+                 * Constructs a new Value.
+                 * @memberof google.protobuf
+                 * @classdesc Represents a Value.
+                 * @implements IValue
+                 * @constructor
+                 * @param {google.protobuf.IValue=} [properties] Properties to set
+                 */
+                function Value(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Value nullValue.
+                 * @member {google.protobuf.NullValue|null|undefined} nullValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.nullValue = null;
+    
+                /**
+                 * Value numberValue.
+                 * @member {number|null|undefined} numberValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.numberValue = null;
+    
+                /**
+                 * Value stringValue.
+                 * @member {string|null|undefined} stringValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.stringValue = null;
+    
+                /**
+                 * Value boolValue.
+                 * @member {boolean|null|undefined} boolValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.boolValue = null;
+    
+                /**
+                 * Value structValue.
+                 * @member {google.protobuf.IStruct|null|undefined} structValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.structValue = null;
+    
+                /**
+                 * Value listValue.
+                 * @member {google.protobuf.IListValue|null|undefined} listValue
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Value.prototype.listValue = null;
+    
+                // OneOf field names bound to virtual getters and setters
+                var $oneOfFields;
+    
+                /**
+                 * Value kind.
+                 * @member {"nullValue"|"numberValue"|"stringValue"|"boolValue"|"structValue"|"listValue"|undefined} kind
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 */
+                Object.defineProperty(Value.prototype, "kind", {
+                    get: $util.oneOfGetter($oneOfFields = ["nullValue", "numberValue", "stringValue", "boolValue", "structValue", "listValue"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+    
+                /**
+                 * Creates a new Value instance using the specified properties.
+                 * @function create
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {google.protobuf.IValue=} [properties] Properties to set
+                 * @returns {google.protobuf.Value} Value instance
+                 */
+                Value.create = function create(properties) {
+                    return new Value(properties);
+                };
+    
+                /**
+                 * Encodes the specified Value message. Does not implicitly {@link google.protobuf.Value.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {google.protobuf.IValue} message Value message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Value.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.nullValue != null && Object.hasOwnProperty.call(message, "nullValue"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.nullValue);
+                    if (message.numberValue != null && Object.hasOwnProperty.call(message, "numberValue"))
+                        writer.uint32(/* id 2, wireType 1 =*/17).double(message.numberValue);
+                    if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.stringValue);
+                    if (message.boolValue != null && Object.hasOwnProperty.call(message, "boolValue"))
+                        writer.uint32(/* id 4, wireType 0 =*/32).bool(message.boolValue);
+                    if (message.structValue != null && Object.hasOwnProperty.call(message, "structValue"))
+                        $root.google.protobuf.Struct.encode(message.structValue, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                    if (message.listValue != null && Object.hasOwnProperty.call(message, "listValue"))
+                        $root.google.protobuf.ListValue.encode(message.listValue, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified Value message, length delimited. Does not implicitly {@link google.protobuf.Value.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {google.protobuf.IValue} message Value message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Value.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a Value message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.protobuf.Value} Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Value.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Value();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1: {
+                                message.nullValue = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.numberValue = reader.double();
+                                break;
+                            }
+                        case 3: {
+                                message.stringValue = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.boolValue = reader.bool();
+                                break;
+                            }
+                        case 5: {
+                                message.structValue = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 6: {
+                                message.listValue = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            }
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a Value message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.protobuf.Value} Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Value.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a Value message.
+                 * @function verify
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                Value.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    var properties = {};
+                    if (message.nullValue != null && message.hasOwnProperty("nullValue")) {
+                        properties.kind = 1;
+                        switch (message.nullValue) {
+                        default:
+                            return "nullValue: enum value expected";
+                        case 0:
+                            break;
+                        }
+                    }
+                    if (message.numberValue != null && message.hasOwnProperty("numberValue")) {
+                        if (properties.kind === 1)
+                            return "kind: multiple values";
+                        properties.kind = 1;
+                        if (typeof message.numberValue !== "number")
+                            return "numberValue: number expected";
+                    }
+                    if (message.stringValue != null && message.hasOwnProperty("stringValue")) {
+                        if (properties.kind === 1)
+                            return "kind: multiple values";
+                        properties.kind = 1;
+                        if (!$util.isString(message.stringValue))
+                            return "stringValue: string expected";
+                    }
+                    if (message.boolValue != null && message.hasOwnProperty("boolValue")) {
+                        if (properties.kind === 1)
+                            return "kind: multiple values";
+                        properties.kind = 1;
+                        if (typeof message.boolValue !== "boolean")
+                            return "boolValue: boolean expected";
+                    }
+                    if (message.structValue != null && message.hasOwnProperty("structValue")) {
+                        if (properties.kind === 1)
+                            return "kind: multiple values";
+                        properties.kind = 1;
+                        {
+                            var error = $root.google.protobuf.Struct.verify(message.structValue);
+                            if (error)
+                                return "structValue." + error;
+                        }
+                    }
+                    if (message.listValue != null && message.hasOwnProperty("listValue")) {
+                        if (properties.kind === 1)
+                            return "kind: multiple values";
+                        properties.kind = 1;
+                        {
+                            var error = $root.google.protobuf.ListValue.verify(message.listValue);
+                            if (error)
+                                return "listValue." + error;
+                        }
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a Value message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.protobuf.Value} Value
+                 */
+                Value.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.protobuf.Value)
+                        return object;
+                    var message = new $root.google.protobuf.Value();
+                    switch (object.nullValue) {
+                    default:
+                        if (typeof object.nullValue === "number") {
+                            message.nullValue = object.nullValue;
+                            break;
+                        }
+                        break;
+                    case "NULL_VALUE":
+                    case 0:
+                        message.nullValue = 0;
+                        break;
+                    }
+                    if (object.numberValue != null)
+                        message.numberValue = Number(object.numberValue);
+                    if (object.stringValue != null)
+                        message.stringValue = String(object.stringValue);
+                    if (object.boolValue != null)
+                        message.boolValue = Boolean(object.boolValue);
+                    if (object.structValue != null) {
+                        if (typeof object.structValue !== "object")
+                            throw TypeError(".google.protobuf.Value.structValue: object expected");
+                        message.structValue = $root.google.protobuf.Struct.fromObject(object.structValue);
+                    }
+                    if (object.listValue != null) {
+                        if (typeof object.listValue !== "object")
+                            throw TypeError(".google.protobuf.Value.listValue: object expected");
+                        message.listValue = $root.google.protobuf.ListValue.fromObject(object.listValue);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a Value message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {google.protobuf.Value} message Value
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Value.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (message.nullValue != null && message.hasOwnProperty("nullValue")) {
+                        object.nullValue = options.enums === String ? $root.google.protobuf.NullValue[message.nullValue] === undefined ? message.nullValue : $root.google.protobuf.NullValue[message.nullValue] : message.nullValue;
+                        if (options.oneofs)
+                            object.kind = "nullValue";
+                    }
+                    if (message.numberValue != null && message.hasOwnProperty("numberValue")) {
+                        object.numberValue = options.json && !isFinite(message.numberValue) ? String(message.numberValue) : message.numberValue;
+                        if (options.oneofs)
+                            object.kind = "numberValue";
+                    }
+                    if (message.stringValue != null && message.hasOwnProperty("stringValue")) {
+                        object.stringValue = message.stringValue;
+                        if (options.oneofs)
+                            object.kind = "stringValue";
+                    }
+                    if (message.boolValue != null && message.hasOwnProperty("boolValue")) {
+                        object.boolValue = message.boolValue;
+                        if (options.oneofs)
+                            object.kind = "boolValue";
+                    }
+                    if (message.structValue != null && message.hasOwnProperty("structValue")) {
+                        object.structValue = $root.google.protobuf.Struct.toObject(message.structValue, options);
+                        if (options.oneofs)
+                            object.kind = "structValue";
+                    }
+                    if (message.listValue != null && message.hasOwnProperty("listValue")) {
+                        object.listValue = $root.google.protobuf.ListValue.toObject(message.listValue, options);
+                        if (options.oneofs)
+                            object.kind = "listValue";
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this Value to JSON.
+                 * @function toJSON
+                 * @memberof google.protobuf.Value
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Value.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Value
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Value.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Value";
+                };
+    
+                return Value;
+            })();
+    
+            /**
+             * NullValue enum.
+             * @name google.protobuf.NullValue
+             * @enum {number}
+             * @property {number} NULL_VALUE=0 NULL_VALUE value
+             */
+            protobuf.NullValue = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "NULL_VALUE"] = 0;
+                return values;
+            })();
+    
+            protobuf.ListValue = (function() {
+    
+                /**
+                 * Properties of a ListValue.
+                 * @memberof google.protobuf
+                 * @interface IListValue
+                 * @property {Array.<google.protobuf.IValue>|null} [values] ListValue values
+                 */
+    
+                /**
+                 * Constructs a new ListValue.
+                 * @memberof google.protobuf
+                 * @classdesc Represents a ListValue.
+                 * @implements IListValue
+                 * @constructor
+                 * @param {google.protobuf.IListValue=} [properties] Properties to set
+                 */
+                function ListValue(properties) {
+                    this.values = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * ListValue values.
+                 * @member {Array.<google.protobuf.IValue>} values
+                 * @memberof google.protobuf.ListValue
+                 * @instance
+                 */
+                ListValue.prototype.values = $util.emptyArray;
+    
+                /**
+                 * Creates a new ListValue instance using the specified properties.
+                 * @function create
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {google.protobuf.IListValue=} [properties] Properties to set
+                 * @returns {google.protobuf.ListValue} ListValue instance
+                 */
+                ListValue.create = function create(properties) {
+                    return new ListValue(properties);
+                };
+    
+                /**
+                 * Encodes the specified ListValue message. Does not implicitly {@link google.protobuf.ListValue.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {google.protobuf.IListValue} message ListValue message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ListValue.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.values != null && message.values.length)
+                        for (var i = 0; i < message.values.length; ++i)
+                            $root.google.protobuf.Value.encode(message.values[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified ListValue message, length delimited. Does not implicitly {@link google.protobuf.ListValue.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {google.protobuf.IListValue} message ListValue message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ListValue.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a ListValue message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.protobuf.ListValue} ListValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ListValue.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.ListValue();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1: {
+                                if (!(message.values && message.values.length))
+                                    message.values = [];
+                                message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a ListValue message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.protobuf.ListValue} ListValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ListValue.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a ListValue message.
+                 * @function verify
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ListValue.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.values != null && message.hasOwnProperty("values")) {
+                        if (!Array.isArray(message.values))
+                            return "values: array expected";
+                        for (var i = 0; i < message.values.length; ++i) {
+                            var error = $root.google.protobuf.Value.verify(message.values[i]);
+                            if (error)
+                                return "values." + error;
+                        }
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a ListValue message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.protobuf.ListValue} ListValue
+                 */
+                ListValue.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.protobuf.ListValue)
+                        return object;
+                    var message = new $root.google.protobuf.ListValue();
+                    if (object.values) {
+                        if (!Array.isArray(object.values))
+                            throw TypeError(".google.protobuf.ListValue.values: array expected");
+                        message.values = [];
+                        for (var i = 0; i < object.values.length; ++i) {
+                            if (typeof object.values[i] !== "object")
+                                throw TypeError(".google.protobuf.ListValue.values: object expected");
+                            message.values[i] = $root.google.protobuf.Value.fromObject(object.values[i]);
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a ListValue message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {google.protobuf.ListValue} message ListValue
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ListValue.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults)
+                        object.values = [];
+                    if (message.values && message.values.length) {
+                        object.values = [];
+                        for (var j = 0; j < message.values.length; ++j)
+                            object.values[j] = $root.google.protobuf.Value.toObject(message.values[j], options);
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this ListValue to JSON.
+                 * @function toJSON
+                 * @memberof google.protobuf.ListValue
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ListValue.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ListValue
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ListValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.ListValue";
+                };
+    
+                return ListValue;
             })();
     
             return protobuf;

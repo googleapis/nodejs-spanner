@@ -1251,6 +1251,114 @@ describe('v1.DatabaseAdminClient', () => {
         });
     });
 
+    describe('addSplitPoints', () => {
+        it('invokes addSplitPoints without error', async () => {
+            const client = new databaseadminModule.v1.DatabaseAdminClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.spanner.admin.database.v1.AddSplitPointsRequest', ['database']);
+            request.database = defaultValue1;
+            const expectedHeaderRequestParams = `database=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsResponse()
+            );
+            client.innerApiCalls.addSplitPoints = stubSimpleCall(expectedResponse);
+            const [response] = await client.addSplitPoints(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes addSplitPoints without error using callback', async () => {
+            const client = new databaseadminModule.v1.DatabaseAdminClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.spanner.admin.database.v1.AddSplitPointsRequest', ['database']);
+            request.database = defaultValue1;
+            const expectedHeaderRequestParams = `database=${defaultValue1 ?? '' }`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsResponse()
+            );
+            client.innerApiCalls.addSplitPoints = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.addSplitPoints(
+                    request,
+                    (err?: Error|null, result?: protos.google.spanner.admin.database.v1.IAddSplitPointsResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes addSplitPoints with error', async () => {
+            const client = new databaseadminModule.v1.DatabaseAdminClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.spanner.admin.database.v1.AddSplitPointsRequest', ['database']);
+            request.database = defaultValue1;
+            const expectedHeaderRequestParams = `database=${defaultValue1 ?? '' }`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.addSplitPoints = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.addSplitPoints(request), expectedError);
+            const actualRequest = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addSplitPoints as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes addSplitPoints with closed client', async () => {
+            const client = new databaseadminModule.v1.DatabaseAdminClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.google.spanner.admin.database.v1.AddSplitPointsRequest', ['database']);
+            request.database = defaultValue1;
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.addSplitPoints(request), expectedError);
+        });
+    });
+
     describe('createBackupSchedule', () => {
         it('invokes createBackupSchedule without error', async () => {
             const client = new databaseadminModule.v1.DatabaseAdminClient({

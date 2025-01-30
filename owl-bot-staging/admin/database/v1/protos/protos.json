@@ -1274,6 +1274,26 @@
                                 }
                               ]
                             },
+                            "AddSplitPoints": {
+                              "requestType": "AddSplitPointsRequest",
+                              "responseType": "AddSplitPointsResponse",
+                              "options": {
+                                "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}:addSplitPoints",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "database,split_points"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{database=projects/*/instances/*/databases/*}:addSplitPoints",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "database,split_points"
+                                }
+                              ]
+                            },
                             "CreateBackupSchedule": {
                               "requestType": "CreateBackupScheduleRequest",
                               "responseType": "BackupSchedule",
@@ -1969,6 +1989,76 @@
                             "nextPageToken": {
                               "type": "string",
                               "id": 2
+                            }
+                          }
+                        },
+                        "AddSplitPointsRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "splitPoints": {
+                              "rule": "repeated",
+                              "type": "SplitPoints",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "initiator": {
+                              "type": "string",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "AddSplitPointsResponse": {
+                          "fields": {}
+                        },
+                        "SplitPoints": {
+                          "fields": {
+                            "table": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "index": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "keys": {
+                              "rule": "repeated",
+                              "type": "Key",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "Key": {
+                              "fields": {
+                                "keyParts": {
+                                  "type": "google.protobuf.ListValue",
+                                  "id": 1,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -3814,6 +3904,69 @@
                 "nanos": {
                   "type": "int32",
                   "id": 2
+                }
+              }
+            },
+            "Struct": {
+              "fields": {
+                "fields": {
+                  "keyType": "string",
+                  "type": "Value",
+                  "id": 1
+                }
+              }
+            },
+            "Value": {
+              "oneofs": {
+                "kind": {
+                  "oneof": [
+                    "nullValue",
+                    "numberValue",
+                    "stringValue",
+                    "boolValue",
+                    "structValue",
+                    "listValue"
+                  ]
+                }
+              },
+              "fields": {
+                "nullValue": {
+                  "type": "NullValue",
+                  "id": 1
+                },
+                "numberValue": {
+                  "type": "double",
+                  "id": 2
+                },
+                "stringValue": {
+                  "type": "string",
+                  "id": 3
+                },
+                "boolValue": {
+                  "type": "bool",
+                  "id": 4
+                },
+                "structValue": {
+                  "type": "Struct",
+                  "id": 5
+                },
+                "listValue": {
+                  "type": "ListValue",
+                  "id": 6
+                }
+              }
+            },
+            "NullValue": {
+              "values": {
+                "NULL_VALUE": 0
+              }
+            },
+            "ListValue": {
+              "fields": {
+                "values": {
+                  "rule": "repeated",
+                  "type": "Value",
+                  "id": 1
                 }
               }
             }
