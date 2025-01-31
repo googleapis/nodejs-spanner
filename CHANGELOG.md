@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.18.0](https://github.com/googleapis/nodejs-spanner/compare/v7.17.1...v7.18.0) (2025-01-29)
+
+
+### Features
+
+* Add gcp client attributes for Opentelemetry traces ([#2215](https://github.com/googleapis/nodejs-spanner/issues/2215)) ([d2ff046](https://github.com/googleapis/nodejs-spanner/commit/d2ff046854b4139af6e3a6f0d2122619cdf83131))
+
 ## [7.17.1](https://github.com/googleapis/nodejs-spanner/compare/v7.17.0...v7.17.1) (2025-01-03)
 
 
