@@ -63,23 +63,32 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
         asymmetricAutoscalingOptions: [
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.create(
             {
-              replicaSelection: protos.google.spanner.admin.instance.v1.ReplicaSelection.create({
-                location: "europe-west1",
-              }),
+              replicaSelection:
+                protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
+                  {
+                    location: 'europe-west1',
+                  }
+                ),
             }
           ),
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.create(
             {
-              replicaSelection: protos.google.spanner.admin.instance.v1.ReplicaSelection.create({
-                location: "europe-west4",
-              }),
+              replicaSelection:
+                protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
+                  {
+                    location: 'europe-west4',
+                  }
+                ),
             }
           ),
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.create(
             {
-              replicaSelection: protos.google.spanner.admin.instance.v1.ReplicaSelection.create({
-                location: "asia-east1",
-              }),
+              replicaSelection:
+                protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
+                  {
+                    location: 'asia-east1',
+                  }
+                ),
             }
           ),
         ],
@@ -109,9 +118,10 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             cloud_spanner_samples: 'true',
             created: Math.round(Date.now() / 1000).toString(), // current time
           },
-          // Feature MULTI_REGION is available only for ENTERPRISE_PLUS edition 
+          // Feature MULTI_REGION is available only for ENTERPRISE_PLUS edition
           edition:
-            protos.google.spanner.admin.instance.v1.Instance.Edition.ENTERPRISE_PLUS,
+            protos.google.spanner.admin.instance.v1.Instance.Edition
+              .ENTERPRISE_PLUS,
         },
       });
 
@@ -136,10 +146,18 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
           '\n' +
           `Storage utilization percent: ${metadata.autoscalingConfig.autoscalingTargets.storageUtilizationPercent}.` +
           '\n' +
-          `Asymmetric Autoscaling Options: ` +
-            metadata.autoscalingConfig.asymmetricAutoscalingOptions
-            .map(option => option.replicaSelection?.location || 'N/A')
-            .join(', ')
+          `Asymmetric Autoscaling Options: ${
+            metadata.autoscalingConfig.asymmetricAutoscalingOptions &&
+            metadata.autoscalingConfig.asymmetricAutoscalingOptions.length > 0
+              ? metadata.autoscalingConfig.asymmetricAutoscalingOptions
+                  .map(option =>
+                    option.replicaSelection && option.replicaSelection.location
+                      ? option.replicaSelection.location
+                      : 'N/A'
+                  )
+                  .join(', ')
+              : 'None'
+          }`
       );
     } catch (err) {
       console.error('ERROR:', err);
