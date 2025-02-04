@@ -481,10 +481,14 @@ describe('v1.SpannerClient', () => {
         client.innerApiCalls.batchCreateSessions as SinonStub
       ).getCall(0).args[0];
       assert.deepStrictEqual(actualRequest, request);
-      const actualHeaderRequestParams = (
+      const actualHeaders = (
         client.innerApiCalls.batchCreateSessions as SinonStub
-      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      ).getCall(0).args[1].otherArgs.headers;
+      const actualHeaderRequestParams = actualHeaders['x-goog-request-params'];
       assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+      // const actualRequestID = actualHeaders['x-goog-spanner-request-id'];
+      // console.log('headers', actualHeaders);
+      // assert.deepStrictEqual(actualRequestID, 'foo');
     });
 
     it('invokes batchCreateSessions without error using callback', async () => {

@@ -29,6 +29,10 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import {
   BatchUpdateOptions,
@@ -273,7 +277,10 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'streamingRead');
-        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
+        assert.deepStrictEqual(headers, {
+          ...snapshot.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
       });
 
       it('should use the transaction id if present', () => {
@@ -624,7 +631,10 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeStreamingSql');
-        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
+        assert.deepStrictEqual(headers, {
+          ...snapshot.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
       });
 
       it('should use the transaction id if present', () => {
@@ -1416,7 +1426,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
+            },
             transaction.commonHeaders_
           )
         );
@@ -1623,7 +1636,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: true,
+            },
             transaction.commonHeaders_
           )
         );
@@ -2179,7 +2195,10 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             config.headers,
             Object.assign(
-              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              {
+                [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+                [LEADER_AWARE_ROUTING_HEADER]: true,
+              },
               transaction.commonHeaders_
             )
           );
@@ -2227,7 +2246,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: true,
+            },
             transaction.commonHeaders_
           )
         );

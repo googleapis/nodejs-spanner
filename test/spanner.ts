@@ -55,6 +55,12 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {
+  RequestIDError,
+  XGoogRequestHeaderInterceptor,
+  randIdForProcess,
+  resetNthClientId,
+} from '../src/request_id_header';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -102,7 +108,13 @@ describe('Spanner with mock server', () => {
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
-  const server = new grpc.Server();
+  const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor([
+    '/google.spanner.admin',
+    '/google.spanner.admin.database.v1.DatabaseAdmin',
+  ]);
+  const server = new grpc.Server({
+    interceptors: [xGoogReqIDInterceptor.generateServerInterceptor()],
+  });
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
@@ -114,6 +126,11 @@ describe('Spanner with mock server', () => {
   function newTestDatabase(options?: SessionPoolOptions): Database {
     return instance.database(`database-${dbCounter++}`, options);
   }
+
+  beforeEach(() => {
+    resetNthClientId();
+    xGoogReqIDInterceptor.reset();
+  });
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -167,6 +184,7 @@ describe('Spanner with mock server', () => {
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
+      // interceptors: [xGoogReqIDInterceptor.generateLoggingClientInterceptor()],
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
@@ -273,6 +291,10 @@ describe('Spanner with mock server', () => {
         // Ignore the fact that streaming read is unimplemented on the mock
         // server. We just want to verify that the correct request is sent.
         assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.3.1`
+        );
       } finally {
         snapshot.end();
         await database.close();
@@ -432,6 +454,10 @@ describe('Spanner with mock server', () => {
             // Ignore the fact that streaming read is unimplemented on the mock
             // server. We just want to verify that the correct request is sent.
             assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             return undefined;
           } finally {
             tx.end();
@@ -1128,6 +1154,10 @@ describe('Spanner with mock server', () => {
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
         );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
+        );
       } finally {
         await database.close();
       }
@@ -1181,6 +1211,11 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '14 UNAVAILABLE: Transient error'
+        );
+        // Ensure that we have a requestID returned and it was on the 2nd request.
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();
@@ -1403,6 +1438,10 @@ describe('Spanner with mock server', () => {
               (e as ServiceError).message,
               '2 UNKNOWN: Test error'
             );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
           }
           await database.close();
         });
@@ -1441,6 +1480,10 @@ describe('Spanner with mock server', () => {
           database.run(selectSql, err => {
             assert.ok(err, 'Missing expected error');
             assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+            assert.deepStrictEqual(
+              (err as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             database
               .close()
               .catch(done)
@@ -1464,6 +1507,10 @@ describe('Spanner with mock server', () => {
             .on('error', err => {
               assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
               assert.strictEqual(receivedRows.length, index);
+              assert.deepStrictEqual(
+                (err as RequestIDError).requestID,
+                `1.${randIdForProcess}.1.1.2.1`
+              );
               database
                 .close()
                 .catch(done)
@@ -1544,6 +1591,10 @@ describe('Spanner with mock server', () => {
         attempts++;
         tx!.runUpdate(insertSql, err => {
           assert.ok(err, 'Missing expected error');
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
           assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
           // transaction.
@@ -2551,6 +2602,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing invalid sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2565,6 +2617,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              true
             );
           }
         }
@@ -2594,6 +2650,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing an invalid streaming sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2608,6 +2665,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              true
             );
           }
         }
@@ -2687,6 +2748,7 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             'No resources available.'
           );
+          // assert.deepStrictEqual((e as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
         }
       } finally {
         if (tx1) {
@@ -2761,6 +2823,7 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (err) {
         assert.strictEqual((err as ServiceError).code, Status.NOT_FOUND);
+        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -2822,6 +2885,7 @@ describe('Spanner with mock server', () => {
           (err as ServiceError).code,
           Status.PERMISSION_DENIED
         );
+        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -3232,6 +3296,10 @@ describe('Spanner with mock server', () => {
           assert.ok(
             (err as ServiceError).message.includes('Generic internal error')
           );
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         } finally {
           await database.close();
         }
@@ -3344,6 +3412,10 @@ describe('Spanner with mock server', () => {
         } catch (err) {
           assert(err, 'Expected an error to be thrown');
           assert.match((err as Error).message, /Table FOO not found/);
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         }
       });
     });
@@ -3767,6 +3839,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3824,6 +3900,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3851,6 +3931,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
             );
           }
           await tx.run(selectSql);
@@ -3891,6 +3975,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.4.1`
         );
       } finally {
         await database.close();
@@ -3979,6 +4067,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();
@@ -5091,6 +5183,78 @@ describe('Spanner with mock server', () => {
         assert.ifError(err);
         done();
       });
+    });
+  });
+
+  describe('XGoogRequestId', () => {
+    it('with retry on aborted query', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      let rowCount = 0;
+      const maxAttempts = 4;
+      await database.runTransactionAsync(async transaction => {
+        attempts++;
+        if (attempts < maxAttempts) {
+          spannerMock.abortTransaction(transaction!);
+        }
+        const [rows] = await transaction!.run(selectSql);
+        rows.forEach(() => rowCount++);
+        assert.strictEqual(rowCount, 3);
+        assert.strictEqual(attempts, 4);
+        await transaction!.commit();
+      });
+
+      const wantUnaryCallsWithoutBatchCreateSessions = [
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.3.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.5.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.7.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/Commit',
+          reqId: `1.${randIdForProcess}.1.1.9.1`,
+        },
+      ];
+      const gotUnaryCalls = xGoogReqIDInterceptor.getUnaryCalls();
+      assert.deepStrictEqual(
+        gotUnaryCalls[0].method,
+        '/google.spanner.v1.Spanner/BatchCreateSessions'
+      );
+      // It is non-deterministic to try to get the exact clientId used to invoke .BatchCreateSessions
+      // given that these tests run as a collective and sessions are pooled.
+      assert.deepStrictEqual(
+        gotUnaryCalls.slice(1),
+        wantUnaryCallsWithoutBatchCreateSessions
+      );
+
+      const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
+      const wantStreamingCalls = [
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.2.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.4.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.6.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.8.1`,
+        },
+      ];
+      assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
+      await database.close();
     });
   });
 });
