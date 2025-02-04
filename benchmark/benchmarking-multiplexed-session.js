@@ -16,32 +16,6 @@
 
 'use strict';
 
-// Setup OpenTelemetry and the trace exporter.
-const {
-  NodeTracerProvider,
-  TraceIdRatioBasedSampler,
-} = require('@opentelemetry/sdk-trace-node');
-const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-
-// Create the Google Cloud Trace exporter for OpenTelemetry.
-const {
-  TraceExporter,
-} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-const exporter = new TraceExporter();
-
-// Create the OpenTelemetry tracerProvider that the exporter shall be attached to.
-const provider = new NodeTracerProvider({
-  // Modify the following line to adjust the sampling rate.
-  // It is currently set to 1.0, meaning all requests will be traced.
-  sampler: new TraceIdRatioBasedSampler(1.0),
-});
-provider.addSpanProcessor(new BatchSpanProcessor(exporter));
-
-// Set global propagator to propogate the trace context for end to end tracing.
-const {propagation} = require('@opentelemetry/api');
-const {W3CTraceContextPropagator} = require('@opentelemetry/core');
-propagation.setGlobalPropagator(new W3CTraceContextPropagator());
-
 const thread_execution_times = [];
 const transaction_times = [];
 async function main(
@@ -53,6 +27,7 @@ async function main(
   numThreads,
   numQueries
 ) {
+  // enable the env variable
   multiplexedEnabled === 'true'
     ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = true)
     : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = false);
@@ -61,18 +36,13 @@ async function main(
   const {performance} = require('perf_hooks');
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
-    observabilityOptions: {
-      tracerProvider: provider,
-      enableExtendedTracing: true,
-      enableEndToEndTracing: true,
-    },
   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId, {min: 1, max: 5});
+  const database = instance.database(databaseId);
 
+  // generate random queries
   function generateQuery() {
     const id = Math.floor(Math.random() * 10) + 1;
     const query = {
@@ -81,11 +51,12 @@ async function main(
     };
     return query;
   }
-  // warm up query
+  // warm up queries
   for (let i = 0; i < 10; i++) {
     await database.run(generateQuery());
   }
 
+  // single use transaction
   async function singleUseTxn() {
     const startThreadTime = performance.now();
 
@@ -93,29 +64,35 @@ async function main(
       const startTime = performance.now();
       await database.run(generateQuery());
       const operationTime = performance.now() - startTime;
+      // push the time taken by transaction to the array
       transaction_times.push(operationTime);
     }
 
+    // push the time taken by thread to the array
     thread_execution_times.push(
       (performance.now() - startThreadTime).toFixed(2)
     );
   }
 
+  // multi use transaction
   async function multiUseTxn() {
     const startThreadTime = performance.now();
 
     for (let i = 0; i < numQueries; i++) {
       const startTime = performance.now();
       const [txn] = await database.getSnapshot();
+      // run 4 queries to make 4 RPC calls
       await txn.run(generateQuery());
       await txn.run(generateQuery());
       await txn.run(generateQuery());
       await txn.run(generateQuery());
       txn.end();
       const operationTime = (performance.now() - startTime).toFixed(2);
+      // push the time taken by transaction to the array
       transaction_times.push(operationTime);
     }
 
+    // push the time taken by thread to the array
     thread_execution_times.push(
       (performance.now() - startThreadTime).toFixed(2)
     );
@@ -149,6 +126,7 @@ async function main(
     };
   }
 
+  // run the threads concurrently
   async function runConcurrently() {
     const promises = [];
     for (let i = 0; i < numThreads; i++) {
@@ -157,6 +135,7 @@ async function main(
         : promises.push(multiUseTxn());
     }
     await Promise.all(promises);
+    // print the time taken by each thread
     console.log('excution time taken by threads are: ');
     thread_execution_times.forEach(executionTime => {
       console.log(executionTime);
@@ -164,37 +143,19 @@ async function main(
   }
 
   try {
+    // wait for all the threads to complete the execution
     await runConcurrently();
+    // calculate percentiles
     const percentiles = calculatePercentiles(transaction_times);
+    // print percentiles results
     console.log(`average Latency: ${percentiles.avg}`);
     console.log(`p50 Latency: ${percentiles.p50}`);
     console.log(`p90 Latency: ${percentiles.p90}`);
     console.log(`p99 Latency: ${percentiles.p99}`);
   } catch (error) {
+    // log error if any
     console.log('error: ', error);
   }
-
-  provider.forceFlush();
-
-  // This sleep gives ample time for the trace
-  // spans to be exported to Google Cloud Trace.
-  await new Promise(resolve => {
-    setTimeout(() => {
-      resolve();
-    }, 8800);
-  });
-
-  // await runConcurrently()
-  //   .then(() => {
-  //     const percentiles = calculatePercentiles(transaction_times);
-  //     console.log(`average Latency: ${percentiles.avg}`);
-  //     console.log(`p50 Latency: ${percentiles.p50}`);
-  //     console.log(`p90 Latency: ${percentiles.p90}`);
-  //     console.log(`p99 Latency: ${percentiles.p99}`);
-  //   })
-  //   .catch(error => {
-  //     console.log('error: ', error);
-  //   });
 }
 
 process.on('unhandledRejection', err => {
