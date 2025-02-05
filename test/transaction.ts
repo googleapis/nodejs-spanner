@@ -410,7 +410,7 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.jsonOptions, undefined);
         assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
-        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+        const {span, ...options} = PARTIAL_RESULT_STREAM.lastCall.args[1];
 
         assert.deepStrictEqual(options, fakeOptions);
       });
@@ -791,7 +791,7 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.jsonOptions, undefined);
         assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
-        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+        const {span, ...options} = PARTIAL_RESULT_STREAM.lastCall.args[1];
 
         assert.deepStrictEqual(options, expectedOptions);
       });

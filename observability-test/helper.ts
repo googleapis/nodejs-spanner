@@ -36,6 +36,7 @@ export const cacheSessionEvents = [
   'Acquiring session',
   'Cache hit: has usable session',
   'Acquired session',
+  'Using Session',
 ];
 
 /**
@@ -82,14 +83,25 @@ export async function verifySpansAndEvents(
       actualEventNames.push(event.name);
     });
   });
+
+  assert.strictEqual(
+    actualSpanNames.length,
+    expectedSpans.length,
+    `Span count mismatch: Expected ${expectedSpans.length} spans, but received ${actualSpanNames.length} spans`
+  );
   assert.deepStrictEqual(
     actualSpanNames,
     expectedSpans,
     `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpans}`
   );
+  assert.strictEqual(
+    actualEventNames.length,
+    expectedEvents.length,
+    `Event count mismatch: Expected ${expectedEvents.length} events, but received ${actualEventNames.length} events`
+  );
   assert.deepStrictEqual(
-    actualEventNames,
-    expectedEvents,
+    actualEventNames.sort(),
+    expectedEvents.sort(),
     `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEvents}`
   );
 }

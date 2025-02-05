@@ -23,6 +23,7 @@ import {Session} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
+import {getActiveOrNoopSpan, setSpanErrorAndEnd} from './instrument';
 import {Database} from './database';
 import {google} from '../protos/protos';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
@@ -238,6 +239,7 @@ export abstract class Runner<T> {
         this.session.lastError = e as grpc.ServiceError;
         lastError = e as grpc.ServiceError;
       }
+      const span = getActiveOrNoopSpan();
 
       // Note that if the error is a 'Session not found' error, it will be
       // thrown here. We do this to bubble this error up to the caller who is
@@ -250,7 +252,7 @@ export abstract class Runner<T> {
       }
 
       this.attempts += 1;
-
+      span.addEvent('Retrying transaction');
       const delay = this.getNextDelay(lastError);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
@@ -312,9 +314,12 @@ export class TransactionRunner extends Runner<void> {
     transaction.requestStream = (config: object) => {
       const proxyStream = through.obj();
       const stream = requestStream(config);
+      const resultStream = transaction.resultStream;
 
       stream
         .on('error', (err: grpc.ServiceError) => {
+          resultStream?.options.span &&
+            setSpanErrorAndEnd(resultStream?.options.span, err);
           if (!this.shouldRetry(err)) {
             proxyStream.destroy(err);
             return;

@@ -206,6 +206,18 @@ export function setSpanError(span: Span, err: Error | String): boolean {
 }
 
 /**
+ * Sets the span status with err and end, if non-null onto the span with
+ * status.code=ERROR and the message of err.toString()
+ *
+ * @returns {boolean} to signify if the status was set.
+ */
+export function setSpanErrorAndEnd(span: Span, err: Error | String): boolean {
+  const status = setSpanError(span, err);
+  span.end();
+  return status;
+}
+
+/**
  * Sets err, if non-null onto the span with
  * status.code=ERROR and the message of err.toString()
  * as well as recording an exception on the span.

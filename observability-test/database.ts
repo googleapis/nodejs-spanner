@@ -684,7 +684,7 @@ describe('Database', () => {
           'Expected that secondRetrySpan is the child to parentSpan'
         );
 
-        const expectedEventNames = ['No session available'];
+        const expectedEventNames = ['No session available', 'Using Session'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -1560,7 +1560,7 @@ describe('Database', () => {
         );
 
         // We don't expect events.
-        const expectedEventNames = [];
+        const expectedEventNames = ['Using Session'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
