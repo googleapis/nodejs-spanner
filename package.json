@@ -93,7 +93,7 @@
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.25",
     "@types/lodash.snakecase": "^4.1.4",
-    "@types/merge-stream": "^1.1.2",
+    "@types/merge-stream": "^2.0.0",
     "@types/mocha": "^9.0.0",
     "@types/mv": "^2.1.0",
     "@types/ncp": "^2.0.1",
