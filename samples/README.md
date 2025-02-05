@@ -68,6 +68,7 @@ and automatic, synchronous replication for high availability.
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
   * [Updates an instance.](#updates-an-instance.)
+  * [Creates a instance with asymmetric autoscaling config.](#creates-a-instance-with-asymmetric-autoscaling-config.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
@@ -1060,6 +1061,23 @@ __Usage:__
 
 
 `node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a instance with asymmetric autoscaling config.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-asymmetric-autoscaling-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-asymmetric-autoscaling-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-with-asymmetric-autoscaling-config.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 -----
