@@ -165,6 +165,7 @@ if [[ -n "${KOKORO_BUILD_ID:-}" ]]; then
 	# For flakybot
 	"KOKORO_GITHUB_COMMIT_URL"
 	"KOKORO_GITHUB_PULL_REQUEST_URL"
+    "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"
     )
 elif [[ "${TRAVIS:-}" == "true" ]]; then
     RUNNING_IN_CI="true"

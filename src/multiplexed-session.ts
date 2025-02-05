@@ -71,7 +71,6 @@ export class MultiplexedSession
   database: Database;
   // frequency to create new mux session
   refreshRate: number;
-  isMultiplexedEnabled: boolean;
   _multiplexedSession: Session | null;
   _refreshHandle!: NodeJS.Timer;
   _observabilityOptions?: ObservabilityOptions;
@@ -82,9 +81,6 @@ export class MultiplexedSession
     this.refreshRate = 7;
     this._multiplexedSession = null;
     this._observabilityOptions = database._observabilityOptions;
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
-      ? (this.isMultiplexedEnabled = true)
-      : (this.isMultiplexedEnabled = false);
   }
 
   /**
