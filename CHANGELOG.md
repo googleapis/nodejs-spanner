@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.18.1](https://github.com/googleapis/nodejs-spanner/compare/v7.18.0...v7.18.1) (2025-02-05)
+
+
+### Bug Fixes
+
+* Fix NodeJS release ([#2229](https://github.com/googleapis/nodejs-spanner/issues/2229)) ([f830fc8](https://github.com/googleapis/nodejs-spanner/commit/f830fc82ce666902db3cddc667326dc2731c14a1))
+
 ## [7.18.0](https://github.com/googleapis/nodejs-spanner/compare/v7.17.1...v7.18.0) (2025-01-29)
 
 
