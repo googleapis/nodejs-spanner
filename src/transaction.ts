@@ -2517,12 +2517,9 @@ export class Transaction extends Dml {
     };
     return startTrace('Transaction.rollback', traceConfig, span => {
       if (!this.id) {
-        const err = new Error(
-          'Transaction ID is unknown, nothing to rollback.'
-        ) as ServiceError;
-        setSpanError(span, err);
+        span.addEvent('Transaction ID is unknown, nothing to rollback.');
         span.end();
-        callback!(err);
+        callback(null);
         return;
       }
 

@@ -501,14 +501,14 @@ describe('Transaction', () => {
       transaction.id = ID;
     });
 
-    it('error with unset `id`', done => {
+    it('no error with unset `id`', done => {
       const expectedError = new Error(
         'Transaction ID is unknown, nothing to rollback.'
       );
       delete transaction.id;
 
       transaction.rollback(err => {
-        assert.deepStrictEqual(err, expectedError);
+        assert.deepStrictEqual(err, null);
 
         const exportResults = extractExportedSpans();
         const actualSpanNames = exportResults.spanNames;
@@ -521,7 +521,7 @@ describe('Transaction', () => {
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = [];
+        const expectedEventNames = ['Transaction ID is unknown, nothing to rollback.'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
@@ -532,12 +532,12 @@ describe('Transaction', () => {
         const spans = exportResults.spans;
         const firstSpan = spans[0];
         assert.strictEqual(
-          SpanStatusCode.ERROR,
+          SpanStatusCode.UNSET,
           firstSpan.status.code,
-          'Unexpected an span status code'
+          'Unexpected span status code'
         );
         assert.strictEqual(
-          expectedError.message,
+          undefined,
           firstSpan.status.message,
           'Unexpected span status message'
         );
