@@ -521,7 +521,9 @@ describe('Transaction', () => {
           `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
         );
 
-        const expectedEventNames = ['Transaction ID is unknown, nothing to rollback.'];
+        const expectedEventNames = [
+          'Transaction ID is unknown, nothing to rollback.',
+        ];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
