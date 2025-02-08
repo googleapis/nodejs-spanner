@@ -18,6 +18,7 @@ import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
+import * as uuid from 'uuid';
 import {Big} from 'big.js';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {GrpcService} from '../src/common-grpc/service';
@@ -1257,6 +1258,16 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it.skip('should decode UUID', () => {
+      const value = uuid.v4();
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.UUID,
+      });
+
+      assert.strictEqual(decoded, value);
+    });
+
     it('should decode FLOAT32', () => {
       const value = 'Infinity';
 
@@ -1664,6 +1675,14 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
+    it.skip('should encode UUID', () => {
+      const value = uuid.v4();
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, value);
+    });
+    
     it('should encode FLOAT32', () => {
       const value = new codec.Float32(10);
 
@@ -1759,6 +1778,12 @@ describe('codec', () => {
       });
     });
 
+    it.skip('should determine if the uuid value is unspecified', () => {
+      assert.deepStrictEqual(codec.getType(uuid.v4()), {
+        type: 'unspecified',
+      });
+    });
+    
     it('should determine if the value is a float32', () => {
       assert.deepStrictEqual(codec.getType(new codec.Float32(1.1)), {
         type: 'float32',
@@ -1919,6 +1944,9 @@ describe('codec', () => {
           code: google.spanner.v1.TypeCode[
             google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
           ],
+        },
+        uuid: {
+          code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.UUID],
         },
         bool: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.BOOL],

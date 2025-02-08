@@ -548,6 +548,134 @@ describe('Spanner', () => {
       };
     }
 
+    before(async () => {
+      if (IS_EMULATOR_ENABLED) {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
+        // TODO: add column UUIDValue UUID and UUIDArray Array<UUID> while using uuid feature.
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
+              ) PRIMARY KEY (Key)
+            `
+        );
+        await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
+        // TODO: add column UUIDValue UUID and UUIDArray UUID[] while using uuid feature.
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
+      } else {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
+        // TODO: add column UUIDValue UUID and UUIDArray Array<UUID> while using uuid feature.
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                JsonValue       JSON,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                ProtoMessageValue examples.spanner.music.SingerInfo,
+                ProtoEnumValue examples.spanner.music.Genre,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                JsonArray       ARRAY<JSON>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                ProtoMessageArray ARRAY<examples.spanner.music.SingerInfo>,
+                ProtoEnumArray ARRAY<examples.spanner.music.Genre>,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
+              ) PRIMARY KEY (Key)
+            `
+        );
+        await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
+        // TODO: add column UUIDValue UUID and UUIDArray UUID[] while using uuid feature.
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
+      }
+    });
+
     const incorrectValueType = async table => {
       try {
         await table.insert({BoolValue: 'abc'});
@@ -891,6 +1019,67 @@ describe('Spanner', () => {
           queriedValue = rows[0][0].value.value;
         }
         assert.strictEqual(queriedValue, null);
+      });
+    });
+
+    describe.skip('uuids', () => {
+      const uuidInsert = (done, dialect, value) => {
+        insert({UUIDValue: value}, dialect, (err, row) => {
+          assert.ifError(err);
+          if (typeof value === 'object' && value !== null) {
+            value = value.value;
+          }
+          assert.deepStrictEqual(row.toJSON().UUIDValue, value);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write uuid values', done => {
+        uuidInsert(done, Spanner.GOOGLE_STANDARD_SQL, uuid.v4());
+      });
+
+      it('POSTGRESQL should write uuid values', done => {
+        uuidInsert(done, Spanner.POSTGRESQL, uuid.v4());
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty uuid array values', done => {
+        insert({UUIDArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().UUIDArray, []);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write empty uuid array values', done => {
+        insert({UUIDArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().UUIDArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write uuid array values', done => {
+        const values = [uuid.v4(), uuid.v4(), uuid.v4()];
+
+        insert({UUIDArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          for (let i = 0; i < values.length; i++) {
+            assert.deepStrictEqual(row.toJSON().UUIDArray[i], values[i]);
+          }
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write uuid array values', done => {
+        const values = [uuid.v4(), uuid.v4(), uuid.v4()];
+
+        insert({UUIDArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          for (let i = 0; i < values.length; i++) {
+            assert.deepStrictEqual(row.toJSON().UUIDArray[i], values[i]);
+          }
+          done();
+        });
       });
     });
 
@@ -3450,6 +3639,7 @@ describe('Spanner', () => {
     before(async () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
+      // TODO: Add column UUID UUID while using uuid feature.
       const googleSqlCreateTable = await googleSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
                 (
@@ -3469,6 +3659,7 @@ describe('Spanner', () => {
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
+      // TODO: Add column "UUID" UUID while using uuid feature.
       const postgreSqlCreateTable = await postgreSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
             (
@@ -3912,6 +4103,7 @@ describe('Spanner', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
       const FLOAT32 = 8.2;
+      // const UUID = uuid.v4(); // TODO: Uncomment while using uuid feature.
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
@@ -3925,6 +4117,7 @@ describe('Spanner', () => {
         SingerId: ID,
         Name: NAME,
         Float32: FLOAT32,
+        // UUID: UUID,   // TODO: Uncomment while using uuid feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -3939,6 +4132,7 @@ describe('Spanner', () => {
         SingerId: ID,
         Name: NAME,
         Float32: FLOAT32,
+        // UUID: UUID, // TODO: Uncomment while using uuid feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4182,6 +4376,8 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 11);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        // TODO: Uncomment while using uuid feature.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'uuid');
         assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
         assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
         assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
@@ -4213,6 +4409,8 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 8);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        // uncomment while using uuid feature.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'UUID');
         assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
         assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
         assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
@@ -4527,7 +4725,198 @@ describe('Spanner', () => {
             await oidQuery(PG_DATABASE, query, null);
           });
         });
+        
+        // TODO: Enable when the uuid feature has been released.
+        describe.skip('uuid', () => {
+          const uuidQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              const queriedValue = rows[0][0].value;
+              assert.deepStrictEqual(queriedValue, value);
+              done();
+            });
+          };
 
+          it('GOOGLE_STANDARD_SQL should bind the value when param type uuid is used', done => {
+            const value = uuid.v4();
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: value,
+              },
+              types: {
+                v: 'uuid',
+              },
+            };
+            uuidQuery(done, DATABASE, query, value);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value as uuid when param type is not specified', async () => {
+            const val = uuid.v4();
+            const id = generateName('id');
+            try {
+              await googleSqlTable.insert({SingerId: id, UUID: val});
+              const query = {
+                sql:
+                  'SELECT SingerId, UUID FROM `' +
+                  googleSqlTable.name +
+                  '` WHERE UUID = @v',
+                params: {
+                  v: val,
+                },
+              };
+              const [rows] = await DATABASE.run(query);
+              assert.strictEqual(rows[0][0].value, id);
+              assert.strictEqual(uuid.validate(rows[0][1].value), true);
+            } catch (err) {
+              assert.ifError(err);
+            }
+          });
+
+          it('POSTGRESQL should bind the value when param type uuid is used', done => {
+            const value = uuid.v4();
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: value,
+              },
+              types: {
+                p1: 'uuid',
+              },
+            };
+            uuidQuery(done, PG_DATABASE, query, value);
+          });
+
+          it('POSTGRESQL should bind the value as uuid when param type is not specified', async () => {
+            const val = uuid.v4();
+            const id = generateName('id');
+            try {
+              await postgreSqlTable.insert({SingerId: id, UUID: val});
+              const query = {
+                sql:
+                  'SELECT "SingerId", "UUID" FROM ' +
+                  postgreSqlTable.name +
+                  ' WHERE "UUID" = $1',
+                params: {
+                  p1: val,
+                },
+              };
+              const [rows] = await PG_DATABASE.run(query);
+              assert.strictEqual(rows[0][0].value, id);
+              assert.strictEqual(uuid.validate(rows[0][1].value), true);
+            } catch (err) {
+              assert.ifError(err);
+            }
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+            const values = [uuid.v4(), uuid.v4(), uuid.v4()];
+
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'uuid',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return val;
+              });
+
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+              }
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+            const values = [];
+
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'uuid',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind arrays', done => {
+            const values = [uuid.v4(), uuid.v4(), uuid.v4()];
+
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: values,
+              },
+              types: {
+                p1: {
+                  type: 'array',
+                  child: 'uuid',
+                },
+              },
+            };
+
+            PG_DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return val;
+              });
+
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+              }
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind empty arrays', done => {
+            const values = [];
+
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT $1',
+              params: {
+                p1: values,
+              },
+              types: {
+                p1: {
+                  type: 'array',
+                  child: 'uuid',
+                },
+              },
+            };
+
+            PG_DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+        });
+
+        // TODO: Enable when the float32 feature has been released.
         describe('float32', () => {
           const float32Query = async (database, query, value) => {
             const [rows] = await database.run(query);

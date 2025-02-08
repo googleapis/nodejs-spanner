@@ -666,7 +666,24 @@ describe('Spanner', () => {
       assert.strictEqual(float, customValue);
     });
   });
+  
+  describe('uuid', () => {
+    it('should create a UUID instance', () => {
+      const value = {};
+      const customValue = {};
 
+      fakeCodec.UUID = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const uuid = Spanner.uuid(value);
+      assert.strictEqual(uuid, customValue);
+    });
+  });
+  
   describe('float32', () => {
     it('should create a Float32 instance', () => {
       const value = {};
