@@ -17,7 +17,10 @@
 import {randomBytes} from 'crypto';
 // eslint-disable-next-line n/no-extraneous-import
 import * as grpc from '@grpc/grpc-js';
-const randIdForProcess = randomBytes(8).readUint32LE(0).toString(16);
+const randIdForProcess = randomBytes(8)
+  .readUint32LE(0)
+  .toString(16)
+  .padStart(8, '0');
 const X_GOOG_SPANNER_REQUEST_ID_HEADER = 'x-goog-spanner-request-id';
 
 class AtomicCounter {

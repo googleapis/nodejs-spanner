@@ -82,7 +82,7 @@ describe('RequestId', () => {
       assert.match(
         randIdForProcess,
         /^[0-9A-Fa-f]{8}$/,
-        'process-id should be a 32-bit hexadecimal number'
+        `process-id should be a 32-bit hexadecimal number, but was ${randIdForProcess}`
       );
       done();
     });
