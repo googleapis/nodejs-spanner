@@ -5151,7 +5151,7 @@ function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const X_GOOG_REQ_ID_REGEX = /(\d+\.){5}\d+/;
+const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\d+\.){3}\d+$/;
 
 class XGoogRequestHeaderInterceptor {
   private nStream: number;

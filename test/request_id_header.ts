@@ -78,6 +78,11 @@ describe('RequestId', () => {
   });
 
   describe('craftRequestId', () => {
+    it('has a 32-bit hex-formatted process-id', done => {
+      assert.match(randIdForProcess, /^[0-9A-Fa-f]{8}$/, "process-id should be a 32-bit hexadecimal number");
+      done();
+    });
+
     it('with attempts', done => {
       assert.strictEqual(
         craftRequestId(1, 2, 3, 4),
