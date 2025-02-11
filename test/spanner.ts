@@ -59,6 +59,8 @@ import {
 } from '../src/common';
 import {
   RequestIDError,
+  X_GOOG_REQ_ID_REGEX,
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
   randIdForProcess,
   resetNthClientId,
 } from '../src/request_id_header';
@@ -316,7 +318,6 @@ describe('Spanner with mock server', () => {
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
-      // interceptors: [xGoogReqIDInterceptor.generateLoggingClientInterceptor()],
     });
     // Gets a reference to a Cloud Spanner instance and database
     instance = spanner.instance('instance');
@@ -2886,7 +2887,7 @@ describe('Spanner with mock server', () => {
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
             assert.deepStrictEqual(
-              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              (e as RequestIDError).requestID.match(requestIDRegex) !== null,
               true
             );
           }
@@ -2934,7 +2935,7 @@ describe('Spanner with mock server', () => {
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
             assert.deepStrictEqual(
-              (e as RequestIDError).requestID.match(requestIDRegex) != null,
+              (e as RequestIDError).requestID.match(requestIDRegex) !== null,
               true
             );
           }
@@ -3015,7 +3016,6 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             'No resources available.'
           );
-          // assert.deepStrictEqual((e as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
         }
       } finally {
         if (tx1) {
@@ -3090,7 +3090,6 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (err) {
         assert.strictEqual((err as ServiceError).code, Status.NOT_FOUND);
-        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -3152,7 +3151,6 @@ describe('Spanner with mock server', () => {
           (err as ServiceError).code,
           Status.PERMISSION_DENIED
         );
-        // assert.deepStrictEqual((err as RequestIDError).requestID,`1.${randIdForProcess}.1.1.1.1`);
       } finally {
         await database.close();
       }
@@ -5785,5 +5783,3 @@ function getRowCountFromStreamingSql(
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\.\d+){3}\.\d+/;
