@@ -1627,8 +1627,8 @@
                         "java_package": "com.google.spanner.admin.database.v1",
                         "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Database\\V1",
                         "ruby_package": "Google::Cloud::Spanner::Admin::Database::V1",
-                        "(google.api.resource_definition).type": "spanner.googleapis.com/Instance",
-                        "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}"
+                        "(google.api.resource_definition).type": "spanner.googleapis.com/InstancePartition",
+                        "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}"
                       },
                       "nested": {
                         "Backup": {
@@ -1757,6 +1757,14 @@
                             "oldestVersionTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 18,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "instancePartitions": {
+                              "rule": "repeated",
+                              "type": "BackupInstancePartition",
+                              "id": 19,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -2121,6 +2129,17 @@
                         },
                         "IncrementalBackupSpec": {
                           "fields": {}
+                        },
+                        "BackupInstancePartition": {
+                          "fields": {
+                            "instancePartition": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstancePartition"
+                              }
+                            }
+                          }
                         },
                         "OperationProgress": {
                           "fields": {

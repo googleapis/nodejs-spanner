@@ -6584,6 +6584,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime */
                         oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions */
+                        instancePartitions?: (google.spanner.admin.database.v1.IBackupInstancePartition[]|null);
                     }
 
                     /** Represents a Backup. */
@@ -6648,6 +6651,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime. */
                         public oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions. */
+                        public instancePartitions: google.spanner.admin.database.v1.IBackupInstancePartition[];
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -8467,6 +8473,103 @@ export namespace google {
 
                         /**
                          * Gets the default type url for IncrementalBackupSpec
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a BackupInstancePartition. */
+                    interface IBackupInstancePartition {
+
+                        /** BackupInstancePartition instancePartition */
+                        instancePartition?: (string|null);
+                    }
+
+                    /** Represents a BackupInstancePartition. */
+                    class BackupInstancePartition implements IBackupInstancePartition {
+
+                        /**
+                         * Constructs a new BackupInstancePartition.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IBackupInstancePartition);
+
+                        /** BackupInstancePartition instancePartition. */
+                        public instancePartition: string;
+
+                        /**
+                         * Creates a new BackupInstancePartition instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns BackupInstancePartition instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IBackupInstancePartition): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Verifies a BackupInstancePartition message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a BackupInstancePartition message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns BackupInstancePartition
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Creates a plain object from a BackupInstancePartition message. Also converts values to other types if specified.
+                         * @param message BackupInstancePartition
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.BackupInstancePartition, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this BackupInstancePartition to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for BackupInstancePartition
                          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                          * @returns The default type url
                          */
