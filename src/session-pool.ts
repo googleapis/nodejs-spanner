@@ -783,11 +783,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
-    try {
-      await this._createSessions(needed);
-    } catch (e) {
-      this.emit('error', e);
-    }
+    await this._createSessions(needed);
   }
 
   /**
@@ -993,7 +989,24 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const pings = sessions.map(session => this._ping(session));
 
     await Promise.all(pings);
-    return this._fill();
+    try {
+      await this._fill();
+    } catch (error) {
+      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
+      // for a database that does not yet exist with SessionPoolOptions.min > 0.
+      const err = error as ServiceError;
+      if (
+        isDatabaseNotFoundError(err) ||
+        isInstanceNotFoundError(err) ||
+        isCreateSessionPermissionError(err) ||
+        isDefaultCredentialsNotSetError(err) ||
+        isProjectIdNotSetInEnvironmentError(err)
+      ) {
+        return;
+      }
+      this.emit('error', err);
+    }
+    return;
   }
 
   /**
