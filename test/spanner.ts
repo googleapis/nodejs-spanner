@@ -17,6 +17,8 @@
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status, ServiceError} from 'google-gax';
+// eslint-disable-next-line n/no-extraneous-import
+import * as grpcModule from '@grpc/grpc-js';
 import {
   Database,
   Instance,
@@ -68,6 +70,7 @@ import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
+import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
 
 const {
   AlwaysOnSampler,
@@ -5282,4 +5285,134 @@ function getRowCountFromStreamingSql(
 
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\d+\.){4}\d+$/;
+
+class XGoogRequestHeaderInterceptor {
+  private nStream: number;
+  private nUnary: number;
+  private streamCalls: any[];
+  private unaryCalls: any[];
+  private prefixesToIgnore?: string[];
+  constructor(prefixesToIgnore?: string[]) {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+    this.prefixesToIgnore = prefixesToIgnore || [];
+  }
+
+  assertHasHeader(call): string | unknown {
+    const metadata = call.metadata;
+    const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+    if (!gotReqId) {
+      throw new Error(
+        `${call.method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`
+      );
+    }
+
+    if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+      throw new Error(
+        `${call.method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`
+      );
+    }
+    return gotReqId;
+  }
+
+  interceptUnary(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.unaryCalls.push({method: call.method, reqId: gotReqId});
+    this.nUnary++;
+    next(call);
+  }
+
+  generateClientInterceptor() {
+    return this.interceptUnary.bind(this);
+  }
+
+  interceptStream(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.streamCalls.push({method: call.method, reqId: gotReqId});
+    this.nStream++;
+    next(call);
+  }
+
+  generateServerInterceptor() {
+    return this.serverInterceptor.bind(this);
+  }
+
+  reset() {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+  }
+
+  public getUnaryCalls() {
+    return this.unaryCalls;
+  }
+
+  public getStreamingCalls() {
+    return this.streamCalls;
+  }
+
+  serverInterceptor(methodDescriptor, call) {
+    const method = call.handler.path;
+    const isUnary = call.handler.type === 'unary';
+    const listener = new grpcModule.ServerListenerBuilder()
+      .withOnReceiveMetadata((metadata, next) => {
+        let i = 0;
+        const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
+        for (i = 0; i < prefixesToIgnore.length; i++) {
+          const prefix = prefixesToIgnore[i];
+          if (method.startsWith(prefix)) {
+            next(metadata);
+            return;
+          }
+        }
+
+        const gotReqIds = metadata.get(X_GOOG_SPANNER_REQUEST_ID_HEADER);
+        if (!(gotReqIds && gotReqIds.length > 0)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
+          });
+          return;
+        }
+
+        if (gotReqIds.length !== 1) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} set multiple ${X_GOOG_SPANNER_REQUEST_ID_HEADER} headers: ${gotReqIds}`,
+          });
+          return;
+        }
+
+        const gotReqId = gotReqIds[0].toString();
+        if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
+          });
+          return;
+        }
+
+        if (isUnary) {
+          this.unaryCalls.push({method: method, reqId: gotReqId});
+          this.nUnary++;
+        } else {
+          this.streamCalls.push({method: method, reqId: gotReqId});
+          this.nStream++;
+        }
+
+        next(metadata);
+      })
+      .build();
+
+    const responder = new grpcModule.ResponderBuilder()
+      .withStart(next => next(listener))
+      .build();
+    return new grpcModule.ServerInterceptingCall(call, responder);
+  }
 }
