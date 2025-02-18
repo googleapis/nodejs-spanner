@@ -17,10 +17,6 @@
 import {
   ATTR_OTEL_SCOPE_NAME,
   ATTR_OTEL_SCOPE_VERSION,
-  SEMATTRS_DB_NAME,
-  SEMATTRS_DB_STATEMENT,
-  SEMATTRS_DB_SYSTEM,
-  SEMATTRS_DB_SQL_TABLE,
 } from '@opentelemetry/semantic-conventions';
 
 import {
@@ -89,6 +85,8 @@ interface traceConfig {
   sql?: string | SQLStatement;
   tableName?: string;
   dbName?: string;
+  transactionTag?: string;
+  statementTag?: string;
   opts?: ObservabilityOptions;
 }
 
@@ -141,7 +139,6 @@ export function startTrace<T>(
     SPAN_NAMESPACE_PREFIX + '.' + spanNameSuffix,
     {kind: SpanKind.CLIENT},
     span => {
-      span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
       span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
       span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
       span.setAttribute('gcp.client.service', 'spanner');
@@ -149,10 +146,16 @@ export function startTrace<T>(
       span.setAttribute('gcp.client.repo', 'googleapis/nodejs-spanner');
 
       if (config.tableName) {
-        span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
+        span.setAttribute('db.sql.table', config.tableName);
       }
       if (config.dbName) {
-        span.setAttribute(SEMATTRS_DB_NAME, config.dbName);
+        span.setAttribute('db.name', config.dbName);
+      }
+      if (config.statementTag) {
+        span.setAttribute('statement.tag', config.statementTag);
+      }
+      if (config.transactionTag) {
+        span.setAttribute('transaction.tag', config.transactionTag);
       }
 
       const allowExtendedTracing =
@@ -160,10 +163,10 @@ export function startTrace<T>(
       if (config.sql && allowExtendedTracing) {
         const sql = config.sql;
         if (typeof sql === 'string') {
-          span.setAttribute(SEMATTRS_DB_STATEMENT, sql as string);
+          span.setAttribute('db.statement', sql as string);
         } else {
           const stmt = sql as SQLStatement;
-          span.setAttribute(SEMATTRS_DB_STATEMENT, stmt.sql);
+          span.setAttribute('db.statement', stmt.sql);
         }
       }
 
