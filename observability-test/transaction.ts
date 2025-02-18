@@ -64,6 +64,7 @@ describe('Transaction', () => {
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
+    _observabilityOptions: {},
   };
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
@@ -100,11 +101,11 @@ describe('Transaction', () => {
 
     const SNAPSHOT_OPTIONS = {a: 'b', c: 'd'};
     sandbox.stub(Snapshot, 'encodeTimestampBounds').returns(SNAPSHOT_OPTIONS);
+    SESSION._observabilityOptions = {tracerProvider: tracerProvider};
     snapshot = new Snapshot(SESSION);
     snapshot._observabilityOptions = {tracerProvider: tracerProvider};
 
     transaction = new Transaction(SESSION);
-    transaction._observabilityOptions = {tracerProvider: tracerProvider};
   });
 
   afterEach(async () => {
