@@ -117,124 +117,118 @@ describe('Spanner', () => {
     gaxOptions: GAX_OPTIONS,
   };
 
-  before(async () => {
-    try {
-      await deleteOldTestInstances();
-      const instanceAdminClient = spanner.getInstanceAdminClient();
-      const databaseAdminClient = spanner.getDatabaseAdminClient();
-      if (generateInstanceForTest) {
-        const [instanceCreationOperation] =
-          await instanceAdminClient.createInstance({
-            instanceId: instanceId,
-            parent: instanceAdminClient.projectPath(projectId!),
-            instance: {
-              config: instanceAdminClient.instanceConfigPath(
-                projectId!,
-                INSTANCE_CONFIG.config
-              ),
-              nodeCount: 1,
-              displayName: 'Test name for instance.',
-              labels: {
-                created: Math.round(Date.now() / 1000).toString(), // current time
-              },
-            },
-          });
-        await instanceCreationOperation.promise();
-        instance = spanner.instance(instanceId!);
-        RESOURCES_TO_CLEAN.push(instance);
-      } else {
-        instance = spanner.instance(envInstanceName);
-        console.log(
-          `Not creating temp instance, using + ${instance.formattedName_}...`
-        );
-      }
-      if (IS_EMULATOR_ENABLED) {
-        const createSingersTableStatement = `
-                  CREATE TABLE ${TABLE_NAME} (
-                    SingerId STRING(1024) NOT NULL,
-                    Name STRING(1024),
-                  ) PRIMARY KEY(SingerId)`;
-        const [googleSqlOperation1] = await databaseAdminClient.createDatabase({
-          createStatement: 'CREATE DATABASE `' + gSQLdatabaseId1 + '`',
-          extraStatements: [createSingersTableStatement],
-          parent: databaseAdminClient.instancePath(projectId!, instanceId!),
-        });
-        await googleSqlOperation1.promise();
-        DATABASE = instance.database(gSQLdatabaseId1);
-        RESOURCES_TO_CLEAN.push(DATABASE);
-      } else {
-        // Reading proto descriptor file
-        const protoDescriptor = fs
-          .readFileSync('test/data/descriptors.pb')
-          .toString('base64');
-
-        const createSingersTableStatement = [
-          `
-        CREATE PROTO BUNDLE (
-            examples.spanner.music.SingerInfo,
-            examples.spanner.music.Genre,
-            )`,
-          `
-          CREATE TABLE ${TABLE_NAME} (
-            SingerId STRING(1024) NOT NULL,
-            Name STRING(1024),
-          ) PRIMARY KEY(SingerId)`,
-        ];
-        const [googleSqlOperation1] = await databaseAdminClient.createDatabase({
-          createStatement: 'CREATE DATABASE `' + gSQLdatabaseId1 + '`',
-          extraStatements: createSingersTableStatement,
-          parent: databaseAdminClient.instancePath(projectId!, instanceId!),
-          protoDescriptors: protoDescriptor,
-        });
-        await googleSqlOperation1.promise();
-        DATABASE = instance.database(gSQLdatabaseId1);
-        RESOURCES_TO_CLEAN.push(DATABASE);
-      }
-      const [postgreSqlOperation] = await databaseAdminClient.createDatabase({
-        createStatement: 'CREATE DATABASE "' + pgdatabaseId + '"',
-        parent: databaseAdminClient.instancePath(projectId!, instanceId!),
-        databaseDialect:
-          protos.google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL,
-      });
-      await postgreSqlOperation.promise();
-      const statements = [
-        `CREATE TABLE ${TABLE_NAME} (
-          SingerId VARCHAR(1024) NOT NULL,
-          Name VARCHAR(1024),
-          PRIMARY KEY (SingerId)
-        );`,
-      ];
-      const [postgreSqlOperationUpdateDDL] =
-        await databaseAdminClient.updateDatabaseDdl({
-          database: databaseAdminClient.databasePath(
+  async function createInstance(id) {
+    const instanceAdminClient = spanner.getInstanceAdminClient();
+    const [instanceCreationOperation] =
+      await instanceAdminClient.createInstance({
+        instanceId: id,
+        parent: instanceAdminClient.projectPath(projectId!),
+        instance: {
+          config: instanceAdminClient.instanceConfigPath(
             projectId!,
-            instanceId!,
-            pgdatabaseId
+            INSTANCE_CONFIG.config
           ),
-          statements: statements,
-        });
-      await postgreSqlOperationUpdateDDL.promise();
-      PG_DATABASE = instance.database(pgdatabaseId, {incStep: 1});
-      RESOURCES_TO_CLEAN.push(PG_DATABASE);
+          nodeCount: 1,
+          displayName: 'Test name for instance.',
+          labels: {
+            created: Math.round(Date.now() / 1000).toString(), // current time
+          },
+        },
+      });
+    await instanceCreationOperation.promise();
+  }
 
-      const createSingersTableStatement = `
-                CREATE TABLE ${TABLE_NAME} (
-                  SingerId STRING(1024) NOT NULL,
-                  Name STRING(1024),
-                ) PRIMARY KEY(SingerId)`;
-      const [googleSqlOperation2] = await databaseAdminClient.createDatabase({
-        createStatement: 'CREATE DATABASE `' + gSQLdatabaseId2 + '`',
-        extraStatements: [createSingersTableStatement],
-        parent: databaseAdminClient.instancePath(projectId!, instanceId!),
+  async function creategSQLDatabase(gSQLdatabaseId, protoDescriptor) {
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
+    const createSingersTableStatement = protoDescriptor
+      ? [
+          `CREATE PROTO BUNDLE (
+          examples.spanner.music.SingerInfo,
+          examples.spanner.music.Genre,
+          )`,
+          `
+        CREATE TABLE ${TABLE_NAME} (
+          SingerId STRING(1024) NOT NULL,
+          Name STRING(1024),
+        ) PRIMARY KEY(SingerId)`,
+        ]
+      : [
+          `CREATE TABLE ${TABLE_NAME} (
+        SingerId STRING(1024) NOT NULL,
+        Name STRING(1024),
+      ) PRIMARY KEY(SingerId)`,
+        ];
+    const [googleSqlOperation] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE `' + gSQLdatabaseId + '`',
+      extraStatements: createSingersTableStatement,
+      parent: databaseAdminClient.instancePath(projectId!, instanceId!),
+      protoDescriptors: protoDescriptor ? protoDescriptor : null,
+    });
+    await googleSqlOperation.promise();
+  }
+
+  async function createPostgresDatabase(pgdatabaseId) {
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
+    const [pgOperation] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE "' + pgdatabaseId + '"',
+      parent: databaseAdminClient.instancePath(projectId!, instanceId!),
+      databaseDialect:
+        protos.google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL,
+    });
+    await pgOperation.promise();
+    const statements = [
+      `CREATE TABLE ${TABLE_NAME} (
+        SingerId VARCHAR(1024) NOT NULL,
+        Name VARCHAR(1024),
+        PRIMARY KEY (SingerId)
+      );`,
+    ];
+    const [postgreSqlOperationUpdateDDL] =
+      await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId!,
+          instanceId!,
+          pgdatabaseId
+        ),
+        statements: statements,
       });
-      await googleSqlOperation2.promise();
-      DATABASE_DROP_PROTECTION = instance.database(gSQLdatabaseId2, {
-        incStep: 1,
-      });
-      RESOURCES_TO_CLEAN.push(DATABASE_DROP_PROTECTION);
-    } catch (err) {
-      console.log('ERROR: ', err);
+    await postgreSqlOperationUpdateDDL.promise();
+  }
+
+  before(async () => {
+    await deleteOldTestInstances();
+    if (generateInstanceForTest) {
+      await createInstance(instanceId!);
+      instance = spanner.instance(instanceId!);
+      RESOURCES_TO_CLEAN.push(instance);
+    } else {
+      instance = spanner.instance(envInstanceName);
+      console.log(
+        `Not creating temp instance, using + ${instance.formattedName_}...`
+      );
     }
+    if (IS_EMULATOR_ENABLED) {
+      await creategSQLDatabase(gSQLdatabaseId1, null);
+      DATABASE = instance.database(gSQLdatabaseId1);
+      RESOURCES_TO_CLEAN.push(DATABASE);
+    } else {
+      // Reading proto descriptor file
+      const protoDescriptor = fs
+        .readFileSync('test/data/descriptors.pb')
+        .toString('base64');
+      await creategSQLDatabase(gSQLdatabaseId1, protoDescriptor);
+      DATABASE = instance.database(gSQLdatabaseId1);
+      RESOURCES_TO_CLEAN.push(DATABASE);
+    }
+    await createPostgresDatabase(pgdatabaseId);
+    PG_DATABASE = instance.database(pgdatabaseId, {incStep: 1});
+    RESOURCES_TO_CLEAN.push(PG_DATABASE);
+
+    await creategSQLDatabase(gSQLdatabaseId2, null);
+    DATABASE_DROP_PROTECTION = instance.database(gSQLdatabaseId2, {
+      incStep: 1,
+    });
+    RESOURCES_TO_CLEAN.push(DATABASE_DROP_PROTECTION);
   });
 
   after(async () => {
@@ -282,6 +276,8 @@ describe('Spanner', () => {
     let postgreSqlTable;
 
     before(async () => {
+      googleSqlTable = DATABASE.table(TABLE_NAME);
+      postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
       if (IS_EMULATOR_ENABLED) {
         // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
@@ -466,12 +462,10 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should throw an error for incorrect value types', done => {
-      googleSqlTable = DATABASE.table(TABLE_NAME);
       incorrectValueType(done, googleSqlTable);
     });
 
     it('POSTGRESQL should throw an error for incorrect value types', done => {
-      postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
       incorrectValueType(done, postgreSqlTable);
     });
 
