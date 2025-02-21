@@ -953,12 +953,10 @@ describe('SessionPool', () => {
 
       stub.rejects(error);
 
-      sessionPool.once('error', err => {
+      sessionPool._fill().catch(err => {
         assert.strictEqual(err, error);
         done();
       });
-
-      sessionPool._fill();
     });
   });
 
@@ -1285,6 +1283,23 @@ describe('SessionPool', () => {
       await sessionPool._pingIdleSessions();
 
       assert.strictEqual(fillStub.callCount, 1);
+    });
+
+    it('should not throw error when database not found', async () => {
+      const fakeSessions = [createSession()];
+      sandbox.stub(sessionPool, '_getIdleSessions').returns(fakeSessions);
+
+      const error = {
+        code: grpc.status.NOT_FOUND,
+        message: 'Database not found',
+      } as grpc.ServiceError;
+      sandbox.stub(sessionPool, '_fill').rejects(error);
+
+      try {
+        await sessionPool._pingIdleSessions();
+      } catch (err) {
+        assert.ifError(err);
+      }
     });
   });
 

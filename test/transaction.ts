@@ -1975,15 +1975,10 @@ describe('Transaction', () => {
         transaction.id = ID;
       });
 
-      it('should return an error if the `id` is not set', done => {
-        const expectedError = new Error(
-          'Transaction ID is unknown, nothing to rollback.'
-        );
-
+      it('should not return an error if the `id` is not set', done => {
         delete transaction.id;
-
         transaction.rollback(err => {
-          assert.deepStrictEqual(err, expectedError);
+          assert.deepStrictEqual(err, null);
           done();
         });
       });
