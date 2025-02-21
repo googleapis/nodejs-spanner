@@ -517,7 +517,7 @@ describe('Spanner', () => {
     });
   });
 
-  describe.skip('float32', () => {
+  describe('float32', () => {
     it('should create a Float32 instance', () => {
       const value = {};
       const customValue = {};
