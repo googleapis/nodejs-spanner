@@ -492,6 +492,7 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
+                Float32Value    FLOAT32,
                 FloatValue      FLOAT64,
                 JsonValue       JSON,
                 IntValue        INT64,
@@ -503,6 +504,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -524,6 +526,7 @@ describe('Spanner', () => {
                   "Key"             VARCHAR NOT NULL PRIMARY KEY,
                   "BytesValue"      BYTEA,
                   "BoolValue"       BOOL,
+                  "Float32Value"    DOUBLE PRECISION,
                   "FloatValue"      DOUBLE PRECISION,
                   "IntValue"        BIGINT,
                   "NumericValue"    NUMERIC,
@@ -533,6 +536,7 @@ describe('Spanner', () => {
                   "JsonbValue"      JSONB,
                   "BytesArray"      BYTEA[],
                   "BoolArray"       BOOL[],
+                  "Float32Array"    DOUBLE PRECISION[],
                   "FloatArray"      DOUBLE PRECISION[],
                   "IntArray"        BIGINT[],
                   "NumericArray"    NUMERIC[],
@@ -931,7 +935,12 @@ describe('Spanner', () => {
     });
 
     // TODO: Enable when the float32 feature has been released.
-    describe.skip('float32s', () => {
+    describe('float32s', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
       const float32Insert = (done, dialect, value) => {
         insert({Float32Value: value}, dialect, (err, row) => {
           assert.ifError(err);
@@ -4021,6 +4030,7 @@ describe('Spanner', () => {
                 (
                   SingerId     STRING(1024) NOT NULL,
                   Name         STRING(1024),
+                  Float32      FLOAT32,
                   Float        FLOAT64,
                   Int          INT64,
                   Info         BYTES( MAX),
@@ -4040,6 +4050,7 @@ describe('Spanner', () => {
             (
               "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
               "Name"     VARCHAR(1024),
+              "Float32"  DOUBLE PRECISION,
               "Float"    DOUBLE PRECISION,
               "Int"      BIGINT,
               "Info"     BYTEA,
@@ -4553,7 +4564,7 @@ describe('Spanner', () => {
     describe('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
-      // const FLOAT32 = 8.2; // TODO: Uncomment while using float32 feature.
+      const FLOAT32 = 8.2; // TODO: Uncomment while using float32 feature.
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
@@ -4563,10 +4574,9 @@ describe('Spanner', () => {
       const PHONE_NUMBERS = [123123123, 234234234];
       const HAS_GEAR = true;
 
-      const GOOGLE_SQL_INSERT_ROW = {
+      const GOOGLE_SQL_INSERT_ROW: Record<string, any> = {
         SingerId: ID,
         Name: NAME,
-        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4577,16 +4587,20 @@ describe('Spanner', () => {
         HasGear: HAS_GEAR,
       };
 
-      const POSTGRESQL_INSERT_ROW = {
+      const POSTGRESQL_INSERT_ROW: Record<string, any> = {
         SingerId: ID,
         Name: NAME,
-        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
         Created: CREATED,
         HasGear: HAS_GEAR,
       };
+
+      if(!IS_EMULATOR_ENABLED) {
+        GOOGLE_SQL_INSERT_ROW.Float32 = FLOAT32,
+        POSTGRESQL_INSERT_ROW.Float32 = FLOAT32
+      }
 
       const GOOGLE_SQL_EXPECTED_ROW = extend(true, {}, GOOGLE_SQL_INSERT_ROW);
       const POSTGRESQL_EXPECTED_ROW = extend(true, {}, POSTGRESQL_INSERT_ROW);
@@ -4608,7 +4622,7 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should query in callback mode', done => {
+      it.only('GOOGLE_STANDARD_SQL should query in callback mode', done => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
           params: {id: ID},
@@ -5171,7 +5185,7 @@ describe('Spanner', () => {
         });
 
         // TODO: Enable when the float32 feature has been released.
-        describe.skip('float32', () => {
+        describe('float32', () => {
           const float32Query = (done, database, query, value) => {
             database.run(query, (err, rows) => {
               assert.ifError(err);
