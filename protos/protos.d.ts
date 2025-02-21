@@ -32489,6 +32489,9 @@ export namespace google {
 
                 /** TransactionOptions excludeTxnFromChangeStreams */
                 excludeTxnFromChangeStreams?: (boolean|null);
+
+                /** TransactionOptions isolationLevel */
+                isolationLevel?: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel|null);
             }
 
             /** Represents a TransactionOptions. */
@@ -32511,6 +32514,9 @@ export namespace google {
 
                 /** TransactionOptions excludeTxnFromChangeStreams. */
                 public excludeTxnFromChangeStreams: boolean;
+
+                /** TransactionOptions isolationLevel. */
+                public isolationLevel: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel);
 
                 /** TransactionOptions mode. */
                 public mode?: ("readWrite"|"partitionedDml"|"readOnly");
@@ -32927,6 +32933,13 @@ export namespace google {
                      * @returns The default type url
                      */
                     public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** IsolationLevel enum. */
+                enum IsolationLevel {
+                    ISOLATION_LEVEL_UNSPECIFIED = 0,
+                    SERIALIZABLE = 1,
+                    REPEATABLE_READ = 2
                 }
             }
 

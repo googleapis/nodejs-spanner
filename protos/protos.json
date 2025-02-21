@@ -8818,6 +8818,10 @@
                     "excludeTxnFromChangeStreams": {
                       "type": "bool",
                       "id": 5
+                    },
+                    "isolationLevel": {
+                      "type": "IsolationLevel",
+                      "id": 6
                     }
                   },
                   "nested": {
@@ -8885,6 +8889,13 @@
                           "type": "bool",
                           "id": 6
                         }
+                      }
+                    },
+                    "IsolationLevel": {
+                      "values": {
+                        "ISOLATION_LEVEL_UNSPECIFIED": 0,
+                        "SERIALIZABLE": 1,
+                        "REPEATABLE_READ": 2
                       }
                     }
                   }
