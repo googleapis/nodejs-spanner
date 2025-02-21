@@ -187,8 +187,11 @@ export interface RequestIDError extends grpc.ServiceError {
   requestID: string;
 }
 
+const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\.\d+){3}\.\d+/;
+
 export {
   AtomicCounter,
+  X_GOOG_REQ_ID_REGEX,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
   craftRequestId,
   injectRequestIDIntoError,

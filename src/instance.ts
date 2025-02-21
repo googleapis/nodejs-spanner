@@ -980,6 +980,10 @@ class Instance extends common.GrpcServiceObject {
     if (!this.databases_.has(key!)) {
       const db = new Database(this, name, poolOptions, queryOptions);
       db._observabilityOptions = this._observabilityOptions;
+      const parent = this.parent as Spanner;
+      if (parent && parent._nthClientId) {
+        db._clientId = parent._nthClientId;
+      }
       this.databases_.set(key!, db);
     }
     return this.databases_.get(key!)!;

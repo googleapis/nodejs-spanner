@@ -26,6 +26,7 @@ import {
   addLeaderAwareRoutingHeader,
 } from '../src/common';
 import {startTrace, setSpanError, traceConfig} from './instrument';
+import {injectRequestIDIntoHeaders} from './request_id_header';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -157,7 +158,7 @@ class BatchTransaction extends Snapshot {
             method: 'partitionQuery',
             reqOpts,
             gaxOpts: query.gaxOptions,
-            headers: headers,
+            headers: injectRequestIDIntoHeaders(headers, this.session),
           },
           (err, partitions, resp) => {
             if (err) {
@@ -201,10 +202,11 @@ class BatchTransaction extends Snapshot {
           transaction: {id: this.id},
         });
         config.reqOpts = extend({}, query);
-        config.headers = {
+        const headers = {
           [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database)
             .formattedName_,
         };
+        config.headers = injectRequestIDIntoHeaders(headers, this.session);
         delete query.partitionOptions;
         this.session.request(config, (err, resp) => {
           if (err) {
@@ -293,7 +295,7 @@ class BatchTransaction extends Snapshot {
             method: 'partitionRead',
             reqOpts,
             gaxOpts: options.gaxOptions,
-            headers: headers,
+            headers: injectRequestIDIntoHeaders(headers, this.session),
           },
           (err, partitions, resp) => {
             if (err) {
