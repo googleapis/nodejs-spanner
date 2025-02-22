@@ -164,7 +164,8 @@ if [[ -n "${KOKORO_BUILD_ID:-}" ]]; then
 	"KOKORO_GITHUB_PULL_REQUEST_COMMIT"
 	# For flakybot
 	"KOKORO_GITHUB_COMMIT_URL"
-	"KOKORO_GITHUB_PULL_REQUEST_URL"
+	"KOKORO_GITHUB_PULL_REQUEST_URL",
+	"USE_AIRLOCK"
     )
 elif [[ "${TRAVIS:-}" == "true" ]]; then
     RUNNING_IN_CI="true"

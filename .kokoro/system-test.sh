@@ -18,10 +18,6 @@ set -eo pipefail
 
 export NPM_CONFIG_PREFIX=${HOME}/.npm-global
 
-# Setup service account credentials.
-export GOOGLE_APPLICATION_CREDENTIALS=${KOKORO_GFILE_DIR}/secret_manager/long-door-651-kokoro-system-test-service-account
-export GCLOUD_PROJECT=long-door-651
-
 cd $(dirname $0)/..
 
 # Run a pre-test hook, if a pre-system-test.sh is in the project
@@ -31,7 +27,25 @@ if [ -f .kokoro/pre-system-test.sh ]; then
     set -x
 fi
 
+# Enable airlock
+if [[ $USE_AIRLOCK = 'true' ]]; then
+  cat > .npmrc <<EOL
+registry=https://us-npm.pkg.dev/artifact-foundry-prod/npm-3p-trusted/
+//us-npm.pkg.dev/artifact-foundry-prod/npm-3p-trusted/:always-auth=true
+EOL
+  npm_config_registry=https://registry.npmjs.org npx google-artifactregistry-auth
+fi
+
 npm install
+
+# This line has to be after npm install because google-artifactregistry-auth will use
+# service account configured with GOOGLE_APPLICATION_CREDENTIALS first then it looks for service
+# account associated with VM. To use default Kokoro service account associated with GCP pool
+# GOOGLE_APPLICATION_CREDENTIALS has to be configured after packages are installed from Airlock
+
+# Setup service account credentials.
+export GOOGLE_APPLICATION_CREDENTIALS=${KOKORO_GFILE_DIR}/secret_manager/long-door-651-kokoro-system-test-service-account
+export GCLOUD_PROJECT=long-door-651
 
 # If tests are running against main branch, configure flakybot
 # to open issues on failures:
