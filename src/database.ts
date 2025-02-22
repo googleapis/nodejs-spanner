@@ -2134,7 +2134,6 @@ class Database extends common.GrpcServiceObject {
               span.end();
               this.getSnapshot(options, callback!);
             } else {
-              span.addEvent('Using Session', {'session.id': session?.id});
               this.pool_.release(session!);
               span.end();
               callback!(err);
@@ -2142,6 +2141,7 @@ class Database extends common.GrpcServiceObject {
             return;
           }
 
+          span.addEvent('Using Session', {'session.id': session?.id});
           this._releaseOnEnd(session!, snapshot, span);
           span.end();
           callback!(err, snapshot);
@@ -3268,6 +3268,7 @@ class Database extends common.GrpcServiceObject {
           return;
         }
 
+        span.addEvent('Using Session', {'session.id': session?.id});
         transaction!._observabilityOptions = this._observabilityOptions;
         if (options.optimisticLock) {
           transaction!.useOptimisticLock();

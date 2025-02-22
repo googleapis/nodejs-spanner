@@ -24,7 +24,7 @@ import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 import {grpc, CallOptions} from 'google-gax';
 import {DeadlineError, isRetryableInternalError} from './transaction-runner';
-
+import {Span} from './instrument';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
 import * as stream from 'stream';
@@ -97,6 +97,7 @@ export interface RowOptions {
    */
   columnsMetadata?: object;
   gaxOptions?: CallOptions;
+  span?: Span;
 }
 
 /**
@@ -183,16 +184,16 @@ interface ResultEvents {
 export class PartialResultStream extends Transform implements ResultEvents {
   private _destroyed: boolean;
   private _fields!: google.spanner.v1.StructType.Field[];
-  private _options: RowOptions;
   private _pendingValue?: p.IValue;
   private _pendingValueForResume?: p.IValue;
   private _values: p.IValue[];
   private _numPushFailed = 0;
+  options: RowOptions;
   constructor(options = {}) {
     super({objectMode: true});
 
     this._destroyed = false;
-    this._options = Object.assign({maxResumeRetries: 20}, options);
+    this.options = Object.assign({maxResumeRetries: 20}, options);
     this._values = [];
   }
   /**
@@ -271,7 +272,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       // Downstream returned false indicating that it is still not ready for
       // more data.
       this._numPushFailed++;
-      if (this._numPushFailed === this._options.maxResumeRetries) {
+      if (this._numPushFailed === this.options.maxResumeRetries) {
         this.destroy(
           new Error(
             `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
@@ -359,8 +360,8 @@ export class PartialResultStream extends Transform implements ResultEvents {
 
     const row: Row = this._createRow(values);
 
-    if (this._options.json) {
-      return this.push(row.toJSON(this._options.jsonOptions));
+    if (this.options.json) {
+      return this.push(row.toJSON(this.options.jsonOptions));
     }
 
     return this.push(row);
@@ -376,7 +377,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _createRow(values: Value[]): Row {
     const fields = values.map((value, index) => {
       const {name, type} = this._fields[index];
-      const columnMetadata = this._options.columnsMetadata?.[name];
+      const columnMetadata = this.options.columnsMetadata?.[name];
       return {
         name,
         value: codec.decode(
