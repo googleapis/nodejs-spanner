@@ -195,6 +195,32 @@ describe('Spanner', () => {
     await postgreSqlOperationUpdateDDL.promise();
   }
 
+  async function createBackup(database, backupId, expireTime) {
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
+    const [operation] = await databaseAdminClient.createBackup({
+      parent: databaseAdminClient.instancePath(projectId!, instanceId),
+      backupId: backupId,
+      backup: {
+        database: database.formattedName_,
+        expireTime: Spanner.timestamp(expireTime).toStruct(),
+        name: databaseAdminClient.backupPath(projectId!, instanceId, backupId),
+      },
+    });
+
+    if ('database' in operation.metadata!) {
+      assert.strictEqual(
+        operation.metadata!.name,
+        `${instance.formattedName_}/backups/${backupId}`
+      );
+    }
+
+    if ('database' in operation.metadata!) {
+      assert.strictEqual(operation.metadata!.database, database.formattedName_);
+    }
+
+    await operation.promise();
+  }
+
   before(async () => {
     await deleteOldTestInstances();
     if (generateInstanceForTest) {
@@ -3240,11 +3266,10 @@ describe('Spanner', () => {
 
     let googleSqlDatabase1: Database;
     let googleSqlDatabase2: Database;
-    let googleSqlRestoreDatabase: Database;
+    let restoreDatabase: Database;
 
     let postgreSqlDatabase1: Database;
     let postgreSqlDatabase2: Database;
-    let postgreSqlRestoreDatabase: Database;
 
     let googleSqlBackup1: Backup;
     let googleSqlBackup2: Backup;
@@ -3283,131 +3308,57 @@ describe('Spanner', () => {
 
       // Create a second database since only one pending backup can be created
       // per database.
-      googleSqlDatabase2 = instance.database(generateName('database'));
-      const [, googleSqlDatabase2CreateOperation] =
-        await googleSqlDatabase2.create({
-          schema: `
-        CREATE TABLE Albums (
-          AlbumId STRING(1024) NOT NULL,
-          AlbumTitle STRING(1024) NOT NULL,
-          ) PRIMARY KEY(AlbumId)`,
-          gaxOptions: GAX_OPTIONS,
-        });
-      await googleSqlDatabase2CreateOperation.promise();
+      const googleSqlDatabase2Id = generateName('database');
+      await creategSQLDatabase(googleSqlDatabase2Id, null);
+      googleSqlDatabase2 = instance.database(googleSqlDatabase2Id);
       RESOURCES_TO_CLEAN.push(googleSqlDatabase2);
 
       if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
-        postgreSqlDatabase2 = instance.database(generateName('pg-db'));
-        const [, postgreSqlDatabase2CreateOperation] =
-          await postgreSqlDatabase2.create({
-            databaseDialect: Spanner.POSTGRESQL,
-            gaxOptions: GAX_OPTIONS,
-          });
-        await postgreSqlDatabase2CreateOperation.promise();
-
-        const schema = [
-          `CREATE TABLE Albums (
-            AlbumId VARCHAR NOT NULL PRIMARY KEY,
-            AlbumTitle VARCHAR NOT NULL
-        );`,
-        ];
-        const [postgreSqlDatabase2UpdateOperation] =
-          await postgreSqlDatabase2.updateSchema(schema);
-        await postgreSqlDatabase2UpdateOperation.promise();
+        const postgreSqlDatabase2Id = generateName('pg-db');
+        await createPostgresDatabase(postgreSqlDatabase2Id);
+        postgreSqlDatabase2 = instance.database(postgreSqlDatabase2Id);
         RESOURCES_TO_CLEAN.push(postgreSqlDatabase2);
       }
       // Initialize a database instance to restore to.
-      googleSqlRestoreDatabase = instance.database(generateName('database'));
-      postgreSqlRestoreDatabase = instance.database(generateName('pg-db'));
+      // const googleSqlRestoreDatabaseId = generateName('database');
+      // await creategSQLDatabase(googleSqlRestoreDatabaseId, null);
+      // googleSqlRestoreDatabase = instance.database(googleSqlRestoreDatabaseId);
+
+      // const postgreSqlRestoreDatabaseId = generateName('pg-db');
+      // await createPostgresDatabase(postgreSqlRestoreDatabaseId);
+      // postgreSqlRestoreDatabase = instance.database(postgreSqlRestoreDatabaseId);
 
       // Create backups.
+      await createBackup(
+        googleSqlDatabase1,
+        googleSqlBackup1Name,
+        backupExpiryDate
+      );
+      await createBackup(
+        googleSqlDatabase2,
+        googleSqlBackup2Name,
+        backupExpiryDate
+      );
+
       googleSqlBackup1 = instance.backup(googleSqlBackup1Name);
       googleSqlBackup2 = instance.backup(googleSqlBackup2Name);
-      const [, googleSqlBackup1Operation] = await googleSqlBackup1.create({
-        databasePath: googleSqlDatabase1.formattedName_,
-        expireTime: backupExpiryDate,
-        gaxOptions: GAX_OPTIONS,
-      });
-      const [, googleSqlBackup2Operation] = await googleSqlBackup2.create({
-        databasePath: googleSqlDatabase2.formattedName_,
-        expireTime: backupExpiryDate,
-        gaxOptions: GAX_OPTIONS,
-      });
 
-      if ('database' in googleSqlBackup1Operation.metadata) {
-        assert.strictEqual(
-          googleSqlBackup1Operation.metadata!.name,
-          `${instance.formattedName_}/backups/${googleSqlBackup1Name}`
-        );
-      }
-
-      if ('database' in googleSqlBackup1Operation.metadata) {
-        assert.strictEqual(
-          googleSqlBackup1Operation.metadata!.database,
-          googleSqlDatabase1.formattedName_
-        );
-      }
-
-      if ('database' in googleSqlBackup2Operation.metadata) {
-        assert.strictEqual(
-          googleSqlBackup2Operation.metadata!.name,
-          `${instance.formattedName_}/backups/${googleSqlBackup2Name}`
-        );
-      }
-      if ('database' in googleSqlBackup2Operation.metadata) {
-        assert.strictEqual(
-          googleSqlBackup2Operation.metadata!.database,
-          googleSqlDatabase2.formattedName_
-        );
-      }
-
-      // Wait for backups to finish.
-      await googleSqlBackup1Operation.promise();
-      await googleSqlBackup2Operation.promise();
       RESOURCES_TO_CLEAN.push(...[googleSqlBackup1, googleSqlBackup2]);
 
       if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
+        await createBackup(
+          postgreSqlDatabase1,
+          postgreSqlBackup1Name,
+          backupExpiryDate
+        );
+        await createBackup(
+          postgreSqlDatabase2,
+          postgreSqlBackup2Name,
+          backupExpiryDate
+        );
+
         postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
         postgreSqlBackup2 = instance.backup(postgreSqlBackup2Name);
-        const [, postgreSqlBackup1Operation] = await postgreSqlBackup1.create({
-          databasePath: postgreSqlDatabase1.formattedName_,
-          expireTime: backupExpiryDate,
-          gaxOptions: GAX_OPTIONS,
-        });
-        const [, postgreSqlBackup2Operation] = await postgreSqlBackup2.create({
-          databasePath: postgreSqlDatabase2.formattedName_,
-          expireTime: backupExpiryDate,
-          gaxOptions: GAX_OPTIONS,
-        });
-
-        if ('database' in postgreSqlBackup1Operation.metadata) {
-          assert.strictEqual(
-            postgreSqlBackup1Operation.metadata!.name,
-            `${instance.formattedName_}/backups/${postgreSqlBackup1Name}`
-          );
-        }
-        if ('database' in postgreSqlBackup1Operation.metadata) {
-          assert.strictEqual(
-            postgreSqlBackup1Operation.metadata!.database,
-            postgreSqlDatabase1.formattedName_
-          );
-        }
-        if ('database' in postgreSqlBackup2Operation.metadata) {
-          assert.strictEqual(
-            postgreSqlBackup2Operation.metadata!.name,
-            `${instance.formattedName_}/backups/${postgreSqlBackup2Name}`
-          );
-        }
-        if ('database' in postgreSqlBackup2Operation.metadata) {
-          assert.strictEqual(
-            postgreSqlBackup2Operation.metadata!.database,
-            postgreSqlDatabase2.formattedName_
-          );
-        }
-
-        // Wait for backups to finish.
-        await postgreSqlBackup1Operation.promise();
-        await postgreSqlBackup2Operation.promise();
 
         RESOURCES_TO_CLEAN.push(...[postgreSqlBackup1, postgreSqlBackup2]);
       }
@@ -3564,14 +3515,20 @@ describe('Spanner', () => {
       }
     });
 
-    const restoreBackup = async (restoreDatabase, backup1, database1) => {
+    const restoreBackup = async (restoreDatabaseId, backup1, database1) => {
       // Perform restore to a different database.
-      const [, restoreOperation] = await restoreDatabase.restore(
-        backup1.formattedName_
-      );
+      const databaseAdminClient = spanner.getDatabaseAdminClient();
+      const [restoreOperation] = await databaseAdminClient.restoreDatabase({
+        parent: databaseAdminClient.instancePath(projectId!, instanceId),
+        databaseId: restoreDatabaseId,
+        backup: backup1.formattedName_,
+      });
 
       // Wait for restore to complete.
       await restoreOperation.promise();
+
+      restoreDatabase = instance.database(restoreDatabaseId);
+
       RESOURCES_TO_CLEAN.push(restoreDatabase);
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
@@ -3614,16 +3571,18 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should restore a backup', async () => {
+      const googleSqlRestoreDatabaseId = generateName('database');
       await restoreBackup(
-        googleSqlRestoreDatabase,
+        googleSqlRestoreDatabaseId,
         googleSqlBackup1,
         googleSqlDatabase1
       );
     });
 
     it.skip('POSTGRESQL should restore a backup', async () => {
+      const postgreSqlRestoreDatabaseId = generateName('pg-db');
       await restoreBackup(
-        postgreSqlRestoreDatabase,
+        postgreSqlRestoreDatabaseId,
         postgreSqlBackup1,
         postgreSqlDatabase1
       );
@@ -3645,14 +3604,14 @@ describe('Spanner', () => {
 
     it('GOOGLE_STANDARD_SQL should not be able to restore to an existing database', async () => {
       await restoreExistingDatabaseFail(
-        googleSqlRestoreDatabase,
+        restoreDatabase,
         googleSqlBackup1
       );
     });
 
     it.skip('POSTGRESQL should not be able to restore to an existing database', async () => {
       await restoreExistingDatabaseFail(
-        postgreSqlRestoreDatabase,
+        restoreDatabase,
         postgreSqlBackup1
       );
     });
