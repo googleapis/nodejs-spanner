@@ -173,8 +173,7 @@ export class SessionFactory
   /**
    * Returns if a multiplexed is enabled or not.
    *
-   * This method returns true if multiplexed session is enabled, otherwise reutrns false if
-   * multiplexed session is disabled.
+   * This method returns true if multiplexed session is enabled, otherwise returns false
    *
    * @returns {boolean}
    */
