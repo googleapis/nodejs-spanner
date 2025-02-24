@@ -3603,17 +3603,11 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should not be able to restore to an existing database', async () => {
-      await restoreExistingDatabaseFail(
-        restoreDatabase,
-        googleSqlBackup1
-      );
+      await restoreExistingDatabaseFail(restoreDatabase, googleSqlBackup1);
     });
 
     it.skip('POSTGRESQL should not be able to restore to an existing database', async () => {
-      await restoreExistingDatabaseFail(
-        restoreDatabase,
-        postgreSqlBackup1
-      );
+      await restoreExistingDatabaseFail(restoreDatabase, postgreSqlBackup1);
     });
 
     const updateBackupExpiry = async backup1 => {
