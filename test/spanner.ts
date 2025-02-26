@@ -69,6 +69,7 @@ import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
+import {MultiplexedSession} from '../src/multiplexed-session';
 import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
 
 const {
@@ -1627,6 +1628,141 @@ describe('Spanner with mock server', () => {
             undefined
           );
         });
+      });
+    });
+  });
+
+  describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+    before(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+    });
+
+    after(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    });
+
+    it('should make a request to CreateSession', async () => {
+      const database = newTestDatabase();
+      await database.run('SELECT 1');
+      const requests = spannerMock.getRequests().find(val => {
+        return (val as v1.CreateSessionRequest).session;
+      }) as v1.CreateSessionRequest;
+      assert.ok(requests, 'CreateSessionRequest should be called');
+      assert.strictEqual(
+        requests.session?.multiplexed,
+        true,
+        'Multiplexed should be true'
+      );
+    });
+
+    it('should execute the transaction(database.run) successfully using multiplexed session', done => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const database = newTestDatabase();
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.run(query, (err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert.strictEqual(resp.length, 3);
+        done();
+      });
+    });
+
+    it('should execute the transaction(database.getSnapshot) successfully using multiplexed session', done => {
+      const database = newTestDatabase();
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.getSnapshot((err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert(resp instanceof Snapshot);
+        resp.end();
+        done();
+      });
+    });
+
+    it('should execute the transaction(database.writeAtLeastOnce) successfully using multiplexed session', done => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Marc',
+      });
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.writeAtLeastOnce(mutations, (err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
+        assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
+        assert.strictEqual(resp?.commitStats, null);
+        done();
+      });
+    });
+
+    it('should fail the transaction, if multiplexed session creation is failed', async () => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const err = {
+        code: grpc.status.NOT_FOUND,
+        message: 'create session failed',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofError(err)
+      );
+      const database = newTestDatabase().on('error', err => {
+        assert.strictEqual(err.code, Status.NOT_FOUND);
+      });
+      try {
+        await database.run(query);
+      } catch (error) {
+        assert.strictEqual((error as grpc.ServiceError).code, err.code);
+        assert.strictEqual(
+          (error as grpc.ServiceError).details,
+          'create session failed'
+        );
+        assert.strictEqual(
+          (error as grpc.ServiceError).message,
+          '5 NOT_FOUND: create session failed'
+        );
+      }
+    });
+
+    it('should fail the transaction, if query returns session not found error', done => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const error = {
+        code: grpc.status.NOT_FOUND,
+        message: 'Session not found',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(error)
+      );
+      const database = newTestDatabase();
+      database.run(query, (err, _) => {
+        assert.strictEqual(err!.code, error.code);
+        assert.strictEqual(err!.details, error.message);
+        done();
       });
     });
   });
