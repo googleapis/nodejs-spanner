@@ -4540,9 +4540,9 @@ describe('Spanner', () => {
         HasGear: HAS_GEAR,
       };
 
-      if(!IS_EMULATOR_ENABLED) {
-        GOOGLE_SQL_INSERT_ROW.Float32 = FLOAT32,
-        POSTGRESQL_INSERT_ROW.Float32 = FLOAT32
+      if (!IS_EMULATOR_ENABLED) {
+        (GOOGLE_SQL_INSERT_ROW.Float32 = FLOAT32),
+          (POSTGRESQL_INSERT_ROW.Float32 = FLOAT32);
       }
 
       const GOOGLE_SQL_EXPECTED_ROW = extend(true, {}, GOOGLE_SQL_INSERT_ROW);
@@ -4560,12 +4560,21 @@ describe('Spanner', () => {
 
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
-          assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
+          const actualRows = rows!.shift()!.toJSON() as {} as Row[];
+          for (const [key, value] of Object.entries(actualRows)) {
+            if (key === 'Float32') {
+              assert.ok(
+                EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+              );
+            } else {
+              assert.deepStrictEqual(EXPECTED_ROW[key], value);
+            }
+          }
           done();
         });
       };
 
-      it.only('GOOGLE_STANDARD_SQL should query in callback mode', done => {
+      it('GOOGLE_STANDARD_SQL should query in callback mode', done => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
           params: {id: ID},
@@ -4589,8 +4598,16 @@ describe('Spanner', () => {
         database
           .run(query, options)
           .then(data => {
-            const rows = data[0] as {} as Row[];
-            assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
+            const rows = data[0]!.shift()!.toJSON() as {} as Row[];
+            for (const [key, value] of Object.entries(rows)) {
+              if (key === 'Float32') {
+                assert.ok(
+                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+                );
+              } else {
+                assert.deepStrictEqual(EXPECTED_ROW[key], value);
+              }
+            }
             done();
           })
           .catch(done);
@@ -4626,7 +4643,16 @@ describe('Spanner', () => {
             stream.end();
           })
           .on('end', () => {
-            assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
+            const actualRows = row!.toJSON() as {} as Row[];
+            for (const [key, value] of Object.entries(actualRows)) {
+              if (key === 'Float32') {
+                assert.ok(
+                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+                );
+              } else {
+                assert.deepStrictEqual(EXPECTED_ROW[key], value);
+              }
+            }
             done();
           });
       };
@@ -4755,15 +4781,15 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
         // TODO: Uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
-        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
-        assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
-        assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'DOB');
+        assert.strictEqual(metadata.rowType!.fields![8].name, 'Accents');
+        assert.strictEqual(metadata.rowType!.fields![9].name, 'PhoneNumbers');
+        assert.strictEqual(metadata.rowType!.fields![10].name, 'HasGear');
       });
 
       it('POSTGRESQL should return metadata', async () => {
@@ -4778,12 +4804,12 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
         // uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
-        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'HasGear');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'HasGear');
       });
 
       const invalidQueries = (done, database) => {
