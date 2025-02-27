@@ -709,12 +709,10 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    const traceConfig = {
+    const traceConfig: traceConfig = {
       tableName: table,
-      ...(this.requestOptions?.transactionTag && {
-        transactionTag: this.requestOptions.transactionTag,
-      }),
-      ...this._traceConfig,
+      transactionTag: this.requestOptions?.transactionTag,
+      requestTag: requestOptions?.requestTag,
     };
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       let attempt = 0;
@@ -995,6 +993,7 @@ export class Snapshot extends EventEmitter {
       {
         tableName: table,
         ...this._traceConfig,
+        requestTag: request.requestOptions?.requestTag,
       },
       span => {
         this.createReadStream(table, request)
@@ -1103,7 +1102,7 @@ export class Snapshot extends EventEmitter {
     startTrace(
       'Snapshot.run',
       {
-        sql: query,
+        ...(query as ExecuteSqlRequest),
         ...this._traceConfig,
       },
       span => {
@@ -1300,12 +1299,7 @@ export class Snapshot extends EventEmitter {
     }
 
     const traceConfig: traceConfig = {
-      ...(this.requestOptions?.transactionTag && {
-        transactionTag: this.requestOptions.transactionTag,
-      }),
-      ...(query.requestOptions?.requestTag && {
-        statementTag: query.requestOptions?.requestTag,
-      }),
+      transactionTag: this.requestOptions?.transactionTag,
       ...query,
       ...this._traceConfig,
     };
@@ -1960,13 +1954,15 @@ export class Transaction extends Dml {
     } else {
       transaction.begin = this._options;
     }
+
+    const requestOptionsWithTag = this.configureTagOptions(
+      false,
+      this.requestOptions?.transactionTag ?? undefined,
+      (options as BatchUpdateOptions).requestOptions
+    );
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
-      requestOptions: this.configureTagOptions(
-        false,
-        this.requestOptions?.transactionTag ?? undefined,
-        (options as BatchUpdateOptions).requestOptions
-      ),
+      requestOptions: requestOptionsWithTag,
       transaction,
       seqno: this._seqno++,
       statements,
@@ -1979,12 +1975,8 @@ export class Transaction extends Dml {
 
     const traceConfig: traceConfig = {
       ...this._traceConfig,
-      ...(this.requestOptions?.transactionTag && {
-        transactionTag: this.requestOptions.transactionTag,
-      }),
-      ...((options as BatchUpdateOptions).requestOptions?.requestTag && {
-        statementTag: (options as BatchUpdateOptions)?.requestOptions?.requestTag
-      }),
+      transactionTag: requestOptionsWithTag?.transactionTag,
+      requestTag: (options as BatchUpdateOptions)?.requestOptions?.requestTag,
     };
     return startTrace('Transaction.batchUpdate', traceConfig, span => {
       this.request(
@@ -3019,7 +3011,7 @@ export class PartitionedDml extends Dml {
     return startTrace(
       'PartitionedDml.runUpdate',
       {
-        sql: query,
+        ...(query as ExecuteSqlRequest),
         ...this._traceConfig,
       },
       span => {

@@ -85,8 +85,8 @@ interface traceConfig {
   sql?: string | SQLStatement;
   tableName?: string;
   dbName?: string;
-  transactionTag?: string;
-  statementTag?: string;
+  transactionTag?: string | null;
+  requestTag?: string | null;
   opts?: ObservabilityOptions;
 }
 
@@ -151,8 +151,8 @@ export function startTrace<T>(
       if (config.dbName) {
         span.setAttribute('db.name', config.dbName);
       }
-      if (config.statementTag) {
-        span.setAttribute('statement.tag', config.statementTag);
+      if (config.requestTag) {
+        span.setAttribute('request.tag', config.requestTag);
       }
       if (config.transactionTag) {
         span.setAttribute('transaction.tag', config.transactionTag);
