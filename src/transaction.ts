@@ -1521,7 +1521,15 @@ export class Snapshot extends EventEmitter {
     if (!is.empty(typeMap)) {
       Object.keys(typeMap).forEach(param => {
         const type = typeMap[param];
-        paramTypes[param] = codec.createTypeObject(type);
+        const typeObject = codec.createTypeObject(type);
+        if (
+          (type.child &&
+            typeObject.code === 'ARRAY' &&
+            typeObject.arrayElementType?.code !== 'TYPE_CODE_UNSPECIFIED') ||
+          (!type.child && typeObject.code !== 'TYPE_CODE_UNSPECIFIED')
+        ) {
+          paramTypes[param] = codec.createTypeObject(type);
+        }
       });
     }
 

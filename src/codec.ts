@@ -21,6 +21,7 @@ import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
 import {GoogleError} from 'google-gax';
+import * as uuid from 'uuid';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
@@ -697,6 +698,7 @@ const TypeCode: {
   bool: 'BOOL',
   int64: 'INT64',
   pgOid: 'INT64',
+  uuid: 'UUID',
   float32: 'FLOAT32',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
@@ -737,6 +739,7 @@ interface FieldType extends Type {
 /**
  * @typedef {object} ParamType
  * @property {string} type The param type. Must be one of the following:
+ *     - uuid
  *     - float32
  *     - float64
  *     - int64
@@ -812,6 +815,10 @@ function getType(value: Value): Type {
 
   if (is.boolean(value)) {
     return {type: 'bool'};
+  }
+
+  if (uuid.validate(value)) {
+    return {type: 'unspecified'};
   }
 
   if (is.string(value)) {
