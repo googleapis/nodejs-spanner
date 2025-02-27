@@ -463,9 +463,13 @@ export class MockSpanner {
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
     this.pushRequest(call.request!, call.metadata);
-    this.simulateExecutionTime(this.createSession.name).then(() => {
-      callback(null, this.newSession(call.request!.database));
-    });
+    this.simulateExecutionTime(this.createSession.name)
+      .then(() => {
+        callback(null, this.newSession(call.request!.database));
+      })
+      .catch(err => {
+        callback(err);
+      });
   }
 
   getSession(

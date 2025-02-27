@@ -463,6 +463,7 @@ export class DatabaseAdminClient {
       'listDatabaseOperations',
       'listBackupOperations',
       'listDatabaseRoles',
+      'addSplitPoints',
       'createBackupSchedule',
       'getBackupSchedule',
       'updateBackupSchedule',
@@ -1430,6 +1431,110 @@ export class DatabaseAdminClient {
       });
     this.initialize();
     return this.innerApiCalls.deleteBackup(request, options, callback);
+  }
+  /**
+   * Adds split points to specified tables, indexes of a database.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Required. The database on whose tables/indexes split points are to be
+   *   added. Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
+   * @param {number[]} request.splitPoints
+   *   Required. The split points to add.
+   * @param {string} [request.initiator]
+   *   Optional. A user-supplied tag associated with the split points.
+   *   For example, "intital_data_load", "special_event_1".
+   *   Defaults to "CloudAddSplitPointsAPI" if not specified.
+   *   The length of the tag must not exceed 50 characters,else will be trimmed.
+   *   Only valid UTF8 characters are allowed.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.AddSplitPointsResponse|AddSplitPointsResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  addSplitPoints(
+    request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+      (
+        | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  addSplitPoints(
+    request: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+      | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  addSplitPoints(
+    request: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+      | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  addSplitPoints(
+    request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+      | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+      (
+        | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.addSplitPoints(request, options, callback);
   }
   /**
    * Creates a new backup schedule.
@@ -2948,7 +3053,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listDatabases`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -3191,7 +3296,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listBackups`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -3532,7 +3637,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listDatabaseOperations`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -3906,7 +4011,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listBackupOperations`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -4250,7 +4355,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listDatabaseRoles`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -4453,7 +4558,7 @@ export class DatabaseAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listBackupSchedules`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -4584,7 +4689,7 @@ export class DatabaseAdminClient {
    */
   getOperation(
     request: protos.google.longrunning.GetOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.longrunning.Operation,
@@ -4597,6 +4702,20 @@ export class DatabaseAdminClient {
       {} | null | undefined
     >
   ): Promise<[protos.google.longrunning.Operation]> {
+    let options: gax.CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
     return this.operationsClient.getOperation(request, options, callback);
   }
   /**
@@ -4633,6 +4752,13 @@ export class DatabaseAdminClient {
     request: protos.google.longrunning.ListOperationsRequest,
     options?: gax.CallOptions
   ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
     return this.operationsClient.listOperationsAsync(request, options);
   }
   /**
@@ -4668,11 +4794,11 @@ export class DatabaseAdminClient {
    */
   cancelOperation(
     request: protos.google.longrunning.CancelOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protos.google.protobuf.Empty,
           protos.google.longrunning.CancelOperationRequest,
+          protos.google.protobuf.Empty,
           {} | undefined | null
         >,
     callback?: Callback<
@@ -4681,6 +4807,20 @@ export class DatabaseAdminClient {
       {} | undefined | null
     >
   ): Promise<protos.google.protobuf.Empty> {
+    let options: gax.CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
     return this.operationsClient.cancelOperation(request, options, callback);
   }
 
@@ -4711,7 +4851,7 @@ export class DatabaseAdminClient {
    */
   deleteOperation(
     request: protos.google.longrunning.DeleteOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.protobuf.Empty,
@@ -4724,6 +4864,20 @@ export class DatabaseAdminClient {
       {} | null | undefined
     >
   ): Promise<protos.google.protobuf.Empty> {
+    let options: gax.CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
     return this.operationsClient.deleteOperation(request, options, callback);
   }
 

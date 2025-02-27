@@ -6584,6 +6584,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime */
                         oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions */
+                        instancePartitions?: (google.spanner.admin.database.v1.IBackupInstancePartition[]|null);
                     }
 
                     /** Represents a Backup. */
@@ -6648,6 +6651,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime. */
                         public oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions. */
+                        public instancePartitions: google.spanner.admin.database.v1.IBackupInstancePartition[];
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -8473,6 +8479,103 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** Properties of a BackupInstancePartition. */
+                    interface IBackupInstancePartition {
+
+                        /** BackupInstancePartition instancePartition */
+                        instancePartition?: (string|null);
+                    }
+
+                    /** Represents a BackupInstancePartition. */
+                    class BackupInstancePartition implements IBackupInstancePartition {
+
+                        /**
+                         * Constructs a new BackupInstancePartition.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IBackupInstancePartition);
+
+                        /** BackupInstancePartition instancePartition. */
+                        public instancePartition: string;
+
+                        /**
+                         * Creates a new BackupInstancePartition instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns BackupInstancePartition instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IBackupInstancePartition): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Verifies a BackupInstancePartition message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a BackupInstancePartition message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns BackupInstancePartition
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Creates a plain object from a BackupInstancePartition message. Also converts values to other types if specified.
+                         * @param message BackupInstancePartition
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.BackupInstancePartition, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this BackupInstancePartition to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for BackupInstancePartition
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -10075,6 +10178,20 @@ export namespace google {
                         public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest): Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>;
 
                         /**
+                         * Calls AddSplitPoints.
+                         * @param request AddSplitPointsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and AddSplitPointsResponse
+                         */
+                        public addSplitPoints(request: google.spanner.admin.database.v1.IAddSplitPointsRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.AddSplitPointsCallback): void;
+
+                        /**
+                         * Calls AddSplitPoints.
+                         * @param request AddSplitPointsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public addSplitPoints(request: google.spanner.admin.database.v1.IAddSplitPointsRequest): Promise<google.spanner.admin.database.v1.AddSplitPointsResponse>;
+
+                        /**
                          * Calls CreateBackupSchedule.
                          * @param request CreateBackupScheduleRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and BackupSchedule
@@ -10286,6 +10403,13 @@ export namespace google {
                          * @param [response] ListDatabaseRolesResponse
                          */
                         type ListDatabaseRolesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseRolesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|addSplitPoints}.
+                         * @param error Error, if any
+                         * @param [response] AddSplitPointsResponse
+                         */
+                        type AddSplitPointsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.AddSplitPointsResponse) => void;
 
                         /**
                          * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackupSchedule}.
@@ -12998,6 +13122,421 @@ export namespace google {
                          * @returns The default type url
                          */
                         public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an AddSplitPointsRequest. */
+                    interface IAddSplitPointsRequest {
+
+                        /** AddSplitPointsRequest database */
+                        database?: (string|null);
+
+                        /** AddSplitPointsRequest splitPoints */
+                        splitPoints?: (google.spanner.admin.database.v1.ISplitPoints[]|null);
+
+                        /** AddSplitPointsRequest initiator */
+                        initiator?: (string|null);
+                    }
+
+                    /** Represents an AddSplitPointsRequest. */
+                    class AddSplitPointsRequest implements IAddSplitPointsRequest {
+
+                        /**
+                         * Constructs a new AddSplitPointsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IAddSplitPointsRequest);
+
+                        /** AddSplitPointsRequest database. */
+                        public database: string;
+
+                        /** AddSplitPointsRequest splitPoints. */
+                        public splitPoints: google.spanner.admin.database.v1.ISplitPoints[];
+
+                        /** AddSplitPointsRequest initiator. */
+                        public initiator: string;
+
+                        /**
+                         * Creates a new AddSplitPointsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AddSplitPointsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IAddSplitPointsRequest): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Encodes the specified AddSplitPointsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                         * @param message AddSplitPointsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IAddSplitPointsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AddSplitPointsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                         * @param message AddSplitPointsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IAddSplitPointsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AddSplitPointsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AddSplitPointsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Decodes an AddSplitPointsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AddSplitPointsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Verifies an AddSplitPointsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AddSplitPointsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AddSplitPointsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Creates a plain object from an AddSplitPointsRequest message. Also converts values to other types if specified.
+                         * @param message AddSplitPointsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.AddSplitPointsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AddSplitPointsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AddSplitPointsRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an AddSplitPointsResponse. */
+                    interface IAddSplitPointsResponse {
+                    }
+
+                    /** Represents an AddSplitPointsResponse. */
+                    class AddSplitPointsResponse implements IAddSplitPointsResponse {
+
+                        /**
+                         * Constructs a new AddSplitPointsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IAddSplitPointsResponse);
+
+                        /**
+                         * Creates a new AddSplitPointsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AddSplitPointsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IAddSplitPointsResponse): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Encodes the specified AddSplitPointsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                         * @param message AddSplitPointsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IAddSplitPointsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AddSplitPointsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                         * @param message AddSplitPointsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IAddSplitPointsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AddSplitPointsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AddSplitPointsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Decodes an AddSplitPointsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AddSplitPointsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Verifies an AddSplitPointsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AddSplitPointsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AddSplitPointsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Creates a plain object from an AddSplitPointsResponse message. Also converts values to other types if specified.
+                         * @param message AddSplitPointsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.AddSplitPointsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AddSplitPointsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AddSplitPointsResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a SplitPoints. */
+                    interface ISplitPoints {
+
+                        /** SplitPoints table */
+                        table?: (string|null);
+
+                        /** SplitPoints index */
+                        index?: (string|null);
+
+                        /** SplitPoints keys */
+                        keys?: (google.spanner.admin.database.v1.SplitPoints.IKey[]|null);
+
+                        /** SplitPoints expireTime */
+                        expireTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a SplitPoints. */
+                    class SplitPoints implements ISplitPoints {
+
+                        /**
+                         * Constructs a new SplitPoints.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ISplitPoints);
+
+                        /** SplitPoints table. */
+                        public table: string;
+
+                        /** SplitPoints index. */
+                        public index: string;
+
+                        /** SplitPoints keys. */
+                        public keys: google.spanner.admin.database.v1.SplitPoints.IKey[];
+
+                        /** SplitPoints expireTime. */
+                        public expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new SplitPoints instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns SplitPoints instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ISplitPoints): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Encodes the specified SplitPoints message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                         * @param message SplitPoints message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ISplitPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified SplitPoints message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                         * @param message SplitPoints message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ISplitPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a SplitPoints message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns SplitPoints
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Decodes a SplitPoints message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns SplitPoints
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Verifies a SplitPoints message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a SplitPoints message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns SplitPoints
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Creates a plain object from a SplitPoints message. Also converts values to other types if specified.
+                         * @param message SplitPoints
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.SplitPoints, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this SplitPoints to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for SplitPoints
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace SplitPoints {
+
+                        /** Properties of a Key. */
+                        interface IKey {
+
+                            /** Key keyParts */
+                            keyParts?: (google.protobuf.IListValue|null);
+                        }
+
+                        /** Represents a Key. */
+                        class Key implements IKey {
+
+                            /**
+                             * Constructs a new Key.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.database.v1.SplitPoints.IKey);
+
+                            /** Key keyParts. */
+                            public keyParts?: (google.protobuf.IListValue|null);
+
+                            /**
+                             * Creates a new Key instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns Key instance
+                             */
+                            public static create(properties?: google.spanner.admin.database.v1.SplitPoints.IKey): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Encodes the specified Key message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                             * @param message Key message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.database.v1.SplitPoints.IKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified Key message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                             * @param message Key message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.database.v1.SplitPoints.IKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes a Key message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns Key
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Decodes a Key message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns Key
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Verifies a Key message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates a Key message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns Key
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Creates a plain object from a Key message. Also converts values to other types if specified.
+                             * @param message Key
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.database.v1.SplitPoints.Key, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this Key to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for Key
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
                     }
                 }
             }
@@ -31950,6 +32489,9 @@ export namespace google {
 
                 /** TransactionOptions excludeTxnFromChangeStreams */
                 excludeTxnFromChangeStreams?: (boolean|null);
+
+                /** TransactionOptions isolationLevel */
+                isolationLevel?: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel|null);
             }
 
             /** Represents a TransactionOptions. */
@@ -31972,6 +32514,9 @@ export namespace google {
 
                 /** TransactionOptions excludeTxnFromChangeStreams. */
                 public excludeTxnFromChangeStreams: boolean;
+
+                /** TransactionOptions isolationLevel. */
+                public isolationLevel: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel);
 
                 /** TransactionOptions mode. */
                 public mode?: ("readWrite"|"partitionedDml"|"readOnly");
@@ -32388,6 +32933,13 @@ export namespace google {
                      * @returns The default type url
                      */
                     public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** IsolationLevel enum. */
+                enum IsolationLevel {
+                    ISOLATION_LEVEL_UNSPECIFIED = 0,
+                    SERIALIZABLE = 1,
+                    REPEATABLE_READ = 2
                 }
             }
 
