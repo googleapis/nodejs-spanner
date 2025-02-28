@@ -3967,42 +3967,79 @@ describe('Spanner', () => {
     before(async () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
-      // TODO: Add column Float32 FLOAT32 while using float32 feature.
-      const googleSqlCreateTable = await googleSqlTable.create(
-        `CREATE TABLE ${TABLE_NAME}
-                (
-                  SingerId     STRING(1024) NOT NULL,
-                  Name         STRING(1024),
-                  Float32      FLOAT32,
-                  Float        FLOAT64,
-                  Int          INT64,
-                  Info         BYTES( MAX),
-                  Created      TIMESTAMP,
-                  DOB          DATE,
-                  Accents      ARRAY<STRING(1024)>,
-                  PhoneNumbers ARRAY<INT64>,
-                  HasGear      BOOL,
-                ) PRIMARY KEY(SingerId)`,
-        GAX_OPTIONS
-      );
-      await onPromiseOperationComplete(googleSqlCreateTable);
+      if (IS_EMULATOR_ENABLED) {
+        // TODO: Add column Float32 FLOAT32 while using float32 feature.
+        const googleSqlCreateTable = await googleSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+                  (
+                    SingerId     STRING(1024) NOT NULL,
+                    Name         STRING(1024),
+                    Float        FLOAT64,
+                    Int          INT64,
+                    Info         BYTES( MAX),
+                    Created      TIMESTAMP,
+                    DOB          DATE,
+                    Accents      ARRAY<STRING(1024)>,
+                    PhoneNumbers ARRAY<INT64>,
+                    HasGear      BOOL,
+                  ) PRIMARY KEY(SingerId)`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(googleSqlCreateTable);
 
-      // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
-      const postgreSqlCreateTable = await postgreSqlTable.create(
-        `CREATE TABLE ${TABLE_NAME}
-            (
-              "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
-              "Name"     VARCHAR(1024),
-              "Float32"  DOUBLE PRECISION,
-              "Float"    DOUBLE PRECISION,
-              "Int"      BIGINT,
-              "Info"     BYTEA,
-              "Created"  TIMESTAMPTZ,
-              "HasGear"  BOOL
-            )`,
-        GAX_OPTIONS
-      );
-      await onPromiseOperationComplete(postgreSqlCreateTable);
+        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+              (
+                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+                "Name"     VARCHAR(1024),
+                "Float"    DOUBLE PRECISION,
+                "Int"      BIGINT,
+                "Info"     BYTEA,
+                "Created"  TIMESTAMPTZ,
+                "HasGear"  BOOL
+              )`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(postgreSqlCreateTable);
+      } else {
+        // TODO: Add column Float32 FLOAT32 while using float32 feature.
+        const googleSqlCreateTable = await googleSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+                  (
+                    SingerId     STRING(1024) NOT NULL,
+                    Name         STRING(1024),
+                    Float32      FLOAT32,
+                    Float        FLOAT64,
+                    Int          INT64,
+                    Info         BYTES( MAX),
+                    Created      TIMESTAMP,
+                    DOB          DATE,
+                    Accents      ARRAY<STRING(1024)>,
+                    PhoneNumbers ARRAY<INT64>,
+                    HasGear      BOOL,
+                  ) PRIMARY KEY(SingerId)`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(googleSqlCreateTable);
+
+        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+              (
+                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+                "Name"     VARCHAR(1024),
+                "Float32"  DOUBLE PRECISION,
+                "Float"    DOUBLE PRECISION,
+                "Int"      BIGINT,
+                "Info"     BYTEA,
+                "Created"  TIMESTAMPTZ,
+                "HasGear"  BOOL
+              )`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(postgreSqlCreateTable);
+      }
     });
 
     const nonExistentTable = (done, database) => {
@@ -4562,7 +4599,7 @@ describe('Spanner', () => {
           assert.ifError(err);
           const actualRows = rows!.shift()!.toJSON() as {} as Row[];
           for (const [key, value] of Object.entries(actualRows)) {
-            if (key === 'Float32') {
+            if (value && key === 'Float32') {
               assert.ok(
                 EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
               );
@@ -4781,15 +4818,26 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
         // TODO: Uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'DOB');
-        assert.strictEqual(metadata.rowType!.fields![8].name, 'Accents');
-        assert.strictEqual(metadata.rowType!.fields![9].name, 'PhoneNumbers');
-        assert.strictEqual(metadata.rowType!.fields![10].name, 'HasGear');
+        if (IS_EMULATOR_ENABLED) {
+          assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+          assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+          assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+          assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+          assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
+          assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
+          assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
+          assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
+        } else {
+          assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+          assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
+          assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
+          assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
+          assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
+          assert.strictEqual(metadata.rowType!.fields![7].name, 'DOB');
+          assert.strictEqual(metadata.rowType!.fields![8].name, 'Accents');
+          assert.strictEqual(metadata.rowType!.fields![9].name, 'PhoneNumbers');
+          assert.strictEqual(metadata.rowType!.fields![10].name, 'HasGear');
+        }
       });
 
       it('POSTGRESQL should return metadata', async () => {
@@ -4804,12 +4852,22 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
         // uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'HasGear');
+        if (IS_EMULATOR_ENABLED) {
+          assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+          assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+          assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+          assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+          assert.strictEqual(metadata.rowType!.fields![6].name, 'HasGear');
+        } else {
+          assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+          assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+          assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+          assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+          assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
+          assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
+          assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
+          assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
+        }
       });
 
       const invalidQueries = (done, database) => {
