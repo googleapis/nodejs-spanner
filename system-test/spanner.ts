@@ -4767,7 +4767,8 @@ describe('Spanner', () => {
         for (const [key, value] of Object.entries(rows[0].toJSON())) {
           if (value && key === 'Float32') {
             assert.ok(
-              GOOGLE_SQL_EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+              GOOGLE_SQL_EXPECTED_ROW[key] - (value as unknown as number) <=
+                0.00001
             );
           } else {
             assert.deepStrictEqual(GOOGLE_SQL_EXPECTED_ROW[key], value);
@@ -4797,7 +4798,8 @@ describe('Spanner', () => {
         for (const [key, value] of Object.entries(rows[0].toJSON())) {
           if (value && key === 'Float32') {
             assert.ok(
-              POSTGRESQL_EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+              POSTGRESQL_EXPECTED_ROW[key] - (value as unknown as number) <=
+                0.00001
             );
           } else {
             assert.deepStrictEqual(POSTGRESQL_EXPECTED_ROW[key], value);
