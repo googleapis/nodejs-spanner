@@ -15,13 +15,7 @@
 
 'use strict';
 
-async function restoreBackupWithEncryptionKey(
-  instanceId,
-  databaseId,
-  backupId,
-  projectId,
-  keyName
-) {
+function main(instanceId, databaseId, backupId, projectId, keyName) {
   // [START spanner_restore_backup_with_encryption_key]
 
   // Imports the Google Cloud client library and precise date library
@@ -46,37 +40,44 @@ async function restoreBackupWithEncryptionKey(
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Restore the database
-  console.log(
-    `Restoring database ${databaseAdminClient.databasePath(
-      projectId,
-      instanceId,
-      databaseId
-    )} from backup ${backupId}.`
-  );
-  const [restoreOperation] = await databaseAdminClient.restoreDatabase({
-    parent: databaseAdminClient.instancePath(projectId, instanceId),
-    databaseId: databaseId,
-    backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    encryptionConfig: {
-      encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-      kmsKeyName: keyName,
-    },
-  });
+  async function restoreBackupWithEncryptionKey() {
+    console.log(
+      `Restoring database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )} from backup ${backupId}.`
+    );
+    const [restoreOperation] = await databaseAdminClient.restoreDatabase({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      databaseId: databaseId,
+      backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      encryptionConfig: {
+        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+        kmsKeyName: keyName,
+      },
+    });
 
-  // Wait for restore to complete
-  console.log('Waiting for database restore to complete...');
-  await restoreOperation.promise();
+    // Wait for restore to complete
+    console.log('Waiting for database restore to complete...');
+    await restoreOperation.promise();
 
-  console.log('Database restored from backup.');
-  const [metadata] = await databaseAdminClient.getDatabase({
-    name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
-  });
-  console.log(
-    `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
-      `using encryption key ${metadata.encryptionConfig.kmsKeyName}.`
-  );
+    console.log('Database restored from backup.');
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+    });
+    console.log(
+      `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
+        `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
+        `using encryption key ${metadata.encryptionConfig.kmsKeyName}.`
+    );
+  }
+  restoreBackupWithEncryptionKey();
   // [END spanner_restore_backup_with_encryption_key]
 }
 
-module.exports.restoreBackupWithEncryptionKey = restoreBackupWithEncryptionKey;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

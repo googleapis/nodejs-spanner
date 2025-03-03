@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function cancelBackup(instanceId, databaseId, backupId, projectId) {
+function main(instanceId, databaseId, backupId, projectId) {
   // [START spanner_cancel_backup_create]
 
   // Imports the Google Cloud client library and precise date library
@@ -37,47 +37,54 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database
-  try {
-    console.log(
-      `Creating backup of database ${databaseAdminClient.databasePath(
-        projectId,
-        instanceId,
-        databaseId
-      )}.`
-    );
-
-    // Expire backup one day in the future
-    const expireTime = Date.now() + 1000 * 60 * 60 * 24;
-    const [operation] = await databaseAdminClient.createBackup({
-      parent: databaseAdminClient.instancePath(projectId, instanceId),
-      backupId: backupId,
-      backup: (protos.google.spanner.admin.database.v1.Backup = {
-        database: databaseAdminClient.databasePath(
+  async function cancelBackup() {
+    try {
+      console.log(
+        `Creating backup of database ${databaseAdminClient.databasePath(
           projectId,
           instanceId,
           databaseId
-        ),
-        expireTime: Spanner.timestamp(expireTime).toStruct(),
+        )}.`
+      );
+
+      // Expire backup one day in the future
+      const expireTime = Date.now() + 1000 * 60 * 60 * 24;
+      const [operation] = await databaseAdminClient.createBackup({
+        parent: databaseAdminClient.instancePath(projectId, instanceId),
+        backupId: backupId,
+        backup: (protos.google.spanner.admin.database.v1.Backup = {
+          database: databaseAdminClient.databasePath(
+            projectId,
+            instanceId,
+            databaseId
+          ),
+          expireTime: Spanner.timestamp(expireTime).toStruct(),
+          name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+        }),
+      });
+
+      // Cancel the backup
+      await operation.cancel();
+
+      console.log('Backup cancelled.');
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Delete backup in case it got created before the cancel operation
+      await databaseAdminClient.deleteBackup({
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-      }),
-    });
-
-    // Cancel the backup
-    await operation.cancel();
-
-    console.log('Backup cancelled.');
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Delete backup in case it got created before the cancel operation
-    await databaseAdminClient.deleteBackup({
-      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    });
-    // Close the spanner client when finished.
-    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
-    spanner.close();
+      });
+      // Close the spanner client when finished.
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+      spanner.close();
+    }
   }
+  cancelBackup();
   // [END spanner_cancel_backup_create]
 }
 
-module.exports.cancelBackup = cancelBackup;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
