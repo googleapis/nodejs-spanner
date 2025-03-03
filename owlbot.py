@@ -27,7 +27,7 @@ if staging.is_dir():
     logging.info(f"Copying files from staging directory ${staging}.")
 
     # nodejs-spanner is composed of 3 APIs: SpannerClient, SpannerAdminDatabase and
-    # SpannerAdminInstance, all 3 are exported in src/v1/index.js
+    # SpannerAdminInstance, all 3 are exported in src/v1/index.js  b  ssssss
     # Excluding auto-generated system test since Spanner has its own packing test
     excludes=["src/index.ts", "src/v1/index.ts", "README.md", "package.json",
             "system-test/*", "system-test/fixtures/sample/*", "system-test/fixtures/sample/src/*",

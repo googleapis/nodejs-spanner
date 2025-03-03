@@ -18,7 +18,7 @@
 * **x-goog-spanner-request-id:** Add bases ([#2211](https://github.com/googleapis/nodejs-spanner/issues/2211)) ([0008038](https://github.com/googleapis/nodejs-spanner/commit/000803812e670ce0f4bac4a6460351f2b08ec660))
 
 
-### Bug Fixes
+### Bug Fixes sss
 
 * Add x-goog-request params to headers for LRO-polling methods ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
 * Error from fill method should not be emitted ([#2233](https://github.com/googleapis/nodejs-spanner/issues/2233)) ([2cc44cf](https://github.com/googleapis/nodejs-spanner/commit/2cc44cf238bd18f5a456c76ddb8280c2252c2e87)), closes [#2103](https://github.com/googleapis/nodejs-spanner/issues/2103)

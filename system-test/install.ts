@@ -30,7 +30,7 @@ const pkg = require('../../package.json');
 describe('📦 pack and install', () => {
   /**
    * Create a staging directory with temp fixtures used to test on a fresh
-   * application.
+   * application. safsfsf
    */
   it('should be able to use the d.ts', async () => {
     await execa('npm', ['pack', '--unsafe-perm']);

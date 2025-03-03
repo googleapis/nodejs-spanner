@@ -243,6 +243,8 @@ async function setup() {
       ROLLBACK_TRANSACTION_RND_TIME
     )
   );
+
+  // TEst
   spannerMock.setExecutionTime(
     spannerMock.executeStreamingSql,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
