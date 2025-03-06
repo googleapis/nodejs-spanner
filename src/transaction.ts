@@ -127,6 +127,8 @@ export interface Statement {
   sql: string;
   params?: {[param: string]: Value};
   types?: Type | {[param: string]: Value};
+  // This property is used internally as a mapping for types. Do not set it manually
+  paramTypes?: {[k: string]: google.spanner.v1.Type} | null;
 }
 
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
@@ -1500,10 +1502,11 @@ export class Snapshot extends EventEmitter {
   static encodeParams(request: ExecuteSqlRequest) {
     const typeMap = request.types || {};
 
-    const params: p.IStruct = {};
-    const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} = {};
+    const params: p.IStruct = {fields: request.params?.fields || {}};
+    const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} =
+      request.paramTypes || {};
 
-    if (request.params) {
+    if (request.params && !request.params.fields) {
       const fields = {};
 
       Object.keys(request.params).forEach(param => {
