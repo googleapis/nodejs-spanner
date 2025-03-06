@@ -1502,7 +1502,7 @@ export class Snapshot extends EventEmitter {
   static encodeParams(request: ExecuteSqlRequest) {
     const typeMap = request.types || {};
 
-    const params: p.IStruct = request.params || {};
+    const params: p.IStruct = {fields: request.params?.fields || {}};
     const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} =
       request.paramTypes || {};
 
