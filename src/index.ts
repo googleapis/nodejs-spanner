@@ -145,6 +145,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions?: google.spanner.v1.ITransactionOptions | null;
   observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
@@ -247,6 +248,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions: google.spanner.v1.ITransactionOptions | null;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -331,6 +333,11 @@ class Spanner extends GrpcService {
       : null;
     delete options.directedReadOptions;
 
+    const defaultTransactionOptions = options.defaultTransactionOptions
+      ? options.defaultTransactionOptions
+      : null;
+    delete options.defaultTransactionOptions;
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -371,6 +378,7 @@ class Spanner extends GrpcService {
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.directedReadOptions = directedReadOptions;
+    this.defaultTransactionOptions = defaultTransactionOptions;
     this._observabilityOptions = options.observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.projectFormattedName_,

@@ -316,6 +316,10 @@ export interface RestoreOptions {
   gaxOptions?: CallOptions;
 }
 
+export interface WriteAtLeastOnceOptions extends CallOptions {
+  isolationLevel?: spannerClient.spanner.v1.TransactionOptions.IsolationLevel;
+}
+
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -3252,6 +3256,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
+    const defaultTransactionOptions =
+      this._getSpanner().defaultTransactionOptions;
+
     startTrace('Database.runTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
@@ -3279,6 +3286,13 @@ class Database extends common.GrpcServiceObject {
         }
         if (options.excludeTxnFromChangeStreams) {
           transaction!.excludeTxnFromChangeStreams();
+        }
+        if (options.isolationLevel) {
+          transaction!.setIsolationLevel(options.isolationLevel);
+        } else if (defaultTransactionOptions) {
+          transaction!.setIsolationLevel(
+            defaultTransactionOptions.isolationLevel
+          );
         }
 
         const release = () => {
@@ -3390,6 +3404,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
+    const defaultTransactionOptions =
+      this._getSpanner().defaultTransactionOptions;
+
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
     return startTrace(
@@ -3411,6 +3428,13 @@ class Database extends common.GrpcServiceObject {
             }
             if (options.excludeTxnFromChangeStreams) {
               transaction.excludeTxnFromChangeStreams();
+            }
+            if (options.isolationLevel) {
+              transaction!.setIsolationLevel(options.isolationLevel);
+            } else if (defaultTransactionOptions) {
+              transaction!.setIsolationLevel(
+                defaultTransactionOptions.isolationLevel
+              );
             }
             sessionId = session?.id;
             span.addEvent('Using Session', {'session.id': sessionId});
@@ -3638,17 +3662,17 @@ class Database extends common.GrpcServiceObject {
   writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
   writeAtLeastOnce(
     mutations: MutationSet,
-    options: CallOptions
+    options: WriteAtLeastOnceOptions
   ): Promise<CommitResponse>;
   writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
   writeAtLeastOnce(
     mutations: MutationSet,
-    options: CallOptions,
+    options: WriteAtLeastOnceOptions,
     callback: CommitCallback
   ): void;
   writeAtLeastOnce(
     mutations: MutationSet,
-    optionsOrCallback?: CallOptions | CommitCallback,
+    optionsOrCallback?: WriteAtLeastOnceOptions | CommitCallback,
     callback?: CommitCallback
   ): void | Promise<CommitResponse> {
     const cb =
@@ -3657,8 +3681,11 @@ class Database extends common.GrpcServiceObject {
         : callback;
     const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
-        ? (optionsOrCallback as CallOptions)
+        ? (optionsOrCallback as WriteAtLeastOnceOptions)
         : {};
+
+    const defaultTransactionOptions =
+      this._getSpanner().defaultTransactionOptions;
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
       this.sessionFactory_.getSession((err, session?, transaction?) => {
@@ -3683,6 +3710,13 @@ class Database extends common.GrpcServiceObject {
         span.addEvent('Using Session', {'session.id': session?.id});
         this._releaseOnEnd(session!, transaction!, span);
         try {
+          if (options.isolationLevel) {
+            transaction!.setIsolationLevel(options.isolationLevel);
+          } else if (defaultTransactionOptions) {
+            transaction!.setIsolationLevel(
+              defaultTransactionOptions.isolationLevel
+            );
+          }
           transaction?.setQueuedMutations(mutations.proto());
           return transaction?.commit(options, (err, resp) => {
             if (err) {

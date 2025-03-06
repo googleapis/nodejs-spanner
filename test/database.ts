@@ -177,6 +177,9 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setIsolationLevel(isolationLevel) {
+    this._options.isolationLevel = isolationLevel;
+  }
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -3166,6 +3169,19 @@ describe('Database', () => {
       assert.strictEqual(options, fakeOptions);
     });
 
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      };
+
+      await database.runTransaction(fakeOptions, assert.ifError);
+
+      const options = fakeTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
     it('should release the session when finished', done => {
       const releaseStub = (
         sandbox.stub(pool, 'release') as sinon.SinonStub
@@ -3230,6 +3246,19 @@ describe('Database', () => {
 
     it('should optionally accept runner `options`', async () => {
       const fakeOptions = {timeout: 1};
+
+      await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+      const options = fakeAsyncTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      };
 
       await database.runTransactionAsync(fakeOptions, assert.ifError);
 
