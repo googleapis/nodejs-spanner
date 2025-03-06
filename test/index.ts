@@ -327,6 +327,22 @@ describe('Spanner', () => {
       assert.strictEqual(spanner.directedReadOptions, fakeDirectedReadOptions);
     });
 
+    it('should optionally accept defaultTransactionOptions', () => {
+      const fakeDefaultTxnOptions = {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      };
+
+      const spanner = new Spanner({
+        defaultTransactionOptions: fakeDefaultTxnOptions,
+      });
+      assert.strictEqual(
+        spanner.defaultTransactionOptions,
+        fakeDefaultTxnOptions
+      );
+    });
+
     it('should set projectFormattedName_', () => {
       assert.strictEqual(
         spanner.projectFormattedName_,
