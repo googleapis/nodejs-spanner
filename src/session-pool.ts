@@ -30,6 +30,14 @@ import {
   setSpanErrorAndException,
   startTrace,
 } from './instrument';
+import {GetSessionCallback} from './session-factory';
+import {
+  isDatabaseNotFoundError,
+  isInstanceNotFoundError,
+  isDefaultCredentialsNotSetError,
+  isProjectIdNotSetInEnvironmentError,
+  isCreateSessionPermissionError,
+} from './helper';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -44,20 +52,6 @@ export type GetReadSessionCallback = NormalCallback<Session>;
 
 /** @deprecated. Use GetSessionCallback instead. */
 export interface GetWriteSessionCallback {
-  (
-    err: Error | null,
-    session?: Session | null,
-    transaction?: Transaction | null
-  ): void;
-}
-
-/**
- * @callback GetSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-write session.
- * @param {Transaction} transaction The transaction object.
- */
-export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
@@ -238,81 +232,6 @@ export function isSessionNotFoundError(
     error !== undefined &&
     error.code === grpc.status.NOT_FOUND &&
     error.message.includes('Session not found')
-  );
-}
-
-/**
- * Checks whether the given error is a 'Database not found' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Database not found' error, and otherwise false.
- */
-export function isDatabaseNotFoundError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.NOT_FOUND &&
-    error.message.includes('Database not found')
-  );
-}
-
-/**
- * Checks whether the given error is an 'Instance not found' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is an 'Instance not found' error, and otherwise false.
- */
-export function isInstanceNotFoundError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.NOT_FOUND &&
-    error.message.includes('Instance not found')
-  );
-}
-
-/**
- * Checks whether the given error is a 'Create session permission' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Create session permission' error, and otherwise false.
- */
-export function isCreateSessionPermissionError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.PERMISSION_DENIED &&
-    error.message.includes('spanner.sessions.create')
-  );
-}
-
-/**
- * Checks whether the given error is a 'Could not load the default credentials' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Could not load the default credentials' error, and otherwise false.
- */
-export function isDefaultCredentialsNotSetError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.message.includes('Could not load the default credentials')
-  );
-}
-
-/**
- * Checks whether the given error is an 'Unable to detect a Project Id in the current environment' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is an 'Unable to detect a Project Id in the current environment' error, and otherwise false.
- */
-export function isProjectIdNotSetInEnvironmentError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.message.includes(
-      'Unable to detect a Project Id in the current environment'
-    )
   );
 }
 
@@ -864,11 +783,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
-    try {
-      await this._createSessions(needed);
-    } catch (e) {
-      this.emit('error', e);
-    }
+    await this._createSessions(needed);
   }
 
   /**
@@ -1074,7 +989,24 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const pings = sessions.map(session => this._ping(session));
 
     await Promise.all(pings);
-    return this._fill();
+    try {
+      await this._fill();
+    } catch (error) {
+      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
+      // for a database that does not yet exist with SessionPoolOptions.min > 0.
+      const err = error as ServiceError;
+      if (
+        isDatabaseNotFoundError(err) ||
+        isInstanceNotFoundError(err) ||
+        isCreateSessionPermissionError(err) ||
+        isDefaultCredentialsNotSetError(err) ||
+        isProjectIdNotSetInEnvironmentError(err)
+      ) {
+        return;
+      }
+      this.emit('error', err);
+    }
+    return;
   }
 
   /**

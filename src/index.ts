@@ -39,6 +39,7 @@ import {
   IProtoMessageParams,
   IProtoEnumParams,
 } from './codec';
+import {context, propagation} from '@opentelemetry/api';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -66,6 +67,7 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
   NormalCallback,
+  getCommonHeaders,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -242,7 +244,7 @@ class Spanner extends GrpcService {
   instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   _observabilityOptions: ObservabilityOptions | undefined;
@@ -368,11 +370,12 @@ class Spanner extends GrpcService {
     this.instanceConfigs_ = new Map();
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
-    };
     this.directedReadOptions = directedReadOptions;
     this._observabilityOptions = options.observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this.projectFormattedName_,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
     ensureInitialContextManagerSet();
   }
 
@@ -586,7 +589,7 @@ class Spanner extends GrpcService {
         method: 'createInstance',
         reqOpts,
         gaxOpts: config.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -732,7 +735,7 @@ class Spanner extends GrpcService {
         method: 'listInstances',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instances, nextPageRequest, ...args) => {
         let instanceInstances: Instance[] | null = null;
@@ -816,7 +819,7 @@ class Spanner extends GrpcService {
       method: 'listInstancesStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -982,7 +985,7 @@ class Spanner extends GrpcService {
         method: 'createInstanceConfig',
         reqOpts,
         gaxOpts: config.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -1125,7 +1128,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigs',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instanceConfigs, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -1201,7 +1204,7 @@ class Spanner extends GrpcService {
       method: 'listInstanceConfigsStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -1296,7 +1299,7 @@ class Spanner extends GrpcService {
         method: 'getInstanceConfig',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instanceConfig) => {
         callback!(err, instanceConfig);
@@ -1416,7 +1419,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigOperations',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operations, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -1532,6 +1535,12 @@ class Spanner extends GrpcService {
         config.headers[CLOUD_RESOURCE_HEADER],
         projectId!
       );
+      // Do context propagation
+      propagation.inject(context.active(), config.headers, {
+        set: (carrier, key, value) => {
+          carrier[key] = value; // Set the span context (trace and span ID)
+        },
+      });
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,

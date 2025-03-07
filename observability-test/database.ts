@@ -47,6 +47,7 @@ import {Instance, MutationGroup, Spanner} from '../src';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {MockError} from '../test/mockserver/mockspanner';
+import {FakeSessionFactory} from '../test/database';
 const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
@@ -234,6 +235,7 @@ describe('Database', () => {
       './codec': {codec: fakeCodec},
       './partial-result-stream': {partialResultStream: fakePartialResultStream},
       './session-pool': {SessionPool: FakeSessionPool},
+      './session-factory': {SessionFactory: FakeSessionFactory},
       './session': {Session: FakeSession},
       './table': {Table: FakeTable},
       './transaction-runner': {
@@ -501,7 +503,7 @@ describe('Database', () => {
   });
 
   describe('getSnapshot', () => {
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeSnapshot: FakeTransaction;
 
@@ -509,7 +511,7 @@ describe('Database', () => {
     let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
-      fakePool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakeSnapshot = new FakeTransaction(
         {} as google.spanner.v1.TransactionOptions.ReadOnly
@@ -520,10 +522,12 @@ describe('Database', () => {
       ).callsFake(callback => callback(null));
 
       getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
       sandbox.stub(fakeSession, 'snapshot').returns(fakeSnapshot);
+
+      sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(false);
     });
 
     it('with error', done => {
@@ -603,7 +607,7 @@ describe('Database', () => {
 
       // The first session that was not found should be released back into the
       // pool, so that the pool can remove it from its inventory.
-      const releaseStub = sandbox.stub(fakePool, 'release');
+      const releaseStub = sandbox.stub(fakeSessionFactory, 'release');
 
       database.getSnapshot(async (err, snapshot) => {
         assert.ifError(err);
@@ -1047,21 +1051,22 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite
     );
 
-    let pool: FakeSessionPool;
+    let sessionFactory: FakeSessionFactory;
 
     beforeEach(() => {
-      pool = database.pool_;
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
+      sessionFactory = database.sessionFactory_;
+      (sandbox.stub(sessionFactory, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }
       );
+      sandbox.stub(sessionFactory, 'isMultiplexedEnabled').returns(false);
     });
 
     it('should return any errors getting a session', done => {
       const fakeErr = new Error('getting session error');
 
-      (pool.getSession as sinon.SinonStub).callsFake(callback =>
+      (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
         callback(fakeErr, null, null)
       );
 
@@ -1707,8 +1712,7 @@ describe('Database', () => {
       a: 'b',
       c: 'd',
     };
-
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeSession2: FakeSession;
     let fakeSnapshot: FakeTransaction;
@@ -1719,7 +1723,7 @@ describe('Database', () => {
     let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
-      fakePool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakeSession2 = new FakeSession();
       fakeSnapshot = new FakeTransaction(
@@ -1731,7 +1735,9 @@ describe('Database', () => {
       fakeStream = through.obj();
       fakeStream2 = through.obj();
 
-      getSessionStub = (sandbox.stub(fakePool, 'getSession') as sinon.SinonStub)
+      getSessionStub = (
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
+      )
         .onFirstCall()
         .callsFake(callback => callback(null, fakeSession))
         .onSecondCall()
@@ -1744,6 +1750,8 @@ describe('Database', () => {
       sandbox.stub(fakeSnapshot, 'runStream').returns(fakeStream);
 
       sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
+
+      sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(false);
     });
 
     it('with error on `getSession`', done => {
@@ -1877,7 +1885,7 @@ describe('Database', () => {
           await traceExporter.forceFlush();
 
           const spans = traceExporter.getFinishedSpans();
-          assert.strictEqual(spans.length, 2, 'Exactly 1 span expected');
+          assert.strictEqual(spans.length, 2, 'Exactly 2 spans expected');
           withAllSpansHaveDBName(spans);
 
           const actualSpanNames: string[] = [];

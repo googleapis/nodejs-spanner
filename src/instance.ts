@@ -31,7 +31,7 @@ import {
   NormalCallback,
   ResourceCallback,
   PagedOptionsWithFilter,
-  CLOUD_RESOURCE_HEADER,
+  getCommonHeaders,
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
@@ -164,7 +164,7 @@ class Instance extends common.GrpcServiceObject {
   requestStream: (config: RequestConfig) => Duplex;
   databases_: Map<string, Database>;
   metadata?: IInstance;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   _observabilityOptions?: ObservabilityOptions;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
@@ -238,10 +238,11 @@ class Instance extends common.GrpcServiceObject {
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
     this.databases_ = new Map<string, Database>();
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this.formattedName_,
-    };
     this._observabilityOptions = spanner._observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this.formattedName_,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
   }
 
   /**
@@ -432,7 +433,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listBackups',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, backups, nextPageRequest, ...args) => {
         let backupInstances: Backup[] | null = null;
@@ -519,7 +520,7 @@ class Instance extends common.GrpcServiceObject {
       method: 'listBackupsStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -638,7 +639,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listBackupOperations',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operations, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -766,7 +767,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listDatabaseOperations',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operations, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -920,7 +921,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'createDatabase',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -1059,7 +1060,7 @@ class Instance extends common.GrpcServiceObject {
             method: 'deleteInstance',
             reqOpts,
             gaxOpts,
-            headers: this.resourceHeader_,
+            headers: this.commonHeaders_,
           },
           (err, resp) => {
             if (!err) {
@@ -1355,7 +1356,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'listDatabases',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, rowDatabases, nextPageRequest, ...args) => {
         let databases: Database[] | null = null;
@@ -1443,7 +1444,7 @@ class Instance extends common.GrpcServiceObject {
       method: 'listDatabasesStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -1540,7 +1541,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'getInstance',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         if (resp) {
@@ -1636,7 +1637,7 @@ class Instance extends common.GrpcServiceObject {
         method: 'updateInstance',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );

@@ -334,8 +334,8 @@ describe('Spanner', () => {
       );
     });
 
-    it('should set the resourceHeader_', () => {
-      assert.deepStrictEqual(spanner.resourceHeader_, {
+    it('should set the commonHeaders_', () => {
+      assert.deepStrictEqual(spanner.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: spanner.projectFormattedName_,
       });
     });
@@ -517,7 +517,7 @@ describe('Spanner', () => {
     });
   });
 
-  describe.skip('float32', () => {
+  describe('float32', () => {
     it('should create a Float32 instance', () => {
       const value = {};
       const customValue = {};
@@ -753,7 +753,7 @@ describe('Spanner', () => {
           },
         });
         assert.strictEqual(config.gaxOpts, undefined);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
         done();
       };
       spanner.createInstance(NAME, CONFIG, assert.ifError);
@@ -934,7 +934,7 @@ describe('Spanner', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         done();
       };
@@ -962,7 +962,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         done();
       };
@@ -998,7 +998,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         done();
       };
@@ -1126,7 +1126,7 @@ describe('Spanner', () => {
         assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
         return returnValue as Duplex;
       };
 
@@ -1153,7 +1153,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1188,7 +1188,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1273,7 +1273,7 @@ describe('Spanner', () => {
           },
         });
         assert.strictEqual(config.gaxOpts, undefined);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
         done();
       };
       spanner.createInstanceConfig(NAME, CONFIG, assert.ifError);
@@ -1402,7 +1402,7 @@ describe('Spanner', () => {
 
         const gaxOpts = config.gaxOpts;
         assert.deepStrictEqual(gaxOpts, options.gaxOptions);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1431,7 +1431,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         done();
       };
@@ -1466,7 +1466,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         done();
       };
@@ -1686,7 +1686,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(reqOpts, OPTIONS);
 
         assert.deepStrictEqual(config.gaxOpts, OPTIONS.gaxOptions);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1740,7 +1740,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1780,7 +1780,7 @@ describe('Spanner', () => {
         assert.notStrictEqual(config.gaxOpts, gaxOptions);
         assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };
@@ -1817,7 +1817,7 @@ describe('Spanner', () => {
 
         const gaxOpts = config.gaxOpts;
         assert.deepStrictEqual(gaxOpts, options.gaxOptions);
-        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        assert.deepStrictEqual(config.headers, spanner.commonHeaders_);
 
         return returnValue;
       };

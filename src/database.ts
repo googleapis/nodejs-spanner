@@ -36,6 +36,7 @@ import {
 } from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
+import {SessionFactory, SessionFactoryInterface} from './session-factory';
 import {
   google as databaseAdmin,
   google,
@@ -85,12 +86,12 @@ import {
   LongRunningCallback,
   NormalCallback,
   PagedOptionsWithFilter,
-  CLOUD_RESOURCE_HEADER,
   PagedResponse,
   RequestCallback,
   ResourceCallback,
   Schema,
   addLeaderAwareRoutingHeader,
+  getCommonHeaders,
 } from './common';
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -111,7 +112,6 @@ import {
   setSpanErrorAndException,
   traceConfig,
 } from './instrument';
-
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -339,10 +339,12 @@ class Database extends common.GrpcServiceObject {
   private instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
+  sessionFactory_: SessionFactoryInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
+  labels?: {[k: string]: string} | null;
   databaseDialect?: EnumKey<
     typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
   > | null;
@@ -449,17 +451,9 @@ class Database extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    this.pool_ =
-      typeof poolOptions === 'function'
-        ? new (poolOptions as SessionPoolConstructor)(this, null)
-        : new SessionPool(this, poolOptions);
-    const sessionPoolInstance = this.pool_ as SessionPool;
-    if (sessionPoolInstance) {
-      sessionPoolInstance._observabilityOptions =
-        instance._observabilityOptions;
-    }
     if (typeof poolOptions === 'object') {
       this.databaseRole = poolOptions.databaseRole || null;
+      this.labels = poolOptions.labels || null;
     }
     this.formattedName_ = formattedName_;
     this.instance = instance;
@@ -469,15 +463,22 @@ class Database extends common.GrpcServiceObject {
       dbName: this.formattedName_,
     };
 
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this.formattedName_,
-    };
     this.request = instance.request;
     this._observabilityOptions = instance._observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this.formattedName_,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.requestStream = instance.requestStream as any;
-    this.pool_.on('error', this.emit.bind(this, 'error'));
-    this.pool_.open();
+    this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
+    this.pool_ = this.sessionFactory_.getPool();
+    const sessionPoolInstance = this.pool_ as SessionPool;
+    if (sessionPoolInstance) {
+      sessionPoolInstance._observabilityOptions =
+        instance._observabilityOptions;
+    }
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
@@ -580,7 +581,7 @@ class Database extends common.GrpcServiceObject {
         method: 'updateDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );
@@ -686,7 +687,7 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -978,40 +979,44 @@ class Database extends common.GrpcServiceObject {
 
     reqOpts.session = {};
 
-    if (options.labels) {
-      reqOpts.session.labels = options.labels;
-    }
-
     if (options.multiplexed) {
       reqOpts.session.multiplexed = options.multiplexed;
     }
 
+    reqOpts.session.labels = options.labels || this.labels || null;
+
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    this.request<google.spanner.v1.ISession>(
-      {
-        client: 'SpannerClient',
-        method: 'createSession',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (err) {
-          callback(err, null, resp!);
-          return;
+    startTrace('Database.createSession', this._traceConfig, span => {
+      this.request<google.spanner.v1.ISession>(
+        {
+          client: 'SpannerClient',
+          method: 'createSession',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+            span.end();
+            callback(err, null, resp!);
+            return;
+          }
+          const session = this.session(resp!.name!);
+          session.metadata = resp;
+          session._observabilityOptions = this._traceConfig!.opts;
+          span.end();
+          callback(null, session, resp!);
         }
-        const session = this.session(resp!.name!);
-        session.metadata = resp;
-        callback(null, session, resp!);
-      }
-    );
+      );
+    });
   }
   /**
    * @typedef {array} CreateTableResponse
@@ -1131,7 +1136,7 @@ class Database extends common.GrpcServiceObject {
   private _releaseOnEnd(session: Session, transaction: Snapshot, span: Span) {
     transaction.once('end', () => {
       try {
-        this.pool_.release(session);
+        this.sessionFactory_.release(session);
       } catch (e) {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
@@ -1210,7 +1215,7 @@ class Database extends common.GrpcServiceObject {
           method: 'dropDatabase',
           reqOpts,
           gaxOpts,
-          headers: this.resourceHeader_,
+          headers: this.commonHeaders_,
         },
         callback!
       );
@@ -1442,7 +1447,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         if (resp) {
@@ -1696,7 +1701,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getDatabaseDdl',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
@@ -1776,7 +1781,7 @@ class Database extends common.GrpcServiceObject {
         method: 'getIamPolicy',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         callback!(err, resp);
@@ -1915,7 +1920,7 @@ class Database extends common.GrpcServiceObject {
           method: 'listSessions',
           reqOpts,
           gaxOpts,
-          headers: this.resourceHeader_,
+          headers: this.commonHeaders_,
         },
         (err, sessions, nextPageRequest, ...args) => {
           if (err) {
@@ -2008,7 +2013,7 @@ class Database extends common.GrpcServiceObject {
       method: 'listSessionsStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -2087,8 +2092,28 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
+    if (
+      ('maxStaleness' in options &&
+        options.maxStaleness !== null &&
+        options.maxStaleness !== undefined) ||
+      ('minReadTimestamp' in options &&
+        options.minReadTimestamp !== null &&
+        options.minReadTimestamp !== undefined)
+    ) {
+      const error = Object.assign(
+        new Error(
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+        ),
+        {
+          code: 3, // invalid argument
+        }
+      ) as ServiceError;
+      callback!(error);
+      return;
+    }
+
     return startTrace('Database.getSnapshot', this._traceConfig, span => {
-      this.pool_.getSession((err, session) => {
+      this.sessionFactory_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
           span.end();
@@ -2101,17 +2126,20 @@ class Database extends common.GrpcServiceObject {
         snapshot.begin(err => {
           if (err) {
             setSpanError(span, err);
-            if (isSessionNotFoundError(err)) {
+            if (
+              isSessionNotFoundError(err) &&
+              !this.sessionFactory_.isMultiplexedEnabled()
+            ) {
               span.addEvent('No session available', {
                 'session.id': session?.id,
               });
               session!.lastError = err;
-              this.pool_.release(session!);
+              this.sessionFactory_.release(session!);
               span.end();
               this.getSnapshot(options, callback!);
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
-              this.pool_.release(session!);
+              this.sessionFactory_.release(session!);
               span.end();
               callback!(err);
             }
@@ -2204,11 +2232,6 @@ class Database extends common.GrpcServiceObject {
           span.addEvent('Using Session', {'session.id': session?.id});
           transaction!._observabilityOptions = this._observabilityOptions;
           this._releaseOnEnd(session!, transaction!, span);
-        } else if (isSessionNotFoundError(err as grpc.ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': session?.id,
-          });
-          setSpanError(span, err);
         } else {
           setSpanError(span, err);
         }
@@ -2405,7 +2428,7 @@ class Database extends common.GrpcServiceObject {
         method: 'listDatabaseRoles',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, roles, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -2486,11 +2509,7 @@ class Database extends common.GrpcServiceObject {
       pool.getSession((err, session_) => {
         const span = getActiveOrNoopSpan();
         if (err) {
-          if (isSessionNotFoundError(err as grpc.ServiceError)) {
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-          }
+          setSpanError(span, err as ServiceError);
           destroyStream(err as ServiceError);
           return;
         }
@@ -2619,7 +2638,7 @@ class Database extends common.GrpcServiceObject {
         method: 'restoreDatabase',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -3056,7 +3075,7 @@ class Database extends common.GrpcServiceObject {
       ...this._traceConfig,
     };
     return startTrace('Database.runStream', traceConfig, span => {
-      this.pool_.getSession((err, session) => {
+      this.sessionFactory_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
           proxyStream.destroy(err);
@@ -3083,7 +3102,8 @@ class Database extends common.GrpcServiceObject {
 
             if (
               !dataReceived &&
-              isSessionNotFoundError(err as grpc.ServiceError)
+              isSessionNotFoundError(err as grpc.ServiceError) &&
+              !this.sessionFactory_.isMultiplexedEnabled()
             ) {
               // If it is a 'Session not found' error and we have not yet received
               // any data, we can safely retry the query on a new session.
@@ -3411,10 +3431,11 @@ class Database extends common.GrpcServiceObject {
               this.pool_.release(session);
             }
           } catch (e) {
-            if (!isSessionNotFoundError(e as ServiceError)) {
+            if (isSessionNotFoundError(e as ServiceError)) {
               span.addEvent('No session available', {
                 'session.id': sessionId,
               });
+            } else {
               span.end();
               throw e;
             }
@@ -3517,7 +3538,7 @@ class Database extends common.GrpcServiceObject {
             method: 'batchWrite',
             reqOpts,
             gaxOpts,
-            headers: this.resourceHeader_,
+            headers: this.commonHeaders_,
           });
           dataStream
             .once('data', () => (dataReceived = true))
@@ -3640,8 +3661,12 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
-      this.pool_.getSession((err, session?, transaction?) => {
-        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+      this.sessionFactory_.getSession((err, session?, transaction?) => {
+        if (
+          err &&
+          isSessionNotFoundError(err as grpc.ServiceError) &&
+          !this.sessionFactory_.isMultiplexedEnabled()
+        ) {
           span.addEvent('No session available', {
             'session.id': session?.id,
           });
@@ -3799,7 +3824,7 @@ class Database extends common.GrpcServiceObject {
         method: 'setIamPolicy',
         reqOpts,
         gaxOpts: gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, resp) => {
         callback!(err, resp);
@@ -3929,7 +3954,7 @@ class Database extends common.GrpcServiceObject {
         method: 'updateDatabaseDdl',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       callback!
     );

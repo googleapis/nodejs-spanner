@@ -17,6 +17,8 @@
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status, ServiceError} from 'google-gax';
+// eslint-disable-next-line n/no-extraneous-import
+import * as grpcModule from '@grpc/grpc-js';
 import {
   Database,
   Instance,
@@ -66,6 +68,9 @@ import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
+import {SessionFactory} from '../src/session-factory';
+import {MultiplexedSession} from '../src/multiplexed-session';
+import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
 
 const {
   AlwaysOnSampler,
@@ -1623,6 +1628,141 @@ describe('Spanner with mock server', () => {
             undefined
           );
         });
+      });
+    });
+  });
+
+  describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+    before(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+    });
+
+    after(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    });
+
+    it('should make a request to CreateSession', async () => {
+      const database = newTestDatabase();
+      await database.run('SELECT 1');
+      const requests = spannerMock.getRequests().find(val => {
+        return (val as v1.CreateSessionRequest).session;
+      }) as v1.CreateSessionRequest;
+      assert.ok(requests, 'CreateSessionRequest should be called');
+      assert.strictEqual(
+        requests.session?.multiplexed,
+        true,
+        'Multiplexed should be true'
+      );
+    });
+
+    it('should execute the transaction(database.run) successfully using multiplexed session', done => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const database = newTestDatabase();
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.run(query, (err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert.strictEqual(resp.length, 3);
+        done();
+      });
+    });
+
+    it('should execute the transaction(database.getSnapshot) successfully using multiplexed session', done => {
+      const database = newTestDatabase();
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.getSnapshot((err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert(resp instanceof Snapshot);
+        resp.end();
+        done();
+      });
+    });
+
+    it('should execute the transaction(database.writeAtLeastOnce) successfully using multiplexed session', done => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Marc',
+      });
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.writeAtLeastOnce(mutations, (err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
+        assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
+        assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
+        assert.strictEqual(resp?.commitStats, null);
+        done();
+      });
+    });
+
+    it('should fail the transaction, if multiplexed session creation is failed', async () => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const err = {
+        code: grpc.status.NOT_FOUND,
+        message: 'create session failed',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofError(err)
+      );
+      const database = newTestDatabase().on('error', err => {
+        assert.strictEqual(err.code, Status.NOT_FOUND);
+      });
+      try {
+        await database.run(query);
+      } catch (error) {
+        assert.strictEqual((error as grpc.ServiceError).code, err.code);
+        assert.strictEqual(
+          (error as grpc.ServiceError).details,
+          'create session failed'
+        );
+        assert.strictEqual(
+          (error as grpc.ServiceError).message,
+          '5 NOT_FOUND: create session failed'
+        );
+      }
+    });
+
+    it('should fail the transaction, if query returns session not found error', done => {
+      const query = {
+        sql: selectSql,
+      } as ExecuteSqlRequest;
+      const error = {
+        code: grpc.status.NOT_FOUND,
+        message: 'Session not found',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(error)
+      );
+      const database = newTestDatabase();
+      database.run(query, (err, _) => {
+        assert.strictEqual(err!.code, error.code);
+        assert.strictEqual(err!.details, error.message);
+        done();
       });
     });
   });
@@ -5075,6 +5215,23 @@ describe('Spanner with mock server', () => {
       done();
     });
   });
+
+  describe('session-factory', () => {
+    after(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    });
+
+    it('should not propagate any error when enabling GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS after client initialization', done => {
+      const database = newTestDatabase();
+      // enable env after database creation
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      const sessionFactory = database.sessionFactory_ as SessionFactory;
+      sessionFactory.getSession((err, _) => {
+        assert.ifError(err);
+        done();
+      });
+    });
+  });
 });
 
 function executeSimpleUpdate(
@@ -5128,4 +5285,134 @@ function getRowCountFromStreamingSql(
 
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\d+\.){4}\d+$/;
+
+class XGoogRequestHeaderInterceptor {
+  private nStream: number;
+  private nUnary: number;
+  private streamCalls: any[];
+  private unaryCalls: any[];
+  private prefixesToIgnore?: string[];
+  constructor(prefixesToIgnore?: string[]) {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+    this.prefixesToIgnore = prefixesToIgnore || [];
+  }
+
+  assertHasHeader(call): string | unknown {
+    const metadata = call.metadata;
+    const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+    if (!gotReqId) {
+      throw new Error(
+        `${call.method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`
+      );
+    }
+
+    if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+      throw new Error(
+        `${call.method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`
+      );
+    }
+    return gotReqId;
+  }
+
+  interceptUnary(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.unaryCalls.push({method: call.method, reqId: gotReqId});
+    this.nUnary++;
+    next(call);
+  }
+
+  generateClientInterceptor() {
+    return this.interceptUnary.bind(this);
+  }
+
+  interceptStream(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.streamCalls.push({method: call.method, reqId: gotReqId});
+    this.nStream++;
+    next(call);
+  }
+
+  generateServerInterceptor() {
+    return this.serverInterceptor.bind(this);
+  }
+
+  reset() {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+  }
+
+  public getUnaryCalls() {
+    return this.unaryCalls;
+  }
+
+  public getStreamingCalls() {
+    return this.streamCalls;
+  }
+
+  serverInterceptor(methodDescriptor, call) {
+    const method = call.handler.path;
+    const isUnary = call.handler.type === 'unary';
+    const listener = new grpcModule.ServerListenerBuilder()
+      .withOnReceiveMetadata((metadata, next) => {
+        let i = 0;
+        const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
+        for (i = 0; i < prefixesToIgnore.length; i++) {
+          const prefix = prefixesToIgnore[i];
+          if (method.startsWith(prefix)) {
+            next(metadata);
+            return;
+          }
+        }
+
+        const gotReqIds = metadata.get(X_GOOG_SPANNER_REQUEST_ID_HEADER);
+        if (!(gotReqIds && gotReqIds.length > 0)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
+          });
+          return;
+        }
+
+        if (gotReqIds.length !== 1) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} set multiple ${X_GOOG_SPANNER_REQUEST_ID_HEADER} headers: ${gotReqIds}`,
+          });
+          return;
+        }
+
+        const gotReqId = gotReqIds[0].toString();
+        if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
+          });
+          return;
+        }
+
+        if (isUnary) {
+          this.unaryCalls.push({method: method, reqId: gotReqId});
+          this.nUnary++;
+        } else {
+          this.streamCalls.push({method: method, reqId: gotReqId});
+          this.nStream++;
+        }
+
+        next(metadata);
+      })
+      .build();
+
+    const responder = new grpcModule.ResponderBuilder()
+      .withStart(next => next(listener))
+      .build();
+    return new grpcModule.ServerInterceptingCall(call, responder);
+  }
 }

@@ -1627,8 +1627,8 @@
                         "java_package": "com.google.spanner.admin.database.v1",
                         "php_namespace": "Google\\Cloud\\Spanner\\Admin\\Database\\V1",
                         "ruby_package": "Google::Cloud::Spanner::Admin::Database::V1",
-                        "(google.api.resource_definition).type": "spanner.googleapis.com/Instance",
-                        "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}"
+                        "(google.api.resource_definition).type": "spanner.googleapis.com/InstancePartition",
+                        "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}"
                       },
                       "nested": {
                         "Backup": {
@@ -1757,6 +1757,14 @@
                             "oldestVersionTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 18,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "instancePartitions": {
+                              "rule": "repeated",
+                              "type": "BackupInstancePartition",
+                              "id": 19,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -2121,6 +2129,17 @@
                         },
                         "IncrementalBackupSpec": {
                           "fields": {}
+                        },
+                        "BackupInstancePartition": {
+                          "fields": {
+                            "instancePartition": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstancePartition"
+                              }
+                            }
+                          }
                         },
                         "OperationProgress": {
                           "fields": {
@@ -2881,6 +2900,26 @@
                                 }
                               ]
                             },
+                            "AddSplitPoints": {
+                              "requestType": "AddSplitPointsRequest",
+                              "responseType": "AddSplitPointsResponse",
+                              "options": {
+                                "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}:addSplitPoints",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "database,split_points"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{database=projects/*/instances/*/databases/*}:addSplitPoints",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "database,split_points"
+                                }
+                              ]
+                            },
                             "CreateBackupSchedule": {
                               "requestType": "CreateBackupScheduleRequest",
                               "responseType": "BackupSchedule",
@@ -3578,6 +3617,76 @@
                               "id": 2
                             }
                           }
+                        },
+                        "AddSplitPointsRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "splitPoints": {
+                              "rule": "repeated",
+                              "type": "SplitPoints",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "initiator": {
+                              "type": "string",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "AddSplitPointsResponse": {
+                          "fields": {}
+                        },
+                        "SplitPoints": {
+                          "fields": {
+                            "table": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "index": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "keys": {
+                              "rule": "repeated",
+                              "type": "Key",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "Key": {
+                              "fields": {
+                                "keyParts": {
+                                  "type": "google.protobuf.ListValue",
+                                  "id": 1,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -4117,7 +4226,9 @@
                         "InstanceConfig": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/InstanceConfig",
-                            "(google.api.resource).pattern": "projects/{project}/instanceConfigs/{instance_config}"
+                            "(google.api.resource).pattern": "projects/{project}/instanceConfigs/{instance_config}",
+                            "(google.api.resource).plural": "instanceConfigs",
+                            "(google.api.resource).singular": "instanceConfig"
                           },
                           "fields": {
                             "name": {
@@ -4182,6 +4293,27 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "freeInstanceAvailability": {
+                              "type": "FreeInstanceAvailability",
+                              "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "quorumType": {
+                              "type": "QuorumType",
+                              "id": 18,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "storageLimitPerProcessingUnit": {
+                              "type": "int64",
+                              "id": 19,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -4197,6 +4329,23 @@
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
                                 "READY": 2
+                              }
+                            },
+                            "FreeInstanceAvailability": {
+                              "values": {
+                                "FREE_INSTANCE_AVAILABILITY_UNSPECIFIED": 0,
+                                "AVAILABLE": 1,
+                                "UNSUPPORTED": 2,
+                                "DISABLED": 3,
+                                "QUOTA_EXCEEDED": 4
+                              }
+                            },
+                            "QuorumType": {
+                              "values": {
+                                "QUORUM_TYPE_UNSPECIFIED": 0,
+                                "REGION": 1,
+                                "DUAL_REGION": 2,
+                                "MULTI_REGION": 3
                               }
                             }
                           }
@@ -4349,7 +4498,9 @@
                         "Instance": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/Instance",
-                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}"
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}",
+                            "(google.api.resource).plural": "instances",
+                            "(google.api.resource).singular": "instance"
                           },
                           "fields": {
                             "name": {
@@ -4409,6 +4560,10 @@
                               "type": "string",
                               "id": 7
                             },
+                            "instanceType": {
+                              "type": "InstanceType",
+                              "id": 10
+                            },
                             "endpointUris": {
                               "rule": "repeated",
                               "type": "string",
@@ -4427,6 +4582,10 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "freeInstanceMetadata": {
+                              "type": "FreeInstanceMetadata",
+                              "id": 13
                             },
                             "edition": {
                               "type": "Edition",
@@ -4449,6 +4608,13 @@
                                 "STATE_UNSPECIFIED": 0,
                                 "CREATING": 1,
                                 "READY": 2
+                              }
+                            },
+                            "InstanceType": {
+                              "values": {
+                                "INSTANCE_TYPE_UNSPECIFIED": 0,
+                                "PROVISIONED": 1,
+                                "FREE_INSTANCE": 2
                               }
                             },
                             "Edition": {
@@ -4788,6 +4954,37 @@
                             }
                           }
                         },
+                        "FreeInstanceMetadata": {
+                          "fields": {
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "upgradeTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "expireBehavior": {
+                              "type": "ExpireBehavior",
+                              "id": 3
+                            }
+                          },
+                          "nested": {
+                            "ExpireBehavior": {
+                              "values": {
+                                "EXPIRE_BEHAVIOR_UNSPECIFIED": 0,
+                                "FREE_TO_PROVISIONED": 1,
+                                "REMOVE_AFTER_GRACE_PERIOD": 2
+                              }
+                            }
+                          }
+                        },
                         "CreateInstanceConfigMetadata": {
                           "fields": {
                             "instanceConfig": {
@@ -4823,7 +5020,9 @@
                         "InstancePartition": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/InstancePartition",
-                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}"
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}",
+                            "(google.api.resource).plural": "instancePartitions",
+                            "(google.api.resource).singular": "instancePartition"
                           },
                           "oneofs": {
                             "computeCapacity": {
@@ -4898,6 +5097,7 @@
                               "type": "string",
                               "id": 11,
                               "options": {
+                                "deprecated": true,
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
@@ -8065,6 +8265,13 @@
                     "dataBoostEnabled": {
                       "type": "bool",
                       "id": 16
+                    },
+                    "lastStatement": {
+                      "type": "bool",
+                      "id": 17,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
@@ -8126,6 +8333,13 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 5
+                    },
+                    "lastStatements": {
+                      "type": "bool",
+                      "id": 6,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
@@ -8604,6 +8818,10 @@
                     "excludeTxnFromChangeStreams": {
                       "type": "bool",
                       "id": 5
+                    },
+                    "isolationLevel": {
+                      "type": "IsolationLevel",
+                      "id": 6
                     }
                   },
                   "nested": {
@@ -8671,6 +8889,13 @@
                           "type": "bool",
                           "id": 6
                         }
+                      }
+                    },
+                    "IsolationLevel": {
+                      "values": {
+                        "ISOLATION_LEVEL_UNSPECIFIED": 0,
+                        "SERIALIZABLE": 1,
+                        "REPEATABLE_READ": 2
                       }
                     }
                   }
@@ -9103,7 +9328,8 @@
                     "JSON": 11,
                     "PROTO": 13,
                     "ENUM": 14,
-                    "INTERVAL": 16
+                    "INTERVAL": 16,
+                    "UUID": 17
                   }
                 },
                 "TypeAnnotationCode": {
