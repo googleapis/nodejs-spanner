@@ -23,6 +23,7 @@ import {
   Database,
   Instance,
   MutationSet,
+  protos,
   SessionPool,
   Snapshot,
   Spanner,
@@ -3575,6 +3576,33 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 2);
     });
 
+    it('should apply blind writes only once with isolationLevel option', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Marc',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Scarlet',
+      });
+      await database.writeAtLeastOnce(mutations, {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      });
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).singleUseTransaction?.isolationLevel;
+      }) as v1.CommitRequest;
+      assert.strictEqual(
+        request.singleUseTransaction?.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3705,6 +3733,25 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           request.requestOptions?.transactionTag,
           'transaction-tag'
+        );
+      });
+    });
+
+    it('should use isolation level for getTransaction', async () => {
+      const database = newTestDatabase();
+      const [transaction] = await database.getTransaction({
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      });
+      await transaction.run('SELECT 1').then(() => {
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.isolationLevel,
+          'REPEATABLE_READ'
         );
       });
     });

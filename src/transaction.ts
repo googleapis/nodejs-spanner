@@ -2697,6 +2697,13 @@ export class Transaction extends Dml {
   excludeTxnFromChangeStreams(): void {
     this._options.excludeTxnFromChangeStreams = true;
   }
+
+  /**
+   * Use option isolationLevel to add the isolation level in the transaction.
+   */
+  setIsolationLevel(isolationLevel: any): void {
+    this._options.isolationLevel = isolationLevel;
+  }
 }
 
 /*! Developer Documentation

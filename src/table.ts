@@ -37,6 +37,7 @@ import {
   setSpanError,
   traceConfig,
 } from './instrument';
+import {protos} from '.';
 
 export type Key = string | string[];
 
@@ -53,6 +54,7 @@ export type DropTableCallback = UpdateSchemaCallback;
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
   excludeTxnFromChangeStreams?: boolean;
+  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -1100,10 +1102,14 @@ class Table {
           ? options.excludeTxnFromChangeStreams
           : false;
 
+      const isolationLevel =
+        'isolationLevel' in options ? options.isolationLevel : undefined;
+
       this.database.runTransaction(
         {
           requestOptions: requestOptions,
           excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+          isolationLevel: isolationLevel,
         },
         (err, transaction) => {
           if (err) {
