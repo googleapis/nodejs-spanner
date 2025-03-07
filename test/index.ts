@@ -337,7 +337,10 @@ describe('Spanner', () => {
       const spanner = new Spanner({
         defaultTransactionOptions: fakeDefaultTxnOptions,
       });
-      assert.strictEqual(spanner.defaultTransactionOptions, fakeDefaultTxnOptions);
+      assert.strictEqual(
+        spanner.defaultTransactionOptions,
+        fakeDefaultTxnOptions
+      );
     });
 
     it('should set projectFormattedName_', () => {
