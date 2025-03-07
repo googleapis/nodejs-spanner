@@ -2217,6 +2217,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
+    const defaultTransactionOptions =
+      this._getSpanner().defaultTransactionOptions;
+
     return startTrace('Database.getTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
@@ -2230,6 +2233,14 @@ class Database extends common.GrpcServiceObject {
         }
         if (options.excludeTxnFromChangeStreams) {
           transaction!.excludeTxnFromChangeStreams();
+        }
+
+        if (options.isolationLevel) {
+          transaction!.setIsolationLevel(options.isolationLevel);
+        } else if (defaultTransactionOptions) {
+          transaction!.setIsolationLevel(
+            defaultTransactionOptions.isolationLevel
+          );
         }
 
         if (!err) {
