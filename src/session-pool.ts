@@ -599,7 +599,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return getSession();
     };
 
-    const session = await this._acquires.add(getSession);
+    const session = await this._acquires.add(getSession, {throwOnTimeout:true});
     this._prepareTransaction(session);
     this._traces.set(session.id, frames);
     return session;
