@@ -145,7 +145,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
-  defaultTransactionOptions?: google.spanner.v1.ITransactionOptions | null;
+  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
@@ -248,7 +248,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  defaultTransactionOptions: google.spanner.v1.ITransactionOptions | null;
+  defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -335,7 +335,11 @@ class Spanner extends GrpcService {
 
     const defaultTransactionOptions = options.defaultTransactionOptions
       ? options.defaultTransactionOptions
-      : null;
+      : {
+          isolationLevel:
+            google.spanner.v1.TransactionOptions.IsolationLevel
+              .ISOLATION_LEVEL_UNSPECIFIED,
+        };
     delete options.defaultTransactionOptions;
 
     const emulatorHost = Spanner.getSpannerEmulatorHost();
@@ -2076,6 +2080,7 @@ export {MutationSet};
  */
 import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
+import {RunTransactionOptions} from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
 export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

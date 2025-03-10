@@ -329,17 +329,17 @@ describe('Spanner', () => {
 
     it('should optionally accept defaultTransactionOptions', () => {
       const fakeDefaultTxnOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        defaultTransactionOptions: {
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .REPEATABLE_READ,
+        },
       };
 
-      const spanner = new Spanner({
-        defaultTransactionOptions: fakeDefaultTxnOptions,
-      });
+      const spanner = new Spanner(fakeDefaultTxnOptions);
       assert.strictEqual(
         spanner.defaultTransactionOptions,
-        fakeDefaultTxnOptions
+        fakeDefaultTxnOptions.defaultTransactionOptions
       );
     });
 

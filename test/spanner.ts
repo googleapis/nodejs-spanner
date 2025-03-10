@@ -72,6 +72,7 @@ import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
+import {WriteAtLeastOnceOptions} from '../src/database';
 
 const {
   AlwaysOnSampler,
@@ -3588,11 +3589,14 @@ describe('Spanner with mock server', () => {
         SingerId: 2,
         FirstName: 'Scarlet',
       });
-      await database.writeAtLeastOnce(mutations, {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
-      });
+      const options: WriteAtLeastOnceOptions = {
+        defaultTransactionOptions: {
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .REPEATABLE_READ,
+        },
+      };
+      await database.writeAtLeastOnce(mutations, options);
       await database.close();
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).singleUseTransaction?.isolationLevel;
@@ -4240,14 +4244,17 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
-    it('should use excludeTxnFromChangeStreams for mutations', async () => {
+    it('should use defaultTransactionOptions for mutations', async () => {
       const database = newTestDatabase();
-      await database.table('foo').upsert(
-        {id: 1, name: 'bar'},
-        {
+      const options = {
+        defaultTransactionOptions: {
           excludeTxnFromChangeStreams: true,
-        }
-      );
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .REPEATABLE_READ,
+        },
+      };
+      await database.table('foo').upsert({id: 1, name: 'bar'}, options);
       const beginTxnRequest = spannerMock
         .getRequests()
         .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
@@ -4256,6 +4263,10 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
+      );
+      assert.strictEqual(
+        beginTxnRequest[0].options?.isolationLevel,
+        'REPEATABLE_READ'
       );
       await database.close();
     });

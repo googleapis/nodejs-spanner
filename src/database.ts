@@ -317,7 +317,7 @@ export interface RestoreOptions {
 }
 
 export interface WriteAtLeastOnceOptions extends CallOptions {
-  isolationLevel?: spannerClient.spanner.v1.TransactionOptions.IsolationLevel;
+  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
 }
 
 /**
@@ -3695,7 +3695,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as WriteAtLeastOnceOptions)
         : {};
 
-    const defaultTransactionOptions =
+    const defaultIsolationLevelOptions =
       this._getSpanner().defaultTransactionOptions;
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
@@ -3721,11 +3721,13 @@ class Database extends common.GrpcServiceObject {
         span.addEvent('Using Session', {'session.id': session?.id});
         this._releaseOnEnd(session!, transaction!, span);
         try {
-          if (options.isolationLevel) {
-            transaction!.setIsolationLevel(options.isolationLevel);
-          } else if (defaultTransactionOptions) {
+          if (options.defaultTransactionOptions) {
             transaction!.setIsolationLevel(
-              defaultTransactionOptions.isolationLevel
+              options.defaultTransactionOptions.isolationLevel
+            );
+          } else if (defaultIsolationLevelOptions) {
+            transaction!.setIsolationLevel(
+              defaultIsolationLevelOptions.isolationLevel
             );
           }
           transaction?.setQueuedMutations(mutations.proto());
