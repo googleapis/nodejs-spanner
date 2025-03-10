@@ -16,7 +16,7 @@
 
 import {GrpcService} from './common-grpc/service';
 import * as checkpointStream from 'checkpoint-stream';
-import * as eventsIntercept from 'events-intercept';
+import eventsIntercept from 'events-intercept';
 import * as is from 'is';
 import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
