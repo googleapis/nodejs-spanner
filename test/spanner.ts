@@ -23,6 +23,7 @@ import {
   Database,
   Instance,
   MutationSet,
+  protos,
   SessionPool,
   Snapshot,
   Spanner,
@@ -71,6 +72,7 @@ import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
+import {WriteAtLeastOnceOptions} from '../src/database';
 
 const {
   AlwaysOnSampler,
@@ -3575,6 +3577,36 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 2);
     });
 
+    it('should apply blind writes only once with isolationLevel option', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Marc',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Scarlet',
+      });
+      const options: WriteAtLeastOnceOptions = {
+        defaultTransactionOptions: {
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .REPEATABLE_READ,
+        },
+      };
+      await database.writeAtLeastOnce(mutations, options);
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).singleUseTransaction?.isolationLevel;
+      }) as v1.CommitRequest;
+      assert.strictEqual(
+        request.singleUseTransaction?.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3705,6 +3737,25 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           request.requestOptions?.transactionTag,
           'transaction-tag'
+        );
+      });
+    });
+
+    it('should use isolation level for getTransaction', async () => {
+      const database = newTestDatabase();
+      const [transaction] = await database.getTransaction({
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      });
+      await transaction.run('SELECT 1').then(() => {
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.isolationLevel,
+          'REPEATABLE_READ'
         );
       });
     });
@@ -4193,14 +4244,17 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
-    it('should use excludeTxnFromChangeStreams for mutations', async () => {
+    it('should use defaultTransactionOptions for mutations', async () => {
       const database = newTestDatabase();
-      await database.table('foo').upsert(
-        {id: 1, name: 'bar'},
-        {
+      const options = {
+        defaultTransactionOptions: {
           excludeTxnFromChangeStreams: true,
-        }
-      );
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .REPEATABLE_READ,
+        },
+      };
+      await database.table('foo').upsert({id: 1, name: 'bar'}, options);
       const beginTxnRequest = spannerMock
         .getRequests()
         .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
@@ -4209,6 +4263,10 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
+      );
+      assert.strictEqual(
+        beginTxnRequest[0].options?.isolationLevel,
+        'REPEATABLE_READ'
       );
       await database.close();
     });
