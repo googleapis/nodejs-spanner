@@ -16,7 +16,7 @@
 
 import {EventEmitter} from 'events';
 import * as is from 'is';
-import PQueue from 'p-queue';
+import type PQueue from 'p-queue';
 
 import {Database} from './database';
 import {Session} from './session';

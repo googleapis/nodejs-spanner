@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {grpc} from 'google-gax';
 import {google} from '../protos/protos';
 import {Database, Instance, Spanner} from '../src';
@@ -34,7 +34,7 @@ const {
 } = require('@opentelemetry/sdk-trace-node');
 // eslint-disable-next-line n/no-extraneous-require
 const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-const {SpanStatusCode} = require('@opentelemetry/api');
+const {SpanStatusCode, TracerProvider} = require('@opentelemetry/api');
 const {
   disableContextAndManager,
   generateWithAllSpansHaveDBName,
@@ -47,7 +47,6 @@ const {
 const {
   AsyncHooksContextManager,
 } = require('@opentelemetry/context-async-hooks');
-
 const {ObservabilityOptions} = require('../src/instrument');
 const selectSql = 'SELECT 1';
 const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';

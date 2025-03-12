@@ -15,7 +15,7 @@
  */
 
 import {promisifyAll} from '@google-cloud/promisify';
-import * as through from 'through2';
+import through from 'through2';
 import {Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Database, UpdateSchemaCallback, UpdateSchemaResponse} from './database';
 import {PartialResultStream, Row} from './partial-result-stream';

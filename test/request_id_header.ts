@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable prefer-rest-params */
-import * as assert from 'assert';
+import assert from 'assert';
 import {
   RequestIDError,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,

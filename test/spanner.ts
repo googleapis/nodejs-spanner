@@ -15,7 +15,7 @@
  */
 
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
-import * as assert from 'assert';
+import assert from 'assert';
 import {grpc, Status, ServiceError} from 'google-gax';
 // eslint-disable-next-line n/no-extraneous-import
 import * as grpcModule from '@grpc/grpc-js';

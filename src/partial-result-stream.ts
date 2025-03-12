@@ -21,7 +21,7 @@ import * as is from 'is';
 import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
-import * as streamEvents from 'stream-events';
+import streamEvents from 'stream-events';
 import {grpc, CallOptions} from 'google-gax';
 import {DeadlineError, isRetryableInternalError} from './transaction-runner';
 

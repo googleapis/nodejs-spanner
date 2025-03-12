@@ -16,10 +16,10 @@
 
 /* eslint-disable prefer-rest-params */
 
-import * as through from 'through2';
+import through from 'through2';
 import {EventEmitter} from 'events';
-import * as assert from 'assert';
-import * as extend from 'extend';
+import assert from 'assert';
+import extend from 'extend';
 import {google} from '../protos/protos';
 import {
   BatchWriteOptions,
@@ -29,7 +29,7 @@ import {
 } from '../src/transaction';
 import {util} from '@google-cloud/common';
 import {Transform} from 'stream';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 const {SpanStatusCode} = require('@opentelemetry/api');
 const {

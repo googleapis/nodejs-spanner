@@ -18,12 +18,12 @@ import {GrpcService, GrpcServiceConfig} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import {promisifyAll} from '@google-cloud/promisify';
-import * as extend from 'extend';
+import extend from 'extend';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
-import * as streamEvents from 'stream-events';
-import * as through from 'through2';
+import streamEvents from 'stream-events';
+import through from 'through2';
 import {
   codec,
   Float32,

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const checkpointStream = require('checkpoint-stream');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {Transform} from 'stream';
-import * as through from 'through2';
+import through from 'through2';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';

@@ -35,11 +35,11 @@ import {
 } from '@grpc/proto-loader';
 import * as duplexify from 'duplexify';
 import {EventEmitter} from 'events';
-import * as extend from 'extend';
+import extend from 'extend';
 import {grpc, GrpcClient} from 'google-gax';
 import * as is from 'is';
 import {Request, Response} from 'teeny-request';
-import * as retryRequest from 'retry-request';
+import retryRequest from 'retry-request';
 import {Duplex, PassThrough} from 'stream';
 import { OAuth2Client } from 'google-auth-library';
 

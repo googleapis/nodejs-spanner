@@ -17,7 +17,7 @@
 import {promisify} from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {Root} from 'protobufjs';
-import * as through from 'through2';
+import through from 'through2';
 
 import {Session} from './session';
 import {Transaction} from './transaction';

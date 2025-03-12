@@ -15,9 +15,9 @@
  */
 
 const {Spanner} = require('../');
-const pLimit = require('p-limit');
 const {describe, it} = require('mocha');
 const spanner = new Spanner({projectId: process.env.GCLOUD_PROJECT});
+const pLimitPromise = import('p-limit');
 
 // Delete instances that are 1 hour old.
 const STALE_THRESHOLD = 60 * 60;
@@ -30,6 +30,7 @@ async function deleteStaleInstances(labelFilter) {
   const filtered = instances.filter(instance => {
     return labelFilter(instance.metadata.labels);
   });
+  const { default: pLimit } = await pLimitPromise;
 
   const limit = pLimit(5);
   await Promise.all(

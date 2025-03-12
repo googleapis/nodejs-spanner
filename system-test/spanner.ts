@@ -15,12 +15,12 @@
  */
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import * as assert from 'assert';
+import assert from 'assert';
+const pLimitPromise = import('p-limit');
 import {describe, it, before, after, beforeEach} from 'mocha';
-import pLimit from 'p-limit'
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
-import * as extend from 'extend';
+import extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
 import {
@@ -284,6 +284,7 @@ describe('Spanner', () => {
          * Not to exceed quota
          * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
          */
+        const { default: pLimit } = await pLimitPromise;
         const limit = pLimit(5);
         await Promise.all(
           RESOURCES_TO_CLEAN.map(resource =>
@@ -9532,16 +9533,17 @@ async function deleteOldTestInstances() {
       isOld(Number(instance.metadata!.labels!.created))
   );
 
-  return deleteInstanceArray(toDelete);
+  return await deleteInstanceArray(toDelete);
 }
 
-function deleteInstanceArray(instanceArray) {
+async function deleteInstanceArray(instanceArray) {
   /**
    * Delay to allow instance and its databases to fully clear.
    * Refer to "Soon afterwards"
    *  @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
    */
   const delay = 500;
+  const { default: pLimit } = await pLimitPromise;
   const limit = pLimit(5);
   return Promise.all(
     instanceArray.map(instance =>

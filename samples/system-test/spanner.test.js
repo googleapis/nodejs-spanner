@@ -19,7 +19,7 @@ const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
 const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
-const pLimit = require('p-limit');
+const pLimitPromise = import('p-limit');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
@@ -135,6 +135,7 @@ async function deleteStaleInstances() {
       new Date(parseInt(instance.metadata.labels['created']) * 1000) < old
     );
   });
+  const { default: pLimit } = await pLimitPromise;
   const limit = pLimit(5);
   await Promise.all(
     instances.map(instance =>

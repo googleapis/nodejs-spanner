@@ -18,10 +18,10 @@
 
 import {util} from '@google-cloud/common';
 import * as pfy from '@google-cloud/promisify';
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import * as extend from 'extend';
-import * as proxyquire from 'proxyquire';
+import extend from 'extend';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 const {
   AlwaysOnSampler,

@@ -15,7 +15,7 @@
  */
 
 import {ContextManager, context} from '@opentelemetry/api';
-import * as assert from 'assert';
+import assert from 'assert';
 const {ReadableSpan} = require('@opentelemetry/sdk-trace-base');
 import {SEMATTRS_DB_NAME} from '@opentelemetry/semantic-conventions';
 

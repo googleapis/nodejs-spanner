@@ -15,7 +15,7 @@
  */
 import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
-import arrify from 'arrify';
+const arrify = require('arrify');
 import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';

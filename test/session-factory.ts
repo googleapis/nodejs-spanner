@@ -17,7 +17,7 @@
 import {Database, Session, SessionPool} from '../src';
 import {SessionFactory} from '../src/session-factory';
 import * as sinon from 'sinon';
-import * as assert from 'assert';
+import assert from 'assert';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {util} from '@google-cloud/common';
 import * as db from '../src/database';

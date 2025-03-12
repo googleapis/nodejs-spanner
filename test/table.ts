@@ -15,14 +15,14 @@
  */
 
 import * as pfy from '@google-cloud/promisify';
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import * as extend from 'extend';
-import * as proxyquire from 'proxyquire';
+import extend from 'extend';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
 import {Transform} from 'stream';
-import * as through from 'through2';
+import through from 'through2';
 
 import {TimestampBounds} from '../src/transaction';
 import {google} from '../protos/protos';
