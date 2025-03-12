@@ -9420,7 +9420,10 @@ describe('Spanner', () => {
           this.skip();
         }
         const selectQuery = {
-          sql: 'SELECT * FROM TxnTable where Key = "k998"',
+          sql: 'SELECT * FROM TxnTable where Key = @id',
+          params: {
+            id: 'k998',
+          },
         };
 
         let row_count = 0;
