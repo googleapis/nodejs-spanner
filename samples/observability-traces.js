@@ -31,8 +31,10 @@ async function main(
   const {
     TraceExporter,
   } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-  const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-  const {TraceIdRatioBasedSampler} = require('@opentelemetry/sdk-trace-base');
+  const {
+    BatchSpanProcessor,
+    TraceIdRatioBasedSampler,
+  } = require('@opentelemetry/sdk-trace-base');
   const {Spanner} = require('@google-cloud/spanner');
 
   const traceExporter = new TraceExporter();

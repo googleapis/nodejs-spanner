@@ -30,8 +30,10 @@ async function main(
   const {
     OTLPTraceExporter,
   } = require('@opentelemetry/exporter-trace-otlp-grpc');
-  const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-  const {TraceIdRatioBasedSampler} = require('@opentelemetry/sdk-trace-base');
+  const {
+    BatchSpanProcessor,
+    TraceIdRatioBasedSampler,
+  } = require('@opentelemetry/sdk-trace-base');
   const {Resource} = require('@opentelemetry/resources');
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -53,7 +55,7 @@ async function main(
     spanProcessors: [new BatchSpanProcessor(traceExporter)],
   });
 
-  // Uncomment following line to register tracerProvider globally
+  // Uncomment following line to register tracerProvider globally or pass it in Spanner object
   // provider.register();
 
   // Create the Cloud Spanner Client.
