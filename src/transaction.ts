@@ -427,11 +427,6 @@ export class Snapshot extends EventEmitter {
           ...this._getSpanner().defaultReadWriteOptionsProto,
           ...this._options,
         };
-    // const options = this._options;
-    // const options = {
-    //   ...this._getSpanner().defaultTransactionOptionsProto,
-    //   ...this._options
-    // }
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -1650,10 +1645,6 @@ export class Snapshot extends EventEmitter {
   protected _getSpanner(): Spanner {
     return this.session.parent.parent.parent as Spanner;
   }
-
-  // protected _getDatabase(): Database {
-  //   return this.session.parent as Database;
-  // }
 }
 
 /*! Developer Documentation
@@ -1852,7 +1843,7 @@ export class Transaction extends Dml {
   }
 
   setTransactionOptions(options: any) {
-    if (options.optimisticLock || options.readLockMode) {
+    if (options.optimisticLock) {
       this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
     }
     if (options.excludeTxnFromChangeStreams) {
@@ -2187,7 +2178,6 @@ export class Transaction extends Dml {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
-        // reqOpts.singleUseTransaction = this._options;
         reqOpts.singleUseTransaction = {
           ...this._getSpanner().defaultReadWriteOptionsProto,
           ...this._options,
@@ -2719,39 +2709,6 @@ export class Transaction extends Dml {
   useInRunner(): void {
     this._useInRunner = true;
   }
-
-  /**
-   * Use optimistic concurrency control for the transaction.
-   *
-   * In this concurrency mode, operations during the execution phase, i.e.,
-   * reads and queries, are performed without acquiring locks, and transactional
-   * consistency is ensured by running a validation process in the commit phase
-   * (when any needed locks are acquired). The validation process succeeds only
-   * if there are no conflicting committed transactions (that committed
-   * mutations to the read data at a commit timestamp after the read timestamp).
-   */
-  // useOptimisticLock(): void {
-  //   this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-  // }
-
-  /**
-   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
-   * from being tracked in change streams.
-   *
-   * Enabling this options to true will effectively disable change stream tracking
-   * for a specified transaction, allowing read/write transaction to operate without being
-   * included in change streams.
-   */
-  // excludeTxnFromChangeStreams(): void {
-  //   this._options.excludeTxnFromChangeStreams = true;
-  // }
-
-  /**
-   * Use option isolationLevel to add the isolation level in the transaction.
-   */
-  // setIsolationLevel(isolationLevel: any): void {
-  //   this._options.isolationLevel = isolationLevel;
-  // }
 }
 
 /*! Developer Documentation

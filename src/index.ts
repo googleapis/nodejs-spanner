@@ -248,9 +248,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  // defaultTransactionOptions: RunTransactionOptions;
   defaultReadWriteOptionsProto: google.spanner.v1.ITransactionOptions;
-  // defaultReadWriteTransactionProto: google.spanner.v1.ITransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -302,8 +300,6 @@ class Spanner extends GrpcService {
   convertDefaultReadWriteOptionsToProto(
     defaultReadWriteTxnOptions: any
   ): google.spanner.v1.TransactionOptions {
-    // const ReadWriteTxnOptions: google.spanner.v1.TransactionOptions;
-
     const ReadWriteTxnOptions = defaultReadWriteTxnOptions
       ? defaultReadWriteTxnOptions
       : {
@@ -349,13 +345,6 @@ class Spanner extends GrpcService {
       ? options.directedReadOptions
       : null;
     delete options.directedReadOptions;
-
-    // const defaultTransactionOptions = options.defaultTransactionOptions
-    //   ? options.defaultTransactionOptions
-    //   : {isolationLevel: google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED};
-    // delete options.defaultTransactionOptions;
-
-    // defaultTransactionOptionsProto: google.spanner.v1.TransactionOptions = convertDefaultTxnOptionsToProto(options.defaultTransactionOptions);
 
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
@@ -403,7 +392,6 @@ class Spanner extends GrpcService {
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.directedReadOptions = directedReadOptions;
-    // this.defaultTransactionOptions = defaultTransactionOptions;
     this.defaultReadWriteOptionsProto = defaultProtoReadWriteOption;
     this._observabilityOptions = options.observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(

@@ -1586,7 +1586,11 @@ describe('Transaction', () => {
               .OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
-        transaction.setTransactionOptions(rw);
+        transaction.setTransactionOptions({
+          optimisticLock:
+            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .OPTIMISTIC,
+        });
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 

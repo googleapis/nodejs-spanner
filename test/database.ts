@@ -177,9 +177,6 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
-  // setIsolationLevel(isolationLevel) {
-  //   this._options.isolationLevel = isolationLevel;
-  // }
   setTransactionOptions(options: any) {
     if (options.optimisticLock) {
       this._options.readWrite!.readLockMode =
@@ -3140,8 +3137,6 @@ describe('Database', () => {
           callback(null, SESSION, TRANSACTION);
         }
       );
-
-      // (sandbox.stub(TRANSACTION, 'setTransactionOptions') as sinon.SinonStub)
     });
 
     it('should return any errors getting a session', done => {
