@@ -182,7 +182,8 @@ class FakeTransaction extends EventEmitter {
   // }
   setTransactionOptions(options: any) {
     if (options.optimisticLock) {
-      this._options.readWrite!.readLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC;
+      this._options.readWrite!.readLockMode =
+        google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC;
     }
     if (options.excludeTxnFromChangeStreams) {
       this._options.excludeTxnFromChangeStreams = true;

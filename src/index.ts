@@ -299,12 +299,18 @@ class Spanner extends GrpcService {
     return undefined;
   }
 
-  convertDefaultReadWriteOptionsToProto(defaultReadWriteTxnOptions: any): google.spanner.v1.TransactionOptions {
-    let ReadWriteTxnOptions: google.spanner.v1.TransactionOptions;
+  convertDefaultReadWriteOptionsToProto(
+    defaultReadWriteTxnOptions: any
+  ): google.spanner.v1.TransactionOptions {
+    // const ReadWriteTxnOptions: google.spanner.v1.TransactionOptions;
 
-    ReadWriteTxnOptions = defaultReadWriteTxnOptions ? defaultReadWriteTxnOptions : { 
-      isolationLevel: protos.google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED
-    };
+    const ReadWriteTxnOptions = defaultReadWriteTxnOptions
+      ? defaultReadWriteTxnOptions
+      : {
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .ISOLATION_LEVEL_UNSPECIFIED,
+        };
     return ReadWriteTxnOptions;
   }
 
@@ -350,7 +356,6 @@ class Spanner extends GrpcService {
     // delete options.defaultTransactionOptions;
 
     // defaultTransactionOptionsProto: google.spanner.v1.TransactionOptions = convertDefaultTxnOptionsToProto(options.defaultTransactionOptions);
-    
 
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
@@ -380,7 +385,10 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
-    const defaultProtoReadWriteOption = this.convertDefaultReadWriteOptionsToProto(options.defaultReadWriteOptions);
+    const defaultProtoReadWriteOption =
+      this.convertDefaultReadWriteOptionsToProto(
+        options.defaultReadWriteOptions
+      );
     delete options.defaultReadWriteOptions;
 
     if (options.routeToLeaderEnabled === false) {
@@ -2094,6 +2102,7 @@ export {MutationSet};
  */
 import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
+import { RunTransactionOptions } from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
 export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

@@ -421,10 +421,12 @@ export class Snapshot extends EventEmitter {
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
     const session = this.session.formattedName_!;
-    const options = this._options.partitionedDml ? this._options : {
-      ...this._getSpanner().defaultReadWriteOptionsProto,
-      ...this._options
-    }
+    const options = this._options.partitionedDml
+      ? this._options
+      : {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options,
+        };
     // const options = this._options;
     // const options = {
     //   ...this._getSpanner().defaultTransactionOptionsProto,
@@ -673,12 +675,12 @@ export class Snapshot extends EventEmitter {
     } else if (this._options.readWrite) {
       transaction.begin = {
         ...this._getSpanner().defaultReadWriteOptionsProto,
-        ...this._options
+        ...this._options,
       };
     } else {
       transaction.singleUse = {
         ...this._getSpanner().defaultReadWriteOptionsProto,
-        ...this._options
+        ...this._options,
       };
     }
 
@@ -1272,12 +1274,12 @@ export class Snapshot extends EventEmitter {
       } else if (this._options.readWrite) {
         transaction.begin = {
           ...this._getSpanner().defaultReadWriteOptionsProto,
-          ...this._options
+          ...this._options,
         };
       } else {
         transaction.singleUse = {
           ...this._getSpanner().defaultReadWriteOptionsProto,
-          ...this._options
+          ...this._options,
         };
       }
       delete query.gaxOptions;
@@ -1984,7 +1986,7 @@ export class Transaction extends Dml {
     } else {
       transaction.begin = {
         ...this._getSpanner().defaultReadWriteOptionsProto,
-        ...this._options
+        ...this._options,
       };
     }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
@@ -2188,8 +2190,8 @@ export class Transaction extends Dml {
         // reqOpts.singleUseTransaction = this._options;
         reqOpts.singleUseTransaction = {
           ...this._getSpanner().defaultReadWriteOptionsProto,
-          ...this._options
-        }
+          ...this._options,
+        };
       } else {
         this.begin().then(
           () => {
