@@ -72,7 +72,7 @@ import NullValue = google.protobuf.NullValue;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
-import { WriteAtLeastOnceOptions } from '../src/database';
+import {WriteAtLeastOnceOptions} from '../src/database';
 
 const {
   AlwaysOnSampler,
