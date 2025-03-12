@@ -421,7 +421,15 @@ export class Snapshot extends EventEmitter {
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
     const session = this.session.formattedName_!;
-    const options = this._options;
+    const options = this._options.partitionedDml ? this._options : {
+      ...this._getSpanner().defaultReadWriteOptionsProto,
+      ...this._options
+    }
+    // const options = this._options;
+    // const options = {
+    //   ...this._getSpanner().defaultTransactionOptionsProto,
+    //   ...this._options
+    // }
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -663,9 +671,15 @@ export class Snapshot extends EventEmitter {
     if (this.id) {
       transaction.id = this.id as Uint8Array;
     } else if (this._options.readWrite) {
-      transaction.begin = this._options;
+      transaction.begin = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options
+      };
     } else {
-      transaction.singleUse = this._options;
+      transaction.singleUse = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options
+      };
     }
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1256,9 +1270,15 @@ export class Snapshot extends EventEmitter {
       if (this.id) {
         transaction.id = this.id as Uint8Array;
       } else if (this._options.readWrite) {
-        transaction.begin = this._options;
+        transaction.begin = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options
+        };
       } else {
-        transaction.singleUse = this._options;
+        transaction.singleUse = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options
+        };
       }
       delete query.gaxOptions;
       delete query.json;
@@ -1628,6 +1648,10 @@ export class Snapshot extends EventEmitter {
   protected _getSpanner(): Spanner {
     return this.session.parent.parent.parent as Spanner;
   }
+
+  // protected _getDatabase(): Database {
+  //   return this.session.parent as Database;
+  // }
 }
 
 /*! Developer Documentation
@@ -1825,6 +1849,18 @@ export class Transaction extends Dml {
     this.requestOptions = requestOptions;
   }
 
+  setTransactionOptions(options: any) {
+    if (options.optimisticLock || options.readLockMode) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    if (options.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    if (options.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
+  }
+
   /**
    * @typedef {error} BatchUpdateError
    * @property {number} code gRPC status code.
@@ -1946,7 +1982,10 @@ export class Transaction extends Dml {
     if (this.id) {
       transaction.id = this.id as Uint8Array;
     } else {
-      transaction.begin = this._options;
+      transaction.begin = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options
+      };
     }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
@@ -2146,7 +2185,11 @@ export class Transaction extends Dml {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
-        reqOpts.singleUseTransaction = this._options;
+        // reqOpts.singleUseTransaction = this._options;
+        reqOpts.singleUseTransaction = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options
+        }
       } else {
         this.begin().then(
           () => {
@@ -2685,9 +2728,9 @@ export class Transaction extends Dml {
    * if there are no conflicting committed transactions (that committed
    * mutations to the read data at a commit timestamp after the read timestamp).
    */
-  useOptimisticLock(): void {
-    this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-  }
+  // useOptimisticLock(): void {
+  //   this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+  // }
 
   /**
    * Use option excludeTxnFromChangeStreams to exclude read/write transactions
@@ -2697,9 +2740,16 @@ export class Transaction extends Dml {
    * for a specified transaction, allowing read/write transaction to operate without being
    * included in change streams.
    */
-  excludeTxnFromChangeStreams(): void {
-    this._options.excludeTxnFromChangeStreams = true;
-  }
+  // excludeTxnFromChangeStreams(): void {
+  //   this._options.excludeTxnFromChangeStreams = true;
+  // }
+
+  /**
+   * Use option isolationLevel to add the isolation level in the transaction.
+   */
+  // setIsolationLevel(isolationLevel: any): void {
+  //   this._options.isolationLevel = isolationLevel;
+  // }
 }
 
 /*! Developer Documentation

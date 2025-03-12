@@ -147,6 +147,17 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setTransactionOptions(options: any) {
+    if (options.optimisticLock) {
+      this._options.readWrite!.readLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC;
+    }
+    if (options.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    if (options.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
+  }
   commit(
     options?: CommitOptions,
     callback?: CommitCallback

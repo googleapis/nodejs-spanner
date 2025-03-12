@@ -1586,7 +1586,7 @@ describe('Transaction', () => {
               .OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
-        transaction.useOptimisticLock();
+        transaction.setTransactionOptions(rw);
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 

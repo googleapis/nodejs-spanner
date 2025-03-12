@@ -177,6 +177,20 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  // setIsolationLevel(isolationLevel) {
+  //   this._options.isolationLevel = isolationLevel;
+  // }
+  setTransactionOptions(options: any) {
+    if (options.optimisticLock) {
+      this._options.readWrite!.readLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC;
+    }
+    if (options.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    if (options.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
+  }
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -3125,6 +3139,8 @@ describe('Database', () => {
           callback(null, SESSION, TRANSACTION);
         }
       );
+
+      // (sandbox.stub(TRANSACTION, 'setTransactionOptions') as sinon.SinonStub)
     });
 
     it('should return any errors getting a session', done => {

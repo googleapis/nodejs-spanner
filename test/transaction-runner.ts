@@ -30,6 +30,7 @@ class FakeTransaction extends EventEmitter {
   request() {}
   requestStream() {}
   useInRunner() {}
+  setTransactionOptions() {}
 }
 
 describe('TransactionRunner', () => {
@@ -74,6 +75,7 @@ describe('TransactionRunner', () => {
     sandbox.stub(fakeTransaction, 'begin').resolves();
     sandbox.stub(fakeTransaction, 'request');
     sandbox.stub(fakeTransaction, 'requestStream');
+    sandbox.stub(fakeTransaction, 'setTransactionOptions');
   });
 
   afterEach(() => sandbox.restore());
