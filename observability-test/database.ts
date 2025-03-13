@@ -48,6 +48,7 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {MockError} from '../test/mockserver/mockspanner';
 import {FakeSessionFactory} from '../test/database';
+import {RunTransactionOptions} from '../src/transaction-runner';
 const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
@@ -147,6 +148,7 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
