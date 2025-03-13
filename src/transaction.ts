@@ -421,7 +421,12 @@ export class Snapshot extends EventEmitter {
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
     const session = this.session.formattedName_!;
-    const options = this._options;
+    const options = this._options.partitionedDml
+      ? this._options
+      : {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options,
+        };
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -663,9 +668,15 @@ export class Snapshot extends EventEmitter {
     if (this.id) {
       transaction.id = this.id as Uint8Array;
     } else if (this._options.readWrite) {
-      transaction.begin = this._options;
+      transaction.begin = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options,
+      };
     } else {
-      transaction.singleUse = this._options;
+      transaction.singleUse = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options,
+      };
     }
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1256,9 +1267,15 @@ export class Snapshot extends EventEmitter {
       if (this.id) {
         transaction.id = this.id as Uint8Array;
       } else if (this._options.readWrite) {
-        transaction.begin = this._options;
+        transaction.begin = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options,
+        };
       } else {
-        transaction.singleUse = this._options;
+        transaction.singleUse = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options,
+        };
       }
       delete query.gaxOptions;
       delete query.json;
@@ -1825,6 +1842,18 @@ export class Transaction extends Dml {
     this.requestOptions = requestOptions;
   }
 
+  setTransactionOptions(options: any) {
+    if (options.optimisticLock) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    if (options.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    if (options.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
+  }
+
   /**
    * @typedef {error} BatchUpdateError
    * @property {number} code gRPC status code.
@@ -1946,7 +1975,10 @@ export class Transaction extends Dml {
     if (this.id) {
       transaction.id = this.id as Uint8Array;
     } else {
-      transaction.begin = this._options;
+      transaction.begin = {
+        ...this._getSpanner().defaultReadWriteOptionsProto,
+        ...this._options,
+      };
     }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
@@ -2146,7 +2178,10 @@ export class Transaction extends Dml {
       if (this.id) {
         reqOpts.transactionId = this.id as Uint8Array;
       } else if (!this._useInRunner) {
-        reqOpts.singleUseTransaction = this._options;
+        reqOpts.singleUseTransaction = {
+          ...this._getSpanner().defaultReadWriteOptionsProto,
+          ...this._options,
+        };
       } else {
         this.begin().then(
           () => {
@@ -2673,32 +2708,6 @@ export class Transaction extends Dml {
    */
   useInRunner(): void {
     this._useInRunner = true;
-  }
-
-  /**
-   * Use optimistic concurrency control for the transaction.
-   *
-   * In this concurrency mode, operations during the execution phase, i.e.,
-   * reads and queries, are performed without acquiring locks, and transactional
-   * consistency is ensured by running a validation process in the commit phase
-   * (when any needed locks are acquired). The validation process succeeds only
-   * if there are no conflicting committed transactions (that committed
-   * mutations to the read data at a commit timestamp after the read timestamp).
-   */
-  useOptimisticLock(): void {
-    this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-  }
-
-  /**
-   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
-   * from being tracked in change streams.
-   *
-   * Enabling this options to true will effectively disable change stream tracking
-   * for a specified transaction, allowing read/write transaction to operate without being
-   * included in change streams.
-   */
-  excludeTxnFromChangeStreams(): void {
-    this._options.excludeTxnFromChangeStreams = true;
   }
 }
 

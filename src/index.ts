@@ -145,6 +145,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
+  defaultReadWriteOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
@@ -247,6 +248,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  defaultReadWriteOptionsProto: google.spanner.v1.ITransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -293,6 +295,19 @@ class Spanner extends GrpcService {
       return {endpoint: endpointWithPort};
     }
     return undefined;
+  }
+
+  convertDefaultReadWriteOptionsToProto(
+    defaultReadWriteTxnOptions: any
+  ): google.spanner.v1.TransactionOptions {
+    const ReadWriteTxnOptions = defaultReadWriteTxnOptions
+      ? defaultReadWriteTxnOptions
+      : {
+          isolationLevel:
+            protos.google.spanner.v1.TransactionOptions.IsolationLevel
+              .ISOLATION_LEVEL_UNSPECIFIED,
+        };
+    return ReadWriteTxnOptions;
   }
 
   constructor(options?: SpannerOptions) {
@@ -359,6 +374,12 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
+    const defaultProtoReadWriteOption =
+      this.convertDefaultReadWriteOptionsToProto(
+        options.defaultReadWriteOptions
+      );
+    delete options.defaultReadWriteOptions;
+
     if (options.routeToLeaderEnabled === false) {
       this.routeToLeaderEnabled = false;
     }
@@ -371,6 +392,7 @@ class Spanner extends GrpcService {
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.directedReadOptions = directedReadOptions;
+    this.defaultReadWriteOptionsProto = defaultProtoReadWriteOption;
     this._observabilityOptions = options.observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.projectFormattedName_,
@@ -2068,6 +2090,7 @@ export {MutationSet};
  */
 import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
+import {RunTransactionOptions} from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
 export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
