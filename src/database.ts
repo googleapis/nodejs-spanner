@@ -95,7 +95,7 @@ import {
 } from './common';
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner, protos} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
@@ -317,7 +317,7 @@ export interface RestoreOptions {
 }
 
 export interface WriteAtLeastOnceOptions extends CallOptions {
-  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
+  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 }
 
 /**
@@ -2217,9 +2217,6 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    const defaultTransactionOptions =
-      this._getSpanner().defaultTransactionOptions;
-
     return startTrace('Database.getTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
@@ -2228,20 +2225,11 @@ class Database extends common.GrpcServiceObject {
             options.requestOptions
           );
         }
-        if (options.optimisticLock) {
-          transaction!.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction!.excludeTxnFromChangeStreams();
-        }
-
-        if (options.isolationLevel) {
-          transaction!.setIsolationLevel(options.isolationLevel);
-        } else if (defaultTransactionOptions) {
-          transaction!.setIsolationLevel(
-            defaultTransactionOptions.isolationLevel
-          );
-        }
+        transaction?.setReadWriteTransactionOptions(
+          options && Object.keys(options).length
+            ? options
+            : this._getSpanner().defaultTransactionOptions
+        );
 
         if (!err) {
           span.addEvent('Using Session', {'session.id': session?.id});
@@ -3267,9 +3255,6 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const defaultTransactionOptions =
-      this._getSpanner().defaultTransactionOptions;
-
     startTrace('Database.runTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
@@ -3292,19 +3277,12 @@ class Database extends common.GrpcServiceObject {
         }
 
         transaction!._observabilityOptions = this._observabilityOptions;
-        if (options.optimisticLock) {
-          transaction!.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction!.excludeTxnFromChangeStreams();
-        }
-        if (options.isolationLevel) {
-          transaction!.setIsolationLevel(options.isolationLevel);
-        } else if (defaultTransactionOptions) {
-          transaction!.setIsolationLevel(
-            defaultTransactionOptions.isolationLevel
-          );
-        }
+
+        transaction!.setReadWriteTransactionOptions(
+          options && Object.keys(options).length
+            ? options
+            : this._getSpanner().defaultTransactionOptions
+        );
 
         const release = () => {
           this.pool_.release(session!);
@@ -3415,9 +3393,6 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const defaultTransactionOptions =
-      this._getSpanner().defaultTransactionOptions;
-
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
     return startTrace(
@@ -3434,19 +3409,11 @@ class Database extends common.GrpcServiceObject {
               transaction.requestOptions || {},
               options.requestOptions
             );
-            if (options.optimisticLock) {
-              transaction.useOptimisticLock();
-            }
-            if (options.excludeTxnFromChangeStreams) {
-              transaction.excludeTxnFromChangeStreams();
-            }
-            if (options.isolationLevel) {
-              transaction!.setIsolationLevel(options.isolationLevel);
-            } else if (defaultTransactionOptions) {
-              transaction!.setIsolationLevel(
-                defaultTransactionOptions.isolationLevel
-              );
-            }
+            transaction!.setReadWriteTransactionOptions(
+              options && Object.keys(options).length
+                ? options
+                : this._getSpanner().defaultTransactionOptions
+            );
             sessionId = session?.id;
             span.addEvent('Using Session', {'session.id': sessionId});
             const runner = new AsyncTransactionRunner<T>(
@@ -3695,9 +3662,6 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as WriteAtLeastOnceOptions)
         : {};
 
-    const defaultIsolationLevelOptions =
-      this._getSpanner().defaultTransactionOptions;
-
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
       this.sessionFactory_.getSession((err, session?, transaction?) => {
         if (
@@ -3721,15 +3685,11 @@ class Database extends common.GrpcServiceObject {
         span.addEvent('Using Session', {'session.id': session?.id});
         this._releaseOnEnd(session!, transaction!, span);
         try {
-          if (options.defaultTransactionOptions) {
-            transaction!.setIsolationLevel(
-              options.defaultTransactionOptions.isolationLevel
-            );
-          } else if (defaultIsolationLevelOptions) {
-            transaction!.setIsolationLevel(
-              defaultIsolationLevelOptions.isolationLevel
-            );
-          }
+          transaction!.setReadWriteTransactionOptions(
+            options && Object.keys(options).length
+              ? options
+              : this._getSpanner().defaultTransactionOptions
+          );
           transaction?.setQueuedMutations(mutations.proto());
           return transaction?.commit(options, (err, resp) => {
             if (err) {

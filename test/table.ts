@@ -397,14 +397,11 @@ describe('Table', () => {
       table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
     });
 
-    it('should accept defaultTransactionOptions', done => {
+    it('should accept isolationLevel option', done => {
       const deleteRowsOptions = {
-        defaultTransactionOptions: {
-          excludeTxnFromChangeStream: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       transaction.commit = options => {
         assert.strictEqual(options, deleteRowsOptions);
@@ -543,14 +540,11 @@ describe('Table', () => {
       table.insert(ROW, insertRowsOptions, assert.ifError);
     });
 
-    it('should accept defaultTransactionOptions', done => {
+    it('should accept isolationLevel options', done => {
       const insertRowsOptions = {
-        defaultTransactionOptions: {
-          excludeTxnFromChangeStreams: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
@@ -718,14 +712,11 @@ describe('Table', () => {
       table.replace(ROW, replaceRowsOptions, assert.ifError);
     });
 
-    it('should accept defaultTransactionOptions', done => {
+    it('should accept isolationLevel options', done => {
       const replaceRowsOptions = {
-        defaultTransactionOptions: {
-          excludeTxnFromChangeStreams: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
@@ -829,14 +820,11 @@ describe('Table', () => {
       table.update(ROW, updateRowsOptions, assert.ifError);
     });
 
-    it('should accept defaultTransactionOptions', done => {
+    it('should accept isolationLevel option', done => {
       const updateRowsOptions = {
-        defaultTransactionOptions: {
-          excludeTransactionFromChangeStreams: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
@@ -940,14 +928,11 @@ describe('Table', () => {
       table.upsert(ROW, upsertRowsOptions, assert.ifError);
     });
 
-    it('should accept defaultTransactionOptions', done => {
+    it('should accept isolationLevel option', done => {
       const upsertRowsOptions = {
-        defaultTransactionOptions: {
-          excludeTransactionFromChangeStreams: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,

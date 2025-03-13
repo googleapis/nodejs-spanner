@@ -248,7 +248,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  defaultTransactionOptions: RunTransactionOptions;
+  defaultTransactionOptions?: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**

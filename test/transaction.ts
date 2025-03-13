@@ -1543,7 +1543,7 @@ describe('Transaction', () => {
 
         transaction.begin();
 
-        const expectedOptions = {readWrite: {}};
+        const expectedOptions = {isolationLevel: 0, readWrite: {}};
         const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
@@ -1590,7 +1590,37 @@ describe('Transaction', () => {
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 
-        const expectedOptions = {readWrite: rw};
+        const expectedOptions = {isolationLevel: 0, readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_
+          )
+        );
+      });
+
+      it('should set optimistic lock using setReadWriteTransactionOptions', () => {
+        const rw = {
+          readLockMode:
+            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .OPTIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.setReadWriteTransactionOptions({
+          optimisticLock:
+            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .OPTIMISTIC,
+        });
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {isolationLevel: 0, readWrite: rw};
         const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
@@ -1728,7 +1758,7 @@ describe('Transaction', () => {
       });
 
       it('should set `singleUseTransaction` when `id` is not set', () => {
-        const expectedOptions = {readWrite: {}};
+        const expectedOptions = {isolationLevel: 0, readWrite: {}};
         const stub = sandbox.stub(transaction, 'request');
 
         transaction.commit();

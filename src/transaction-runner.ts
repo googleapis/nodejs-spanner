@@ -126,7 +126,12 @@ export abstract class Runner<T> {
     this.transaction = transaction;
     this.transaction.useInRunner();
 
-    const defaults = {timeout: 3600000};
+    const defaults = {
+      timeout: 3600000,
+      isolationLevel:
+        protos.google.spanner.v1.TransactionOptions.IsolationLevel
+          .ISOLATION_LEVEL_UNSPECIFIED,
+    };
 
     this.options = Object.assign(defaults, options);
   }
@@ -204,12 +209,11 @@ export abstract class Runner<T> {
     const transaction = this.session.transaction(
       (this.session.parent as Database).queryOptions_
     );
-    if (this.options.optimisticLock) {
-      transaction.useOptimisticLock();
-    }
-    if (this.options.excludeTxnFromChangeStreams) {
-      transaction.excludeTxnFromChangeStreams();
-    }
+    transaction!.setReadWriteTransactionOptions(
+      this.options && Object.keys(this.options).length
+        ? this.options
+        : this.session.parent._getSpanner().defaultTransactionOptions
+    );
     if (this.attempts > 0) {
       await transaction.begin();
     }

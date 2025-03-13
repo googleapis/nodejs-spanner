@@ -47,6 +47,7 @@ import {
   MutationSet,
 } from '../src/transaction';
 import {SessionFactory} from '../src/session-factory';
+import {RunTransactionOptions} from '../src/transaction-runner';
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -158,6 +159,8 @@ class FakeTable {
   }
 }
 
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
   _options!: google.spanner.v1.ITransactionOptions;
@@ -177,8 +180,16 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
-  setIsolationLevel(isolationLevel) {
-    this._options.isolationLevel = isolationLevel;
+  setReadWriteTransactionOptions(options?: RunTransactionOptions) {
+    if (options?.optimisticLock) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    if (options?.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    if (options?.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
   }
   commit(
     options?: CommitOptions,
@@ -3180,6 +3191,44 @@ describe('Database', () => {
 
       const options = fakeTransactionRunner.calledWith_[3];
       assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should optionally accept `option` isolationLevel when passed with Spanner options', () => {
+      const fakeOptions = {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      };
+
+      const SPANNER = {
+        routeToLeaderEnabled: true,
+        defaultTransactionOptions: fakeOptions,
+      } as {} as Spanner;
+
+      const INSTANCE = {
+        request: util.noop,
+        requestStream: util.noop,
+        formattedName_: 'instance-name',
+        databases_: new Map(),
+        parent: SPANNER,
+      } as {} as Instance;
+
+      const database = new Database(INSTANCE, NAME, POOL_OPTIONS);
+      database.parent = INSTANCE;
+      database.databaseRole = 'parent_role';
+
+      const pool = database.pool_;
+
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
+        callback => {
+          callback(null, SESSION, TRANSACTION);
+        }
+      );
+
+      database.runTransaction(assert.ifError);
+
+      const options = TRANSACTION._options;
+      assert.deepStrictEqual(options, fakeOptions);
     });
 
     it('should release the session when finished', done => {

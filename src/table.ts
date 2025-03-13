@@ -54,10 +54,8 @@ export type DropTableCallback = UpdateSchemaCallback;
 
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
-  defaultTransactionOptions?: Pick<
-    RunTransactionOptions,
-    'excludeTxnFromChangeStreams' | 'isolationLevel'
-  >;
+  excludeTxnFromChangeStreams?: boolean;
+  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -1100,19 +1098,14 @@ class Table {
       const requestOptions =
         'requestOptions' in options ? options.requestOptions : {};
 
-      const defaultTransactionOptions =
-        'defaultTransactionOptions' in options
-          ? options.defaultTransactionOptions
-          : {};
-
       const excludeTxnFromChangeStreams =
-        'excludeTxnFromChangeStreams' in defaultTransactionOptions!
-          ? defaultTransactionOptions.excludeTxnFromChangeStreams
+        'excludeTxnFromChangeStreams' in options
+          ? options.excludeTxnFromChangeStreams
           : false;
 
       const isolationLevel =
-        'isolationLevel' in defaultTransactionOptions!
-          ? defaultTransactionOptions.isolationLevel
+        'isolationLevel' in options
+          ? options.isolationLevel
           : protos.google.spanner.v1.TransactionOptions.IsolationLevel
               .ISOLATION_LEVEL_UNSPECIFIED;
 

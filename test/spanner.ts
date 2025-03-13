@@ -3590,11 +3590,9 @@ describe('Spanner with mock server', () => {
         FirstName: 'Scarlet',
       });
       const options: WriteAtLeastOnceOptions = {
-        defaultTransactionOptions: {
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
       };
       await database.writeAtLeastOnce(mutations, options);
       await database.close();
@@ -4244,17 +4242,14 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
-    it('should use defaultTransactionOptions for mutations', async () => {
+    it('should use excludeTxnFromChangeStreams for mutations', async () => {
       const database = newTestDatabase();
-      const options = {
-        defaultTransactionOptions: {
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
           excludeTxnFromChangeStreams: true,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
-        },
-      };
-      await database.table('foo').upsert({id: 1, name: 'bar'}, options);
+        }
+      );
       const beginTxnRequest = spannerMock
         .getRequests()
         .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
@@ -4264,6 +4259,22 @@ describe('Spanner with mock server', () => {
         beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
       );
+      await database.close();
+    });
+
+    it('should use isolationLevel for mutations', async () => {
+      const database = newTestDatabase();
+      const options = {
+        isolationLevel:
+          protos.google.spanner.v1.TransactionOptions.IsolationLevel
+            .REPEATABLE_READ,
+      };
+      await database.table('foo').upsert({id: 1, name: 'bar'}, options);
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
       assert.strictEqual(
         beginTxnRequest[0].options?.isolationLevel,
         'REPEATABLE_READ'

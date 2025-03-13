@@ -44,7 +44,7 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database, Spanner} from '.';
+import {Database, protos, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {
   ObservabilityOptions,
@@ -52,6 +52,7 @@ import {
   setSpanError,
   setSpanErrorAndException,
 } from './instrument';
+import {RunTransactionOptions} from './transaction-runner';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -1822,7 +1823,31 @@ export class Transaction extends Dml {
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+    this._options.isolationLevel =
+      protos.google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
     this.requestOptions = requestOptions;
+  }
+
+  setReadWriteTransactionOptions(options: RunTransactionOptions | undefined) {
+    /**
+     * Set optimistic concurrency control for the transaction.
+     */
+    if (options?.optimisticLock) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    /**
+     * Set option excludeTxnFromChangeStreams=true to exclude read/write transactions
+     * from being tracked in change streams.
+     */
+    if (options?.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    /**
+     * Set isolation level .
+     */
+    if (options?.isolationLevel) {
+      this._options.isolationLevel = options.isolationLevel;
+    }
   }
 
   /**
