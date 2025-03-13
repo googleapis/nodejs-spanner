@@ -33971,6 +33971,9 @@ export namespace google {
 
                 /** PartialResultSet precommitToken */
                 precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** PartialResultSet last */
+                last?: (boolean|null);
             }
 
             /** Represents a PartialResultSet. */
@@ -33999,6 +34002,9 @@ export namespace google {
 
                 /** PartialResultSet precommitToken. */
                 public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** PartialResultSet last. */
+                public last: boolean;
 
                 /**
                  * Creates a new PartialResultSet instance using the specified properties.
