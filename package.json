@@ -55,13 +55,15 @@
   },
   "dependencies": {
     "@google-cloud/common": "^5.0.0",
+    "@google-cloud/opentelemetry-resource-util": "^2.4.0",
     "@google-cloud/precise-date": "^4.0.0",
     "@google-cloud/projectify": "^4.0.0",
     "@google-cloud/promisify": "^4.0.0",
     "@grpc/proto-loader": "^0.7.0",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/core": "^1.27.0",
     "@opentelemetry/context-async-hooks": "^1.26.0",
+    "@opentelemetry/core": "^1.30.1",
+    "@opentelemetry/sdk-metrics": "^1.30.1",
     "@opentelemetry/semantic-conventions": "^1.25.1",
     "@types/big.js": "^6.0.0",
     "@types/stack-trace": "0.0.33",
@@ -71,8 +73,10 @@
     "duplexify": "^4.1.1",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
+    "form-data": "^4.0.2",
     "google-auth-library": "^9.0.0",
     "google-gax": "4.4.1",
+    "googleapis": "^146.0.0",
     "grpc-gcp": "^1.0.0",
     "is": "^3.2.1",
     "lodash.snakecase": "^4.1.1",
@@ -84,7 +88,8 @@
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.4",
     "teeny-request": "^9.0.0",
-    "through2": "^4.0.0"
+    "through2": "^4.0.0",
+    "undici": "^7.5.0"
   },
   "devDependencies": {
     "@opentelemetry/sdk-trace-base": "^1.26.0",
@@ -104,6 +109,7 @@
     "@types/uuid": "^10.0.0",
     "binary-search-bounds": "^2.0.4",
     "c8": "^8.0.1",
+    "chai": "^5.2.0",
     "codecov": "^3.0.2",
     "concat-stream": "^2.0.0",
     "dedent": "^1.0.0",
@@ -126,7 +132,8 @@
     "stats-lite": "^2.1.1",
     "time-span": "^4.0.0",
     "tmp": "^0.2.0",
-    "typescript": "^5.1.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
     "uuid": "^10.0.0",
     "yargs": "^17.0.0"
   }
