@@ -37,8 +37,8 @@ import {
   setSpanError,
   traceConfig,
 } from './instrument';
-import {protos} from '.';
-import {RunTransactionOptions} from './transaction-runner';
+import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 export type Key = string | string[];
 
@@ -55,7 +55,7 @@ export type DropTableCallback = UpdateSchemaCallback;
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
   excludeTxnFromChangeStreams?: boolean;
-  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
+  isolationLevel?: IsolationLevel;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -1106,8 +1106,7 @@ class Table {
       const isolationLevel =
         'isolationLevel' in options
           ? options.isolationLevel
-          : protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED;
+          : IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
 
       this.database.runTransaction(
         {

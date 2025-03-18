@@ -27,7 +27,7 @@ import * as through from 'through2';
 import {TimestampBounds} from '../src/transaction';
 import {google} from '../protos/protos';
 import RequestOptions = google.spanner.v1.RequestOptions;
-import {protos} from '../src';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -399,9 +399,7 @@ describe('Table', () => {
 
     it('should accept isolationLevel option', done => {
       const deleteRowsOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       transaction.commit = options => {
         assert.strictEqual(options, deleteRowsOptions);
@@ -542,9 +540,7 @@ describe('Table', () => {
 
     it('should accept isolationLevel options', done => {
       const insertRowsOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
@@ -714,9 +710,7 @@ describe('Table', () => {
 
     it('should accept isolationLevel options', done => {
       const replaceRowsOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
@@ -822,9 +816,7 @@ describe('Table', () => {
 
     it('should accept isolationLevel option', done => {
       const updateRowsOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
@@ -930,9 +922,7 @@ describe('Table', () => {
 
     it('should accept isolationLevel option', done => {
       const upsertRowsOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,

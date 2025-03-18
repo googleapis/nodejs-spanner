@@ -42,6 +42,7 @@ import {
   google,
   google as spannerClient,
 } from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   CreateDatabaseCallback,
   CreateDatabaseOptions,
@@ -95,7 +96,7 @@ import {
 } from './common';
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner, protos} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
@@ -317,7 +318,7 @@ export interface RestoreOptions {
 }
 
 export interface WriteAtLeastOnceOptions extends CallOptions {
-  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
+  isolationLevel?: IsolationLevel;
 }
 
 /**
@@ -2226,9 +2227,7 @@ class Database extends common.GrpcServiceObject {
           );
         }
         transaction?.setReadWriteTransactionOptions(
-          options && Object.keys(options).length
-            ? options
-            : this._getSpanner().defaultTransactionOptions
+          options as RunTransactionOptions
         );
 
         if (!err) {
@@ -3279,9 +3278,7 @@ class Database extends common.GrpcServiceObject {
         transaction!._observabilityOptions = this._observabilityOptions;
 
         transaction!.setReadWriteTransactionOptions(
-          options && Object.keys(options).length
-            ? options
-            : this._getSpanner().defaultTransactionOptions
+          options as RunTransactionOptions
         );
 
         const release = () => {
@@ -3410,9 +3407,7 @@ class Database extends common.GrpcServiceObject {
               options.requestOptions
             );
             transaction!.setReadWriteTransactionOptions(
-              options && Object.keys(options).length
-                ? options
-                : this._getSpanner().defaultTransactionOptions
+              options as RunTransactionOptions
             );
             sessionId = session?.id;
             span.addEvent('Using Session', {'session.id': sessionId});
@@ -3686,9 +3681,7 @@ class Database extends common.GrpcServiceObject {
         this._releaseOnEnd(session!, transaction!, span);
         try {
           transaction!.setReadWriteTransactionOptions(
-            options && Object.keys(options).length
-              ? options
-              : this._getSpanner().defaultTransactionOptions
+            options as RunTransactionOptions
           );
           transaction?.setQueuedMutations(mutations.proto());
           return transaction?.commit(options, (err, resp) => {

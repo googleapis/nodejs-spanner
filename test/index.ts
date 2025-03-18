@@ -38,6 +38,7 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
 
@@ -330,9 +331,7 @@ describe('Spanner', () => {
     it('should optionally accept defaultTransactionOptions', () => {
       const fakeDefaultTxnOptions = {
         defaultTransactionOptions: {
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .REPEATABLE_READ,
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
         },
       };
 

@@ -23,7 +23,6 @@ import {
   Database,
   Instance,
   MutationSet,
-  protos,
   SessionPool,
   Snapshot,
   Spanner,
@@ -69,6 +68,7 @@ import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
@@ -3590,9 +3590,7 @@ describe('Spanner with mock server', () => {
         FirstName: 'Scarlet',
       });
       const options: WriteAtLeastOnceOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       await database.writeAtLeastOnce(mutations, options);
       await database.close();
@@ -3673,6 +3671,129 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use isolationLevel for runTransactionAsync', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should use isolationLevel when passed in Spanner Options', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should be able to use isolationLevel from Spanner Option when other options are passed at transaction level', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          optimisticLock: true,
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.readWrite?.readLockMode,
+        'OPTIMISTIC'
+      );
+      assert.strictEqual(
+        request.transaction!.begin!.excludeTxnFromChangeStreams,
+        true
+      );
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should override isolationLevel from Spanner Option when passed at transaction level', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.SERIALIZABLE,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
     it('should use optimistic lock for runTransaction', done => {
       const database = newTestDatabase();
       database.runTransaction({optimisticLock: true}, async (err, tx) => {
@@ -3716,6 +3837,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use isolationLevel for runTransaction', done => {
+      const database = newTestDatabase();
+      database.runTransaction(
+        {isolationLevel: IsolationLevel.REPEATABLE_READ},
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
+
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.isolationLevel,
+            'REPEATABLE_READ'
+          );
+          done();
+        }
+      );
+    });
+
     it('should use optimistic lock and transaction tag for getTransaction', async () => {
       const database = newTestDatabase();
       const promise = await database.getTransaction({
@@ -3742,9 +3886,7 @@ describe('Spanner with mock server', () => {
     it('should use isolation level for getTransaction', async () => {
       const database = newTestDatabase();
       const [transaction] = await database.getTransaction({
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       });
       await transaction.run('SELECT 1').then(() => {
         const request = spannerMock.getRequests().find(val => {
@@ -4265,9 +4407,7 @@ describe('Spanner with mock server', () => {
     it('should use isolationLevel for mutations', async () => {
       const database = newTestDatabase();
       const options = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
       await database.table('foo').upsert({id: 1, name: 'bar'}, options);
       const beginTxnRequest = spannerMock

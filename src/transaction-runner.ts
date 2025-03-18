@@ -26,7 +26,7 @@ import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
 import {google} from '../protos/protos';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {protos} from '.';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
@@ -47,7 +47,7 @@ export interface RunTransactionOptions {
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
   optimisticLock?: boolean;
   excludeTxnFromChangeStreams?: boolean;
-  isolationLevel?: protos.google.spanner.v1.TransactionOptions.IsolationLevel;
+  isolationLevel?: IsolationLevel;
 }
 
 /**
@@ -128,9 +128,7 @@ export abstract class Runner<T> {
 
     const defaults = {
       timeout: 3600000,
-      isolationLevel:
-        protos.google.spanner.v1.TransactionOptions.IsolationLevel
-          .ISOLATION_LEVEL_UNSPECIFIED,
+      isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
     };
 
     this.options = Object.assign(defaults, options);
@@ -210,9 +208,7 @@ export abstract class Runner<T> {
       (this.session.parent as Database).queryOptions_
     );
     transaction!.setReadWriteTransactionOptions(
-      this.options && Object.keys(this.options).length
-        ? this.options
-        : this.session.parent._getSpanner().defaultTransactionOptions
+      this.options as RunTransactionOptions
     );
     if (this.attempts > 0) {
       await transaction.begin();

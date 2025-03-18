@@ -39,6 +39,8 @@ import {google} from '../protos/protos';
 import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 import {
   BatchWriteOptions,
@@ -159,8 +161,6 @@ class FakeTable {
   }
 }
 
-import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
-
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
   _options!: google.spanner.v1.ITransactionOptions;
@@ -180,17 +180,7 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
-  setReadWriteTransactionOptions(options?: RunTransactionOptions) {
-    if (options?.optimisticLock) {
-      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-    }
-    if (options?.excludeTxnFromChangeStreams) {
-      this._options.excludeTxnFromChangeStreams = true;
-    }
-    if (options?.isolationLevel) {
-      this._options.isolationLevel = options.isolationLevel;
-    }
-  }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -3182,53 +3172,13 @@ describe('Database', () => {
 
     it('should optionally accept runner `option` isolationLevel', async () => {
       const fakeOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
 
       await database.runTransaction(fakeOptions, assert.ifError);
 
       const options = fakeTransactionRunner.calledWith_[3];
       assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should optionally accept `option` isolationLevel when passed with Spanner options', () => {
-      const fakeOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
-      };
-
-      const SPANNER = {
-        routeToLeaderEnabled: true,
-        defaultTransactionOptions: fakeOptions,
-      } as {} as Spanner;
-
-      const INSTANCE = {
-        request: util.noop,
-        requestStream: util.noop,
-        formattedName_: 'instance-name',
-        databases_: new Map(),
-        parent: SPANNER,
-      } as {} as Instance;
-
-      const database = new Database(INSTANCE, NAME, POOL_OPTIONS);
-      database.parent = INSTANCE;
-      database.databaseRole = 'parent_role';
-
-      const pool = database.pool_;
-
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
-        }
-      );
-
-      database.runTransaction(assert.ifError);
-
-      const options = TRANSACTION._options;
-      assert.deepStrictEqual(options, fakeOptions);
     });
 
     it('should release the session when finished', done => {
@@ -3304,9 +3254,7 @@ describe('Database', () => {
 
     it('should optionally accept runner `option` isolationLevel', async () => {
       const fakeOptions = {
-        isolationLevel:
-          protos.google.spanner.v1.TransactionOptions.IsolationLevel
-            .REPEATABLE_READ,
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
       };
 
       await database.runTransactionAsync(fakeOptions, assert.ifError);

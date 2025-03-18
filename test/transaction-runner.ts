@@ -22,31 +22,18 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as through from 'through2';
 import {RunTransactionOptions} from '../src/transaction-runner';
-import {protos} from '../src';
 import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
 
-import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
-
 class FakeTransaction extends EventEmitter {
-  _options!: google.spanner.v1.ITransactionOptions;
   async begin(): Promise<void> {}
   request() {}
   requestStream() {}
   useInRunner() {}
-  setReadWriteTransactionOptions(options?: RunTransactionOptions) {
-    if (options?.optimisticLock) {
-      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-    }
-    if (options?.excludeTxnFromChangeStreams) {
-      this._options.excludeTxnFromChangeStreams = true;
-    }
-    if (options?.isolationLevel) {
-      this._options.isolationLevel = options.isolationLevel;
-    }
-  }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
 }
 
 describe('TransactionRunner', () => {
@@ -130,9 +117,7 @@ describe('TransactionRunner', () => {
       it('should set default `options`', () => {
         const expectedOptions = {
           timeout: 3600000,
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
         };
 
         assert.deepStrictEqual(runner.options, expectedOptions);
@@ -140,9 +125,7 @@ describe('TransactionRunner', () => {
 
       it('should accept user `options`', () => {
         const options = {
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
           timeout: 1000,
         };
         const r = new ExtendedRunner(SESSION, fakeTransaction, options);
@@ -347,9 +330,7 @@ describe('TransactionRunner', () => {
 
       it('should pass `options` to `Runner`', () => {
         const options = {
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
           timeout: 1,
         };
         const r = new TransactionRunner(
@@ -548,9 +529,7 @@ describe('TransactionRunner', () => {
 
       it('should pass `options` to `Runner`', () => {
         const options = {
-          isolationLevel:
-            protos.google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
           timeout: 1,
         };
         const r = new AsyncTransactionRunner(

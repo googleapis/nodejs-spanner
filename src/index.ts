@@ -60,6 +60,7 @@ import {
   ClientOptions,
 } from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   PagedOptions,
   PagedResponse,
@@ -248,7 +249,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  defaultTransactionOptions?: RunTransactionOptions;
+  defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -336,9 +337,7 @@ class Spanner extends GrpcService {
     const defaultTransactionOptions = options.defaultTransactionOptions
       ? options.defaultTransactionOptions
       : {
-          isolationLevel:
-            google.spanner.v1.TransactionOptions.IsolationLevel
-              .ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
         };
     delete options.defaultTransactionOptions;
 

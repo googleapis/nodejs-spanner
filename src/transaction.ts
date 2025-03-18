@@ -41,10 +41,11 @@ import {
   getCommonHeaders,
 } from './common';
 import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database, protos, Spanner} from '.';
+import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {
   ObservabilityOptions,
@@ -1823,31 +1824,8 @@ export class Transaction extends Dml {
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
-    this._options.isolationLevel =
-      protos.google.spanner.v1.TransactionOptions.IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
+    this._options.isolationLevel = IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
     this.requestOptions = requestOptions;
-  }
-
-  setReadWriteTransactionOptions(options: RunTransactionOptions | undefined) {
-    /**
-     * Set optimistic concurrency control for the transaction.
-     */
-    if (options?.optimisticLock) {
-      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-    }
-    /**
-     * Set option excludeTxnFromChangeStreams=true to exclude read/write transactions
-     * from being tracked in change streams.
-     */
-    if (options?.excludeTxnFromChangeStreams) {
-      this._options.excludeTxnFromChangeStreams = true;
-    }
-    /**
-     * Set isolation level .
-     */
-    if (options?.isolationLevel) {
-      this._options.isolationLevel = options.isolationLevel;
-    }
   }
 
   /**
@@ -2726,11 +2704,26 @@ export class Transaction extends Dml {
     this._options.excludeTxnFromChangeStreams = true;
   }
 
-  /**
-   * Use option isolationLevel to add the isolation level in the transaction.
-   */
-  setIsolationLevel(isolationLevel: any): void {
-    this._options.isolationLevel = isolationLevel;
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {
+    /**
+     * Set optimistic concurrency control for the transaction.
+     */
+    if (options?.optimisticLock) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    /**
+     * Set option excludeTxnFromChangeStreams=true to exclude read/write transactions
+     * from being tracked in change streams.
+     */
+    if (options?.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    /**
+     * Set isolation level .
+     */
+    this._options.isolationLevel = options?.isolationLevel
+      ? options?.isolationLevel
+      : this._getSpanner().defaultTransactionOptions.isolationLevel;
   }
 }
 

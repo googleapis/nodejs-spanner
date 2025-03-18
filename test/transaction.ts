@@ -30,6 +30,8 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   BatchUpdateOptions,
   ExecuteSqlRequest,
@@ -47,6 +49,9 @@ describe('Transaction', () => {
   const SPANNER = {
     routeToLeaderEnabled: true,
     directedReadOptions: {},
+    defaultTransactionOptions: {
+      isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+    },
   };
 
   const INSTANCE = {
@@ -420,6 +425,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const expectedRequest = {
@@ -459,6 +467,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const expectedRequest = {
@@ -843,6 +854,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const fakeQuery = Object.assign({}, QUERY, {
@@ -886,6 +900,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const fakeDirectedReadOptionsForRequest = {
@@ -1579,11 +1596,9 @@ describe('Transaction', () => {
         transaction.begin(assert.ifError);
       });
 
-      it('should set optimistic lock', () => {
+      it('should set optimistic lock using useOptimisticLock', () => {
         const rw = {
-          readLockMode:
-            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
-              .OPTIMISTIC,
+          readLockMode: ReadLockMode.OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
         transaction.useOptimisticLock();
@@ -1607,15 +1622,11 @@ describe('Transaction', () => {
 
       it('should set optimistic lock using setReadWriteTransactionOptions', () => {
         const rw = {
-          readLockMode:
-            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
-              .OPTIMISTIC,
+          readLockMode: ReadLockMode.OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
         transaction.setReadWriteTransactionOptions({
-          optimisticLock:
-            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
-              .OPTIMISTIC,
+          optimisticLock: ReadLockMode.OPTIMISTIC,
         });
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
