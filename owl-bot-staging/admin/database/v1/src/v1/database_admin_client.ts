@@ -505,7 +505,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getDatabase request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IDatabase,
@@ -595,7 +595,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('dropDatabase request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -685,7 +685,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getDatabaseDdl request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
@@ -789,7 +789,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('setIamPolicy request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.IPolicy,
@@ -886,7 +886,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getIamPolicy request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.IPolicy,
@@ -987,7 +987,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('testIamPermissions request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1076,7 +1076,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getBackup request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IBackup,
@@ -1172,7 +1172,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'backup.name': request.backup!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('updateBackup request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IBackup,
@@ -1261,7 +1261,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteBackup request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -1357,7 +1357,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('addSplitPoints request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
@@ -1449,7 +1449,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('createBackupSchedule request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -1537,7 +1537,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getBackupSchedule request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -1631,7 +1631,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'backup_schedule.name': request.backupSchedule!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('updateBackupSchedule request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -1719,7 +1719,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteBackupSchedule request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -1849,7 +1849,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.database.v1.IDatabase, protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -1992,7 +1992,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database.name': request.database!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.database.v1.IDatabase, protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2141,7 +2141,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.protobuf.IEmpty, protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2272,7 +2272,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.database.v1.IBackup, protos.google.spanner.admin.database.v1.ICreateBackupMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2411,7 +2411,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.database.v1.IBackup, protos.google.spanner.admin.database.v1.ICopyBackupMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2549,7 +2549,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.database.v1.IDatabase, protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2666,7 +2666,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabasesRequest,
       protos.google.spanner.admin.database.v1.IListDatabasesResponse|null|undefined,
@@ -2730,7 +2730,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabases'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabases stream %j', request);
     return this.descriptors.page.listDatabases.createStream(
       this.innerApiCalls.listDatabases as GaxCall,
@@ -2781,7 +2781,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabases'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabases iterate %j', request);
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
@@ -2914,7 +2914,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupsRequest,
       protos.google.spanner.admin.database.v1.IListBackupsResponse|null|undefined,
@@ -3020,7 +3020,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackups'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackups stream %j', request);
     return this.descriptors.page.listBackups.createStream(
       this.innerApiCalls.listBackups as GaxCall,
@@ -3113,7 +3113,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackups'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackups iterate %j', request);
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
@@ -3256,7 +3256,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse|null|undefined,
@@ -3367,7 +3367,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabaseOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabaseOperations stream %j', request);
     return this.descriptors.page.listDatabaseOperations.createStream(
       this.innerApiCalls.listDatabaseOperations as GaxCall,
@@ -3465,7 +3465,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabaseOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabaseOperations iterate %j', request);
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
@@ -3635,7 +3635,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
       protos.google.spanner.admin.database.v1.IListBackupOperationsResponse|null|undefined,
@@ -3771,7 +3771,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackupOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackupOperations stream %j', request);
     return this.descriptors.page.listBackupOperations.createStream(
       this.innerApiCalls.listBackupOperations as GaxCall,
@@ -3894,7 +3894,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackupOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackupOperations iterate %j', request);
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
@@ -3984,7 +3984,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
       protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse|null|undefined,
@@ -4049,7 +4049,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabaseRoles'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabaseRoles stream %j', request);
     return this.descriptors.page.listDatabaseRoles.createStream(
       this.innerApiCalls.listDatabaseRoles as GaxCall,
@@ -4101,7 +4101,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listDatabaseRoles'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listDatabaseRoles iterate %j', request);
     return this.descriptors.page.listDatabaseRoles.asyncIterate(
       this.innerApiCalls['listDatabaseRoles'] as GaxCall,
@@ -4192,7 +4192,7 @@ export class DatabaseAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
       protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse|null|undefined,
@@ -4258,7 +4258,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackupSchedules'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackupSchedules stream %j', request);
     return this.descriptors.page.listBackupSchedules.createStream(
       this.innerApiCalls.listBackupSchedules as GaxCall,
@@ -4311,7 +4311,7 @@ export class DatabaseAdminClient {
     });
     const defaultCallSettings = this._defaults['listBackupSchedules'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listBackupSchedules iterate %j', request);
     return this.descriptors.page.listBackupSchedules.asyncIterate(
       this.innerApiCalls['listBackupSchedules'] as GaxCall,
@@ -4413,7 +4413,7 @@ export class DatabaseAdminClient {
   listOperationsAsync(
     request: protos.google.longrunning.ListOperationsRequest,
     options?: gax.CallOptions
-  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
      options = options || {};
      options.otherArgs = options.otherArgs || {};
      options.otherArgs.headers = options.otherArgs.headers || {};
