@@ -444,7 +444,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('createSession request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.ISession,
@@ -542,7 +542,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('batchCreateSessions request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -630,7 +630,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getSession request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.ISession,
@@ -718,7 +718,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteSession request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -905,7 +905,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('executeSql request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IResultSet,
@@ -1036,7 +1036,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('executeBatchDml request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -1204,7 +1204,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('read request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IResultSet,
@@ -1309,7 +1309,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('beginTransaction request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.ITransaction,
@@ -1443,7 +1443,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('commit request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.ICommitResponse,
@@ -1539,7 +1539,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('rollback request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -1677,7 +1677,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('partitionQuery request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IPartitionResponse,
@@ -1804,7 +1804,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('partitionRead request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.v1.IPartitionResponse,
@@ -1946,7 +1946,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('executeStreamingSql stream %j', options);
     return this.innerApiCalls.executeStreamingSql(request, options);
   }
@@ -2051,7 +2051,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('streamingRead stream %j', options);
     return this.innerApiCalls.streamingRead(request, options);
   }
@@ -2114,7 +2114,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'session': request.session ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('batchWrite stream %j', options);
     return this.innerApiCalls.batchWrite(request, options);
   }
@@ -2210,7 +2210,7 @@ export class SpannerClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'database': request.database ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse|null|undefined,
@@ -2284,7 +2284,7 @@ export class SpannerClient {
     });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listSessions stream %j', request);
     return this.descriptors.page.listSessions.createStream(
       this.innerApiCalls.listSessions as GaxCall,
@@ -2345,7 +2345,7 @@ export class SpannerClient {
     });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listSessions iterate %j', request);
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
