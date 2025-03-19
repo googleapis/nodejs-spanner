@@ -383,7 +383,7 @@ export class SpannerExecutorProxyClient {
   executeActionAsync(
       options?: CallOptions):
     gax.CancellableStream {
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('executeActionAsync stream %j', options);
     return this.innerApiCalls.executeActionAsync(null, options);
   }

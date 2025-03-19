@@ -519,7 +519,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getInstanceConfig request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.instance.v1.IInstanceConfig,
@@ -625,7 +625,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteInstanceConfig request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -717,7 +717,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getInstance request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.instance.v1.IInstance,
@@ -814,7 +814,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteInstance request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -916,7 +916,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('setIamPolicy request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.IPolicy,
@@ -1010,7 +1010,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getIamPolicy request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.IPolicy,
@@ -1107,7 +1107,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'resource': request.resource ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('testIamPermissions request %j', request);
     const wrappedCallback: Callback<
         protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1195,7 +1195,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('getInstancePartition request %j', request);
     const wrappedCallback: Callback<
         protos.google.spanner.admin.instance.v1.IInstancePartition,
@@ -1294,7 +1294,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('deleteInstancePartition request %j', request);
     const wrappedCallback: Callback<
         protos.google.protobuf.IEmpty,
@@ -1438,7 +1438,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstanceConfig, protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -1600,7 +1600,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'instance_config.name': request.instanceConfig!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstanceConfig, protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -1744,7 +1744,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstance, protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -1894,7 +1894,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'instance.name': request.instance!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstance, protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2043,7 +2043,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstancePartition, protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2198,7 +2198,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'instance_partition.name': request.instancePartition!.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IInstancePartition, protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2365,7 +2365,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'name': request.name ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: Callback<
           LROperation<protos.google.spanner.admin.instance.v1.IMoveInstanceResponse, protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
@@ -2486,7 +2486,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
       protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse|null|undefined,
@@ -2551,7 +2551,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstanceConfigs'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstanceConfigs stream %j', request);
     return this.descriptors.page.listInstanceConfigs.createStream(
       this.innerApiCalls.listInstanceConfigs as GaxCall,
@@ -2603,7 +2603,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstanceConfigs'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstanceConfigs iterate %j', request);
     return this.descriptors.page.listInstanceConfigs.asyncIterate(
       this.innerApiCalls['listInstanceConfigs'] as GaxCall,
@@ -2746,7 +2746,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
       protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse|null|undefined,
@@ -2854,7 +2854,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstanceConfigOperations stream %j', request);
     return this.descriptors.page.listInstanceConfigOperations.createStream(
       this.innerApiCalls.listInstanceConfigOperations as GaxCall,
@@ -2949,7 +2949,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstanceConfigOperations iterate %j', request);
     return this.descriptors.page.listInstanceConfigOperations.asyncIterate(
       this.innerApiCalls['listInstanceConfigOperations'] as GaxCall,
@@ -3065,7 +3065,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstancesRequest,
       protos.google.spanner.admin.instance.v1.IListInstancesResponse|null|undefined,
@@ -3156,7 +3156,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstances'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstances stream %j', request);
     return this.descriptors.page.listInstances.createStream(
       this.innerApiCalls.listInstances as GaxCall,
@@ -3234,7 +3234,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstances'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstances iterate %j', request);
     return this.descriptors.page.listInstances.asyncIterate(
       this.innerApiCalls['listInstances'] as GaxCall,
@@ -3332,7 +3332,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
       protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse|null|undefined,
@@ -3405,7 +3405,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstancePartitions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstancePartitions stream %j', request);
     return this.descriptors.page.listInstancePartitions.createStream(
       this.innerApiCalls.listInstancePartitions as GaxCall,
@@ -3465,7 +3465,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstancePartitions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstancePartitions iterate %j', request);
     return this.descriptors.page.listInstancePartitions.asyncIterate(
       this.innerApiCalls['listInstancePartitions'] as GaxCall,
@@ -3618,7 +3618,7 @@ export class InstanceAdminClient {
     ] = this._gaxModule.routingHeader.fromParams({
       'parent': request.parent ?? '',
     });
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     const wrappedCallback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
       protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse|null|undefined,
@@ -3733,7 +3733,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstancePartitionOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstancePartitionOperations stream %j', request);
     return this.descriptors.page.listInstancePartitionOperations.createStream(
       this.innerApiCalls.listInstancePartitionOperations as GaxCall,
@@ -3835,7 +3835,7 @@ export class InstanceAdminClient {
     });
     const defaultCallSettings = this._defaults['listInstancePartitionOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {throw err});
     this._log.info('listInstancePartitionOperations iterate %j', request);
     return this.descriptors.page.listInstancePartitionOperations.asyncIterate(
       this.innerApiCalls['listInstancePartitionOperations'] as GaxCall,
