@@ -21,6 +21,9 @@ import {grpc} from 'google-gax';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import * as through from 'through2';
+import {RunTransactionOptions} from '../src/transaction-runner';
+import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
@@ -30,6 +33,7 @@ class FakeTransaction extends EventEmitter {
   request() {}
   requestStream() {}
   useInRunner() {}
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
 }
 
 describe('TransactionRunner', () => {
@@ -111,13 +115,19 @@ describe('TransactionRunner', () => {
       });
 
       it('should set default `options`', () => {
-        const expectedOptions = {timeout: 3600000};
+        const expectedOptions = {
+          timeout: 3600000,
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        };
 
         assert.deepStrictEqual(runner.options, expectedOptions);
       });
 
       it('should accept user `options`', () => {
-        const options = {timeout: 1000};
+        const options = {
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          timeout: 1000,
+        };
         const r = new ExtendedRunner(SESSION, fakeTransaction, options);
 
         assert.deepStrictEqual(r.options, options);
@@ -319,7 +329,10 @@ describe('TransactionRunner', () => {
       });
 
       it('should pass `options` to `Runner`', () => {
-        const options = {timeout: 1};
+        const options = {
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          timeout: 1,
+        };
         const r = new TransactionRunner(
           SESSION,
           fakeTransaction,
@@ -515,7 +528,10 @@ describe('TransactionRunner', () => {
       });
 
       it('should pass `options` to `Runner`', () => {
-        const options = {timeout: 1};
+        const options = {
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          timeout: 1,
+        };
         const r = new AsyncTransactionRunner(
           SESSION,
           fakeTransaction,

@@ -39,6 +39,8 @@ import {google} from '../protos/protos';
 import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 import {
   BatchWriteOptions,
@@ -47,6 +49,7 @@ import {
   MutationSet,
 } from '../src/transaction';
 import {SessionFactory} from '../src/session-factory';
+import {RunTransactionOptions} from '../src/transaction-runner';
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -178,6 +181,7 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -2929,9 +2933,7 @@ describe('Database', () => {
 
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
-    let fakePartitionedDml = new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.PartitionedDml
-    );
+    let fakePartitionedDml: FakeTransaction;
 
     let getSessionStub;
     let beginStub;
@@ -2970,18 +2972,12 @@ describe('Database', () => {
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
-            fakePartitionedDml = new FakeTransaction(
-              {} as google.spanner.v1.TransactionOptions.PartitionedDml
-            );
+            fakePartitionedDml = fakeSession.partitionedDml();
 
-            getSessionStub = (
-              sandbox.stub(
-                fakeSessionFactory,
-                'getSessionForPartitionedOps'
-              ) as sinon.SinonStub
-            ).callsFake(callback => {
-              callback(null, fakeSession);
-            });
+            getSessionStub = sandbox.stub(
+              fakeSessionFactory,
+              'getSessionForPartitionedOps'
+            ) as sinon.SinonStub;
 
             sandbox
               .stub(fakeSession, 'partitionedDml')
@@ -2996,7 +2992,7 @@ describe('Database', () => {
             ).callsFake((_, callback) => callback(null));
           });
 
-          it('should get a read only session from the session factory', () => {
+          it('shoudl make a call to getSessionForPartitionedOps', () => {
             getSessionStub.callsFake(() => {});
 
             database.runPartitionedUpdate(QUERY, assert.ifError);
@@ -3004,7 +3000,15 @@ describe('Database', () => {
             assert.strictEqual(getSessionStub.callCount, 1);
           });
 
-          it('should return any session factory errors', () => {
+          it('should get a session from the session factory', () => {
+            const fakeCallback = sandbox.spy();
+            getSessionStub.callsFake(callback => callback(fakeSession));
+            database.runPartitionedUpdate(QUERY, fakeCallback);
+            const [resp] = fakeCallback.lastCall.args;
+            assert.strictEqual(resp, fakeSession);
+          });
+
+          it('should return errors from getSessionForPartitionedOps', () => {
             const fakeError = new Error('err');
             const fakeCallback = sandbox.spy();
 
@@ -3015,6 +3019,14 @@ describe('Database', () => {
 
             assert.strictEqual(err, fakeError);
             assert.strictEqual(rowCount, 0);
+          });
+
+          it('should get a partitioned dml transaction from the session factory', () => {
+            const fakeCallback = sandbox.spy();
+            getSessionStub.callsFake(callback => callback(fakePartitionedDml));
+            database.runPartitionedUpdate(QUERY, fakeCallback);
+            const [resp] = fakeCallback.lastCall.args;
+            assert.strictEqual(resp, fakePartitionedDml);
           });
 
           it('should call transaction begin', () => {
@@ -3198,6 +3210,17 @@ describe('Database', () => {
       assert.strictEqual(options, fakeOptions);
     });
 
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+
+      await database.runTransaction(fakeOptions, assert.ifError);
+
+      const options = fakeTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
     it('should release the session when finished', done => {
       const releaseStub = (
         sandbox.stub(pool, 'release') as sinon.SinonStub
@@ -3262,6 +3285,17 @@ describe('Database', () => {
 
     it('should optionally accept runner `options`', async () => {
       const fakeOptions = {timeout: 1};
+
+      await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+      const options = fakeAsyncTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
 
       await database.runTransactionAsync(fakeOptions, assert.ifError);
 
