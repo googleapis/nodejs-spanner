@@ -2974,10 +2974,14 @@ describe('Database', () => {
             fakeSession = new FakeSession();
             fakePartitionedDml = fakeSession.partitionedDml();
 
-            getSessionStub = sandbox.stub(
-              fakeSessionFactory,
-              'getSessionForPartitionedOps'
-            ) as sinon.SinonStub;
+            getSessionStub = (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForPartitionedOps'
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, fakeSession);
+            });
 
             sandbox
               .stub(fakeSession, 'partitionedDml')
