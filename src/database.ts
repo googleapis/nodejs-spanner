@@ -42,6 +42,7 @@ import {
   google,
   google as spannerClient,
 } from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   CreateDatabaseCallback,
   CreateDatabaseOptions,
@@ -314,6 +315,10 @@ interface DatabaseRequest {
 export interface RestoreOptions {
   encryptionConfig?: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig;
   gaxOptions?: CallOptions;
+}
+
+export interface WriteAtLeastOnceOptions extends CallOptions {
+  isolationLevel?: IsolationLevel;
 }
 
 /**
@@ -2221,12 +2226,9 @@ class Database extends common.GrpcServiceObject {
             options.requestOptions
           );
         }
-        if (options.optimisticLock) {
-          transaction!.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction!.excludeTxnFromChangeStreams();
-        }
+        transaction?.setReadWriteTransactionOptions(
+          options as RunTransactionOptions
+        );
 
         if (!err) {
           span.addEvent('Using Session', {'session.id': session?.id});
@@ -3274,12 +3276,10 @@ class Database extends common.GrpcServiceObject {
         }
 
         transaction!._observabilityOptions = this._observabilityOptions;
-        if (options.optimisticLock) {
-          transaction!.useOptimisticLock();
-        }
-        if (options.excludeTxnFromChangeStreams) {
-          transaction!.excludeTxnFromChangeStreams();
-        }
+
+        transaction!.setReadWriteTransactionOptions(
+          options as RunTransactionOptions
+        );
 
         const release = () => {
           this.pool_.release(session!);
@@ -3406,12 +3406,9 @@ class Database extends common.GrpcServiceObject {
               transaction.requestOptions || {},
               options.requestOptions
             );
-            if (options.optimisticLock) {
-              transaction.useOptimisticLock();
-            }
-            if (options.excludeTxnFromChangeStreams) {
-              transaction.excludeTxnFromChangeStreams();
-            }
+            transaction!.setReadWriteTransactionOptions(
+              options as RunTransactionOptions
+            );
             sessionId = session?.id;
             span.addEvent('Using Session', {'session.id': sessionId});
             const runner = new AsyncTransactionRunner<T>(
@@ -3638,17 +3635,17 @@ class Database extends common.GrpcServiceObject {
   writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
   writeAtLeastOnce(
     mutations: MutationSet,
-    options: CallOptions
+    options: WriteAtLeastOnceOptions
   ): Promise<CommitResponse>;
   writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
   writeAtLeastOnce(
     mutations: MutationSet,
-    options: CallOptions,
+    options: WriteAtLeastOnceOptions,
     callback: CommitCallback
   ): void;
   writeAtLeastOnce(
     mutations: MutationSet,
-    optionsOrCallback?: CallOptions | CommitCallback,
+    optionsOrCallback?: WriteAtLeastOnceOptions | CommitCallback,
     callback?: CommitCallback
   ): void | Promise<CommitResponse> {
     const cb =
@@ -3657,7 +3654,7 @@ class Database extends common.GrpcServiceObject {
         : callback;
     const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
-        ? (optionsOrCallback as CallOptions)
+        ? (optionsOrCallback as WriteAtLeastOnceOptions)
         : {};
 
     return startTrace('Database.writeAtLeastOnce', this._traceConfig, span => {
@@ -3683,6 +3680,9 @@ class Database extends common.GrpcServiceObject {
         span.addEvent('Using Session', {'session.id': session?.id});
         this._releaseOnEnd(session!, transaction!, span);
         try {
+          transaction!.setReadWriteTransactionOptions(
+            options as RunTransactionOptions
+          );
           transaction?.setQueuedMutations(mutations.proto());
           return transaction?.commit(options, (err, resp) => {
             if (err) {

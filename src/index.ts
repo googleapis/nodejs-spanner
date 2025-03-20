@@ -60,6 +60,7 @@ import {
   ClientOptions,
 } from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   PagedOptions,
   PagedResponse,
@@ -145,6 +146,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
 }
 export interface RequestConfig {
@@ -247,6 +249,7 @@ class Spanner extends GrpcService {
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
 
   /**
@@ -331,6 +334,13 @@ class Spanner extends GrpcService {
       : null;
     delete options.directedReadOptions;
 
+    const defaultTransactionOptions = options.defaultTransactionOptions
+      ? options.defaultTransactionOptions
+      : {
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        };
+    delete options.defaultTransactionOptions;
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -371,6 +381,7 @@ class Spanner extends GrpcService {
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.directedReadOptions = directedReadOptions;
+    this.defaultTransactionOptions = defaultTransactionOptions;
     this._observabilityOptions = options.observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.projectFormattedName_,
@@ -2068,6 +2079,7 @@ export {MutationSet};
  */
 import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
+import {RunTransactionOptions} from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
 export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
