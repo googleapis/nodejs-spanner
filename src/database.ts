@@ -2887,7 +2887,7 @@ class Database extends common.GrpcServiceObject {
       ...this._traceConfig,
     };
     return startTrace('Database.runPartitionedUpdate', traceConfig, span => {
-      this.pool_.getSession((err, session) => {
+      this.sessionFactory_.getSessionForPartitionedOps((err, session) => {
         if (err) {
           setSpanError(span, err);
           span.end();
@@ -2918,7 +2918,7 @@ class Database extends common.GrpcServiceObject {
     }
     transaction.begin(err => {
       if (err) {
-        this.pool_.release(session!);
+        this.sessionFactory_.release(session!);
         callback!(err, 0);
         return;
       }
@@ -2926,13 +2926,13 @@ class Database extends common.GrpcServiceObject {
       transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
           if (err.code !== grpc.status.ABORTED) {
-            this.pool_.release(session!);
+            this.sessionFactory_.release(session!);
             callback!(err, 0);
             return;
           }
           this._runPartitionedUpdate(session, query, callback);
         } else {
-          this.pool_.release(session!);
+          this.sessionFactory_.release(session!);
           callback!(null, updateCount);
           return;
         }

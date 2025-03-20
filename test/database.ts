@@ -138,6 +138,7 @@ export class FakeSessionFactory extends EventEmitter {
     this.calledWith_ = arguments;
   }
   getSession() {}
+  getSessionForPartitionedOps() {}
   getPool(): FakeSessionPool {
     return new FakeSessionPool();
   }
@@ -2926,7 +2927,7 @@ describe('Database', () => {
       },
     };
 
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakePartitionedDml = new FakeTransaction(
       {} as google.spanner.v1.TransactionOptions.PartitionedDml
@@ -2949,163 +2950,194 @@ describe('Database', () => {
       },
     };
 
-    beforeEach(() => {
-      fakePool = database.pool_;
-      fakeSession = new FakeSession();
-      fakePartitionedDml = new FakeTransaction(
-        {} as google.spanner.v1.TransactionOptions.PartitionedDml
+    const muxEnabled = [true, false];
+
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? ((process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+                  'true'),
+                (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+                  'false'))
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+                  'false');
+          });
+
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
+            fakePartitionedDml = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.PartitionedDml
+            );
+
+            getSessionStub = (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForPartitionedOps'
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, fakeSession);
+            });
+
+            sandbox
+              .stub(fakeSession, 'partitionedDml')
+              .returns(fakePartitionedDml);
+
+            beginStub = (
+              sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
+            ).callsFake(callback => callback(null));
+
+            runUpdateStub = (
+              sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
+            ).callsFake((_, callback) => callback(null));
+          });
+
+          it('should get a read only session from the session factory', () => {
+            getSessionStub.callsFake(() => {});
+
+            database.runPartitionedUpdate(QUERY, assert.ifError);
+
+            assert.strictEqual(getSessionStub.callCount, 1);
+          });
+
+          it('should return any session factory errors', () => {
+            const fakeError = new Error('err');
+            const fakeCallback = sandbox.spy();
+
+            getSessionStub.callsFake(callback => callback(fakeError));
+            database.runPartitionedUpdate(QUERY, fakeCallback);
+
+            const [err, rowCount] = fakeCallback.lastCall.args;
+
+            assert.strictEqual(err, fakeError);
+            assert.strictEqual(rowCount, 0);
+          });
+
+          it('should call transaction begin', () => {
+            beginStub.callsFake(() => {});
+            database.runPartitionedUpdate(QUERY, assert.ifError);
+
+            assert.strictEqual(beginStub.callCount, 1);
+          });
+
+          it('should return any begin errors', done => {
+            const fakeError = new Error('err');
+
+            beginStub.callsFake(callback => callback(fakeError));
+
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(fakeSession);
+
+            database.runPartitionedUpdate(QUERY, (err, rowCount) => {
+              assert.strictEqual(err, fakeError);
+              assert.strictEqual(rowCount, 0);
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
+
+          it('call `runUpdate` on the transaction', () => {
+            const fakeCallback = sandbox.spy();
+
+            database.runPartitionedUpdate(QUERY, fakeCallback);
+
+            const [query] = runUpdateStub.lastCall.args;
+
+            assert.strictEqual(query.sql, QUERY.sql);
+            assert.deepStrictEqual(query.params, QUERY.params);
+            assert.ok(fakeCallback.calledOnce);
+          });
+
+          if (!isMuxEnabled) {
+            it('should release the session on transaction end', () => {
+              const releaseStub = (
+                sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+              ).withArgs(fakeSession);
+
+              database.runPartitionedUpdate(QUERY, assert.ifError);
+              fakePartitionedDml.emit('end');
+
+              assert.strictEqual(releaseStub.callCount, 1);
+            });
+          }
+
+          it('should accept requestOptions', () => {
+            const fakeCallback = sandbox.spy();
+
+            database.runPartitionedUpdate(
+              {
+                sql: QUERY.sql,
+                params: QUERY.params,
+                requestOptions: {
+                  priority: RequestOptions.Priority.PRIORITY_LOW,
+                },
+              },
+              fakeCallback
+            );
+
+            const [query] = runUpdateStub.lastCall.args;
+
+            assert.deepStrictEqual(query, {
+              sql: QUERY.sql,
+              params: QUERY.params,
+              requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+            });
+            assert.ok(fakeCallback.calledOnce);
+          });
+
+          it('should accept excludeTxnFromChangeStreams', () => {
+            const fakeCallback = sandbox.spy();
+
+            database.runPartitionedUpdate(
+              {
+                excludeTxnFromChangeStream: true,
+              },
+              fakeCallback
+            );
+
+            const [query] = runUpdateStub.lastCall.args;
+
+            assert.deepStrictEqual(query, {
+              excludeTxnFromChangeStream: true,
+            });
+            assert.ok(fakeCallback.calledOnce);
+          });
+
+          it('should ignore directedReadOptions set for client', () => {
+            const fakeCallback = sandbox.spy();
+
+            database.parent.parent = {
+              routeToLeaderEnabled: true,
+              directedReadOptions: fakeDirectedReadOptions,
+            };
+
+            database.runPartitionedUpdate(
+              {
+                sql: QUERY.sql,
+                params: QUERY.params,
+                requestOptions: {
+                  priority: RequestOptions.Priority.PRIORITY_LOW,
+                },
+              },
+              fakeCallback
+            );
+
+            const [query] = runUpdateStub.lastCall.args;
+
+            assert.deepStrictEqual(query, {
+              sql: QUERY.sql,
+              params: QUERY.params,
+              requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+            });
+            assert.ok(fakeCallback.calledOnce);
+          });
+        }
       );
-
-      getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => {
-        callback(null, fakeSession);
-      });
-
-      sandbox.stub(fakeSession, 'partitionedDml').returns(fakePartitionedDml);
-
-      beginStub = (
-        sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
-      ).callsFake(callback => callback(null));
-
-      runUpdateStub = (
-        sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
-      ).callsFake((_, callback) => callback(null));
-    });
-
-    it('should get a read only session from the pool', () => {
-      getSessionStub.callsFake(() => {});
-
-      database.runPartitionedUpdate(QUERY, assert.ifError);
-
-      assert.strictEqual(getSessionStub.callCount, 1);
-    });
-
-    it('should return any pool errors', () => {
-      const fakeError = new Error('err');
-      const fakeCallback = sandbox.spy();
-
-      getSessionStub.callsFake(callback => callback(fakeError));
-      database.runPartitionedUpdate(QUERY, fakeCallback);
-
-      const [err, rowCount] = fakeCallback.lastCall.args;
-
-      assert.strictEqual(err, fakeError);
-      assert.strictEqual(rowCount, 0);
-    });
-
-    it('should call transaction begin', () => {
-      beginStub.callsFake(() => {});
-      database.runPartitionedUpdate(QUERY, assert.ifError);
-
-      assert.strictEqual(beginStub.callCount, 1);
-    });
-
-    it('should return any begin errors', done => {
-      const fakeError = new Error('err');
-
-      beginStub.callsFake(callback => callback(fakeError));
-
-      const releaseStub = (
-        sandbox.stub(fakePool, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.runPartitionedUpdate(QUERY, (err, rowCount) => {
-        assert.strictEqual(err, fakeError);
-        assert.strictEqual(rowCount, 0);
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
-
-    it('call `runUpdate` on the transaction', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.runPartitionedUpdate(QUERY, fakeCallback);
-
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.strictEqual(query.sql, QUERY.sql);
-      assert.deepStrictEqual(query.params, QUERY.params);
-      assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should release the session on transaction end', () => {
-      const releaseStub = (
-        sandbox.stub(fakePool, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.runPartitionedUpdate(QUERY, assert.ifError);
-      fakePartitionedDml.emit('end');
-
-      assert.strictEqual(releaseStub.callCount, 1);
-    });
-
-    it('should accept requestOptions', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.runPartitionedUpdate(
-        {
-          sql: QUERY.sql,
-          params: QUERY.params,
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        },
-        fakeCallback
-      );
-
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.deepStrictEqual(query, {
-        sql: QUERY.sql,
-        params: QUERY.params,
-        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-      });
-      assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should accept excludeTxnFromChangeStreams', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.runPartitionedUpdate(
-        {
-          excludeTxnFromChangeStream: true,
-        },
-        fakeCallback
-      );
-
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.deepStrictEqual(query, {
-        excludeTxnFromChangeStream: true,
-      });
-      assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should ignore directedReadOptions set for client', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.parent.parent = {
-        routeToLeaderEnabled: true,
-        directedReadOptions: fakeDirectedReadOptions,
-      };
-
-      database.runPartitionedUpdate(
-        {
-          sql: QUERY.sql,
-          params: QUERY.params,
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        },
-        fakeCallback
-      );
-
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.deepStrictEqual(query, {
-        sql: QUERY.sql,
-        params: QUERY.params,
-        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-      });
-      assert.ok(fakeCallback.calledOnce);
     });
   });
 

@@ -57,6 +57,14 @@ export interface SessionFactoryInterface {
   getSession(callback: GetSessionCallback): void;
 
   /**
+   * When called returns a session for paritioned dml.
+   *
+   * @name SessionFactoryInterface#getSessionForPartitionedOps
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForPartitionedOps(callback: GetSessionCallback): void;
+
+  /**
    * When called returns the pool object.
    *
    * @name SessionFactoryInterface#getPool
@@ -97,6 +105,7 @@ export class SessionFactory
   multiplexedSession_: MultiplexedSessionInterface;
   pool_: SessionPoolInterface;
   isMultiplexed: boolean;
+  isMultiplexedPartitionOps: boolean;
   constructor(
     database: Database,
     name: String,
@@ -117,6 +126,12 @@ export class SessionFactory
     process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
       ? (this.isMultiplexed = true)
       : (this.isMultiplexed = false);
+    // set the isMultiplexedPartitionedOps property to true if multiplexed session is enabled for paritioned ops, otherwise set the property to false
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
+      'true'
+      ? (this.isMultiplexedPartitionOps = true)
+      : (this.isMultiplexedPartitionOps = false);
     // Multiplexed sessions should only be created if its enabled.
     if (this.isMultiplexed) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
@@ -141,6 +156,12 @@ export class SessionFactory
     sessionHandler!.getSession((err, session, transaction) =>
       callback(err, session, transaction)
     );
+  }
+
+  getSessionForPartitionedOps(callback: GetSessionCallback): void {
+    this.isMultiplexedPartitionOps
+      ? this.getSession(callback)
+      : this.pool_.getSession(callback);
   }
 
   /**

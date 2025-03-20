@@ -546,7 +546,7 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
 async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_partitioned_delete]
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../build/src');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

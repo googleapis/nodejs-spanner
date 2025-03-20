@@ -1635,10 +1635,14 @@ describe('Spanner with mock server', () => {
   describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
     before(() => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+        'true';
     });
 
     after(() => {
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+        'false';
     });
 
     it('should make a request to CreateSession', async () => {
@@ -1712,6 +1716,20 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
         assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
         assert.strictEqual(resp?.commitStats, null);
+        done();
+      });
+    });
+
+    it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
+      const database = newTestDatabase();
+      const pool = (database.sessionFactory_ as SessionFactory)
+        .pool_ as SessionPool;
+      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+        .multiplexedSession_ as MultiplexedSession;
+      database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+        assert.strictEqual(pool._inventory.borrowed.size, 0);
+        assert.notEqual(multiplexedSession, null);
+        assert.ifError(err);
         done();
       });
     });
