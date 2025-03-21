@@ -5674,9 +5674,6 @@ describe('Spanner with mock server', () => {
         await transaction!.commit();
       });
 
-      // TODO: introduce tests for incremented attempts to verify
-      // that retries produce the required results.
-
       const wantUnaryCallsWithoutBatchCreateSessions = [
         {
           method: '/google.spanner.v1.Spanner/BeginTransaction',
@@ -5729,6 +5726,9 @@ describe('Spanner with mock server', () => {
       assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
       await database.close();
     });
+
+    // TODO(@odeke-em): introduce tests for incremented attempts to verify
+    // that retries from GAX produce the required results.
   });
 });
 
