@@ -78,7 +78,6 @@ import NullValue = google.protobuf.NullValue;
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
-import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
 import {WriteAtLeastOnceOptions} from '../src/database';
 
 const {
@@ -5675,6 +5674,9 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(attempts, 4);
         await transaction!.commit();
       });
+
+      // TODO: introduce tests for incremented attempts to verify
+      // that retries produce the required results.
 
       const wantUnaryCallsWithoutBatchCreateSessions = [
         {

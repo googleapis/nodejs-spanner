@@ -26,10 +26,6 @@ import * as spannerModule from '../src';
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
-import {
-  X_GOOG_REQ_ID_REGEX,
-  X_GOOG_SPANNER_REQUEST_ID_HEADER,
-} from '../src/request_id_header';
 
 // Dynamically loaded proto JSON is needed to get the type information
 // to fill in default values for request objects
@@ -485,14 +481,10 @@ describe('v1.SpannerClient', () => {
         client.innerApiCalls.batchCreateSessions as SinonStub
       ).getCall(0).args[0];
       assert.deepStrictEqual(actualRequest, request);
-      const actualHeaders = (
+      const actualHeaderRequestParams = (
         client.innerApiCalls.batchCreateSessions as SinonStub
-      ).getCall(0).args[1].otherArgs.headers;
-      const actualHeaderRequestParams = actualHeaders['x-goog-request-params'];
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
       assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
-      // const actualRequestID = actualHeaders[X_GOOG_SPANNER_REQUEST_ID_HEADER];
-      // console.log(`headers ${JSON.stringify(actualHeaders)}`);
-      // assert.deepStrictEqual(actualRequestID!.match(X_GOOG_REQ_ID_REGEX) !== null, true);
     });
 
     it('invokes batchCreateSessions without error using callback', async () => {

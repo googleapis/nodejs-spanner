@@ -257,7 +257,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
-  _nthClientId: number;
+  readonly _nthClientId: number;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -320,11 +320,6 @@ class Spanner extends GrpcService {
       }
     }
 
-    let interceptors: any[] = [];
-    if (options) {
-      interceptors = options.interceptors || [];
-    }
-
     options = Object.assign(
       {
         libName: 'gccl',
@@ -337,10 +332,6 @@ class Spanner extends GrpcService {
         'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
         'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
         'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
-
-        // TODO: Negotiate with the Google team to plumb gRPC
-        // settings such as interceptors to the gRPC client.
-        // 'grpc.interceptors': interceptors,
         grpc,
       },
       options || {}
@@ -1581,8 +1572,7 @@ class Spanner extends GrpcService {
         })
       );
 
-      // Wrap requestFn so as to inject the spanner request id into
-      // every returned error, so that users can have debugging continuity.
+      // Wrap requestFn to inject the spanner request id into every returned error.
       const wrappedRequestFn = (...args) => {
         const hasCallback =
           args &&
@@ -1590,7 +1580,7 @@ class Spanner extends GrpcService {
           typeof args[args.length - 1] === 'function';
 
         switch (hasCallback) {
-          case true:
+          case true: {
             const cb = args[args.length - 1];
             const priorArgs = args.slice(0, args.length - 1);
             requestFn(...priorArgs, (...results) => {
@@ -1602,8 +1592,9 @@ class Spanner extends GrpcService {
               cb(...results);
             });
             return;
+          }
 
-          case false:
+          case false: {
             const res = requestFn(...args);
             const stream = res as EventEmitter;
             if (stream) {
@@ -1625,6 +1616,7 @@ class Spanner extends GrpcService {
                   reject(err);
                 });
             });
+          }
         }
       };
 

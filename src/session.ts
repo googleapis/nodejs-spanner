@@ -556,7 +556,7 @@ export class Session extends common.GrpcServiceObject {
   }
 
   private channelId(): number {
-    // TODO: Infer channelId from the actual gRPC channel.
+    // The Node.js client does not use a gRPC channel pool, so this always returns 1.
     return 1;
   }
 }
