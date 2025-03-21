@@ -19591,9 +19591,6 @@ export namespace google {
                     /** ReadAction limit. */
                     public limit: number;
 
-                    /** ReadAction _index. */
-                    public _index?: "index";
-
                     /**
                      * Creates a new ReadAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -19912,9 +19909,6 @@ export namespace google {
                     /** DmlAction autocommitIfSupported. */
                     public autocommitIfSupported?: (boolean|null);
 
-                    /** DmlAction _autocommitIfSupported. */
-                    public _autocommitIfSupported?: "autocommitIfSupported";
-
                     /**
                      * Creates a new DmlAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -20178,9 +20172,6 @@ export namespace google {
                     /** Value valueType. */
                     public valueType?: ("isNull"|"intValue"|"boolValue"|"doubleValue"|"bytesValue"|"stringValue"|"structValue"|"timestampValue"|"dateDaysValue"|"isCommitTimestamp"|"arrayValue");
 
-                    /** Value _arrayType. */
-                    public _arrayType?: "arrayType";
-
                     /**
                      * Creates a new Value instance using the specified properties.
                      * @param [properties] Properties to set
@@ -20289,9 +20280,6 @@ export namespace google {
 
                     /** KeyRange type. */
                     public type?: (google.spanner.executor.v1.KeyRange.Type|keyof typeof google.spanner.executor.v1.KeyRange.Type|null);
-
-                    /** KeyRange _type. */
-                    public _type?: "type";
 
                     /**
                      * Creates a new KeyRange instance using the specified properties.
@@ -21156,9 +21144,6 @@ export namespace google {
                     /** PartitionedUpdateAction update. */
                     public update?: (google.spanner.executor.v1.IQueryAction|null);
 
-                    /** PartitionedUpdateAction _options. */
-                    public _options?: "options";
-
                     /**
                      * Creates a new PartitionedUpdateAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -21263,12 +21248,6 @@ export namespace google {
 
                         /** ExecutePartitionedUpdateOptions tag. */
                         public tag?: (string|null);
-
-                        /** ExecutePartitionedUpdateOptions _rpcPriority. */
-                        public _rpcPriority?: "rpcPriority";
-
-                        /** ExecutePartitionedUpdateOptions _tag. */
-                        public _tag?: "tag";
 
                         /**
                          * Creates a new ExecutePartitionedUpdateOptions instance using the specified properties.
@@ -21385,12 +21364,6 @@ export namespace google {
 
                     /** StartTransactionAction executionOptions. */
                     public executionOptions?: (google.spanner.executor.v1.ITransactionExecutionOptions|null);
-
-                    /** StartTransactionAction _concurrency. */
-                    public _concurrency?: "concurrency";
-
-                    /** StartTransactionAction _executionOptions. */
-                    public _executionOptions?: "executionOptions";
 
                     /**
                      * Creates a new StartTransactionAction instance using the specified properties.
@@ -22448,9 +22421,6 @@ export namespace google {
                     /** UpdateUserInstanceConfigAction labels. */
                     public labels: { [k: string]: string };
 
-                    /** UpdateUserInstanceConfigAction _displayName. */
-                    public _displayName?: "displayName";
-
                     /**
                      * Creates a new UpdateUserInstanceConfigAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -22766,12 +22736,6 @@ export namespace google {
                     /** ListCloudInstanceConfigsAction pageToken. */
                     public pageToken?: (string|null);
 
-                    /** ListCloudInstanceConfigsAction _pageSize. */
-                    public _pageSize?: "pageSize";
-
-                    /** ListCloudInstanceConfigsAction _pageToken. */
-                    public _pageToken?: "pageToken";
-
                     /**
                      * Creates a new ListCloudInstanceConfigsAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -22905,15 +22869,6 @@ export namespace google {
                     /** CreateCloudInstanceAction labels. */
                     public labels: { [k: string]: string };
 
-                    /** CreateCloudInstanceAction _nodeCount. */
-                    public _nodeCount?: "nodeCount";
-
-                    /** CreateCloudInstanceAction _processingUnits. */
-                    public _processingUnits?: "processingUnits";
-
-                    /** CreateCloudInstanceAction _autoscalingConfig. */
-                    public _autoscalingConfig?: "autoscalingConfig";
-
                     /**
                      * Creates a new CreateCloudInstanceAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -23046,18 +23001,6 @@ export namespace google {
 
                     /** UpdateCloudInstanceAction labels. */
                     public labels: { [k: string]: string };
-
-                    /** UpdateCloudInstanceAction _displayName. */
-                    public _displayName?: "displayName";
-
-                    /** UpdateCloudInstanceAction _nodeCount. */
-                    public _nodeCount?: "nodeCount";
-
-                    /** UpdateCloudInstanceAction _processingUnits. */
-                    public _processingUnits?: "processingUnits";
-
-                    /** UpdateCloudInstanceAction _autoscalingConfig. */
-                    public _autoscalingConfig?: "autoscalingConfig";
 
                     /**
                      * Creates a new UpdateCloudInstanceAction instance using the specified properties.
@@ -23295,12 +23238,6 @@ export namespace google {
                     /** CreateCloudDatabaseAction protoDescriptors. */
                     public protoDescriptors?: (Uint8Array|string|null);
 
-                    /** CreateCloudDatabaseAction _dialect. */
-                    public _dialect?: "dialect";
-
-                    /** CreateCloudDatabaseAction _protoDescriptors. */
-                    public _protoDescriptors?: "protoDescriptors";
-
                     /**
                      * Creates a new CreateCloudDatabaseAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -23427,9 +23364,6 @@ export namespace google {
 
                     /** UpdateCloudDatabaseDdlAction protoDescriptors. */
                     public protoDescriptors?: (Uint8Array|string|null);
-
-                    /** UpdateCloudDatabaseDdlAction _protoDescriptors. */
-                    public _protoDescriptors?: "protoDescriptors";
 
                     /**
                      * Creates a new UpdateCloudDatabaseDdlAction instance using the specified properties.
@@ -23758,9 +23692,6 @@ export namespace google {
                     /** ChangeQuorumCloudDatabaseAction servingLocations. */
                     public servingLocations: string[];
 
-                    /** ChangeQuorumCloudDatabaseAction _databaseUri. */
-                    public _databaseUri?: "databaseUri";
-
                     /**
                      * Creates a new ChangeQuorumCloudDatabaseAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -23990,15 +23921,6 @@ export namespace google {
 
                     /** ListCloudInstancesAction pageToken. */
                     public pageToken?: (string|null);
-
-                    /** ListCloudInstancesAction _filter. */
-                    public _filter?: "filter";
-
-                    /** ListCloudInstancesAction _pageSize. */
-                    public _pageSize?: "pageSize";
-
-                    /** ListCloudInstancesAction _pageToken. */
-                    public _pageToken?: "pageToken";
 
                     /**
                      * Creates a new ListCloudInstancesAction instance using the specified properties.
@@ -24592,9 +24514,6 @@ export namespace google {
 
                     /** CreateCloudBackupAction encryptionConfig. */
                     public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
-
-                    /** CreateCloudBackupAction _versionTime. */
-                    public _versionTime?: "versionTime";
 
                     /**
                      * Creates a new CreateCloudBackupAction instance using the specified properties.
@@ -25913,12 +25832,6 @@ export namespace google {
                     /** GenerateDbPartitionsForReadAction maxPartitionCount. */
                     public maxPartitionCount?: (number|Long|string|null);
 
-                    /** GenerateDbPartitionsForReadAction _desiredBytesPerPartition. */
-                    public _desiredBytesPerPartition?: "desiredBytesPerPartition";
-
-                    /** GenerateDbPartitionsForReadAction _maxPartitionCount. */
-                    public _maxPartitionCount?: "maxPartitionCount";
-
                     /**
                      * Creates a new GenerateDbPartitionsForReadAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -26021,9 +25934,6 @@ export namespace google {
 
                     /** GenerateDbPartitionsForQueryAction desiredBytesPerPartition. */
                     public desiredBytesPerPartition?: (number|Long|string|null);
-
-                    /** GenerateDbPartitionsForQueryAction _desiredBytesPerPartition. */
-                    public _desiredBytesPerPartition?: "desiredBytesPerPartition";
 
                     /**
                      * Creates a new GenerateDbPartitionsForQueryAction instance using the specified properties.
@@ -26139,12 +26049,6 @@ export namespace google {
 
                     /** BatchPartition index. */
                     public index?: (string|null);
-
-                    /** BatchPartition _table. */
-                    public _table?: "table";
-
-                    /** BatchPartition _index. */
-                    public _index?: "index";
 
                     /**
                      * Creates a new BatchPartition instance using the specified properties.
@@ -26382,21 +26286,6 @@ export namespace google {
                     /** ExecuteChangeStreamQuery cloudDatabaseRole. */
                     public cloudDatabaseRole?: (string|null);
 
-                    /** ExecuteChangeStreamQuery _endTime. */
-                    public _endTime?: "endTime";
-
-                    /** ExecuteChangeStreamQuery _partitionToken. */
-                    public _partitionToken?: "partitionToken";
-
-                    /** ExecuteChangeStreamQuery _heartbeatMilliseconds. */
-                    public _heartbeatMilliseconds?: "heartbeatMilliseconds";
-
-                    /** ExecuteChangeStreamQuery _deadlineSeconds. */
-                    public _deadlineSeconds?: "deadlineSeconds";
-
-                    /** ExecuteChangeStreamQuery _cloudDatabaseRole. */
-                    public _cloudDatabaseRole?: "cloudDatabaseRole";
-
                     /**
                      * Creates a new ExecuteChangeStreamQuery instance using the specified properties.
                      * @param [properties] Properties to set
@@ -26547,27 +26436,6 @@ export namespace google {
 
                     /** SpannerActionOutcome changeStreamRecords. */
                     public changeStreamRecords: google.spanner.executor.v1.IChangeStreamRecord[];
-
-                    /** SpannerActionOutcome _status. */
-                    public _status?: "status";
-
-                    /** SpannerActionOutcome _commitTime. */
-                    public _commitTime?: "commitTime";
-
-                    /** SpannerActionOutcome _readResult. */
-                    public _readResult?: "readResult";
-
-                    /** SpannerActionOutcome _queryResult. */
-                    public _queryResult?: "queryResult";
-
-                    /** SpannerActionOutcome _transactionRestarted. */
-                    public _transactionRestarted?: "transactionRestarted";
-
-                    /** SpannerActionOutcome _batchTxnId. */
-                    public _batchTxnId?: "batchTxnId";
-
-                    /** SpannerActionOutcome _adminResult. */
-                    public _adminResult?: "adminResult";
 
                     /**
                      * Creates a new SpannerActionOutcome instance using the specified properties.
@@ -27368,15 +27236,6 @@ export namespace google {
                     /** ReadResult rowType. */
                     public rowType?: (google.spanner.v1.IStructType|null);
 
-                    /** ReadResult _index. */
-                    public _index?: "index";
-
-                    /** ReadResult _requestIndex. */
-                    public _requestIndex?: "requestIndex";
-
-                    /** ReadResult _rowType. */
-                    public _rowType?: "rowType";
-
                     /**
                      * Creates a new ReadResult instance using the specified properties.
                      * @param [properties] Properties to set
@@ -27479,9 +27338,6 @@ export namespace google {
 
                     /** QueryResult rowType. */
                     public rowType?: (google.spanner.v1.IStructType|null);
-
-                    /** QueryResult _rowType. */
-                    public _rowType?: "rowType";
 
                     /**
                      * Creates a new QueryResult instance using the specified properties.
