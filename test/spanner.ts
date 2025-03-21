@@ -243,7 +243,6 @@ describe('Spanner with mock server', () => {
   });
   const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor([
     '/google.spanner.admin',
-    '/google.spanner.admin.database.v1.DatabaseAdmin',
   ]);
   const server = new grpc.Server({
     interceptors: [xGoogReqIDInterceptor.generateServerInterceptor()],
