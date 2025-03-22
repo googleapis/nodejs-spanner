@@ -1198,21 +1198,22 @@ describe('Spanner with mock server', () => {
         database
           .close()
           .catch(done)
-          .then(() => done());
+          .then(() => {
+            const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
+            const wantStreamingCalls = [
+              {
+                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                reqId: `1.${randIdForProcess}.1.1.2.1`,
+              },
+              {
+                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                reqId: `1.${randIdForProcess}.1.1.2.2`,
+              },
+            ];
+            assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
+            done();
+          });
       });
-      const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
-      const wantStreamingCalls = [
-        {
-          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
-          reqId: `1.${randIdForProcess}.1.1.2.1`,
-        },
-        {
-          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
-          // TODO: This request-id should be `1.${randIdForProcess}.1.1.2.2` when attempts are supported.
-          reqId: `1.${randIdForProcess}.1.1.2.1`,
-        },
-      ];
-      assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
     });
 
     it('should not retry non-retryable error from executeStreamingSql with a callback', done => {
