@@ -54,6 +54,7 @@ import {
   setSpanErrorAndException,
 } from './instrument';
 import {RunTransactionOptions} from './transaction-runner';
+import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -459,7 +460,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
           gaxOpts,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(headers, this.session),
         },
         (
           err: null | grpc.ServiceError,
@@ -716,8 +717,11 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
+
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         if (this.id && transaction.begin) {
           delete transaction.begin;
@@ -744,7 +748,12 @@ export class Snapshot extends EventEmitter {
           method: 'streamingRead',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nthRequest,
+            attempt
+          ),
         });
       };
 
@@ -1302,6 +1311,8 @@ export class Snapshot extends EventEmitter {
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         attempt++;
 
@@ -1335,7 +1346,12 @@ export class Snapshot extends EventEmitter {
           method: 'executeStreamingSql',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nthRequest,
+            attempt
+          ),
         });
       };
 
@@ -1963,7 +1979,13 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const headers = this.commonHeaders_;
+    const database = this.session.parent as Database;
+    const headers = injectRequestIDIntoHeaders(
+      this.commonHeaders_,
+      this.session,
+      nextNthRequest(database),
+      1
+    );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -2196,13 +2218,19 @@ export class Transaction extends Dml {
 
       span.addEvent('Starting Commit');
 
+      const database = this.session.parent as Database;
       this.request(
         {
           client: 'SpannerClient',
           method: 'commit',
           reqOpts,
           gaxOpts: gaxOpts,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nextNthRequest(database),
+            1
+          ),
         },
         (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
           this.end();

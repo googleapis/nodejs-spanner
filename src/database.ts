@@ -113,6 +113,13 @@ import {
   setSpanErrorAndException,
   traceConfig,
 } from './instrument';
+import {
+  AtomicCounter,
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+  newAtomicCounter,
+} from './request_id_header';
+
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -355,6 +362,8 @@ class Database extends common.GrpcServiceObject {
   > | null;
   _observabilityOptions?: ObservabilityOptions; // TODO: exmaine if we can remove it
   private _traceConfig: traceConfig;
+  private _nthRequest: AtomicCounter;
+  public _clientId: number;
   constructor(
     instance: Instance,
     name: string,
@@ -469,6 +478,12 @@ class Database extends common.GrpcServiceObject {
     };
 
     this.request = instance.request;
+    this._nthRequest = newAtomicCounter(0);
+    if (this.parent && this.parent.parent) {
+      this._clientId = (this.parent.parent as Spanner)._nthClientId;
+    } else {
+      this._clientId = instance._nthClientId;
+    }
     this._observabilityOptions = instance._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.formattedName_,
@@ -489,6 +504,11 @@ class Database extends common.GrpcServiceObject {
       Database.getEnvironmentQueryOptions()
     );
   }
+
+  _nextNthRequest(): number {
+    return this._nthRequest.increment();
+  }
+
   /**
    * @typedef {array} SetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -697,6 +717,12 @@ class Database extends common.GrpcServiceObject {
       addLeaderAwareRoutingHeader(headers);
     }
 
+    const allHeaders = this._metadataWithRequestId(
+      this._nextNthRequest(),
+      1,
+      headers
+    );
+
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
       this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
         {
@@ -704,7 +730,7 @@ class Database extends common.GrpcServiceObject {
           method: 'batchCreateSessions',
           reqOpts,
           gaxOpts: options.gaxOptions,
-          headers: headers,
+          headers: allHeaders,
         },
         (err, resp) => {
           if (err) {
@@ -726,6 +752,26 @@ class Database extends common.GrpcServiceObject {
         }
       );
     });
+  }
+
+  public _metadataWithRequestId(
+    nthRequest: number,
+    attempt: number,
+    priorMetadata?: {[k: string]: string}
+  ): {[k: string]: string} {
+    if (!priorMetadata) {
+      priorMetadata = {};
+    }
+    const withReqId = {
+      ...priorMetadata,
+    };
+    withReqId[X_GOOG_SPANNER_REQUEST_ID_HEADER] = craftRequestId(
+      this._clientId || 1,
+      1, // TODO: Properly infer the channelId
+      nthRequest,
+      attempt
+    );
+    return withReqId;
   }
 
   /**
@@ -993,7 +1039,11 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    const headers = this.commonHeaders_;
+    const headers = this._metadataWithRequestId(
+      this._nextNthRequest(),
+      1,
+      this.commonHeaders_
+    );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -1915,6 +1965,12 @@ class Database extends common.GrpcServiceObject {
       delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
+    const headers = this._metadataWithRequestId(
+      this._nextNthRequest(),
+      1,
+      this.commonHeaders_
+    );
+
     return startTrace('Database.getSessions', this._traceConfig, span => {
       this.request<
         google.spanner.v1.ISession,
@@ -1925,7 +1981,7 @@ class Database extends common.GrpcServiceObject {
           method: 'listSessions',
           reqOpts,
           gaxOpts,
-          headers: this.commonHeaders_,
+          headers: headers,
         },
         (err, sessions, nextPageRequest, ...args) => {
           if (err) {
