@@ -26,6 +26,10 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {Database, Instance, Spanner} from '../src';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -262,7 +266,10 @@ describe('Session', () => {
           name: session.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, session.commonHeaders_);
+        assert.deepStrictEqual(config.headers, {
+          ...session.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
 
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
@@ -403,7 +410,10 @@ describe('Session', () => {
           sql: 'SELECT 1',
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, session.commonHeaders_);
+        assert.deepStrictEqual(config.headers, {
+          ...session.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };

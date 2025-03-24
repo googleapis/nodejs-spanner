@@ -23,6 +23,7 @@ import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
+import {EventEmitter} from 'events';
 import * as through from 'through2';
 import {
   codec,
@@ -87,6 +88,10 @@ import {
   ObservabilityOptions,
   ensureInitialContextManagerSet,
 } from './instrument';
+import {
+  injectRequestIDIntoError,
+  nextSpannerClientId,
+} from './request_id_header';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -148,6 +153,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
+  interceptors?: any[];
 }
 export interface RequestConfig {
   client: string;
@@ -251,6 +257,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
+  readonly _nthClientId: number;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -312,6 +319,7 @@ class Spanner extends GrpcService {
         }
       }
     }
+
     options = Object.assign(
       {
         libName: 'gccl',
@@ -388,6 +396,7 @@ class Spanner extends GrpcService {
       this._observabilityOptions?.enableEndToEndTracing
     );
     ensureInitialContextManagerSet();
+    this._nthClientId = nextSpannerClientId();
   }
 
   /**
@@ -1562,7 +1571,56 @@ class Spanner extends GrpcService {
           },
         })
       );
-      callback(null, requestFn);
+
+      // Wrap requestFn to inject the spanner request id into every returned error.
+      const wrappedRequestFn = (...args) => {
+        const hasCallback =
+          args &&
+          args.length > 0 &&
+          typeof args[args.length - 1] === 'function';
+
+        switch (hasCallback) {
+          case true: {
+            const cb = args[args.length - 1];
+            const priorArgs = args.slice(0, args.length - 1);
+            requestFn(...priorArgs, (...results) => {
+              if (results && results.length > 0) {
+                const err = results[0] as Error;
+                injectRequestIDIntoError(config, err);
+              }
+
+              cb(...results);
+            });
+            return;
+          }
+
+          case false: {
+            const res = requestFn(...args);
+            const stream = res as EventEmitter;
+            if (stream) {
+              stream.on('error', err => {
+                injectRequestIDIntoError(config, err as Error);
+              });
+            }
+
+            const originallyPromise = res instanceof Promise;
+            if (!originallyPromise) {
+              return res;
+            }
+
+            return new Promise((resolve, reject) => {
+              requestFn(...args)
+                .then(resolve)
+                .catch(err => {
+                  injectRequestIDIntoError(config, err as Error);
+                  reject(err);
+                });
+            });
+          }
+        }
+      };
+
+      callback(null, wrappedRequestFn);
     });
   }
 

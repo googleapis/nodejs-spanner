@@ -50,6 +50,11 @@ import {
 } from '../src/transaction';
 import {SessionFactory} from '../src/session-factory';
 import {RunTransactionOptions} from '../src/transaction-runner';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
+
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -434,7 +439,10 @@ describe('Database', () => {
       assert.deepStrictEqual(
         headers,
         Object.assign(
-          {[LEADER_AWARE_ROUTING_HEADER]: true},
+          {
+            [LEADER_AWARE_ROUTING_HEADER]: true,
+            [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+          },
           database.commonHeaders_
         )
       );
@@ -2210,7 +2218,10 @@ describe('Database', () => {
         assert.deepStrictEqual(
           config.headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+            },
             database.commonHeaders_
           )
         );
@@ -2664,7 +2675,10 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.deepStrictEqual(config.gaxOpts, gaxOpts);
-        assert.deepStrictEqual(config.headers, database.commonHeaders_);
+        assert.deepStrictEqual(config.headers, {
+          ...database.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
         done();
       };
 
