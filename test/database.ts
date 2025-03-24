@@ -2966,21 +2966,27 @@ describe('Database', () => {
       },
     };
 
-    const muxEnabled = [true, false];
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
         () => {
           before(() => {
-            isMuxEnabled
-              ? ((process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'true'),
-                (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-                  'false'))
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'false');
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+              isMuxEnabled[1].toString();
           });
 
           beforeEach(() => {
@@ -3010,7 +3016,7 @@ describe('Database', () => {
             ).callsFake((_, callback) => callback(null));
           });
 
-          it('shoudl make a call to getSessionForPartitionedOps', () => {
+          it('should make a call to getSessionForPartitionedOps', () => {
             getSessionStub.callsFake(() => {});
 
             database.runPartitionedUpdate(QUERY, assert.ifError);
