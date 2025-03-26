@@ -43,6 +43,7 @@ function main(
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
+    // The isolation level specified at the request level takes precedence over the isolation level configured at the client level.
     const snapshotIsolationOptionsForRequest = {
       isolationLevel:
         protos.google.spanner.v1.TransactionOptions.IsolationLevel
