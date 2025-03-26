@@ -6531,8 +6531,14 @@ describe('Spanner', () => {
           });
         });
 
-        // TODO: Enable when the interval feature has been released.
-        describe.skip('interval', () => {
+        describe('interval', () => {
+          before(function () {
+            // TODO: Remove this check once Interval is supported in emulator
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+          });
+
           const intervalQuery = (done, database, query, value) => {
             database.run(query, (err, rows) => {
               assert.ifError(err);
