@@ -35,11 +35,11 @@ import {
 } from '@grpc/proto-loader';
 import * as duplexify from 'duplexify';
 import {EventEmitter} from 'events';
-import * as extend from 'extend';
+import extend from 'extend';
 import {grpc, GrpcClient} from 'google-gax';
 import * as is from 'is';
 import {Request, Response} from 'teeny-request';
-import * as retryRequest from 'retry-request';
+import retryRequest from 'retry-request';
 import {Duplex, PassThrough} from 'stream';
 
 const gaxProtoPath = path.join(
@@ -999,7 +999,17 @@ export class GrpcService extends Service {
     this.authClient.getClient().then(client => {
       const credentials = this.grpc!.credentials.combineChannelCredentials(
         this.grpc!.credentials.createSsl(),
-        this.grpc!.credentials.createFromGoogleCredential(client)
+        grpc.credentials.createFromGoogleCredential({
+          // the `grpc` package does not support the `Headers` object yet
+          getRequestHeaders: async (url?: string | URL) => {
+            const headers = await client.getRequestHeaders(url);
+            const genericHeadersObject: Record<string, string> = {};
+
+            headers.forEach((value, key) => (genericHeadersObject[key] = value));
+
+            return genericHeadersObject;
+          },
+        }),
       );
       if (!this.projectId || this.projectId === '{{projectId}}') {
         this.projectId = client.projectId!;

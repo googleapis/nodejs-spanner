@@ -28,11 +28,11 @@ import {
   util,
 } from '@google-cloud/common';
 import {promisifyAll} from '@google-cloud/promisify';
-import * as extend from 'extend';
+import extend from 'extend';
 import {CoreOptions, RequestCallback, Response} from 'teeny-request';
 
 export class GrpcServiceObject extends ServiceObject {
-  parent!: GrpcServiceObject;
+  declare parent: GrpcServiceObject;
 
   /**
    * GrpcServiceObject is a base class, meant to be inherited from by a service

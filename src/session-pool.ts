@@ -16,7 +16,7 @@
 
 import {EventEmitter} from 'events';
 import * as is from 'is';
-import PQueue from 'p-queue';
+const PQueue = require('p-queue');
 
 import {Database} from './database';
 import {Session} from './session';
@@ -268,14 +268,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   database: Database;
   isOpen: boolean;
   options: SessionPoolOptions;
-  _acquires: PQueue;
+  _acquires: typeof PQueue;
   _evictHandle!: NodeJS.Timer;
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
   _pending = 0;
   _waiters = 0;
   _pingHandle!: NodeJS.Timer;
-  _requests: PQueue;
+  _requests: typeof PQueue;
   _traces: Map<string, trace.StackFrame[]>;
   _observabilityOptions?: ObservabilityOptions;
 

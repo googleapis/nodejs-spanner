@@ -833,7 +833,7 @@ describe('E2E traces with async/await', async () => {
   let spanner: Spanner;
   let spannerMock: mock.MockSpanner;
   let traceExporter: typeof InMemorySpanExporter;
-  let provider: typeof TracerProvider;
+  let provider: typeof NodeTracerProvider;
   let observabilityOptions: typeof ObservabilityOptions;
 
   beforeEach(async () => {
@@ -1022,7 +1022,7 @@ describe('Negative cases', async () => {
   let spanner: Spanner;
   let spannerMock: mock.MockSpanner;
   let traceExporter: typeof InMemorySpanExporter;
-  let provider: typeof TracerProvider;
+  let provider: typeof NodeTracerProvider;
   let observabilityOptions: typeof ObservabilityOptions;
 
   const selectSql1p = 'SELECT 1p';
