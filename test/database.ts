@@ -39,6 +39,8 @@ import {google} from '../protos/protos';
 import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 import {
   BatchWriteOptions,
@@ -47,6 +49,12 @@ import {
   MutationSet,
 } from '../src/transaction';
 import {SessionFactory} from '../src/session-factory';
+import {RunTransactionOptions} from '../src/transaction-runner';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
+
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -177,6 +185,7 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -429,7 +438,10 @@ describe('Database', () => {
       assert.deepStrictEqual(
         headers,
         Object.assign(
-          {[LEADER_AWARE_ROUTING_HEADER]: true},
+          {
+            [LEADER_AWARE_ROUTING_HEADER]: true,
+            [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+          },
           database.commonHeaders_
         )
       );
@@ -2205,7 +2217,10 @@ describe('Database', () => {
         assert.deepStrictEqual(
           config.headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+            },
             database.commonHeaders_
           )
         );
@@ -2659,7 +2674,10 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'listSessions');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
         assert.deepStrictEqual(config.gaxOpts, gaxOpts);
-        assert.deepStrictEqual(config.headers, database.commonHeaders_);
+        assert.deepStrictEqual(config.headers, {
+          ...database.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
         done();
       };
 
@@ -3166,6 +3184,17 @@ describe('Database', () => {
       assert.strictEqual(options, fakeOptions);
     });
 
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+
+      await database.runTransaction(fakeOptions, assert.ifError);
+
+      const options = fakeTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
     it('should release the session when finished', done => {
       const releaseStub = (
         sandbox.stub(pool, 'release') as sinon.SinonStub
@@ -3230,6 +3259,17 @@ describe('Database', () => {
 
     it('should optionally accept runner `options`', async () => {
       const fakeOptions = {timeout: 1};
+
+      await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+      const options = fakeAsyncTransactionRunner.calledWith_[3];
+      assert.strictEqual(options, fakeOptions);
+    });
+
+    it('should optionally accept runner `option` isolationLevel', async () => {
+      const fakeOptions = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
 
       await database.runTransactionAsync(fakeOptions, assert.ifError);
 

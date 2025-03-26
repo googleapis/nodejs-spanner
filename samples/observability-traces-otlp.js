@@ -15,8 +15,8 @@
  */
 
 // sample-metadata:
-//   title: Observability (Tracing) with OpenTelemetry
-//   usage: node observability-traces.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>
+//   title: Observability (Tracing) with OpenTelemetry using OTLP
+//   usage: node observability-traces-otlp.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>
 
 'use strict';
 
@@ -25,46 +25,50 @@ async function main(
   instanceId = 'my-instance-id',
   databaseId = 'my-project-id'
 ) {
-  // [START spanner_opentelemetry_traces_cloudtrace_usage]
-
+  // [START spanner_opentelemetry_traces_otlp_usage]
   const {NodeTracerProvider} = require('@opentelemetry/sdk-trace-node');
   const {
-    TraceExporter,
-  } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
+    OTLPTraceExporter,
+  } = require('@opentelemetry/exporter-trace-otlp-grpc');
   const {
     BatchSpanProcessor,
     TraceIdRatioBasedSampler,
   } = require('@opentelemetry/sdk-trace-base');
+  const {Resource} = require('@opentelemetry/resources');
   const {Spanner} = require('@google-cloud/spanner');
 
-  const traceExporter = new TraceExporter();
+  // Define a Resource with service metadata
+  const resource = new Resource({
+    'service.name': 'my-service',
+    'service.version': '1.0.0',
+  });
+
+  // Create an OTLP gRPC trace exporter
+  const traceExporter = new OTLPTraceExporter({
+    url: 'http://localhost:4317', // Default OTLP gRPC endpoint
+  });
 
   // Create a provider with a custom sampler
   const provider = new NodeTracerProvider({
     sampler: new TraceIdRatioBasedSampler(1.0), // Sample 100% of traces
+    resource,
     spanProcessors: [new BatchSpanProcessor(traceExporter)],
   });
 
   // Uncomment following line to register tracerProvider globally or pass it in Spanner object
   // provider.register();
 
-  // Set global propagator to propogate the trace context for end to end tracing.
-  const {propagation} = require('@opentelemetry/api');
-  const {W3CTraceContextPropagator} = require('@opentelemetry/core');
-  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
-
+  // Create the Cloud Spanner Client.
   const spanner = new Spanner({
     projectId: projectId,
     observabilityOptions: {
       tracerProvider: provider,
-      // Enable extended tracing to allow your SQL statements to be annotated.
       enableExtendedTracing: true,
-      // Enable end to end tracing.
       enableEndToEndTracing: true,
     },
   });
 
-  // [END spanner_opentelemetry_traces_cloudtrace_usage]
+  // [END spanner_opentelemetry_traces_otlp_usage]
 
   // Acquire the database handle.
   const instance = spanner.instance(instanceId);

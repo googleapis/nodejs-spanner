@@ -57,6 +57,13 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {
+  RequestIDError,
+  X_GOOG_REQ_ID_REGEX,
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  randIdForProcess,
+  resetNthClientId,
+} from '../src/request_id_header';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -68,9 +75,10 @@ import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
-import {X_GOOG_SPANNER_REQUEST_ID_HEADER} from '../src/request_id_header';
+import {WriteAtLeastOnceOptions} from '../src/database';
 
 const {
   AlwaysOnSampler,
@@ -93,6 +101,133 @@ function numberToEnglishWord(num: number): string {
   }
 }
 
+class XGoogRequestHeaderInterceptor {
+  private nStream: number;
+  private nUnary: number;
+  private streamCalls: any[];
+  private unaryCalls: any[];
+  private prefixesToIgnore?: string[];
+  constructor(prefixesToIgnore?: string[]) {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+    this.prefixesToIgnore = prefixesToIgnore || [];
+  }
+
+  assertHasHeader(call): string | unknown {
+    const metadata = call.metadata;
+    const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
+    if (!gotReqId) {
+      throw new Error(
+        `${call.method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`
+      );
+    }
+
+    if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+      throw new Error(
+        `${call.method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`
+      );
+    }
+    return gotReqId;
+  }
+
+  interceptUnary(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.unaryCalls.push({method: call.method, reqId: gotReqId});
+    this.nUnary++;
+    next(call);
+  }
+
+  generateClientInterceptor() {
+    return this.interceptUnary.bind(this);
+  }
+
+  interceptStream(call, next) {
+    const gotReqId = this.assertHasHeader(call);
+    this.streamCalls.push({method: call.method, reqId: gotReqId});
+    this.nStream++;
+    next(call);
+  }
+
+  generateServerInterceptor() {
+    return this.serverInterceptor.bind(this);
+  }
+
+  reset() {
+    this.nStream = 0;
+    this.streamCalls = [];
+    this.nUnary = 0;
+    this.unaryCalls = [];
+  }
+
+  public getUnaryCalls() {
+    return this.unaryCalls;
+  }
+
+  public getStreamingCalls() {
+    return this.streamCalls;
+  }
+
+  serverInterceptor(methodDescriptor, call) {
+    const method = call.handler.path;
+    const isUnary = call.handler.type === 'unary';
+    const listener = new grpcModule.ServerListenerBuilder()
+      .withOnReceiveMetadata((metadata, next) => {
+        let i = 0;
+        const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
+        for (i = 0; i < prefixesToIgnore.length; i++) {
+          const prefix = prefixesToIgnore[i];
+          if (method.startsWith(prefix)) {
+            next(metadata);
+            return;
+          }
+        }
+
+        const gotReqIds = metadata.get(X_GOOG_SPANNER_REQUEST_ID_HEADER);
+        if (!(gotReqIds && gotReqIds.length > 0)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
+          });
+          return;
+        }
+
+        if (gotReqIds.length !== 1) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} set multiple ${X_GOOG_SPANNER_REQUEST_ID_HEADER} headers: ${gotReqIds}`,
+          });
+          return;
+        }
+
+        const gotReqId = gotReqIds[0].toString();
+        if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
+          call.sendStatus({
+            code: grpcModule.status.INVALID_ARGUMENT,
+            details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
+          });
+          return;
+        }
+
+        if (isUnary) {
+          this.unaryCalls.push({method: method, reqId: gotReqId});
+          this.nUnary++;
+        } else {
+          this.streamCalls.push({method: method, reqId: gotReqId});
+          this.nStream++;
+        }
+
+        next(metadata);
+      })
+      .build();
+
+    const responder = new grpcModule.ResponderBuilder()
+      .withStart(next => next(listener))
+      .build();
+    return new grpcModule.ServerInterceptingCall(call, responder);
+  }
+}
 describe('Spanner with mock server', () => {
   let sandbox: sinon.SinonSandbox;
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
@@ -106,7 +241,12 @@ describe('Spanner with mock server', () => {
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
-  const server = new grpc.Server();
+  const xGoogReqIDInterceptor = new XGoogRequestHeaderInterceptor([
+    '/google.spanner.admin',
+  ]);
+  const server = new grpc.Server({
+    interceptors: [xGoogReqIDInterceptor.generateServerInterceptor()],
+  });
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
@@ -118,6 +258,11 @@ describe('Spanner with mock server', () => {
   function newTestDatabase(options?: SessionPoolOptions): Database {
     return instance.database(`database-${dbCounter++}`, options);
   }
+
+  beforeEach(() => {
+    resetNthClientId();
+    xGoogReqIDInterceptor.reset();
+  });
 
   before(async () => {
     sandbox = sinon.createSandbox();
@@ -277,6 +422,10 @@ describe('Spanner with mock server', () => {
         // Ignore the fact that streaming read is unimplemented on the mock
         // server. We just want to verify that the correct request is sent.
         assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.3.1`
+        );
       } finally {
         snapshot.end();
         await database.close();
@@ -436,6 +585,10 @@ describe('Spanner with mock server', () => {
             // Ignore the fact that streaming read is unimplemented on the mock
             // server. We just want to verify that the correct request is sent.
             assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             return undefined;
           } finally {
             tx.end();
@@ -1045,7 +1198,21 @@ describe('Spanner with mock server', () => {
         database
           .close()
           .catch(done)
-          .then(() => done());
+          .then(() => {
+            const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
+            const wantStreamingCalls = [
+              {
+                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                reqId: `1.${randIdForProcess}.1.1.2.1`,
+              },
+              {
+                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                reqId: `1.${randIdForProcess}.1.1.2.2`,
+              },
+            ];
+            assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
+            done();
+          });
       });
     });
 
@@ -1132,6 +1299,10 @@ describe('Spanner with mock server', () => {
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
         );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
+        );
       } finally {
         await database.close();
       }
@@ -1185,6 +1356,11 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '14 UNAVAILABLE: Transient error'
+        );
+        // Ensure that we have a requestID returned and it was on the 2nd request.
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();
@@ -1407,6 +1583,10 @@ describe('Spanner with mock server', () => {
               (e as ServiceError).message,
               '2 UNKNOWN: Test error'
             );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
           }
           await database.close();
         });
@@ -1445,6 +1625,10 @@ describe('Spanner with mock server', () => {
           database.run(selectSql, err => {
             assert.ok(err, 'Missing expected error');
             assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+            assert.deepStrictEqual(
+              (err as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
+            );
             database
               .close()
               .catch(done)
@@ -1468,6 +1652,10 @@ describe('Spanner with mock server', () => {
             .on('error', err => {
               assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
               assert.strictEqual(receivedRows.length, index);
+              assert.deepStrictEqual(
+                (err as RequestIDError).requestID,
+                `1.${randIdForProcess}.1.1.2.1`
+              );
               database
                 .close()
                 .catch(done)
@@ -1548,6 +1736,10 @@ describe('Spanner with mock server', () => {
         attempts++;
         tx!.runUpdate(insertSql, err => {
           assert.ok(err, 'Missing expected error');
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
           assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
           // Only the update RPC should be retried and not the entire
           // transaction.
@@ -2690,6 +2882,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing invalid sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2704,6 +2897,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) !== null,
+              true
             );
           }
         }
@@ -2733,6 +2930,7 @@ describe('Spanner with mock server', () => {
 
     it('should reuse sessions after executing an invalid streaming sql', async () => {
       // The query to execute
+      const requestIDRegex = new RegExp(`1.${randIdForProcess}.1.1.\\d+.1`);
       const query = {
         sql: invalidSql,
       };
@@ -2747,6 +2945,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID.match(requestIDRegex) !== null,
+              true
             );
           }
         }
@@ -3371,6 +3573,10 @@ describe('Spanner with mock server', () => {
           assert.ok(
             (err as ServiceError).message.includes('Generic internal error')
           );
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         } finally {
           await database.close();
         }
@@ -3483,6 +3689,10 @@ describe('Spanner with mock server', () => {
         } catch (err) {
           assert(err, 'Expected an error to be thrown');
           assert.match((err as Error).message, /Table FOO not found/);
+          assert.deepStrictEqual(
+            (err as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.3.1`
+          );
         }
       });
     });
@@ -3575,6 +3785,32 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 2);
     });
 
+    it('should apply blind writes only once with isolationLevel option', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Marc',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Scarlet',
+      });
+      const options: WriteAtLeastOnceOptions = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+      await database.writeAtLeastOnce(mutations, options);
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).singleUseTransaction?.isolationLevel;
+      }) as v1.CommitRequest;
+      assert.strictEqual(
+        request.singleUseTransaction?.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3643,6 +3879,129 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use isolationLevel for runTransactionAsync', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should use isolationLevel when passed in Spanner Options', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should be able to use isolationLevel from Spanner Option when other options are passed at transaction level', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          optimisticLock: true,
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.readWrite?.readLockMode,
+        'OPTIMISTIC'
+      );
+      assert.strictEqual(
+        request.transaction!.begin!.excludeTxnFromChangeStreams,
+        true
+      );
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
+    it('should override isolationLevel from Spanner Option when passed at transaction level', async () => {
+      const spanner = new Spanner({
+        servicePath: 'localhost',
+        port,
+        sslCreds: grpc.credentials.createInsecure(),
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.SERIALIZABLE,
+        },
+      });
+      instance = spanner.instance('instance');
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.isolationLevel,
+        'REPEATABLE_READ'
+      );
+    });
+
     it('should use optimistic lock for runTransaction', done => {
       const database = newTestDatabase();
       database.runTransaction({optimisticLock: true}, async (err, tx) => {
@@ -3686,6 +4045,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use isolationLevel for runTransaction', done => {
+      const database = newTestDatabase();
+      database.runTransaction(
+        {isolationLevel: IsolationLevel.REPEATABLE_READ},
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
+
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.isolationLevel,
+            'REPEATABLE_READ'
+          );
+          done();
+        }
+      );
+    });
+
     it('should use optimistic lock and transaction tag for getTransaction', async () => {
       const database = newTestDatabase();
       const promise = await database.getTransaction({
@@ -3705,6 +4087,23 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           request.requestOptions?.transactionTag,
           'transaction-tag'
+        );
+      });
+    });
+
+    it('should use isolation level for getTransaction', async () => {
+      const database = newTestDatabase();
+      const [transaction] = await database.getTransaction({
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      });
+      await transaction.run('SELECT 1').then(() => {
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.isolationLevel,
+          'REPEATABLE_READ'
         );
       });
     });
@@ -3906,6 +4305,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3963,6 +4366,10 @@ describe('Spanner with mock server', () => {
             (e as ServiceError).message,
             `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
           );
+          assert.deepStrictEqual(
+            (e as RequestIDError).requestID,
+            `1.${randIdForProcess}.1.1.2.1`
+          );
         }
         await tx.run(selectSql);
         await tx.commit();
@@ -3990,6 +4397,10 @@ describe('Spanner with mock server', () => {
             assert.strictEqual(
               (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+            assert.deepStrictEqual(
+              (e as RequestIDError).requestID,
+              `1.${randIdForProcess}.1.1.2.1`
             );
           }
           await tx.run(selectSql);
@@ -4030,6 +4441,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.4.1`
         );
       } finally {
         await database.close();
@@ -4118,6 +4533,10 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
+        );
+        assert.deepStrictEqual(
+          (e as RequestIDError).requestID,
+          `1.${randIdForProcess}.1.1.2.1`
         );
       } finally {
         await database.close();
@@ -4209,6 +4628,24 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         beginTxnRequest[0].options?.excludeTxnFromChangeStreams,
         true
+      );
+      await database.close();
+    });
+
+    it('should use isolationLevel for mutations', async () => {
+      const database = newTestDatabase();
+      const options = {
+        isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+      await database.table('foo').upsert({id: 1, name: 'bar'}, options);
+      const beginTxnRequest = spannerMock
+        .getRequests()
+        .filter(val => (val as v1.BeginTransactionRequest).options?.readWrite)
+        .map(req => req as v1.BeginTransactionRequest);
+      assert.deepStrictEqual(beginTxnRequest.length, 1);
+      assert.strictEqual(
+        beginTxnRequest[0].options?.isolationLevel,
+        'REPEATABLE_READ'
       );
       await database.close();
     });
@@ -5232,6 +5669,81 @@ describe('Spanner with mock server', () => {
       });
     });
   });
+
+  describe('XGoogRequestId', () => {
+    it('with retry on aborted query', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      let rowCount = 0;
+      const maxAttempts = 4;
+      await database.runTransactionAsync(async transaction => {
+        attempts++;
+        if (attempts < maxAttempts) {
+          spannerMock.abortTransaction(transaction!);
+        }
+        const [rows] = await transaction!.run(selectSql);
+        rows.forEach(() => rowCount++);
+        assert.strictEqual(rowCount, 3);
+        assert.strictEqual(attempts, 4);
+        await transaction!.commit();
+      });
+
+      const wantUnaryCallsWithoutBatchCreateSessions = [
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.3.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.5.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/BeginTransaction',
+          reqId: `1.${randIdForProcess}.1.1.7.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/Commit',
+          reqId: `1.${randIdForProcess}.1.1.9.1`,
+        },
+      ];
+      const gotUnaryCalls = xGoogReqIDInterceptor.getUnaryCalls();
+      assert.deepStrictEqual(
+        gotUnaryCalls[0].method,
+        '/google.spanner.v1.Spanner/BatchCreateSessions'
+      );
+      // It is non-deterministic to try to get the exact clientId used to invoke .BatchCreateSessions
+      // given that these tests run as a collective and sessions are pooled.
+      assert.deepStrictEqual(
+        gotUnaryCalls.slice(1),
+        wantUnaryCallsWithoutBatchCreateSessions
+      );
+
+      const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
+      const wantStreamingCalls = [
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.2.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.4.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.6.1`,
+        },
+        {
+          method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+          reqId: `1.${randIdForProcess}.1.1.8.1`,
+        },
+      ];
+      assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
+      await database.close();
+    });
+
+    // TODO(@odeke-em): introduce tests for incremented attempts to verify
+    // that retries from GAX produce the required results.
+  });
 });
 
 function executeSimpleUpdate(
@@ -5285,134 +5797,4 @@ function getRowCountFromStreamingSql(
 
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\d+\.){4}\d+$/;
-
-class XGoogRequestHeaderInterceptor {
-  private nStream: number;
-  private nUnary: number;
-  private streamCalls: any[];
-  private unaryCalls: any[];
-  private prefixesToIgnore?: string[];
-  constructor(prefixesToIgnore?: string[]) {
-    this.nStream = 0;
-    this.streamCalls = [];
-    this.nUnary = 0;
-    this.unaryCalls = [];
-    this.prefixesToIgnore = prefixesToIgnore || [];
-  }
-
-  assertHasHeader(call): string | unknown {
-    const metadata = call.metadata;
-    const gotReqId = metadata[X_GOOG_SPANNER_REQUEST_ID_HEADER];
-    if (!gotReqId) {
-      throw new Error(
-        `${call.method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`
-      );
-    }
-
-    if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
-      throw new Error(
-        `${call.method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`
-      );
-    }
-    return gotReqId;
-  }
-
-  interceptUnary(call, next) {
-    const gotReqId = this.assertHasHeader(call);
-    this.unaryCalls.push({method: call.method, reqId: gotReqId});
-    this.nUnary++;
-    next(call);
-  }
-
-  generateClientInterceptor() {
-    return this.interceptUnary.bind(this);
-  }
-
-  interceptStream(call, next) {
-    const gotReqId = this.assertHasHeader(call);
-    this.streamCalls.push({method: call.method, reqId: gotReqId});
-    this.nStream++;
-    next(call);
-  }
-
-  generateServerInterceptor() {
-    return this.serverInterceptor.bind(this);
-  }
-
-  reset() {
-    this.nStream = 0;
-    this.streamCalls = [];
-    this.nUnary = 0;
-    this.unaryCalls = [];
-  }
-
-  public getUnaryCalls() {
-    return this.unaryCalls;
-  }
-
-  public getStreamingCalls() {
-    return this.streamCalls;
-  }
-
-  serverInterceptor(methodDescriptor, call) {
-    const method = call.handler.path;
-    const isUnary = call.handler.type === 'unary';
-    const listener = new grpcModule.ServerListenerBuilder()
-      .withOnReceiveMetadata((metadata, next) => {
-        let i = 0;
-        const prefixesToIgnore: string[] = this.prefixesToIgnore || [];
-        for (i = 0; i < prefixesToIgnore.length; i++) {
-          const prefix = prefixesToIgnore[i];
-          if (method.startsWith(prefix)) {
-            next(metadata);
-            return;
-          }
-        }
-
-        const gotReqIds = metadata.get(X_GOOG_SPANNER_REQUEST_ID_HEADER);
-        if (!(gotReqIds && gotReqIds.length > 0)) {
-          call.sendStatus({
-            code: grpcModule.status.INVALID_ARGUMENT,
-            details: `${method} is missing ${X_GOOG_SPANNER_REQUEST_ID_HEADER} header`,
-          });
-          return;
-        }
-
-        if (gotReqIds.length !== 1) {
-          call.sendStatus({
-            code: grpcModule.status.INVALID_ARGUMENT,
-            details: `${method} set multiple ${X_GOOG_SPANNER_REQUEST_ID_HEADER} headers: ${gotReqIds}`,
-          });
-          return;
-        }
-
-        const gotReqId = gotReqIds[0].toString();
-        if (!gotReqId.match(X_GOOG_REQ_ID_REGEX)) {
-          call.sendStatus({
-            code: grpcModule.status.INVALID_ARGUMENT,
-            details: `${method} reqID header ${gotReqId} does not match ${X_GOOG_REQ_ID_REGEX}`,
-          });
-          return;
-        }
-
-        if (isUnary) {
-          this.unaryCalls.push({method: method, reqId: gotReqId});
-          this.nUnary++;
-        } else {
-          this.streamCalls.push({method: method, reqId: gotReqId});
-          this.nStream++;
-        }
-
-        next(metadata);
-      })
-      .build();
-
-    const responder = new grpcModule.ResponderBuilder()
-      .withStart(next => next(listener))
-      .build();
-    return new grpcModule.ServerInterceptingCall(call, responder);
-  }
 }

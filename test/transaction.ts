@@ -29,7 +29,13 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   BatchUpdateOptions,
   ExecuteSqlRequest,
@@ -47,6 +53,9 @@ describe('Transaction', () => {
   const SPANNER = {
     routeToLeaderEnabled: true,
     directedReadOptions: {},
+    defaultTransactionOptions: {
+      isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+    },
   };
 
   const INSTANCE = {
@@ -273,7 +282,10 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'streamingRead');
-        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
+        assert.deepStrictEqual(headers, {
+          ...snapshot.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
       });
 
       it('should use the transaction id if present', () => {
@@ -420,6 +432,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const expectedRequest = {
@@ -459,6 +474,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const expectedRequest = {
@@ -624,7 +642,10 @@ describe('Transaction', () => {
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'executeStreamingSql');
-        assert.deepStrictEqual(headers, snapshot.commonHeaders_);
+        assert.deepStrictEqual(headers, {
+          ...snapshot.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
       });
 
       it('should use the transaction id if present', () => {
@@ -843,6 +864,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const fakeQuery = Object.assign({}, QUERY, {
@@ -886,6 +910,9 @@ describe('Transaction', () => {
         SESSION.parent.parent.parent = {
           routeToLeaderEnabled: true,
           directedReadOptions: fakeDirectedReadOptions,
+          defaultTransactionOptions: {
+            isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          },
         };
 
         const fakeDirectedReadOptionsForRequest = {
@@ -1416,7 +1443,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: 'true',
+            },
             transaction.commonHeaders_
           )
         );
@@ -1543,7 +1573,7 @@ describe('Transaction', () => {
 
         transaction.begin();
 
-        const expectedOptions = {readWrite: {}};
+        const expectedOptions = {isolationLevel: 0, readWrite: {}};
         const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
@@ -1579,18 +1609,42 @@ describe('Transaction', () => {
         transaction.begin(assert.ifError);
       });
 
-      it('should set optimistic lock', () => {
+      it('should set optimistic lock using useOptimisticLock', () => {
         const rw = {
-          readLockMode:
-            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
-              .OPTIMISTIC,
+          readLockMode: ReadLockMode.OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
         transaction.useOptimisticLock();
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 
-        const expectedOptions = {readWrite: rw};
+        const expectedOptions = {isolationLevel: 0, readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_
+          )
+        );
+      });
+
+      it('should set optimistic lock using setReadWriteTransactionOptions', () => {
+        const rw = {
+          readLockMode: ReadLockMode.OPTIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.setReadWriteTransactionOptions({
+          optimisticLock: ReadLockMode.OPTIMISTIC,
+        });
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {isolationLevel: 0, readWrite: rw};
         const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
@@ -1623,7 +1677,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: true,
+            },
             transaction.commonHeaders_
           )
         );
@@ -1728,7 +1785,7 @@ describe('Transaction', () => {
       });
 
       it('should set `singleUseTransaction` when `id` is not set', () => {
-        const expectedOptions = {readWrite: {}};
+        const expectedOptions = {isolationLevel: 0, readWrite: {}};
         const stub = sandbox.stub(transaction, 'request');
 
         transaction.commit();
@@ -2174,7 +2231,10 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             config.headers,
             Object.assign(
-              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              {
+                [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+                [LEADER_AWARE_ROUTING_HEADER]: true,
+              },
               transaction.commonHeaders_
             )
           );
@@ -2222,7 +2282,10 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           headers,
           Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            {
+              [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+              [LEADER_AWARE_ROUTING_HEADER]: true,
+            },
             transaction.commonHeaders_
           )
         );

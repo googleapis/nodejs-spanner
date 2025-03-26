@@ -38,6 +38,7 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
 
@@ -327,6 +328,20 @@ describe('Spanner', () => {
       assert.strictEqual(spanner.directedReadOptions, fakeDirectedReadOptions);
     });
 
+    it('should optionally accept defaultTransactionOptions', () => {
+      const fakeDefaultTxnOptions = {
+        defaultTransactionOptions: {
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+        },
+      };
+
+      const spanner = new Spanner(fakeDefaultTxnOptions);
+      assert.strictEqual(
+        spanner.defaultTransactionOptions,
+        fakeDefaultTxnOptions.defaultTransactionOptions
+      );
+    });
+
     it('should set projectFormattedName_', () => {
       assert.strictEqual(
         spanner.projectFormattedName_,
@@ -517,7 +532,7 @@ describe('Spanner', () => {
     });
   });
 
-  describe.skip('float32', () => {
+  describe('float32', () => {
     it('should create a Float32 instance', () => {
       const value = {};
       const customValue = {};
