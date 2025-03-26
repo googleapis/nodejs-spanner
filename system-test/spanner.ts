@@ -15,12 +15,12 @@
  */
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it, before, after, beforeEach} from 'mocha';
-import pLimit from 'p-limit';
+const pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
-import * as extend from 'extend';
+import extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
 import {

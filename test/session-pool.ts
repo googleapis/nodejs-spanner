@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as events from 'events';
-import * as extend from 'extend';
-import PQueue from 'p-queue';
-import * as proxyquire from 'proxyquire';
+import extend from 'extend';
+const PQueue = require('p-queue');
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
-import timeSpan = require('time-span');
+const timeSpan = require('time-span');
 
 import {Database} from '../src/database';
 import {Session} from '../src/session';

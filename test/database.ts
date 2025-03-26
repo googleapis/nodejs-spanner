@@ -16,15 +16,15 @@
 
 /* eslint-disable prefer-rest-params */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
-import * as extend from 'extend';
+import extend from 'extend';
 import {ApiError, util} from '@google-cloud/common';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {Transform, Duplex} from 'stream';
-import * as through from 'through2';
+import through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
