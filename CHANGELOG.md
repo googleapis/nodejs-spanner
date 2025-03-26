@@ -4,6 +4,70 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* CreateQueryPartition with query params ([91f5afd](https://github.com/googleapis/nodejs-spanner/commit/91f5afda53bd9c46fcd1a1fe33f579b6aed5223a))
+
+## [7.19.0](https://github.com/googleapis/nodejs-spanner/compare/v7.18.1...v7.19.0) (2025-02-26)
+
+
+### Features
+
+* Add AddSplitPoints API ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Paging changes for bigquery ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** A new enum `IsolationLevel` is added ([#2225](https://github.com/googleapis/nodejs-spanner/issues/2225)) ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** A new field `isolation_level` is added to message `.google.spanner.v1.TransactionOptions` ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** Add instance partitions field in backup proto ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** Add support for Multiplexed Session for Read Only Tran… ([#2214](https://github.com/googleapis/nodejs-spanner/issues/2214)) ([3a7a51b](https://github.com/googleapis/nodejs-spanner/commit/3a7a51bee00730c2daf1b9791b45f75531c14a2c))
+* **x-goog-spanner-request-id:** Add bases ([#2211](https://github.com/googleapis/nodejs-spanner/issues/2211)) ([0008038](https://github.com/googleapis/nodejs-spanner/commit/000803812e670ce0f4bac4a6460351f2b08ec660))
+
+
+### Bug Fixes
+
+* Add x-goog-request params to headers for LRO-polling methods ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Error from fill method should not be emitted ([#2233](https://github.com/googleapis/nodejs-spanner/issues/2233)) ([2cc44cf](https://github.com/googleapis/nodejs-spanner/commit/2cc44cf238bd18f5a456c76ddb8280c2252c2e87)), closes [#2103](https://github.com/googleapis/nodejs-spanner/issues/2103)
+* Finalize fixing typings for headers in generator ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Fix typings for headers in generator ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Remove extra protos in ESM & capture ESM in headers ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Rollback with no id ([#2231](https://github.com/googleapis/nodejs-spanner/issues/2231)) ([a6919b1](https://github.com/googleapis/nodejs-spanner/commit/a6919b15bd01ed93c62d32533d78181cbd333f5e)), closes [#2103](https://github.com/googleapis/nodejs-spanner/issues/2103)
+
+## [7.18.1](https://github.com/googleapis/nodejs-spanner/compare/v7.18.0...v7.18.1) (2025-02-05)
+
+
+### Bug Fixes
+
+* Fix NodeJS release ([#2229](https://github.com/googleapis/nodejs-spanner/issues/2229)) ([f830fc8](https://github.com/googleapis/nodejs-spanner/commit/f830fc82ce666902db3cddc667326dc2731c14a1))
+
+## [7.18.0](https://github.com/googleapis/nodejs-spanner/compare/v7.17.1...v7.18.0) (2025-01-29)
+
+
+### Features
+
+* Add gcp client attributes for Opentelemetry traces ([#2215](https://github.com/googleapis/nodejs-spanner/issues/2215)) ([d2ff046](https://github.com/googleapis/nodejs-spanner/commit/d2ff046854b4139af6e3a6f0d2122619cdf83131))
+
+## [7.17.1](https://github.com/googleapis/nodejs-spanner/compare/v7.17.0...v7.17.1) (2025-01-03)
+
+
+### Bug Fixes
+
+* Remove default global trace context propagator ([#2209](https://github.com/googleapis/nodejs-spanner/issues/2209)) ([7898e0c](https://github.com/googleapis/nodejs-spanner/commit/7898e0ce0477e2d4327822ac26a2674203b47a64)), closes [#2208](https://github.com/googleapis/nodejs-spanner/issues/2208)
+
+## [7.17.0](https://github.com/googleapis/nodejs-spanner/compare/v7.16.0...v7.17.0) (2024-12-27)
+
+
+### Features
+
+* Add the last statement option to ExecuteSqlRequest and ExecuteBatchDmlRequest ([#2196](https://github.com/googleapis/nodejs-spanner/issues/2196)) ([223f167](https://github.com/googleapis/nodejs-spanner/commit/223f167c1c9bc4da26155637eabbcabce5487ede))
+* Enable e2e tracing ([#2202](https://github.com/googleapis/nodejs-spanner/issues/2202)) ([3cc257e](https://github.com/googleapis/nodejs-spanner/commit/3cc257e99925594776b9a1886f0173ce2dfe904f))
+
+
+### Bug Fixes
+
+* Span events Issue 2166 ([#2184](https://github.com/googleapis/nodejs-spanner/issues/2184)) ([97ed577](https://github.com/googleapis/nodejs-spanner/commit/97ed5776dbdf5e90f8398fffea08e2a968045f9b))
+
 ## [7.16.0](https://github.com/googleapis/nodejs-spanner/compare/v7.15.0...v7.16.0) (2024-11-09)
 
 

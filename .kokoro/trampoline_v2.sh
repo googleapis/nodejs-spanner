@@ -44,7 +44,7 @@
 # the project root.
 #
 # Here is an example for running this script.
-#   TRAMPOLINE_IMAGE=gcr.io/cloud-devrel-kokoro-resources/node:10-user \
+#   TRAMPOLINE_IMAGE=gcr.io/cloud-devrel-kokoro-resources/node:18-user \
 #     TRAMPOLINE_BUILD_FILE=.kokoro/system-test.sh \
 #     .kokoro/trampoline_v2.sh
 
@@ -165,6 +165,7 @@ if [[ -n "${KOKORO_BUILD_ID:-}" ]]; then
 	# For flakybot
 	"KOKORO_GITHUB_COMMIT_URL"
 	"KOKORO_GITHUB_PULL_REQUEST_URL"
+    "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"
     )
 elif [[ "${TRAVIS:-}" == "true" ]]; then
     RUNNING_IN_CI="true"

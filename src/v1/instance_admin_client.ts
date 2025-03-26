@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1484,7 +1484,7 @@ export class InstanceAdminClient {
 
   /**
    * Creates an instance configuration and begins preparing it to be used. The
-   * returned {@link protos.google.longrunning.Operation|long-running operation}
+   * returned long-running operation
    * can be used to track the progress of preparing the new
    * instance configuration. The instance configuration name is assigned by the
    * caller. If the named instance configuration already exists,
@@ -1511,13 +1511,13 @@ export class InstanceAdminClient {
    *   {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *   field becomes false. Its state becomes `READY`.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format
    * `<instance_config_name>/operations/<operation_id>` and can be used to track
    * creation of the instance configuration. The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig}, if
    * successful.
    *
@@ -1536,10 +1536,10 @@ export class InstanceAdminClient {
    *   characters in length. The `custom-` prefix is required to avoid name
    *   conflicts with Google-managed configurations.
    * @param {google.spanner.admin.instance.v1.InstanceConfig} request.instanceConfig
-   *   Required. The InstanceConfig proto of the configuration to create.
-   *   instance_config.name must be
+   *   Required. The `InstanceConfig` proto of the configuration to create.
+   *   `instance_config.name` must be
    *   `<parent>/instanceConfigs/<instance_config_id>`.
-   *   instance_config.base_config must be a Google managed configuration name,
+   *   `instance_config.base_config` must be a Google-managed configuration name,
    *   e.g. <parent>/instanceConfigs/us-east1, <parent>/instanceConfigs/nam3.
    * @param {boolean} request.validateOnly
    *   An option to validate, but not actually execute, a request,
@@ -1671,7 +1671,7 @@ export class InstanceAdminClient {
   }
   /**
    * Updates an instance configuration. The returned
-   * {@link protos.google.longrunning.Operation|long-running operation} can be used to track
+   * long-running operation can be used to track
    * the progress of updating the instance. If the named instance configuration
    * does not exist, returns `NOT_FOUND`.
    *
@@ -1702,13 +1702,13 @@ export class InstanceAdminClient {
    *   {@link protos.google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
    *   field becomes false.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format
    * `<instance_config_name>/operations/<operation_id>` and can be used to track
    * the instance configuration modification.  The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata|UpdateInstanceConfigMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig}, if
    * successful.
    *
@@ -1862,7 +1862,7 @@ export class InstanceAdminClient {
   }
   /**
    * Creates an instance and begins preparing it to begin serving. The
-   * returned {@link protos.google.longrunning.Operation|long-running operation}
+   * returned long-running operation
    * can be used to track the progress of preparing the new
    * instance. The instance name is assigned by the caller. If the
    * named instance already exists, `CreateInstance` returns
@@ -1888,12 +1888,12 @@ export class InstanceAdminClient {
    *   * The instance's allocated resource levels are readable via the API.
    *   * The instance's state becomes `READY`.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format `<instance_name>/operations/<operation_id>` and
    * can be used to track creation of the instance.  The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.CreateInstanceMetadata|CreateInstanceMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.Instance|Instance}, if successful.
    *
    * @param {Object} request
@@ -2035,8 +2035,7 @@ export class InstanceAdminClient {
   }
   /**
    * Updates an instance, and begins allocating or releasing resources
-   * as requested. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the
+   * as requested. The returned long-running operation can be used to track the
    * progress of updating the instance. If the named instance does not
    * exist, returns `NOT_FOUND`.
    *
@@ -2064,12 +2063,12 @@ export class InstanceAdminClient {
    *     tables.
    *   * The instance's new resource levels are readable via the API.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format `<instance_name>/operations/<operation_id>` and
    * can be used to track the instance modification.  The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.UpdateInstanceMetadata|UpdateInstanceMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.Instance|Instance}, if successful.
    *
    * Authorization requires `spanner.instances.update` permission on
@@ -2215,7 +2214,7 @@ export class InstanceAdminClient {
   }
   /**
    * Creates an instance partition and begins preparing it to be used. The
-   * returned {@link protos.google.longrunning.Operation|long-running operation}
+   * returned long-running operation
    * can be used to track the progress of preparing the new instance partition.
    * The instance partition name is assigned by the caller. If the named
    * instance partition already exists, `CreateInstancePartition` returns
@@ -2242,13 +2241,13 @@ export class InstanceAdminClient {
    *     API.
    *   * The instance partition's state becomes `READY`.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format
    * `<instance_partition_name>/operations/<operation_id>` and can be used to
    * track creation of the instance partition.  The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}, if
    * successful.
    *
@@ -2397,8 +2396,7 @@ export class InstanceAdminClient {
   }
   /**
    * Updates an instance partition, and begins allocating or releasing resources
-   * as requested. The returned [long-running
-   * operation][google.longrunning.Operation] can be used to track the
+   * as requested. The returned long-running operation can be used to track the
    * progress of updating the instance partition. If the named instance
    * partition does not exist, returns `NOT_FOUND`.
    *
@@ -2427,13 +2425,13 @@ export class InstanceAdminClient {
    *     partition's tables.
    *   * The instance partition's new resource levels are readable via the API.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * The returned long-running operation will
    * have a name of the format
    * `<instance_partition_name>/operations/<operation_id>` and can be used to
    * track the instance partition modification. The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata|UpdateInstancePartitionMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}, if
    * successful.
    *
@@ -2586,7 +2584,7 @@ export class InstanceAdminClient {
   }
   /**
    * Moves an instance to the target instance configuration. You can use the
-   * returned {@link protos.google.longrunning.Operation|long-running operation} to track
+   * returned long-running operation to track
    * the progress of moving the instance.
    *
    * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
@@ -2617,13 +2615,13 @@ export class InstanceAdminClient {
    *     transaction abort rate. However, moving an instance doesn't cause any
    *     downtime.
    *
-   * The returned {@link protos.google.longrunning.Operation|long-running operation} has
+   * The returned long-running operation has
    * a name of the format
    * `<instance_name>/operations/<operation_id>` and can be used to track
    * the move instance operation. The
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * metadata field type is
    * {@link protos.google.spanner.admin.instance.v1.MoveInstanceMetadata|MoveInstanceMetadata}.
-   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * The response field type is
    * {@link protos.google.spanner.admin.instance.v1.Instance|Instance},
    * if successful.
    * Cancelling the operation sets its metadata's
@@ -2783,6 +2781,9 @@ export class InstanceAdminClient {
   /**
    * Lists the supported instance configurations for a given project.
    *
+   * Returns both Google-managed configurations and user-managed
+   * configurations.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -2885,7 +2886,7 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listInstanceConfigs`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -2983,12 +2984,12 @@ export class InstanceAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
   /**
-   * Lists the user-managed instance configuration [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance
+   * Lists the user-managed instance configuration long-running
+   * operations in the given project. An instance
    * configuration operation has a name of the form
    * `projects/<project>/instanceConfigs/<instance_config>/operations/<operation>`.
    * The long-running operation
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata. Operations returned
    * include those that have completed/failed/canceled within the last 7 days,
    * and pending operations. Operations returned are ordered by
@@ -3009,8 +3010,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -3145,7 +3145,7 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listInstanceConfigOperations`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -3160,8 +3160,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -3255,8 +3254,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -3461,7 +3459,7 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listInstances`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -3617,7 +3615,9 @@ export class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance whose instance partitions should be listed. Values
-   *   are of the form `projects/<project>/instances/<instance>`.
+   *   are of the form `projects/<project>/instances/<instance>`. Use `{instance}
+   *   = '-'` to list instance partitions for all Instances in a project, e.g.,
+   *   `projects/myproject/instances/-`.
    * @param {number} request.pageSize
    *   Number of instance partitions to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
@@ -3725,12 +3725,14 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listInstancePartitions`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance whose instance partitions should be listed. Values
-   *   are of the form `projects/<project>/instances/<instance>`.
+   *   are of the form `projects/<project>/instances/<instance>`. Use `{instance}
+   *   = '-'` to list instance partitions for all Instances in a project, e.g.,
+   *   `projects/myproject/instances/-`.
    * @param {number} request.pageSize
    *   Number of instance partitions to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
@@ -3787,7 +3789,9 @@ export class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {string} request.parent
    *   Required. The instance whose instance partitions should be listed. Values
-   *   are of the form `projects/<project>/instances/<instance>`.
+   *   are of the form `projects/<project>/instances/<instance>`. Use `{instance}
+   *   = '-'` to list instance partitions for all Instances in a project, e.g.,
+   *   `projects/myproject/instances/-`.
    * @param {number} request.pageSize
    *   Number of instance partitions to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
@@ -3835,12 +3839,11 @@ export class InstanceAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstancePartition>;
   }
   /**
-   * Lists instance partition [long-running
-   * operations][google.longrunning.Operation] in the given instance.
+   * Lists instance partition long-running operations in the given instance.
    * An instance partition operation has a name of the form
    * `projects/<project>/instances/<instance>/instancePartitions/<instance_partition>/operations/<operation>`.
    * The long-running operation
-   * {@link protos.google.longrunning.Operation.metadata|metadata} field type
+   * metadata field type
    * `metadata.type_url` describes the type of the metadata. Operations returned
    * include those that have completed/failed/canceled within the last 7 days,
    * and pending operations. Operations returned are ordered by
@@ -3865,8 +3868,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -3913,7 +3915,8 @@ export class InstanceAdminClient {
    *   Optional. Deadline used while retrieving metadata for instance partition
    *   operations. Instance partitions whose operation metadata cannot be
    *   retrieved within this deadline will be added to
-   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions|unreachable_instance_partitions}
+   *   in
    *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
@@ -4007,7 +4010,7 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listInstancePartitionOperations`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
@@ -4022,8 +4025,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -4070,7 +4072,8 @@ export class InstanceAdminClient {
    *   Optional. Deadline used while retrieving metadata for instance partition
    *   operations. Instance partitions whose operation metadata cannot be
    *   retrieved within this deadline will be added to
-   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions|unreachable_instance_partitions}
+   *   in
    *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
@@ -4124,8 +4127,7 @@ export class InstanceAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
+   *   The following fields in the Operation are eligible for filtering:
    *
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
@@ -4172,7 +4174,8 @@ export class InstanceAdminClient {
    *   Optional. Deadline used while retrieving metadata for instance partition
    *   operations. Instance partitions whose operation metadata cannot be
    *   retrieved within this deadline will be added to
-   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.unreachable_instance_partitions|unreachable_instance_partitions}
+   *   in
    *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.

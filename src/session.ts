@@ -38,13 +38,13 @@ import {
 import {ServiceObjectConfig} from '@google-cloud/common';
 import {
   NormalCallback,
-  CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
+  getCommonHeaders,
 } from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
-
+import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
 export type GetSessionResponse = [Session, r.Response];
 
 /**
@@ -117,7 +117,7 @@ export class Session extends common.GrpcServiceObject {
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -259,9 +259,10 @@ export class Session extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,
-    };
+    this.commonHeaders_ = getCommonHeaders(
+      (this.parent as Database).formattedName_,
+      database._observabilityOptions?.enableEndToEndTracing
+    );
     this.request = database.request;
     this.requestStream = database.requestStream;
 
@@ -316,13 +317,19 @@ export class Session extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'deleteSession',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: injectRequestIDIntoHeaders(
+          this.commonHeaders_,
+          this,
+          nextNthRequest(database),
+          1
+        ),
       },
       callback!
     );
@@ -384,17 +391,23 @@ export class Session extends common.GrpcServiceObject {
       name: this.formattedName_,
     };
 
-    const headers = this.resourceHeader_;
+    const headers = this.commonHeaders_;
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: headers,
+        headers: injectRequestIDIntoHeaders(
+          headers,
+          this.session,
+          nextNthRequest(database),
+          1
+        ),
       },
       (err, resp) => {
         if (resp) {
@@ -440,17 +453,25 @@ export class Session extends common.GrpcServiceObject {
       session: this.formattedName_,
       sql: 'SELECT 1',
     };
+
+    const database = this.parent as Database;
     return this.request(
       {
         client: 'SpannerClient',
         method: 'executeSql',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: injectRequestIDIntoHeaders(
+          this.commonHeaders_,
+          this,
+          nextNthRequest(database),
+          1
+        ),
       },
       callback!
     );
   }
+
   /**
    * Create a PartitionedDml transaction.
    *
@@ -532,6 +553,11 @@ export class Session extends common.GrpcServiceObject {
    */
   private _getSpanner(): Spanner {
     return this.parent.parent.parent as Spanner;
+  }
+
+  private channelId(): number {
+    // The Node.js client does not use a gRPC channel pool, so this always returns 1.
+    return 1;
   }
 }
 

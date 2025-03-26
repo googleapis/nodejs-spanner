@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -352,7 +352,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Database()
       );
@@ -383,7 +383,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Database()
       );
@@ -430,7 +430,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getDatabase = stubSimpleCall(
         undefined,
@@ -482,7 +482,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -513,7 +513,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -560,7 +560,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.dropDatabase = stubSimpleCall(
         undefined,
@@ -612,7 +612,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlResponse()
       );
@@ -643,7 +643,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlResponse()
       );
@@ -690,7 +690,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getDatabaseDdl = stubSimpleCall(
         undefined,
@@ -742,7 +742,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -773,7 +773,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -820,7 +820,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.setIamPolicy = stubSimpleCall(
         undefined,
@@ -872,7 +872,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -903,7 +903,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -950,7 +950,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getIamPolicy = stubSimpleCall(
         undefined,
@@ -1002,7 +1002,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
@@ -1034,7 +1034,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
@@ -1081,7 +1081,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['resource']
       );
       request.resource = defaultValue1;
-      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
+      const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.testIamPermissions = stubSimpleCall(
         undefined,
@@ -1133,7 +1133,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1164,7 +1164,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1211,7 +1211,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getBackup = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.getBackup(request), expectedError);
@@ -1261,7 +1261,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backup', 'name']
       );
       request.backup.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1293,7 +1293,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backup', 'name']
       );
       request.backup.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1341,7 +1341,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backup', 'name']
       );
       request.backup.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateBackup = stubSimpleCall(
         undefined,
@@ -1394,7 +1394,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1425,7 +1425,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1472,7 +1472,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteBackup = stubSimpleCall(
         undefined,
@@ -1509,6 +1509,136 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('addSplitPoints', () => {
+    it('invokes addSplitPoints without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.AddSplitPointsRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsResponse()
+      );
+      client.innerApiCalls.addSplitPoints = stubSimpleCall(expectedResponse);
+      const [response] = await client.addSplitPoints(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes addSplitPoints without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.AddSplitPointsRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsResponse()
+      );
+      client.innerApiCalls.addSplitPoints =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.addSplitPoints(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IAddSplitPointsResponse | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes addSplitPoints with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.AddSplitPointsRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.addSplitPoints = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.addSplitPoints(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.addSplitPoints as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes addSplitPoints with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.AddSplitPointsRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.addSplitPoints(request), expectedError);
+    });
+  });
+
   describe('createBackupSchedule', () => {
     it('invokes createBackupSchedule without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({
@@ -1524,7 +1654,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1556,7 +1686,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1603,7 +1733,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createBackupSchedule = stubSimpleCall(
         undefined,
@@ -1655,7 +1785,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1686,7 +1816,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1733,7 +1863,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getBackupSchedule = stubSimpleCall(
         undefined,
@@ -1786,7 +1916,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backupSchedule', 'name']
       );
       request.backupSchedule.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1819,7 +1949,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backupSchedule', 'name']
       );
       request.backupSchedule.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.BackupSchedule()
       );
@@ -1867,7 +1997,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['backupSchedule', 'name']
       );
       request.backupSchedule.name = defaultValue1;
-      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateBackupSchedule = stubSimpleCall(
         undefined,
@@ -1920,7 +2050,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1952,7 +2082,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1999,7 +2129,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteBackupSchedule = stubSimpleCall(
         undefined,
@@ -2051,7 +2181,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2084,7 +2214,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2138,7 +2268,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createDatabase = stubLongRunningCall(
         undefined,
@@ -2169,7 +2299,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createDatabase = stubLongRunningCall(
         undefined,
@@ -2246,7 +2376,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database', 'name']
       );
       request.database.name = defaultValue1;
-      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2280,7 +2410,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database', 'name']
       );
       request.database.name = defaultValue1;
-      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2335,7 +2465,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database', 'name']
       );
       request.database.name = defaultValue1;
-      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabase = stubLongRunningCall(
         undefined,
@@ -2367,7 +2497,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database', 'name']
       );
       request.database.name = defaultValue1;
-      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabase = stubLongRunningCall(
         undefined,
@@ -2443,7 +2573,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2476,7 +2606,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2530,7 +2660,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabaseDdl = stubLongRunningCall(
         undefined,
@@ -2561,7 +2691,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabaseDdl = stubLongRunningCall(
         undefined,
@@ -2637,7 +2767,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2669,7 +2799,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2723,7 +2853,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createBackup = stubLongRunningCall(
         undefined,
@@ -2754,7 +2884,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createBackup = stubLongRunningCall(
         undefined,
@@ -2827,7 +2957,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2859,7 +2989,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2913,7 +3043,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.copyBackup = stubLongRunningCall(
         undefined,
@@ -2944,7 +3074,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.copyBackup = stubLongRunningCall(
         undefined,
@@ -3017,7 +3147,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -3050,7 +3180,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -3104,7 +3234,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.restoreDatabase = stubLongRunningCall(
         undefined,
@@ -3135,7 +3265,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.restoreDatabase = stubLongRunningCall(
         undefined,
@@ -3211,7 +3341,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -3250,7 +3380,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -3305,7 +3435,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabases = stubSimpleCall(
         undefined,
@@ -3336,7 +3466,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -3397,7 +3527,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabases.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -3447,7 +3577,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -3496,7 +3626,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabases.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -3539,7 +3669,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -3578,7 +3708,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -3633,7 +3763,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listBackups = stubSimpleCall(
         undefined,
@@ -3664,7 +3794,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -3724,7 +3854,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackups.createStream = stubPageStreamingCall(
         undefined,
@@ -3775,7 +3905,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -3824,7 +3954,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackups.asyncIterate = stubAsyncIterationCall(
         undefined,
@@ -3868,7 +3998,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3902,7 +4032,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3951,7 +4081,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabaseOperations = stubSimpleCall(
         undefined,
@@ -3985,7 +4115,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4042,7 +4172,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseOperations.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -4094,7 +4224,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4141,7 +4271,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseOperations.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -4187,7 +4317,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4221,7 +4351,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4270,7 +4400,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listBackupOperations = stubSimpleCall(
         undefined,
@@ -4301,7 +4431,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4352,7 +4482,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupOperations.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -4398,7 +4528,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -4441,7 +4571,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupOperations.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -4483,7 +4613,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -4522,7 +4652,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -4579,7 +4709,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabaseRoles = stubSimpleCall(
         undefined,
@@ -4610,7 +4740,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -4671,7 +4801,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseRoles.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -4721,7 +4851,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -4771,7 +4901,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseRoles.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -4814,7 +4944,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.BackupSchedule()
@@ -4854,7 +4984,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.BackupSchedule()
@@ -4911,7 +5041,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listBackupSchedules = stubSimpleCall(
         undefined,
@@ -4942,7 +5072,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.BackupSchedule()
@@ -5005,7 +5135,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupSchedules.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -5057,7 +5187,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.BackupSchedule()
@@ -5107,7 +5237,7 @@ describe('v1.DatabaseAdminClient', () => {
         ['parent']
       );
       request.parent = defaultValue1;
-      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupSchedules.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);

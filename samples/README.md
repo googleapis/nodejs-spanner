@@ -34,6 +34,7 @@ and automatic, synchronous replication for high availability.
   * [Batch](#batch)
   * [Creates a full backup schedule](#creates-a-full-backup-schedule)
   * [Creates an incremental backup schedule](#creates-an-incremental-backup-schedule)
+  * [Create-instance-without-default-backup-schedules](#create-instance-without-default-backup-schedules)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
@@ -67,6 +68,7 @@ and automatic, synchronous replication for high availability.
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
   * [Updates an instance.](#updates-an-instance.)
+  * [Creates a instance with asymmetric autoscaling config.](#creates-a-instance-with-asymmetric-autoscaling-config.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
@@ -80,6 +82,7 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Observability (Tracing) with OpenTelemetry using OTLP](#observability-tracing-with-opentelemetry-using-otlp)
   * [Observability (Tracing) with OpenTelemetry](#observability-tracing-with-opentelemetry)
   * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.](#showcase-the-rules-for-case-sensitivity-and-case-folding-for-a-spanner-postgresql-database.)
@@ -131,6 +134,7 @@ and automatic, synchronous replication for high availability.
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
   * [Updates a backup schedule](#updates-a-backup-schedule)
+  * [Updates an instance.](#updates-an-instance.)
 
 ## Before you begin
 
@@ -480,6 +484,23 @@ __Usage:__
 
 
 `node create-incremental-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Create-instance-without-default-backup-schedules
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-instance-without-default-backup-schedules.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-instance-without-default-backup-schedules.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/create-instance-without-default-backup-schedules.js`
 
 
 -----
@@ -1048,6 +1069,23 @@ __Usage:__
 
 
 
+### Creates a instance with asymmetric autoscaling config.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-asymmetric-autoscaling-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-asymmetric-autoscaling-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-with-asymmetric-autoscaling-config.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Creates a instance with autoscaling config.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
@@ -1262,6 +1300,23 @@ __Usage:__
 
 
 `node samples/numeric-update-data.js`
+
+
+-----
+
+
+
+
+### Observability (Tracing) with OpenTelemetry using OTLP
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces-otlp.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces-otlp.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability-traces-otlp.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>`
 
 
 -----
@@ -2129,6 +2184,23 @@ __Usage:__
 
 
 `node update-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Updates an instance.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/update-instance-default-backup-schedule-type.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/update-instance-default-backup-schedule-type.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 

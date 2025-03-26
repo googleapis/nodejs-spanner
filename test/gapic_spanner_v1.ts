@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -339,7 +339,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -370,7 +370,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -417,7 +417,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createSession = stubSimpleCall(
         undefined,
@@ -469,7 +469,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
@@ -501,7 +501,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
@@ -548,7 +548,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.batchCreateSessions = stubSimpleCall(
         undefined,
@@ -600,7 +600,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -631,7 +631,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -678,7 +678,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getSession = stubSimpleCall(
         undefined,
@@ -730,7 +730,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -761,7 +761,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -808,7 +808,7 @@ describe('v1.SpannerClient', () => {
         ['name']
       );
       request.name = defaultValue1;
-      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteSession = stubSimpleCall(
         undefined,
@@ -860,7 +860,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -891,7 +891,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -938,7 +938,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeSql = stubSimpleCall(
         undefined,
@@ -990,7 +990,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlResponse()
       );
@@ -1021,7 +1021,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlResponse()
       );
@@ -1068,7 +1068,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeBatchDml = stubSimpleCall(
         undefined,
@@ -1120,7 +1120,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -1150,7 +1150,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -1195,7 +1195,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.read = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.read(request), expectedError);
@@ -1243,7 +1243,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Transaction()
       );
@@ -1274,7 +1274,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Transaction()
       );
@@ -1321,7 +1321,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.beginTransaction = stubSimpleCall(
         undefined,
@@ -1373,7 +1373,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.CommitResponse()
       );
@@ -1404,7 +1404,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.CommitResponse()
       );
@@ -1451,7 +1451,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.commit = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.commit(request), expectedError);
@@ -1500,7 +1500,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1531,7 +1531,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1578,7 +1578,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.rollback = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.rollback(request), expectedError);
@@ -1627,7 +1627,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1658,7 +1658,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1705,7 +1705,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.partitionQuery = stubSimpleCall(
         undefined,
@@ -1757,7 +1757,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1788,7 +1788,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1835,7 +1835,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.partitionRead = stubSimpleCall(
         undefined,
@@ -1887,7 +1887,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -1930,7 +1930,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -1974,7 +1974,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(
         undefined,
@@ -2058,7 +2058,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -2101,7 +2101,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -2145,7 +2145,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.streamingRead = stubServerStreamingCall(
         undefined,
@@ -2229,7 +2229,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchWriteResponse()
       );
@@ -2272,7 +2272,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchWriteResponse()
       );
@@ -2316,7 +2316,7 @@ describe('v1.SpannerClient', () => {
         ['session']
       );
       request.session = defaultValue1;
-      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedHeaderRequestParams = `session=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.batchWrite = stubServerStreamingCall(
         undefined,
@@ -2400,7 +2400,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2433,7 +2433,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2482,7 +2482,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listSessions = stubSimpleCall(
         undefined,
@@ -2513,7 +2513,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2564,7 +2564,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listSessions.createStream = stubPageStreamingCall(
         undefined,
@@ -2612,7 +2612,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2655,7 +2655,7 @@ describe('v1.SpannerClient', () => {
         ['database']
       );
       request.database = defaultValue1;
-      const expectedHeaderRequestParams = `database=${defaultValue1}`;
+      const expectedHeaderRequestParams = `database=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listSessions.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);

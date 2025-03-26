@@ -26,6 +26,10 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {Database, Instance, Spanner} from '../src';
+import {
+  X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  craftRequestId,
+} from '../src/request_id_header';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -147,8 +151,8 @@ describe('Session', () => {
       });
     });
 
-    it('should set the resourceHeader_', () => {
-      assert.deepStrictEqual(session.resourceHeader_, {
+    it('should set the commonHeaders_', () => {
+      assert.deepStrictEqual(session.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: session.parent.formattedName_,
       });
     });
@@ -262,7 +266,10 @@ describe('Session', () => {
           name: session.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, session.resourceHeader_);
+        assert.deepStrictEqual(config.headers, {
+          ...session.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
 
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
@@ -298,7 +305,7 @@ describe('Session', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            session.resourceHeader_
+            session.commonHeaders_
           )
         );
         callback(null, requestReturnValue);
@@ -325,7 +332,7 @@ describe('Session', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            session.resourceHeader_
+            session.commonHeaders_
           )
         );
         return new Promise(resolve => resolve(requestReturnValue));
@@ -348,7 +355,7 @@ describe('Session', () => {
           name: session.formattedName_,
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, session.resourceHeader_);
+        assert.deepStrictEqual(config.headers, session.commonHeaders_);
         return requestReturnValue;
       };
 
@@ -403,7 +410,10 @@ describe('Session', () => {
           sql: 'SELECT 1',
         });
         assert.deepStrictEqual(config.gaxOpts, {});
-        assert.deepStrictEqual(config.headers, session.resourceHeader_);
+        assert.deepStrictEqual(config.headers, {
+          ...session.commonHeaders_,
+          [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
+        });
         assert.strictEqual(callback_, callback);
         return requestReturnValue;
       };
