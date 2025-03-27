@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.20.0](https://github.com/googleapis/nodejs-spanner/compare/v7.19.1...v7.20.0) (2025-03-27)
+
+
+### Features
+
+* **debugging:** Implement x-goog-spanner-request-id propagation per request ([#2205](https://github.com/googleapis/nodejs-spanner/issues/2205)) ([e42caea](https://github.com/googleapis/nodejs-spanner/commit/e42caeaaa656c395d240f4af412ddb947f29c59b))
+* **spanner:** Add support for snapshot isolation ([#2245](https://github.com/googleapis/nodejs-spanner/issues/2245)) ([b60a683](https://github.com/googleapis/nodejs-spanner/commit/b60a683c0e1ddbf704766eb99f102fed925a348c))
+* **spanner:** Support for Multiplexed Session Partitioned Ops ([#2252](https://github.com/googleapis/nodejs-spanner/issues/2252)) ([e7ce471](https://github.com/googleapis/nodejs-spanner/commit/e7ce471332f6e73614638b96ed54c87095d785a2))
+
 ## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
 
 
