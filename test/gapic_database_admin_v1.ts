@@ -284,7 +284,9 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(err => {
+        throw err;
+      });
       assert(client.databaseAdminStub);
       client.close().then(() => {
         done();
@@ -343,7 +345,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
@@ -374,7 +376,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
@@ -421,7 +423,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
@@ -452,7 +454,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
@@ -473,7 +475,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
@@ -504,7 +506,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
@@ -551,7 +553,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
@@ -582,7 +584,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
@@ -603,7 +605,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
@@ -634,7 +636,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
@@ -681,7 +683,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
@@ -712,7 +714,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
@@ -733,7 +735,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
@@ -764,7 +766,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
@@ -811,7 +813,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
@@ -842,7 +844,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
@@ -863,7 +865,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
@@ -894,7 +896,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
@@ -941,7 +943,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
@@ -972,7 +974,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
@@ -993,7 +995,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
@@ -1025,7 +1027,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
@@ -1072,7 +1074,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
@@ -1103,7 +1105,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
@@ -1124,7 +1126,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
@@ -1155,7 +1157,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
@@ -1202,7 +1204,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
@@ -1230,7 +1232,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
@@ -1251,7 +1253,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
@@ -1283,7 +1285,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
@@ -1331,7 +1333,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
@@ -1363,7 +1365,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
@@ -1385,7 +1387,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
@@ -1416,7 +1418,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
@@ -1463,7 +1465,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
@@ -1494,7 +1496,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
@@ -1515,7 +1517,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
       );
@@ -1546,7 +1548,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
       );
@@ -1593,7 +1595,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
       );
@@ -1624,7 +1626,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.AddSplitPointsRequest()
       );
@@ -1645,7 +1647,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
       );
@@ -1677,7 +1679,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
       );
@@ -1724,7 +1726,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
       );
@@ -1755,7 +1757,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
       );
@@ -1776,7 +1778,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
       );
@@ -1807,7 +1809,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
       );
@@ -1854,7 +1856,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
       );
@@ -1885,7 +1887,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
       );
@@ -1906,7 +1908,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
       );
@@ -1939,7 +1941,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
       );
@@ -1987,7 +1989,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
       );
@@ -2019,7 +2021,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
       );
@@ -2041,7 +2043,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
       );
@@ -2073,7 +2075,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
       );
@@ -2120,7 +2122,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
       );
@@ -2151,7 +2153,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
       );
@@ -2172,7 +2174,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
@@ -2205,7 +2207,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
@@ -2259,7 +2261,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
@@ -2290,7 +2292,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
@@ -2323,7 +2325,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -2345,7 +2347,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -2366,7 +2368,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
       );
@@ -2400,7 +2402,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
       );
@@ -2455,7 +2457,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
       );
@@ -2487,7 +2489,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
       );
@@ -2521,7 +2523,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -2543,7 +2545,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -2564,7 +2566,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
@@ -2597,7 +2599,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
@@ -2651,7 +2653,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
@@ -2682,7 +2684,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
@@ -2715,7 +2717,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -2737,7 +2739,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -2758,7 +2760,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
@@ -2790,7 +2792,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
@@ -2844,7 +2846,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
@@ -2875,7 +2877,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
@@ -2908,7 +2910,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -2930,7 +2932,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -2948,7 +2950,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
@@ -2980,7 +2982,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
@@ -3034,7 +3036,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
@@ -3065,7 +3067,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
@@ -3098,7 +3100,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -3120,7 +3122,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -3138,7 +3140,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
@@ -3171,7 +3173,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
@@ -3225,7 +3227,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
@@ -3256,7 +3258,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
@@ -3289,7 +3291,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedResponse = generateSampleMessage(
         new operationsProtos.google.longrunning.Operation()
       );
@@ -3311,7 +3313,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const expectedError = new Error('expected');
 
       client.operationsClient.getOperation = stubSimpleCall(
@@ -3332,7 +3334,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3371,7 +3373,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3426,7 +3428,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3457,7 +3459,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3518,7 +3520,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3568,7 +3570,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3617,7 +3619,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
@@ -3660,7 +3662,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3699,7 +3701,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3754,7 +3756,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3785,7 +3787,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3845,7 +3847,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3896,7 +3898,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3945,7 +3947,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
@@ -3989,7 +3991,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4023,7 +4025,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4072,7 +4074,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4106,7 +4108,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4163,7 +4165,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4215,7 +4217,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4262,7 +4264,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
@@ -4308,7 +4310,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4342,7 +4344,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4391,7 +4393,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4422,7 +4424,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4473,7 +4475,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4519,7 +4521,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4562,7 +4564,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
@@ -4604,7 +4606,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4643,7 +4645,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4700,7 +4702,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4731,7 +4733,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4792,7 +4794,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4842,7 +4844,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4892,7 +4894,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
@@ -4935,7 +4937,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -4975,7 +4977,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5032,7 +5034,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5063,7 +5065,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5126,7 +5128,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5178,7 +5180,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5228,7 +5230,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
       );
@@ -5270,7 +5272,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new operationsProtos.google.longrunning.GetOperationRequest()
       );
@@ -5349,7 +5351,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new operationsProtos.google.longrunning.CancelOperationRequest()
       );
@@ -5429,7 +5431,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new operationsProtos.google.longrunning.DeleteOperationRequest()
       );
@@ -5525,8 +5527,7 @@ describe('v1.DatabaseAdminClient', () => {
       ];
       client.operationsClient.descriptor.listOperations.asyncIterate =
         stubAsyncIterationCall(expectedResponse);
-      const responses: operationsProtos.google.longrunning.ListOperationsResponse[] =
-        [];
+      const responses: operationsProtos.google.longrunning.IOperation[] = [];
       const iterable = client.operationsClient.listOperationsAsync(request);
       for await (const resource of iterable) {
         responses.push(resource!);
@@ -5545,7 +5546,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new operationsProtos.google.longrunning.ListOperationsRequest()
       );
@@ -5554,8 +5555,7 @@ describe('v1.DatabaseAdminClient', () => {
         stubAsyncIterationCall(undefined, expectedError);
       const iterable = client.operationsClient.listOperationsAsync(request);
       await assert.rejects(async () => {
-        const responses: operationsProtos.google.longrunning.ListOperationsResponse[] =
-          [];
+        const responses: operationsProtos.google.longrunning.IOperation[] = [];
         for await (const resource of iterable) {
           responses.push(resource!);
         }
@@ -5571,7 +5571,7 @@ describe('v1.DatabaseAdminClient', () => {
   });
 
   describe('Path templates', () => {
-    describe('backup', () => {
+    describe('backup', async () => {
       const fakePath = '/rendered/path/backup';
       const expectedParameters = {
         project: 'projectValue',
@@ -5582,7 +5582,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -5635,7 +5635,7 @@ describe('v1.DatabaseAdminClient', () => {
       });
     });
 
-    describe('backupSchedule', () => {
+    describe('backupSchedule', async () => {
       const fakePath = '/rendered/path/backupSchedule';
       const expectedParameters = {
         project: 'projectValue',
@@ -5647,7 +5647,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupSchedulePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -5711,7 +5711,7 @@ describe('v1.DatabaseAdminClient', () => {
       });
     });
 
-    describe('cryptoKey', () => {
+    describe('cryptoKey', async () => {
       const fakePath = '/rendered/path/cryptoKey';
       const expectedParameters = {
         project: 'projectValue',
@@ -5723,7 +5723,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.cryptoKeyPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -5787,7 +5787,7 @@ describe('v1.DatabaseAdminClient', () => {
       });
     });
 
-    describe('database', () => {
+    describe('database', async () => {
       const fakePath = '/rendered/path/database';
       const expectedParameters = {
         project: 'projectValue',
@@ -5798,7 +5798,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databasePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -5851,7 +5851,7 @@ describe('v1.DatabaseAdminClient', () => {
       });
     });
 
-    describe('databaseRole', () => {
+    describe('databaseRole', async () => {
       const fakePath = '/rendered/path/databaseRole';
       const expectedParameters = {
         project: 'projectValue',
@@ -5863,7 +5863,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databaseRolePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -5927,7 +5927,7 @@ describe('v1.DatabaseAdminClient', () => {
       });
     });
 
-    describe('instance', () => {
+    describe('instance', async () => {
       const fakePath = '/rendered/path/instance';
       const expectedParameters = {
         project: 'projectValue',
@@ -5937,7 +5937,7 @@ describe('v1.DatabaseAdminClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instancePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
