@@ -57,6 +57,14 @@ export interface SessionFactoryInterface {
   getSession(callback: GetSessionCallback): void;
 
   /**
+   * When called returns a session for paritioned dml.
+   *
+   * @name SessionFactoryInterface#getSessionForPartitionedOps
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForPartitionedOps(callback: GetSessionCallback): void;
+
+  /**
    * When called returns the pool object.
    *
    * @name SessionFactoryInterface#getPool
@@ -97,6 +105,7 @@ export class SessionFactory
   multiplexedSession_: MultiplexedSessionInterface;
   pool_: SessionPoolInterface;
   isMultiplexed: boolean;
+  isMultiplexedPartitionOps: boolean;
   constructor(
     database: Database,
     name: String,
@@ -117,6 +126,11 @@ export class SessionFactory
     process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
       ? (this.isMultiplexed = true)
       : (this.isMultiplexed = false);
+    // set the isMultiplexedPartitionedOps property to true if multiplexed session is enabled for paritioned ops, otherwise set the property to false
+    this.isMultiplexedPartitionOps =
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
+        'true';
     // Multiplexed sessions should only be created if its enabled.
     if (this.isMultiplexed) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
@@ -144,6 +158,23 @@ export class SessionFactory
   }
 
   /**
+   * Retrieves a session for partitioned operations, selecting the appropriate session type
+   * based on whether multiplexed sessions are enabled.
+   *
+   * If multiplexed sessions are enabled for partitioned ops this methods delegates the request to `getSession()`, which returns
+   * either a multiplexed session or a regular session based on the configuration.
+   *
+   * If the multiplexed sessions are disabled, a session is retrieved from the regular session pool.
+   *
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForPartitionedOps(callback: GetSessionCallback): void {
+    this.isMultiplexedPartitionOps
+      ? this.getSession(callback)
+      : this.pool_.getSession(callback);
+  }
+
+  /**
    * Returns the regular session pool object.
    *
    * @returns {SessionPoolInterface} The session pool used by current instance.
@@ -154,9 +185,11 @@ export class SessionFactory
   }
 
   /**
-   * Releases a session back to the session pool.
+   * Releases a regular session back to the session pool.
    *
-   * This method returns a session to the pool after it is no longer needed.
+   * This methods does not release a multiplexed session.
+   *
+   * It returns a session to the pool after it is no longer needed.
    * It is a no-op for multiplexed sessions.
    *
    * @param {Session} session - The session to be released. This should be an instance of `Session` that was
@@ -165,7 +198,7 @@ export class SessionFactory
    * @throws {Error} If the session is invalid or cannot be released.
    */
   release(session: Session): void {
-    if (!this.isMultiplexed) {
+    if (!session.metadata?.multiplexed) {
       this.pool_.release(session);
     }
   }
