@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* CreateQueryPartition with query params ([91f5afd](https://github.com/googleapis/nodejs-spanner/commit/91f5afda53bd9c46fcd1a1fe33f579b6aed5223a))
+
 ## [7.19.0](https://github.com/googleapis/nodejs-spanner/compare/v7.18.1...v7.19.0) (2025-02-26)
 
 

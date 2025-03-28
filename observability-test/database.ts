@@ -48,6 +48,7 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import {MockError} from '../test/mockserver/mockspanner';
 import {FakeSessionFactory} from '../test/database';
+import {RunTransactionOptions} from '../src/transaction-runner';
 const {generateWithAllSpansHaveDBName} = require('./helper');
 
 const fakePfy = extend({}, pfy, {
@@ -147,6 +148,7 @@ class FakeTransaction extends EventEmitter {
   setQueuedMutations(mutation) {
     this._queuedMutations = mutation;
   }
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
     callback?: CommitCallback
@@ -1962,7 +1964,7 @@ describe('Database', () => {
       },
     };
 
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakePartitionedDml = new FakeTransaction(
       {} as google.spanner.v1.TransactionOptions.PartitionedDml
@@ -1972,14 +1974,17 @@ describe('Database', () => {
     let beginStub;
 
     beforeEach(() => {
-      fakePool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakePartitionedDml = new FakeTransaction(
         {} as google.spanner.v1.TransactionOptions.PartitionedDml
       );
 
       getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+        sandbox.stub(
+          fakeSessionFactory,
+          'getSessionForPartitionedOps'
+        ) as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession);
       });
@@ -2075,7 +2080,7 @@ describe('Database', () => {
       beginStub.callsFake(callback => callback(fakeError));
 
       const releaseStub = (
-        sandbox.stub(fakePool, 'release') as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
       ).withArgs(fakeSession);
 
       database.runPartitionedUpdate(QUERY, async (err, rowCount) => {
@@ -2122,7 +2127,7 @@ describe('Database', () => {
 
     it('session released on transaction end', done => {
       const releaseStub = (
-        sandbox.stub(fakePool, 'release') as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
       ).withArgs(fakeSession);
 
       database.runPartitionedUpdate(QUERY, async () => {
