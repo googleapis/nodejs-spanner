@@ -32,6 +32,7 @@ import {
   Session,
   protos,
   Float,
+  Interval,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -367,6 +368,7 @@ describe('Spanner', () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
       if (IS_EMULATOR_ENABLED) {
+        // TODO: add columns using Interval Value and Interval Array Value.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -395,6 +397,7 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add columns using Interval Value and Interval Array Value.
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
           `
                 CREATE TABLE ${TABLE_NAME}
@@ -426,6 +429,7 @@ describe('Spanner', () => {
         );
         await postgreSqlOperationUpdateDDL.promise();
       } else {
+        // TODO: add columns using Interval Value and Interval Array Value.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -460,6 +464,7 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add columns using Interval Value and Interval Array Value.
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
           `
                 CREATE TABLE ${TABLE_NAME}
@@ -3961,6 +3966,7 @@ describe('Spanner', () => {
     before(async () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
+      // TODO: add columns using Interval Value and Interval Array Value when Interval is supported.
       const googleSqlCreateTable = await googleSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
                 (
@@ -3980,6 +3986,7 @@ describe('Spanner', () => {
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
+      // TODO: add columns using Interval Value and Interval Array Value.
       const postgreSqlCreateTable = await postgreSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
             (
@@ -6519,6 +6526,264 @@ describe('Spanner', () => {
             DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
               assert.strictEqual(rows!.length, 0);
+              done();
+            });
+          });
+        });
+
+        describe('interval', () => {
+          before(function () {
+            // TODO: Remove this check once Interval is supported in emulator
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+          });
+
+          const intervalQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              const queriedValue = rows[0][0].value;
+              assert.deepStrictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value when param type interval is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: new Interval(19, 768, BigInt('123456789123')),
+              },
+              types: {
+                v: 'interval',
+              },
+            };
+            intervalQuery(
+              done,
+              DATABASE,
+              query,
+              new Interval(19, 768, BigInt('123456789123'))
+            );
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value when spanner.interval is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: Spanner.interval(19, 768, BigInt('123456789123')),
+              },
+            };
+            intervalQuery(
+              done,
+              DATABASE,
+              query,
+              new Interval(19, 768, BigInt('123456789123'))
+            );
+          });
+
+          it('POSTGRESQL should bind the value when param type interval is used', done => {
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: new Interval(19, 768, BigInt('123456789123')),
+              },
+              types: {
+                p1: 'interval',
+              },
+            };
+            intervalQuery(
+              done,
+              PG_DATABASE,
+              query,
+              new Interval(19, 768, BigInt('123456789123'))
+            );
+          });
+
+          it('POSTGRESQL should bind the value when Spanner.interval is used', done => {
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Spanner.interval(-19, -768, BigInt('123456789123')),
+              },
+            };
+            intervalQuery(
+              done,
+              PG_DATABASE,
+              query,
+              new Interval(-19, -768, BigInt('123456789123'))
+            );
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: 'interval',
+              },
+            };
+            intervalQuery(done, DATABASE, query, null);
+          });
+
+          it('POSTGRESQL should allow for null values', done => {
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'interval',
+              },
+            };
+            intervalQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+            const values = [
+              null,
+              new Interval(100, 200, BigInt('123456789123')),
+              Interval.ZERO,
+              new Interval(-100, -200, BigInt('-123456789123')),
+              null,
+            ];
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              const expected = values;
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+              }
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+            const values = [];
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, null);
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind arrays', done => {
+            const values = [
+              null,
+              new Interval(100, 200, BigInt('123456789123')),
+              Interval.ZERO,
+              new Interval(-100, -200, BigInt('-123456789123')),
+              null,
+            ];
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: values,
+              },
+              types: {
+                p1: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            PG_DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              const expected = values;
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+              }
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind empty arrays', done => {
+            const values = [];
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT $1',
+              params: {
+                p1: values,
+              },
+              types: {
+                p1: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            PG_DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind null arrays', done => {
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: {
+                  type: 'array',
+                  child: 'interval',
+                },
+              },
+            };
+
+            PG_DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
           });
