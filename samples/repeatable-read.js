@@ -26,7 +26,9 @@ function main(
   // [START spanner_isolation_level]
   // Imports the Google Cloud Spanner client library
   const {Spanner, protos} = require('@google-cloud/spanner');
-  const snapshotIsolationOptionsForClient = {
+  // The isolation level specified at the client-level will be applied
+  // to all RW transactions.
+  const isolationOptionsForClient = {
     defaultTransactionOptions: {
       isolationLevel:
         protos.google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE,
@@ -36,38 +38,41 @@ function main(
   // Instantiates a client with defaultTransactionOptions
   const spanner = new Spanner({
     projectId: projectId,
-    defaultTransactionOptions: snapshotIsolationOptionsForClient,
+    defaultTransactionOptions: isolationOptionsForClient,
   });
 
-  function spannerSnapshotIsolation() {
+  function runTransactionWithIsolationLevel() {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
     // The isolation level specified at the request level takes precedence over the isolation level configured at the client level.
-    const snapshotIsolationOptionsForRequest = {
+    const isolationOptionsForTransaction = {
       isolationLevel:
         protos.google.spanner.v1.TransactionOptions.IsolationLevel
           .REPEATABLE_READ,
     };
 
-    database.getTransaction(
-      snapshotIsolationOptionsForRequest,
+    database.runTransaction(
+      isolationOptionsForTransaction,
       async (err, transaction) => {
         if (err) {
           console.error(err);
           return;
         }
         try {
-          const [rowCount] = await transaction.runUpdate({
-            sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (1, @firstName, @lastName)',
-            params: {
-              firstName: 'Marc',
-              lastName: 'Richards',
-            },
-          });
+          const query =
+            'SELECT AlbumTitle FROM Albums WHERE SingerId = 1 AND AlbumId = 1';
+          const results = await transaction.run(query);
+          // Gets first album's title
+          const rows = results[0].map(row => row.toJSON());
+          const albumTitle = rows[0].AlbumTitle;
+          console.log(`previous album title ${albumTitle}`);
 
+          const update =
+            "UPDATE Albums SET AlbumTitle = 'New Album Title' WHERE SingerId = 1 AND AlbumId = 1";
+          const [rowCount] = await transaction.runUpdate(update);
           console.log(
-            `Successfully inserted ${rowCount} record into the Singers table.`
+            `Successfully updated ${rowCount} record in Albums table.`
           );
           await transaction.commit();
           console.log(
@@ -83,7 +88,7 @@ function main(
       }
     );
   }
-  spannerSnapshotIsolation();
+  runTransactionWithIsolationLevel();
   // [END spanner_isolation_level]
 }
 process.on('unhandledRejection', err => {
