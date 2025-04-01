@@ -29,7 +29,7 @@ import {Duplex} from 'stream';
 
 import * as inst from '../src/instance';
 import {Spanner, Database, RequestConfig} from '../src';
-import arrify = require('arrify');
+const arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
