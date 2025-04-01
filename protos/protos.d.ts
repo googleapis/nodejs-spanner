@@ -3171,7 +3171,7 @@ export namespace google {
             doubleValue?: (number|null);
 
             /** UninterpretedOption stringValue */
-            stringValue?: (Uint8Array|string|null);
+            stringValue?: (Uint8Array|Buffer|string|null);
 
             /** UninterpretedOption aggregateValue */
             aggregateValue?: (string|null);
@@ -3202,7 +3202,7 @@ export namespace google {
             public doubleValue: number;
 
             /** UninterpretedOption stringValue. */
-            public stringValue: (Uint8Array|string);
+            public stringValue: (Uint8Array|Buffer|string);
 
             /** UninterpretedOption aggregateValue. */
             public aggregateValue: string;
@@ -4238,7 +4238,7 @@ export namespace google {
             type_url?: (string|null);
 
             /** Any value */
-            value?: (Uint8Array|string|null);
+            value?: (Uint8Array|Buffer|string|null);
         }
 
         /** Represents an Any. */
@@ -4254,7 +4254,7 @@ export namespace google {
             public type_url: string;
 
             /** Any value. */
-            public value: (Uint8Array|string);
+            public value: (Uint8Array|Buffer|string);
 
             /**
              * Creates a new Any instance using the specified properties.
@@ -10958,7 +10958,7 @@ export namespace google {
                         databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
 
                         /** CreateDatabaseRequest protoDescriptors */
-                        protoDescriptors?: (Uint8Array|string|null);
+                        protoDescriptors?: (Uint8Array|Buffer|string|null);
                     }
 
                     /** Represents a CreateDatabaseRequest. */
@@ -10986,7 +10986,7 @@ export namespace google {
                         public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
 
                         /** CreateDatabaseRequest protoDescriptors. */
-                        public protoDescriptors: (Uint8Array|string);
+                        public protoDescriptors: (Uint8Array|Buffer|string);
 
                         /**
                          * Creates a new CreateDatabaseRequest instance using the specified properties.
@@ -11485,7 +11485,7 @@ export namespace google {
                         operationId?: (string|null);
 
                         /** UpdateDatabaseDdlRequest protoDescriptors */
-                        protoDescriptors?: (Uint8Array|string|null);
+                        protoDescriptors?: (Uint8Array|Buffer|string|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlRequest. */
@@ -11507,7 +11507,7 @@ export namespace google {
                         public operationId: string;
 
                         /** UpdateDatabaseDdlRequest protoDescriptors. */
-                        public protoDescriptors: (Uint8Array|string);
+                        public protoDescriptors: (Uint8Array|Buffer|string);
 
                         /**
                          * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
@@ -12024,7 +12024,7 @@ export namespace google {
                         statements?: (string[]|null);
 
                         /** GetDatabaseDdlResponse protoDescriptors */
-                        protoDescriptors?: (Uint8Array|string|null);
+                        protoDescriptors?: (Uint8Array|Buffer|string|null);
                     }
 
                     /** Represents a GetDatabaseDdlResponse. */
@@ -12040,7 +12040,7 @@ export namespace google {
                         public statements: string[];
 
                         /** GetDatabaseDdlResponse protoDescriptors. */
-                        public protoDescriptors: (Uint8Array|string);
+                        public protoDescriptors: (Uint8Array|Buffer|string);
 
                         /**
                          * Creates a new GetDatabaseDdlResponse instance using the specified properties.
@@ -20100,7 +20100,7 @@ export namespace google {
                     doubleValue?: (number|null);
 
                     /** Value bytesValue */
-                    bytesValue?: (Uint8Array|string|null);
+                    bytesValue?: (Uint8Array|Buffer|string|null);
 
                     /** Value stringValue */
                     stringValue?: (string|null);
@@ -20146,7 +20146,7 @@ export namespace google {
                     public doubleValue?: (number|null);
 
                     /** Value bytesValue. */
-                    public bytesValue?: (Uint8Array|string|null);
+                    public bytesValue?: (Uint8Array|Buffer|string|null);
 
                     /** Value stringValue. */
                     public stringValue?: (string|null);
@@ -23205,7 +23205,7 @@ export namespace google {
                     dialect?: (string|null);
 
                     /** CreateCloudDatabaseAction protoDescriptors */
-                    protoDescriptors?: (Uint8Array|string|null);
+                    protoDescriptors?: (Uint8Array|Buffer|string|null);
                 }
 
                 /** Represents a CreateCloudDatabaseAction. */
@@ -23236,7 +23236,7 @@ export namespace google {
                     public dialect?: (string|null);
 
                     /** CreateCloudDatabaseAction protoDescriptors. */
-                    public protoDescriptors?: (Uint8Array|string|null);
+                    public protoDescriptors?: (Uint8Array|Buffer|string|null);
 
                     /**
                      * Creates a new CreateCloudDatabaseAction instance using the specified properties.
@@ -23335,7 +23335,7 @@ export namespace google {
                     operationId?: (string|null);
 
                     /** UpdateCloudDatabaseDdlAction protoDescriptors */
-                    protoDescriptors?: (Uint8Array|string|null);
+                    protoDescriptors?: (Uint8Array|Buffer|string|null);
                 }
 
                 /** Represents an UpdateCloudDatabaseDdlAction. */
@@ -23363,7 +23363,7 @@ export namespace google {
                     public operationId: string;
 
                     /** UpdateCloudDatabaseDdlAction protoDescriptors. */
-                    public protoDescriptors?: (Uint8Array|string|null);
+                    public protoDescriptors?: (Uint8Array|Buffer|string|null);
 
                     /**
                      * Creates a new UpdateCloudDatabaseDdlAction instance using the specified properties.
@@ -25593,7 +25593,7 @@ export namespace google {
                     batchTxnTime?: (google.protobuf.ITimestamp|null);
 
                     /** StartBatchTransactionAction tid */
-                    tid?: (Uint8Array|string|null);
+                    tid?: (Uint8Array|Buffer|string|null);
 
                     /** StartBatchTransactionAction cloudDatabaseRole */
                     cloudDatabaseRole?: (string|null);
@@ -25612,7 +25612,7 @@ export namespace google {
                     public batchTxnTime?: (google.protobuf.ITimestamp|null);
 
                     /** StartBatchTransactionAction tid. */
-                    public tid?: (Uint8Array|string|null);
+                    public tid?: (Uint8Array|Buffer|string|null);
 
                     /** StartBatchTransactionAction cloudDatabaseRole. */
                     public cloudDatabaseRole: string;
@@ -26017,10 +26017,10 @@ export namespace google {
                 interface IBatchPartition {
 
                     /** BatchPartition partition */
-                    partition?: (Uint8Array|string|null);
+                    partition?: (Uint8Array|Buffer|string|null);
 
                     /** BatchPartition partitionToken */
-                    partitionToken?: (Uint8Array|string|null);
+                    partitionToken?: (Uint8Array|Buffer|string|null);
 
                     /** BatchPartition table */
                     table?: (string|null);
@@ -26039,10 +26039,10 @@ export namespace google {
                     constructor(properties?: google.spanner.executor.v1.IBatchPartition);
 
                     /** BatchPartition partition. */
-                    public partition: (Uint8Array|string);
+                    public partition: (Uint8Array|Buffer|string);
 
                     /** BatchPartition partitionToken. */
-                    public partitionToken: (Uint8Array|string);
+                    public partitionToken: (Uint8Array|Buffer|string);
 
                     /** BatchPartition table. */
                     public table?: (string|null);
@@ -26383,7 +26383,7 @@ export namespace google {
                     transactionRestarted?: (boolean|null);
 
                     /** SpannerActionOutcome batchTxnId */
-                    batchTxnId?: (Uint8Array|string|null);
+                    batchTxnId?: (Uint8Array|Buffer|string|null);
 
                     /** SpannerActionOutcome dbPartition */
                     dbPartition?: (google.spanner.executor.v1.IBatchPartition[]|null);
@@ -26423,7 +26423,7 @@ export namespace google {
                     public transactionRestarted?: (boolean|null);
 
                     /** SpannerActionOutcome batchTxnId. */
-                    public batchTxnId?: (Uint8Array|string|null);
+                    public batchTxnId?: (Uint8Array|Buffer|string|null);
 
                     /** SpannerActionOutcome dbPartition. */
                     public dbPartition: google.spanner.executor.v1.IBatchPartition[];
@@ -30205,13 +30205,13 @@ export namespace google {
                 paramTypes?: ({ [k: string]: google.spanner.v1.IType }|null);
 
                 /** ExecuteSqlRequest resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|Buffer|string|null);
 
                 /** ExecuteSqlRequest queryMode */
                 queryMode?: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode|null);
 
                 /** ExecuteSqlRequest partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|Buffer|string|null);
 
                 /** ExecuteSqlRequest seqno */
                 seqno?: (number|Long|string|null);
@@ -30257,13 +30257,13 @@ export namespace google {
                 public paramTypes: { [k: string]: google.spanner.v1.IType };
 
                 /** ExecuteSqlRequest resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: (Uint8Array|Buffer|string);
 
                 /** ExecuteSqlRequest queryMode. */
                 public queryMode: (google.spanner.v1.ExecuteSqlRequest.QueryMode|keyof typeof google.spanner.v1.ExecuteSqlRequest.QueryMode);
 
                 /** ExecuteSqlRequest partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: (Uint8Array|Buffer|string);
 
                 /** ExecuteSqlRequest seqno. */
                 public seqno: (number|Long|string);
@@ -31191,7 +31191,7 @@ export namespace google {
             interface IPartition {
 
                 /** Partition partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|Buffer|string|null);
             }
 
             /** Represents a Partition. */
@@ -31204,7 +31204,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IPartition);
 
                 /** Partition partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: (Uint8Array|Buffer|string);
 
                 /**
                  * Creates a new Partition instance using the specified properties.
@@ -31412,10 +31412,10 @@ export namespace google {
                 limit?: (number|Long|string|null);
 
                 /** ReadRequest resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|Buffer|string|null);
 
                 /** ReadRequest partitionToken */
-                partitionToken?: (Uint8Array|string|null);
+                partitionToken?: (Uint8Array|Buffer|string|null);
 
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
@@ -31464,10 +31464,10 @@ export namespace google {
                 public limit: (number|Long|string);
 
                 /** ReadRequest resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: (Uint8Array|Buffer|string);
 
                 /** ReadRequest partitionToken. */
-                public partitionToken: (Uint8Array|string);
+                public partitionToken: (Uint8Array|Buffer|string);
 
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
@@ -31701,7 +31701,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** CommitRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|Buffer|string|null);
 
                 /** CommitRequest singleUseTransaction */
                 singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -31735,7 +31735,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId?: (Uint8Array|string|null);
+                public transactionId?: (Uint8Array|Buffer|string|null);
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -31843,7 +31843,7 @@ export namespace google {
                 session?: (string|null);
 
                 /** RollbackRequest transactionId */
-                transactionId?: (Uint8Array|string|null);
+                transactionId?: (Uint8Array|Buffer|string|null);
             }
 
             /** Represents a RollbackRequest. */
@@ -31859,7 +31859,7 @@ export namespace google {
                 public session: string;
 
                 /** RollbackRequest transactionId. */
-                public transactionId: (Uint8Array|string);
+                public transactionId: (Uint8Array|Buffer|string);
 
                 /**
                  * Creates a new RollbackRequest instance using the specified properties.
@@ -32608,7 +32608,7 @@ export namespace google {
                     readLockMode?: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null);
 
                     /** ReadWrite multiplexedSessionPreviousTransactionId */
-                    multiplexedSessionPreviousTransactionId?: (Uint8Array|string|null);
+                    multiplexedSessionPreviousTransactionId?: (Uint8Array|Buffer|string|null);
                 }
 
                 /** Represents a ReadWrite. */
@@ -32624,7 +32624,7 @@ export namespace google {
                     public readLockMode: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode);
 
                     /** ReadWrite multiplexedSessionPreviousTransactionId. */
-                    public multiplexedSessionPreviousTransactionId: (Uint8Array|string);
+                    public multiplexedSessionPreviousTransactionId: (Uint8Array|Buffer|string);
 
                     /**
                      * Creates a new ReadWrite instance using the specified properties.
@@ -32947,7 +32947,7 @@ export namespace google {
             interface ITransaction {
 
                 /** Transaction id */
-                id?: (Uint8Array|string|null);
+                id?: (Uint8Array|Buffer|string|null);
 
                 /** Transaction readTimestamp */
                 readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -32966,7 +32966,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.ITransaction);
 
                 /** Transaction id. */
-                public id: (Uint8Array|string);
+                public id: (Uint8Array|Buffer|string);
 
                 /** Transaction readTimestamp. */
                 public readTimestamp?: (google.protobuf.ITimestamp|null);
@@ -33059,7 +33059,7 @@ export namespace google {
                 singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id */
-                id?: (Uint8Array|string|null);
+                id?: (Uint8Array|Buffer|string|null);
 
                 /** TransactionSelector begin */
                 begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -33078,7 +33078,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id?: (Uint8Array|string|null);
+                public id?: (Uint8Array|Buffer|string|null);
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -33168,7 +33168,7 @@ export namespace google {
             interface IMultiplexedSessionPrecommitToken {
 
                 /** MultiplexedSessionPrecommitToken precommitToken */
-                precommitToken?: (Uint8Array|string|null);
+                precommitToken?: (Uint8Array|Buffer|string|null);
 
                 /** MultiplexedSessionPrecommitToken seqNum */
                 seqNum?: (number|null);
@@ -33184,7 +33184,7 @@ export namespace google {
                 constructor(properties?: google.spanner.v1.IMultiplexedSessionPrecommitToken);
 
                 /** MultiplexedSessionPrecommitToken precommitToken. */
-                public precommitToken: (Uint8Array|string);
+                public precommitToken: (Uint8Array|Buffer|string);
 
                 /** MultiplexedSessionPrecommitToken seqNum. */
                 public seqNum: number;
@@ -33964,7 +33964,7 @@ export namespace google {
                 chunkedValue?: (boolean|null);
 
                 /** PartialResultSet resumeToken */
-                resumeToken?: (Uint8Array|string|null);
+                resumeToken?: (Uint8Array|Buffer|string|null);
 
                 /** PartialResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
@@ -33995,7 +33995,7 @@ export namespace google {
                 public chunkedValue: boolean;
 
                 /** PartialResultSet resumeToken. */
-                public resumeToken: (Uint8Array|string);
+                public resumeToken: (Uint8Array|Buffer|string);
 
                 /** PartialResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
@@ -38827,7 +38827,7 @@ export namespace google {
                 auditConfigs?: (google.iam.v1.IAuditConfig[]|null);
 
                 /** Policy etag */
-                etag?: (Uint8Array|string|null);
+                etag?: (Uint8Array|Buffer|string|null);
             }
 
             /** Represents a Policy. */
@@ -38849,7 +38849,7 @@ export namespace google {
                 public auditConfigs: google.iam.v1.IAuditConfig[];
 
                 /** Policy etag. */
-                public etag: (Uint8Array|string);
+                public etag: (Uint8Array|Buffer|string);
 
                 /**
                  * Creates a new Policy instance using the specified properties.
