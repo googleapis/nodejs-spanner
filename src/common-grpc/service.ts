@@ -999,7 +999,17 @@ export class GrpcService extends Service {
     this.authClient.getClient().then(client => {
       const credentials = this.grpc!.credentials.combineChannelCredentials(
         this.grpc!.credentials.createSsl(),
-        this.grpc!.credentials.createFromGoogleCredential(client)
+        grpc.credentials.createFromGoogleCredential({
+          // the `grpc` package does not support the `Headers` object yet
+          getRequestHeaders: async (url?: string | URL) => {
+            const headers = await client.getRequestHeaders(url);
+            const genericHeadersObject: Record<string, string> = {};
+
+            headers.forEach((value, key) => (genericHeadersObject[key] = value));
+
+            return genericHeadersObject;
+          },
+        }),
       );
       if (!this.projectId || this.projectId === '{{projectId}}') {
         this.projectId = client.projectId!;
