@@ -15,11 +15,11 @@
 
 /* eslint-disable prefer-rest-params */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {grpc} from 'google-gax';
-import * as extend from 'extend';
-import * as proxyquire from 'proxyquire';
+import extend from 'extend';
+import proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 

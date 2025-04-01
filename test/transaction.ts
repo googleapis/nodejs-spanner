@@ -15,11 +15,11 @@
  */
 
 import {PreciseDate} from '@google-cloud/precise-date';
-import * as assert from 'assert';
+import assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 import {protos} from '../src';

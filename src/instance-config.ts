@@ -17,7 +17,7 @@ import {ServiceObjectConfig} from '@google-cloud/common';
 const common = require('./common-grpc/service-object');
 
 import {google as instanceAdmin} from '../protos/protos';
-import {Operation as GaxOperation} from 'google-gax/build/src/longRunningCalls/longrunning';
+import {Operation as GaxOperation} from 'google-gax';
 import snakeCase = require('lodash.snakecase');
 import {
   CLOUD_RESOURCE_HEADER,
