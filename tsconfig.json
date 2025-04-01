@@ -5,6 +5,8 @@
     "outDir": "build",
     "noImplicitAny": false,
     "resolveJsonModule": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "lib": [
       "es2018",
       "dom"
@@ -20,6 +22,9 @@
     "test/**/*.ts",
     "system-test/*.ts",
     "benchmark/*.ts",
-    "observability-test/*.ts"
+    "observability-test/*.ts",
+    "src/**/*.json",
+    "system-test/*.ts",
+    "protos/protos.json"
   ]
 }
