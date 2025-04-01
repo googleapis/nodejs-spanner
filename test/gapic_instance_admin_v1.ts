@@ -17,7 +17,7 @@
 // ** All changes to this file may be overwritten. **
 
 import * as protos from '../protos/protos';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';

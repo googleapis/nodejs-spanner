@@ -24,9 +24,9 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
 import {promisify, promisifyAll, callbackifyAll} from '@google-cloud/promisify';
-import * as extend from 'extend';
+import extend from 'extend';
 import * as r from 'teeny-request';
-import * as streamEvents from 'stream-events';
+import streamEvents from 'stream-events';
 import * as through from 'through2';
 import {
   CallOptions,
