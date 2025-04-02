@@ -115,6 +115,7 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
+  * [Performs a read-write transaction with isolation level option](#performs-a-read-write-transaction-with-isolation-level-option)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
   * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
@@ -126,7 +127,6 @@ and automatic, synchronous replication for high availability.
   * [Alters a sequence in a GoogleSQL database.](#alters-a-sequence-in-a-googlesql-database.)
   * [Creates sequence in GoogleSQL database.](#creates-sequence-in-googlesql-database.)
   * [Drops a sequence in GoogleSQL database.](#drops-a-sequence-in-googlesql-database.)
-  * [Performs a read-write transaction with isolation level option](#performs-a-read-write-transaction-with-isolation-level-option)
   * [Struct](#struct)
   * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
   * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
@@ -1869,6 +1869,23 @@ __Usage:__
 
 
 
+### Performs a read-write transaction with isolation level option
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/repeatable-read.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/repeatable-read.js,samples/README.md)
+
+__Usage:__
+
+
+`node snapshot-isolation.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Sets a request tag for a single query
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/request-tag.js).
@@ -2049,23 +2066,6 @@ __Usage:__
 
 
 `node sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
-
-
------
-
-
-
-
-### Performs a read-write transaction with isolation level option
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/snapshot-isolation.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/snapshot-isolation.js,samples/README.md)
-
-__Usage:__
-
-
-`node snapshot-isolation.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
