@@ -21,7 +21,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
 import {promisifyAll} from '@google-cloud/promisify';
-import extend from 'extend';
+import * as extend from 'extend';
 import * as r from 'teeny-request';
 import {
   Snapshot,

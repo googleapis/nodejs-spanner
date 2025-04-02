@@ -16,11 +16,11 @@
 
 /* eslint-disable prefer-rest-params */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import extend from 'extend';
+import * as extend from 'extend';
 import * as path from 'path';
-import proxyquire from 'proxyquire';
+import * as proxyquire from 'proxyquire';
 import * as through from 'through2';
 import {util} from '@google-cloud/common';
 import {PreciseDate} from '@google-cloud/precise-date';
