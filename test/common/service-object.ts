@@ -16,10 +16,10 @@
 /* eslint-disable prefer-spread */
 
 import * as pfy from '@google-cloud/promisify';
-import assert from 'assert';
+import * as assert from 'assert';
 import {before, beforeEach, describe, it} from 'mocha';
-import extend from 'extend';
-import proxyquire from 'proxyquire';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
 
 let promisified = false;
 const fakePfy = Object.assign({}, pfy, {

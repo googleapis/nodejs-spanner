@@ -17,10 +17,10 @@
 /* eslint-disable prefer-rest-params */
 
 import * as pfy from '@google-cloud/promisify';
-import assert from 'assert';
+import * as assert from 'assert';
 import {before, beforeEach, describe, it} from 'mocha';
-import extend from 'extend';
-import proxyquire from 'proxyquire';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
 import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,

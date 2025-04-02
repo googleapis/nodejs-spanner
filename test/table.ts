@@ -15,10 +15,10 @@
  */
 
 import * as pfy from '@google-cloud/promisify';
-import assert from 'assert';
+import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import extend from 'extend';
-import proxyquire from 'proxyquire';
+import * as extend from 'extend';
+import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {split} from 'split-array-stream';
 import {Transform} from 'stream';

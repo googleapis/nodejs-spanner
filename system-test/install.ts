@@ -13,7 +13,7 @@
 // limitations under the License.
 
 const execa = require('execa');
-import mv from 'mv';
+import * as mv from 'mv';
 import {ncp} from 'ncp';
 import * as tmp from 'tmp';
 import {promisify} from 'util';
