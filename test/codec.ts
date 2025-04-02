@@ -330,6 +330,15 @@ describe('codec', () => {
           new RegExp('Invalid days: 2.5, days should be an integral value')
         );
       });
+
+      it('should throw an error if days is not an integer', () => {
+        assert.throws(
+          () => new codec.Interval(1, 2, null),
+          new RegExp(
+            'Invalid nanoseconds: null, nanoseconds should be a valid bigint value'
+          )
+        );
+      });
     });
 
     describe('fromMonths', () => {
@@ -338,6 +347,14 @@ describe('codec', () => {
         assert.equal(interval.getMonths(), 5);
         assert.equal(interval.getDays(), 0);
         assert.equal(interval.getNanoseconds(), BigInt(0));
+      });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(() => codec.Interval.fromMonths(undefined), GoogleError);
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromMonths(null), GoogleError);
       });
     });
 
@@ -348,6 +365,14 @@ describe('codec', () => {
         assert.equal(interval.getDays(), 10);
         assert.equal(interval.getNanoseconds(), BigInt(0));
       });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(() => codec.Interval.fromDays(undefined), GoogleError);
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromDays(null), GoogleError);
+      });
     });
 
     describe('fromSeconds', () => {
@@ -356,6 +381,14 @@ describe('codec', () => {
         assert.equal(interval.getMonths(), 0);
         assert.equal(interval.getDays(), 0);
         assert.equal(interval.getNanoseconds(), BigInt(60 * 1000000000));
+      });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(() => codec.Interval.fromSeconds(undefined), GoogleError);
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromSeconds(null), GoogleError);
       });
     });
 
@@ -366,6 +399,17 @@ describe('codec', () => {
         assert.equal(interval.getDays(), 0);
         assert.equal(interval.getNanoseconds(), BigInt(1000 * 1000000));
       });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(
+          () => codec.Interval.fromMilliseconds(undefined),
+          GoogleError
+        );
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromMilliseconds(null), GoogleError);
+      });
     });
 
     describe('fromMicroseconds', () => {
@@ -375,6 +419,17 @@ describe('codec', () => {
         assert.equal(interval.getDays(), 0);
         assert.equal(interval.getNanoseconds(), BigInt(1000000 * 1000));
       });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(
+          () => codec.Interval.fromMicroseconds(undefined),
+          GoogleError
+        );
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromMicroseconds(null), GoogleError);
+      });
     });
 
     describe('fromNanoseconds', () => {
@@ -383,6 +438,17 @@ describe('codec', () => {
         assert.equal(interval.getMonths(), 0);
         assert.equal(interval.getDays(), 0);
         assert.equal(interval.getNanoseconds(), BigInt(1000000000));
+      });
+
+      it('should throw an error if input is undefined', () => {
+        assert.throws(
+          () => codec.Interval.fromNanoseconds(undefined),
+          GoogleError
+        );
+      });
+
+      it('should throw an error if input is null', () => {
+        assert.throws(() => codec.Interval.fromNanoseconds(null), GoogleError);
       });
     });
 

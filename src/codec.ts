@@ -452,6 +452,12 @@ export class Interval {
       );
     }
 
+    if (is.null(nanoseconds) || is.undefined(nanoseconds)) {
+      throw new GoogleError(
+        `Invalid nanoseconds: ${nanoseconds}, nanoseconds should be a valid bigint value`
+      );
+    }
+
     this.months = months;
     this.days = days;
     this.nanoseconds = nanoseconds;
@@ -496,6 +502,11 @@ export class Interval {
    * Constructs an `Interval` with specified seconds.
    */
   static fromSeconds(seconds: number): Interval {
+    if (!is.integer(seconds)) {
+      throw new GoogleError(
+        `Invalid seconds: ${seconds}, seconds should be an integral value`
+      );
+    }
     return new Interval(
       0,
       0,
@@ -507,6 +518,11 @@ export class Interval {
    * Constructs an `Interval` with specified milliseconds.
    */
   static fromMilliseconds(milliseconds: number): Interval {
+    if (!is.integer(milliseconds)) {
+      throw new GoogleError(
+        `Invalid milliseconds: ${milliseconds}, milliseconds should be an integral value`
+      );
+    }
     return new Interval(
       0,
       0,
@@ -518,6 +534,11 @@ export class Interval {
    * Constructs an `Interval` with specified microseconds.
    */
   static fromMicroseconds(microseconds: number): Interval {
+    if (!is.integer(microseconds)) {
+      throw new GoogleError(
+        `Invalid microseconds: ${microseconds}, microseconds should be an integral value`
+      );
+    }
     return new Interval(
       0,
       0,
