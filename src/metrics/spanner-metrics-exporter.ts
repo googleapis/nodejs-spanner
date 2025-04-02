@@ -132,7 +132,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
             const err = asError(e);
             err.message = `Send TimeSeries failed: ${err.message}`;
             failure = {sendFailed: true, error: err};
-            console.error(err.message);
+            console.error(`ERROR: ${err.message}`);
           }
         }
       )
