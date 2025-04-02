@@ -403,6 +403,9 @@ export class Interval {
   private days: number;
   private nanoseconds: bigint;
 
+  // Regex to parse ISO8601 duration format: P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S
+  // Only seconds can be fractional, and can have at most 9 digits after decimal point.
+  // Both '.' and ',' are considered valid decimal point.
   private static readonly ISO8601_PATTERN: RegExp =
     /^P(?!$)(-?\d+Y)?(-?\d+M)?(-?\d+D)?(T(?=-?[.,]?\d)(-?\d+H)?(-?\d+M)?(-?(((\d+)([.,]\d{1,9})?)|([.,]\d{1,9}))S)?)?$/;
 
@@ -431,7 +434,12 @@ export class Interval {
     BigInt(Interval.DAYS_PER_MONTH) * Interval.NANOSECONDS_PER_DAY;
   static readonly ZERO: Interval = new Interval(0, 0, BigInt(0));
 
-  constructor(months: number, days: number, nanos: bigint) {
+  /**
+   * @param months months part of the `Interval`
+   * @param days days part of the `Interval`
+   * @param nanoseconds nanoseconds part of the `Interval`
+   */
+  constructor(months: number, days: number, nanoseconds: bigint) {
     if (!is.integer(months)) {
       throw new GoogleError(
         `Invalid months: ${months}, months should be an integral value`
@@ -446,29 +454,47 @@ export class Interval {
 
     this.months = months;
     this.days = days;
-    this.nanoseconds = nanos;
+    this.nanoseconds = nanoseconds;
   }
 
+  /**
+   * @returns months part of the `Interval`.
+   */
   getMonths(): number {
     return this.months;
   }
 
+  /**
+   * @returns days part of the `Interval`.
+   */
   getDays(): number {
     return this.days;
   }
 
+  /**
+   * @returns nanoseconds part of the `Interval`.
+   */
   getNanoseconds(): bigint {
     return this.nanoseconds;
   }
 
+  /**
+   * Constructs an `Interval` with specified months.
+   */
   static fromMonths(months: number): Interval {
     return new Interval(months, 0, BigInt(0));
   }
 
+  /**
+   * Constructs an `Interval` with specified days.
+   */
   static fromDays(days: number): Interval {
     return new Interval(0, days, BigInt(0));
   }
 
+  /**
+   * Constructs an `Interval` with specified seconds.
+   */
   static fromSeconds(seconds: number): Interval {
     return new Interval(
       0,
@@ -477,6 +503,9 @@ export class Interval {
     );
   }
 
+  /**
+   * Constructs an `Interval` with specified milliseconds.
+   */
   static fromMilliseconds(milliseconds: number): Interval {
     return new Interval(
       0,
@@ -485,6 +514,9 @@ export class Interval {
     );
   }
 
+  /**
+   * Constructs an `Interval` with specified microseconds.
+   */
   static fromMicroseconds(microseconds: number): Interval {
     return new Interval(
       0,
@@ -493,10 +525,18 @@ export class Interval {
     );
   }
 
+  /**
+   * Constructs an `Interval` with specified nanoseconds.
+   */
   static fromNanoseconds(nanoseconds: bigint): Interval {
     return new Interval(0, 0, nanoseconds);
   }
 
+  /**
+   * Constructs an Interval from ISO8601 duration format: `P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S`.
+   * Only seconds can be fractional, and can have at most 9 digits after decimal point.
+   * Both '.' and ',' are considered valid decimal point.
+   */
   static fromISO8601(isoString: string): Interval {
     const matcher = Interval.ISO8601_PATTERN.exec(isoString);
     if (!matcher) {
@@ -541,13 +581,16 @@ export class Interval {
     return new Interval(totalMonths, days, totalNanoseconds);
   }
 
+  /**
+   * @returns string representation of Interval in ISO8601 duration format: `P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S`
+   */
   toISO8601(): string {
     if (this.equals(Interval.ZERO)) {
       return 'P0Y';
     }
 
+    // months part is normalized to years and months.
     let result = 'P';
-
     if (this.months !== 0) {
       const years_part: number = Math.trunc(
         this.months / Interval.MONTHS_PER_YEAR
@@ -566,6 +609,7 @@ export class Interval {
       result += `${this.days}D`;
     }
 
+    // Nanoseconds part is normalized to hours, minutes and nanoseconds.
     if (this.nanoseconds !== BigInt(0)) {
       result += 'T';
       let nanoseconds: bigint = this.nanoseconds;
@@ -599,6 +643,7 @@ export class Interval {
         nanoseconds = -nanoseconds;
       }
 
+      // Nanoseconds are converted to seconds and fractional part.
       const seconds_part: bigint =
         nanoseconds / BigInt(Interval.NANOSECONDS_PER_SECOND);
       nanoseconds =
@@ -606,6 +651,8 @@ export class Interval {
       if (seconds_part !== zero_bigint || nanoseconds !== zero_bigint) {
         result += `${sign}${seconds_part}`;
         if (nanoseconds !== zero_bigint) {
+          // Fractional part is kept in a group of 3
+          // For e.g.: PT0.5S will be normalized to PT0.500S
           result += `.${nanoseconds
             .toString()
             .padStart(9, '0')
@@ -634,6 +681,10 @@ export class Interval {
     return this;
   }
 
+  /**
+   * @returns JSON representation for Interval.
+   * Interval is represented in ISO8601 duration format string in JSON.
+   */
   toJSON(): string {
     return this.toISO8601().toString();
   }

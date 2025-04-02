@@ -578,6 +578,8 @@ describe('codec', () => {
           'P1Y2M3DT4H5M6.789123456789S', // Too many digits after decimal
           'P1Y2M3DT4H5M6.123.456S', // Multiple decimal points
           'P1Y2M3DT4H5M6.,789S', // Dot and comma both for decimal
+          null,
+          undefined,
         ];
 
         invalidStrings.forEach(str => {

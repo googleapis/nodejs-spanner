@@ -368,7 +368,6 @@ describe('Spanner', () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
       if (IS_EMULATOR_ENABLED) {
-        // TODO: add columns using Interval Value and Interval Array Value.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -397,7 +396,6 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
-        // TODO: add columns using Interval Value and Interval Array Value.
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
           `
                 CREATE TABLE ${TABLE_NAME}
@@ -429,7 +427,6 @@ describe('Spanner', () => {
         );
         await postgreSqlOperationUpdateDDL.promise();
       } else {
-        // TODO: add columns using Interval Value and Interval Array Value.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -3966,7 +3963,6 @@ describe('Spanner', () => {
     before(async () => {
       googleSqlTable = DATABASE.table(TABLE_NAME);
       postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
-      // TODO: add columns using Interval Value and Interval Array Value when Interval is supported.
       const googleSqlCreateTable = await googleSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
                 (
@@ -3986,7 +3982,6 @@ describe('Spanner', () => {
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
-      // TODO: add columns using Interval Value and Interval Array Value.
       const postgreSqlCreateTable = await postgreSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
             (
@@ -6669,6 +6664,19 @@ describe('Spanner', () => {
               }
               done();
             });
+          });
+
+          it('GOOGLE_STANDARD_SQL should handle interval passed as string', done => {
+            const query = {
+              sql: 'SELECT INTERVAL \'1\' DAY + @v',
+              params: {
+                v: new Interval(100, 200, BigInt('123456789123')).toISO8601(),
+              },
+              types: {
+               v: 'interval'
+              },
+            };
+            intervalQuery(done, DATABASE, query,  new Interval(100, 201, BigInt('123456789123')));
           });
 
           it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
