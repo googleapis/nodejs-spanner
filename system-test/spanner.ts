@@ -6668,15 +6668,20 @@ describe('Spanner', () => {
 
           it('GOOGLE_STANDARD_SQL should handle interval passed as string', done => {
             const query = {
-              sql: 'SELECT INTERVAL \'1\' DAY + @v',
+              sql: "SELECT INTERVAL '1' DAY + @v",
               params: {
                 v: new Interval(100, 200, BigInt('123456789123')).toISO8601(),
               },
               types: {
-               v: 'interval'
+                v: 'interval',
               },
             };
-            intervalQuery(done, DATABASE, query,  new Interval(100, 201, BigInt('123456789123')));
+            intervalQuery(
+              done,
+              DATABASE,
+              query,
+              new Interval(100, 201, BigInt('123456789123'))
+            );
           });
 
           it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
