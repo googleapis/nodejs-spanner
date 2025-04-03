@@ -31,6 +31,7 @@ import type {
 import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -61,6 +62,8 @@ export class DatabaseAdminClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('spanner');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -96,7 +99,7 @@ export class DatabaseAdminClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -675,8 +678,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getDatabase(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getDatabase request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IDatabase,
+          | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getDatabase response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getDatabase(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IDatabase,
+          (
+            | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getDatabase response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Drops (aka deletes) a Cloud Spanner database.
@@ -767,8 +801,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.dropDatabase(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('dropDatabase request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('dropDatabase response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .dropDatabase(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('dropDatabase response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Returns the schema of a Cloud Spanner database as a list of formatted
@@ -865,8 +930,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getDatabaseDdl(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getDatabaseDdl request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+          | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getDatabaseDdl response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getDatabaseDdl(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
+          (
+            | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getDatabaseDdl response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Sets the access control policy on a database or backup resource.
@@ -963,8 +1059,34 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.setIamPolicy(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('setIamPolicy request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('setIamPolicy response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .setIamPolicy(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('setIamPolicy response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets the access control policy for a database or backup resource.
@@ -1054,8 +1176,34 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getIamPolicy(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getIamPolicy request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getIamPolicy response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getIamPolicy(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('getIamPolicy response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Returns permissions that the caller has on the specified database or backup
@@ -1149,8 +1297,34 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.testIamPermissions(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('testIamPermissions request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('testIamPermissions response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .testIamPermissions(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('testIamPermissions response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets metadata on a pending or completed
@@ -1240,8 +1414,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getBackup(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getBackup request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackup,
+          | protos.google.spanner.admin.database.v1.IGetBackupRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getBackup response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getBackup(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IBackup,
+          protos.google.spanner.admin.database.v1.IGetBackupRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('getBackup response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Updates a pending or completed
@@ -1338,8 +1540,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'backup.name': request.backup!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateBackup(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('updateBackup request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackup,
+          | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('updateBackup response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .updateBackup(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IBackup,
+          (
+            | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('updateBackup response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Deletes a pending or completed
@@ -1429,8 +1662,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteBackup(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteBackup request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteBackup response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteBackup(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteBackup response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Adds split points to specified tables, indexes of a database.
@@ -1533,8 +1797,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.addSplitPoints(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('addSplitPoints request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('addSplitPoints response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .addSplitPoints(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
+          (
+            | protos.google.spanner.admin.database.v1.IAddSplitPointsRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('addSplitPoints response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Creates a new backup schedule.
@@ -1633,8 +1928,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createBackupSchedule(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('createBackupSchedule request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('createBackupSchedule response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .createBackupSchedule(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          (
+            | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('createBackupSchedule response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets backup schedule for the input schedule name.
@@ -1729,8 +2055,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getBackupSchedule(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getBackupSchedule request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getBackupSchedule response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getBackupSchedule(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          (
+            | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getBackupSchedule response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Updates a backup schedule.
@@ -1831,8 +2188,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'backup_schedule.name': request.backupSchedule!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateBackupSchedule(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('updateBackupSchedule request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('updateBackupSchedule response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .updateBackupSchedule(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          (
+            | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('updateBackupSchedule response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Deletes a backup schedule.
@@ -1927,8 +2315,39 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteBackupSchedule(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteBackupSchedule request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteBackupSchedule response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteBackupSchedule(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteBackupSchedule response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
 
   /**
@@ -2069,8 +2488,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createDatabase(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createDatabase response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createDatabase request %j', request);
+    return this.innerApiCalls
+      .createDatabase(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createDatabase response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `createDatabase()`.
@@ -2089,6 +2540,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.CreateDatabaseMetadata
     >
   > {
+    this._log.info('createDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2241,8 +2693,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'database.name': request.database!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateDatabase(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('updateDatabase response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('updateDatabase request %j', request);
+    return this.innerApiCalls
+      .updateDatabase(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('updateDatabase response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `updateDatabase()`.
@@ -2261,6 +2745,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.UpdateDatabaseMetadata
     >
   > {
+    this._log.info('updateDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2419,8 +2904,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateDatabaseDdl(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.protobuf.IEmpty,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('updateDatabaseDdl response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('updateDatabaseDdl request %j', request);
+    return this.innerApiCalls
+      .updateDatabaseDdl(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.protobuf.IEmpty,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('updateDatabaseDdl response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `updateDatabaseDdl()`.
@@ -2439,6 +2956,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
     >
   > {
+    this._log.info('updateDatabaseDdl long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2579,8 +3097,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createBackup(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICreateBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createBackup response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createBackup request %j', request);
+    return this.innerApiCalls
+      .createBackup(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICreateBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createBackup response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `createBackup()`.
@@ -2599,6 +3149,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.CreateBackupMetadata
     >
   > {
+    this._log.info('createBackup long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2747,8 +3298,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.copyBackup(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('copyBackup response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('copyBackup request %j', request);
+    return this.innerApiCalls
+      .copyBackup(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('copyBackup response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `copyBackup()`.
@@ -2767,6 +3350,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.CopyBackupMetadata
     >
   > {
+    this._log.info('copyBackup long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2914,8 +3498,40 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.restoreDatabase(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('restoreDatabase response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('restoreDatabase request %j', request);
+    return this.innerApiCalls
+      .restoreDatabase(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('restoreDatabase response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `restoreDatabase()`.
@@ -2934,6 +3550,7 @@ export class DatabaseAdminClient {
       protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata
     >
   > {
+    this._log.info('restoreDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -3048,8 +3665,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listDatabases(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabasesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IDatabase
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listDatabases values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listDatabases request %j', request);
+    return this.innerApiCalls
+      .listDatabases(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.database.v1.IDatabase[],
+          protos.google.spanner.admin.database.v1.IListDatabasesRequest | null,
+          protos.google.spanner.admin.database.v1.IListDatabasesResponse,
+        ]) => {
+          this._log.info('listDatabases values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3092,7 +3737,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabases'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabases stream %j', request);
     return this.descriptors.page.listDatabases.createStream(
       this.innerApiCalls.listDatabases as GaxCall,
       request,
@@ -3141,7 +3789,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabases'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabases iterate %j', request);
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
       request as {},
@@ -3291,8 +3942,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listBackups(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupsRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IBackup
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listBackups values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listBackups request %j', request);
+    return this.innerApiCalls
+      .listBackups(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.database.v1.IBackup[],
+          protos.google.spanner.admin.database.v1.IListBackupsRequest | null,
+          protos.google.spanner.admin.database.v1.IListBackupsResponse,
+        ]) => {
+          this._log.info('listBackups values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3377,7 +4056,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackups'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackups stream %j', request);
     return this.descriptors.page.listBackups.createStream(
       this.innerApiCalls.listBackups as GaxCall,
       request,
@@ -3468,7 +4150,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackups'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackups iterate %j', request);
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
       request as {},
@@ -3628,12 +4313,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listDatabaseOperations(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listDatabaseOperations values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listDatabaseOperations request %j', request);
+    return this.innerApiCalls
+      .listDatabaseOperations(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.longrunning.IOperation[],
+          protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
+          protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse,
+        ]) => {
+          this._log.info('listDatabaseOperations values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3723,7 +4432,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabaseOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabaseOperations stream %j', request);
     return this.descriptors.page.listDatabaseOperations.createStream(
       this.innerApiCalls.listDatabaseOperations as GaxCall,
       request,
@@ -3819,7 +4531,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabaseOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabaseOperations iterate %j', request);
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
       request as {},
@@ -4006,8 +4721,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listBackupOperations(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listBackupOperations values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listBackupOperations request %j', request);
+    return this.innerApiCalls
+      .listBackupOperations(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.longrunning.IOperation[],
+          protos.google.spanner.admin.database.v1.IListBackupOperationsRequest | null,
+          protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
+        ]) => {
+          this._log.info('listBackupOperations values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -4122,7 +4865,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackupOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackupOperations stream %j', request);
     return this.descriptors.page.listBackupOperations.createStream(
       this.innerApiCalls.listBackupOperations as GaxCall,
       request,
@@ -4243,7 +4989,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackupOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackupOperations iterate %j', request);
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
       request as {},
@@ -4350,8 +5099,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listDatabaseRoles(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IDatabaseRole
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listDatabaseRoles values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listDatabaseRoles request %j', request);
+    return this.innerApiCalls
+      .listDatabaseRoles(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.database.v1.IDatabaseRole[],
+          protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
+          protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse,
+        ]) => {
+          this._log.info('listDatabaseRoles values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -4395,7 +5172,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabaseRoles'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabaseRoles stream %j', request);
     return this.descriptors.page.listDatabaseRoles.createStream(
       this.innerApiCalls.listDatabaseRoles as GaxCall,
       request,
@@ -4445,7 +5225,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listDatabaseRoles'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listDatabaseRoles iterate %j', request);
     return this.descriptors.page.listDatabaseRoles.asyncIterate(
       this.innerApiCalls['listDatabaseRoles'] as GaxCall,
       request as {},
@@ -4553,8 +5336,36 @@ export class DatabaseAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listBackupSchedules(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IBackupSchedule
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listBackupSchedules values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listBackupSchedules request %j', request);
+    return this.innerApiCalls
+      .listBackupSchedules(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.database.v1.IBackupSchedule[],
+          protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest | null,
+          protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse,
+        ]) => {
+          this._log.info('listBackupSchedules values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -4599,7 +5410,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackupSchedules'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackupSchedules stream %j', request);
     return this.descriptors.page.listBackupSchedules.createStream(
       this.innerApiCalls.listBackupSchedules as GaxCall,
       request,
@@ -4650,7 +5464,10 @@ export class DatabaseAdminClient {
       });
     const defaultCallSettings = this._defaults['listBackupSchedules'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listBackupSchedules iterate %j', request);
     return this.descriptors.page.listBackupSchedules.asyncIterate(
       this.innerApiCalls['listBackupSchedules'] as GaxCall,
       request as {},
@@ -4751,7 +5568,7 @@ export class DatabaseAdminClient {
   listOperationsAsync(
     request: protos.google.longrunning.ListOperationsRequest,
     options?: gax.CallOptions
-  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
@@ -5245,6 +6062,7 @@ export class DatabaseAdminClient {
   close(): Promise<void> {
     if (this.databaseAdminStub && !this._terminated) {
       return this.databaseAdminStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
         this.operationsClient.close();
