@@ -395,6 +395,323 @@ export class PGOid extends WrappedNumber {
 }
 
 /**
+ * @typedef Interval
+ * @see Spanner.interval
+ */
+export class Interval {
+  private months: number;
+  private days: number;
+  private nanoseconds: bigint;
+
+  // Regex to parse ISO8601 duration format: P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S
+  // Only seconds can be fractional, and can have at most 9 digits after decimal point.
+  // Both '.' and ',' are considered valid decimal point.
+  private static readonly ISO8601_PATTERN: RegExp =
+    /^P(?!$)(-?\d+Y)?(-?\d+M)?(-?\d+D)?(T(?=-?[.,]?\d)(-?\d+H)?(-?\d+M)?(-?(((\d+)([.,]\d{1,9})?)|([.,]\d{1,9}))S)?)?$/;
+
+  static readonly MONTHS_PER_YEAR: number = 12;
+  static readonly DAYS_PER_MONTH: number = 30;
+  static readonly HOURS_PER_DAY: number = 24;
+  static readonly MINUTES_PER_HOUR: number = 60;
+  static readonly SECONDS_PER_MINUTE: number = 60;
+  static readonly SECONDS_PER_HOUR: number =
+    Interval.MINUTES_PER_HOUR * Interval.SECONDS_PER_MINUTE;
+  static readonly MILLISECONDS_PER_SECOND: number = 1000;
+  static readonly MICROSECONDS_PER_MILLISECOND: number = 1000;
+  static readonly NANOSECONDS_PER_MICROSECOND: number = 1000;
+  static readonly NANOSECONDS_PER_MILLISECOND: number =
+    Interval.MICROSECONDS_PER_MILLISECOND *
+    Interval.NANOSECONDS_PER_MICROSECOND;
+  static readonly NANOSECONDS_PER_SECOND: number =
+    Interval.MILLISECONDS_PER_SECOND *
+    Interval.MICROSECONDS_PER_MILLISECOND *
+    Interval.NANOSECONDS_PER_MICROSECOND;
+  static readonly NANOSECONDS_PER_DAY: bigint =
+    BigInt(Interval.HOURS_PER_DAY) *
+    BigInt(Interval.SECONDS_PER_HOUR) *
+    BigInt(Interval.NANOSECONDS_PER_SECOND);
+  static readonly NANOSECONDS_PER_MONTH: bigint =
+    BigInt(Interval.DAYS_PER_MONTH) * Interval.NANOSECONDS_PER_DAY;
+  static readonly ZERO: Interval = new Interval(0, 0, BigInt(0));
+
+  /**
+   * @param months months part of the `Interval`
+   * @param days days part of the `Interval`
+   * @param nanoseconds nanoseconds part of the `Interval`
+   */
+  constructor(months: number, days: number, nanoseconds: bigint) {
+    if (!is.integer(months)) {
+      throw new GoogleError(
+        `Invalid months: ${months}, months should be an integral value`
+      );
+    }
+
+    if (!is.integer(days)) {
+      throw new GoogleError(
+        `Invalid days: ${days}, days should be an integral value`
+      );
+    }
+
+    if (is.null(nanoseconds) || is.undefined(nanoseconds)) {
+      throw new GoogleError(
+        `Invalid nanoseconds: ${nanoseconds}, nanoseconds should be a valid bigint value`
+      );
+    }
+
+    this.months = months;
+    this.days = days;
+    this.nanoseconds = nanoseconds;
+  }
+
+  /**
+   * @returns months part of the `Interval`.
+   */
+  getMonths(): number {
+    return this.months;
+  }
+
+  /**
+   * @returns days part of the `Interval`.
+   */
+  getDays(): number {
+    return this.days;
+  }
+
+  /**
+   * @returns nanoseconds part of the `Interval`.
+   */
+  getNanoseconds(): bigint {
+    return this.nanoseconds;
+  }
+
+  /**
+   * Constructs an `Interval` with specified months.
+   */
+  static fromMonths(months: number): Interval {
+    return new Interval(months, 0, BigInt(0));
+  }
+
+  /**
+   * Constructs an `Interval` with specified days.
+   */
+  static fromDays(days: number): Interval {
+    return new Interval(0, days, BigInt(0));
+  }
+
+  /**
+   * Constructs an `Interval` with specified seconds.
+   */
+  static fromSeconds(seconds: number): Interval {
+    if (!is.integer(seconds)) {
+      throw new GoogleError(
+        `Invalid seconds: ${seconds}, seconds should be an integral value`
+      );
+    }
+    return new Interval(
+      0,
+      0,
+      BigInt(Interval.NANOSECONDS_PER_SECOND) * BigInt(seconds)
+    );
+  }
+
+  /**
+   * Constructs an `Interval` with specified milliseconds.
+   */
+  static fromMilliseconds(milliseconds: number): Interval {
+    if (!is.integer(milliseconds)) {
+      throw new GoogleError(
+        `Invalid milliseconds: ${milliseconds}, milliseconds should be an integral value`
+      );
+    }
+    return new Interval(
+      0,
+      0,
+      BigInt(Interval.NANOSECONDS_PER_MILLISECOND) * BigInt(milliseconds)
+    );
+  }
+
+  /**
+   * Constructs an `Interval` with specified microseconds.
+   */
+  static fromMicroseconds(microseconds: number): Interval {
+    if (!is.integer(microseconds)) {
+      throw new GoogleError(
+        `Invalid microseconds: ${microseconds}, microseconds should be an integral value`
+      );
+    }
+    return new Interval(
+      0,
+      0,
+      BigInt(Interval.NANOSECONDS_PER_MICROSECOND) * BigInt(microseconds)
+    );
+  }
+
+  /**
+   * Constructs an `Interval` with specified nanoseconds.
+   */
+  static fromNanoseconds(nanoseconds: bigint): Interval {
+    return new Interval(0, 0, nanoseconds);
+  }
+
+  /**
+   * Constructs an Interval from ISO8601 duration format: `P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S`.
+   * Only seconds can be fractional, and can have at most 9 digits after decimal point.
+   * Both '.' and ',' are considered valid decimal point.
+   */
+  static fromISO8601(isoString: string): Interval {
+    const matcher = Interval.ISO8601_PATTERN.exec(isoString);
+    if (!matcher) {
+      throw new GoogleError(`Invalid ISO8601 duration string: ${isoString}`);
+    }
+
+    const getNullOrDefault = (groupIdx: number): string =>
+      matcher[groupIdx] === undefined ? '0' : matcher[groupIdx];
+    const years: number = parseInt(getNullOrDefault(1).replace('Y', ''));
+    const months: number = parseInt(getNullOrDefault(2).replace('M', ''));
+    const days: number = parseInt(getNullOrDefault(3).replace('D', ''));
+    const hours: number = parseInt(getNullOrDefault(5).replace('H', ''));
+    const minutes: number = parseInt(getNullOrDefault(6).replace('M', ''));
+    const seconds: Big = Big(
+      getNullOrDefault(7).replace('S', '').replace(',', '.')
+    );
+
+    const totalMonths: number = Big(years)
+      .mul(Big(Interval.MONTHS_PER_YEAR))
+      .add(Big(months))
+      .toNumber();
+    if (!Number.isSafeInteger(totalMonths)) {
+      throw new GoogleError(
+        'Total months is outside of the range of safe integer'
+      );
+    }
+
+    const totalNanoseconds = BigInt(
+      seconds
+        .add(
+          Big((BigInt(hours) * BigInt(Interval.SECONDS_PER_HOUR)).toString())
+        )
+        .add(
+          Big(
+            (BigInt(minutes) * BigInt(Interval.SECONDS_PER_MINUTE)).toString()
+          )
+        )
+        .mul(Big(this.NANOSECONDS_PER_SECOND))
+        .toString()
+    );
+
+    return new Interval(totalMonths, days, totalNanoseconds);
+  }
+
+  /**
+   * @returns string representation of Interval in ISO8601 duration format: `P[n]Y[n]M[n]DT[n]H[n]M[n][.fffffffff]S`
+   */
+  toISO8601(): string {
+    if (this.equals(Interval.ZERO)) {
+      return 'P0Y';
+    }
+
+    // months part is normalized to years and months.
+    let result = 'P';
+    if (this.months !== 0) {
+      const years_part: number = Math.trunc(
+        this.months / Interval.MONTHS_PER_YEAR
+      );
+      const months_part: number =
+        this.months - years_part * Interval.MONTHS_PER_YEAR;
+      if (years_part !== 0) {
+        result += `${years_part}Y`;
+      }
+      if (months_part !== 0) {
+        result += `${months_part}M`;
+      }
+    }
+
+    if (this.days !== 0) {
+      result += `${this.days}D`;
+    }
+
+    // Nanoseconds part is normalized to hours, minutes and nanoseconds.
+    if (this.nanoseconds !== BigInt(0)) {
+      result += 'T';
+      let nanoseconds: bigint = this.nanoseconds;
+      const hours_part: bigint =
+        nanoseconds /
+        BigInt(Interval.NANOSECONDS_PER_SECOND * Interval.SECONDS_PER_HOUR);
+      nanoseconds =
+        nanoseconds -
+        hours_part *
+          BigInt(Interval.NANOSECONDS_PER_SECOND * Interval.SECONDS_PER_HOUR);
+
+      const minutes_part: bigint =
+        nanoseconds /
+        BigInt(Interval.NANOSECONDS_PER_SECOND * Interval.SECONDS_PER_MINUTE);
+      nanoseconds =
+        nanoseconds -
+        minutes_part *
+          BigInt(Interval.NANOSECONDS_PER_SECOND * Interval.SECONDS_PER_MINUTE);
+      const zero_bigint = BigInt(0);
+      if (hours_part !== zero_bigint) {
+        result += `${hours_part}H`;
+      }
+
+      if (minutes_part !== zero_bigint) {
+        result += `${minutes_part}M`;
+      }
+
+      let sign = '';
+      if (nanoseconds < zero_bigint) {
+        sign = '-';
+        nanoseconds = -nanoseconds;
+      }
+
+      // Nanoseconds are converted to seconds and fractional part.
+      const seconds_part: bigint =
+        nanoseconds / BigInt(Interval.NANOSECONDS_PER_SECOND);
+      nanoseconds =
+        nanoseconds - seconds_part * BigInt(Interval.NANOSECONDS_PER_SECOND);
+      if (seconds_part !== zero_bigint || nanoseconds !== zero_bigint) {
+        result += `${sign}${seconds_part}`;
+        if (nanoseconds !== zero_bigint) {
+          // Fractional part is kept in a group of 3
+          // For e.g.: PT0.5S will be normalized to PT0.500S
+          result += `.${nanoseconds
+            .toString()
+            .padStart(9, '0')
+            .replace(/(0{3})+$/, '')}`;
+        }
+        result += 'S';
+      }
+    }
+
+    return result;
+  }
+
+  equals(other: Interval): boolean {
+    if (!other) {
+      return false;
+    }
+
+    return (
+      this.months === other.months &&
+      this.days === other.days &&
+      this.nanoseconds === other.nanoseconds
+    );
+  }
+
+  valueOf(): Interval {
+    return this;
+  }
+
+  /**
+   * @returns JSON representation for Interval.
+   * Interval is represented in ISO8601 duration format string in JSON.
+   */
+  toJSON(): string {
+    return this.toISO8601().toString();
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -581,6 +898,10 @@ function decode(
       }
       decoded = JSON.parse(decoded);
       break;
+    case spannerClient.spanner.v1.TypeCode.INTERVAL:
+    case 'INTERVAL':
+      decoded = Interval.fromISO8601(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.ARRAY:
     case 'ARRAY':
       decoded = decoded.map(value => {
@@ -677,6 +998,10 @@ function encodeValue(value: Value): Value {
     return value.toString();
   }
 
+  if (value instanceof Interval) {
+    return value.toISO8601();
+  }
+
   if (is.object(value)) {
     return JSON.stringify(value);
   }
@@ -707,6 +1032,7 @@ const TypeCode: {
   bytes: 'BYTES',
   json: 'JSON',
   jsonb: 'JSON',
+  interval: 'INTERVAL',
   proto: 'PROTO',
   enum: 'ENUM',
   array: 'ARRAY',
@@ -745,6 +1071,7 @@ interface FieldType extends Type {
  *     - string
  *     - bytes
  *     - json
+ *     - interval
  *     - proto
  *     - enum
  *     - timestamp
@@ -800,6 +1127,10 @@ function getType(value: Value): Type {
 
   if (value instanceof PGOid) {
     return {type: 'pgOid'};
+  }
+
+  if (value instanceof Interval) {
+    return {type: 'interval'};
   }
 
   if (value instanceof ProtoMessage) {
@@ -978,6 +1309,7 @@ export const codec = {
   ProtoMessage,
   ProtoEnum,
   PGOid,
+  Interval,
   convertFieldsToJson,
   decode,
   encode,
