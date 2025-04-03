@@ -31,6 +31,7 @@ import type {
 import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -75,6 +76,8 @@ export class InstanceAdminClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('spanner');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -110,7 +113,7 @@ export class InstanceAdminClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -683,8 +686,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getInstanceConfig(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getInstanceConfig request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.instance.v1.IInstanceConfig,
+          | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getInstanceConfig response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getInstanceConfig(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.instance.v1.IInstanceConfig,
+          (
+            | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getInstanceConfig response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Deletes the instance configuration. Deletion is only allowed when no
@@ -797,8 +831,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteInstanceConfig(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteInstanceConfig request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteInstanceConfig response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteInstanceConfig(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteInstanceConfig response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets information about a particular instance.
@@ -891,8 +956,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getInstance(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getInstance request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.instance.v1.IInstance,
+          | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getInstance response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getInstance(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.instance.v1.IInstance,
+          (
+            | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getInstance response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Deletes an instance.
@@ -996,8 +1092,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteInstance(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteInstance request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteInstance response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteInstance(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteInstance response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Sets the access control policy on an instance resource. Replaces any
@@ -1092,8 +1219,34 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.setIamPolicy(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('setIamPolicy request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('setIamPolicy response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .setIamPolicy(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('setIamPolicy response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets the access control policy for an instance resource. Returns an empty
@@ -1180,8 +1333,34 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getIamPolicy(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getIamPolicy request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getIamPolicy response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getIamPolicy(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('getIamPolicy response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Returns permissions that the caller has on the specified instance resource.
@@ -1271,8 +1450,34 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         resource: request.resource ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.testIamPermissions(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('testIamPermissions request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('testIamPermissions response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .testIamPermissions(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.iam.v1.ITestIamPermissionsResponse,
+          protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('testIamPermissions response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Gets information about a particular instance partition.
@@ -1367,8 +1572,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getInstancePartition(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getInstancePartition request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.instance.v1.IInstancePartition,
+          | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getInstancePartition response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getInstancePartition(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.instance.v1.IInstancePartition,
+          (
+            | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('getInstancePartition response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
   /**
    * Deletes an existing instance partition. Requires that the
@@ -1474,12 +1710,39 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteInstancePartition(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteInstancePartition request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteInstancePartition response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteInstancePartition(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          (
+            | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteInstancePartition response %j', response);
+          return [response, options, rawResponse];
+        }
+      );
   }
 
   /**
@@ -1634,8 +1897,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createInstanceConfig(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstanceConfig,
+            protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createInstanceConfig response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createInstanceConfig request %j', request);
+    return this.innerApiCalls
+      .createInstanceConfig(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstanceConfig,
+            protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createInstanceConfig response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `createInstanceConfig()`.
@@ -1654,6 +1949,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
     >
   > {
+    this._log.info('createInstanceConfig long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -1825,8 +2121,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'instance_config.name': request.instanceConfig!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateInstanceConfig(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstanceConfig,
+            protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('updateInstanceConfig response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('updateInstanceConfig request %j', request);
+    return this.innerApiCalls
+      .updateInstanceConfig(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstanceConfig,
+            protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('updateInstanceConfig response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `updateInstanceConfig()`.
@@ -1845,6 +2173,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
     >
   > {
+    this._log.info('updateInstanceConfig long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -1998,8 +2327,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createInstance(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createInstance response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createInstance request %j', request);
+    return this.innerApiCalls
+      .createInstance(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createInstance response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `createInstance()`.
@@ -2018,6 +2379,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.CreateInstanceMetadata
     >
   > {
+    this._log.info('createInstance long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2177,8 +2539,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'instance.name': request.instance!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateInstance(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('updateInstance response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('updateInstance request %j', request);
+    return this.innerApiCalls
+      .updateInstance(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstance,
+            protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('updateInstance response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `updateInstance()`.
@@ -2197,6 +2591,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.UpdateInstanceMetadata
     >
   > {
+    this._log.info('updateInstance long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2355,12 +2750,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createInstancePartition(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('createInstancePartition response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('createInstancePartition request %j', request);
+    return this.innerApiCalls
+      .createInstancePartition(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createInstancePartition response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `createInstancePartition()`.
@@ -2379,6 +2802,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata
     >
   > {
+    this._log.info('createInstancePartition long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2543,12 +2967,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         'instance_partition.name': request.instancePartition!.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.updateInstancePartition(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('updateInstancePartition response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('updateInstancePartition request %j', request);
+    return this.innerApiCalls
+      .updateInstancePartition(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('updateInstancePartition response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `updateInstancePartition()`.
@@ -2567,6 +3019,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata
     >
   > {
+    this._log.info('updateInstancePartition long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2743,8 +3196,40 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.moveInstance(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+            protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('moveInstance response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('moveInstance request %j', request);
+    return this.innerApiCalls
+      .moveInstance(request, options, wrappedCallback)
+      ?.then(
+        ([response, rawResponse, _]: [
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
+            protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
+          >,
+          protos.google.longrunning.IOperation | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('moveInstance response %j', rawResponse);
+          return [response, rawResponse, _];
+        }
+      );
   }
   /**
    * Check the status of the long running operation returned by `moveInstance()`.
@@ -2763,6 +3248,7 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.MoveInstanceMetadata
     >
   > {
+    this._log.info('moveInstance long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
         {name}
@@ -2881,8 +3367,36 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listInstanceConfigs(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstanceConfig
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listInstanceConfigs values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listInstanceConfigs request %j', request);
+    return this.innerApiCalls
+      .listInstanceConfigs(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.instance.v1.IInstanceConfig[],
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse,
+        ]) => {
+          this._log.info('listInstanceConfigs values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -2926,7 +3440,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstanceConfigs'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstanceConfigs stream %j', request);
     return this.descriptors.page.listInstanceConfigs.createStream(
       this.innerApiCalls.listInstanceConfigs as GaxCall,
       request,
@@ -2976,7 +3493,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstanceConfigs'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstanceConfigs iterate %j', request);
     return this.descriptors.page.listInstanceConfigs.asyncIterate(
       this.innerApiCalls['listInstanceConfigs'] as GaxCall,
       request as {},
@@ -3136,12 +3656,36 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listInstanceConfigOperations(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listInstanceConfigOperations values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listInstanceConfigOperations request %j', request);
+    return this.innerApiCalls
+      .listInstanceConfigOperations(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.longrunning.IOperation[],
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest | null,
+          protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse,
+        ]) => {
+          this._log.info('listInstanceConfigOperations values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3228,7 +3772,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstanceConfigOperations stream %j', request);
     return this.descriptors.page.listInstanceConfigOperations.createStream(
       this.innerApiCalls.listInstanceConfigOperations as GaxCall,
       request,
@@ -3321,7 +3868,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstanceConfigOperations iterate %j', request);
     return this.descriptors.page.listInstanceConfigOperations.asyncIterate(
       this.innerApiCalls['listInstanceConfigOperations'] as GaxCall,
       request as {},
@@ -3454,8 +4004,36 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listInstances(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstance
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listInstances values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listInstances request %j', request);
+    return this.innerApiCalls
+      .listInstances(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.instance.v1.IInstance[],
+          protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
+          protos.google.spanner.admin.instance.v1.IListInstancesResponse,
+        ]) => {
+          this._log.info('listInstances values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3525,7 +4103,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstances'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstances stream %j', request);
     return this.descriptors.page.listInstances.createStream(
       this.innerApiCalls.listInstances as GaxCall,
       request,
@@ -3601,7 +4182,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstances'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstances iterate %j', request);
     return this.descriptors.page.listInstances.asyncIterate(
       this.innerApiCalls['listInstances'] as GaxCall,
       request as {},
@@ -3716,12 +4300,36 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listInstancePartitions(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstancePartition
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listInstancePartitions values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listInstancePartitions request %j', request);
+    return this.innerApiCalls
+      .listInstancePartitions(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.admin.instance.v1.IInstancePartition[],
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest | null,
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse,
+        ]) => {
+          this._log.info('listInstancePartitions values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -3773,7 +4381,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstancePartitions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstancePartitions stream %j', request);
     return this.descriptors.page.listInstancePartitions.createStream(
       this.innerApiCalls.listInstancePartitions as GaxCall,
       request,
@@ -3831,7 +4442,10 @@ export class InstanceAdminClient {
       });
     const defaultCallSettings = this._defaults['listInstancePartitions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstancePartitions iterate %j', request);
     return this.descriptors.page.listInstancePartitions.asyncIterate(
       this.innerApiCalls['listInstancePartitions'] as GaxCall,
       request as {},
@@ -4001,12 +4615,36 @@ export class InstanceAdminClient {
       this._gaxModule.routingHeader.fromParams({
         parent: request.parent ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listInstancePartitionOperations(
-      request,
-      options,
-      callback
-    );
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listInstancePartitionOperations values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listInstancePartitionOperations request %j', request);
+    return this.innerApiCalls
+      .listInstancePartitionOperations(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.longrunning.IOperation[],
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest | null,
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse,
+        ]) => {
+          this._log.info('listInstancePartitionOperations values %j', response);
+          return [response, input, output];
+        }
+      );
   }
 
   /**
@@ -4101,7 +4739,10 @@ export class InstanceAdminClient {
     const defaultCallSettings =
       this._defaults['listInstancePartitionOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstancePartitionOperations stream %j', request);
     return this.descriptors.page.listInstancePartitionOperations.createStream(
       this.innerApiCalls.listInstancePartitionOperations as GaxCall,
       request,
@@ -4202,7 +4843,10 @@ export class InstanceAdminClient {
     const defaultCallSettings =
       this._defaults['listInstancePartitionOperations'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listInstancePartitionOperations iterate %j', request);
     return this.descriptors.page.listInstancePartitionOperations.asyncIterate(
       this.innerApiCalls['listInstancePartitionOperations'] as GaxCall,
       request as {},
@@ -4382,6 +5026,7 @@ export class InstanceAdminClient {
   close(): Promise<void> {
     if (this.instanceAdminStub && !this._terminated) {
       return this.instanceAdminStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
         this.operationsClient.close();
