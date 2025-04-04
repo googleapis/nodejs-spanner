@@ -1092,6 +1092,8 @@ class Table {
       opts: this._observabilityOptions,
       tableName: this.name,
       dbName: this.getDBName(),
+      transactionTag: (options as MutateRowsOptions)?.requestOptions
+        ?.transactionTag,
     };
 
     startTrace('Table.' + method, traceConfig, span => {

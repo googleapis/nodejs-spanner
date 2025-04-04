@@ -2274,7 +2274,11 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    return startTrace('Database.getTransaction', this._traceConfig, span => {
+    const traceConfig: traceConfig = {
+      ...this._traceConfig,
+      transactionTag: options.requestOptions?.transactionTag,
+    };
+    return startTrace('Database.getTransaction', traceConfig, span => {
       this.pool_.getSession((err, session, transaction) => {
         if (options.requestOptions) {
           transaction!.requestOptions = Object.assign(
@@ -2889,8 +2893,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const traceConfig = {
-      sql: query,
+    const traceConfig: traceConfig = {
+      ...(query as ExecuteSqlRequest),
       ...this._traceConfig,
     };
     return startTrace('Database.run', traceConfig, span => {
@@ -2940,8 +2944,8 @@ class Database extends common.GrpcServiceObject {
     query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    const traceConfig = {
-      sql: query,
+    const traceConfig: traceConfig = {
+      ...(query as RunPartitionedUpdateOptions),
       ...this._traceConfig,
     };
     return startTrace('Database.runPartitionedUpdate', traceConfig, span => {
@@ -3128,8 +3132,8 @@ class Database extends common.GrpcServiceObject {
     options?: TimestampBounds
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
-    const traceConfig = {
-      sql: query,
+    const traceConfig: traceConfig = {
+      ...(query as ExecuteSqlRequest),
       ...this._traceConfig,
     };
     return startTrace('Database.runStream', traceConfig, span => {
@@ -3310,6 +3314,10 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
+    const traceConfig: traceConfig = {
+      ...this._traceConfig,
+      transactionTag: options.requestOptions?.transactionTag,
+    };
     startTrace('Database.runTransaction', this._traceConfig, span => {
       this.pool_.getSession((err, session?, transaction?) => {
         if (err) {
@@ -3448,9 +3456,13 @@ class Database extends common.GrpcServiceObject {
 
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
+    const traceConfig: traceConfig = {
+      ...this._traceConfig,
+      transactionTag: options?.requestOptions?.transactionTag,
+    };
     return startTrace(
       'Database.runTransactionAsync',
-      this._traceConfig,
+      traceConfig,
       async span => {
         // Loop to retry 'Session not found' errors.
         // (and yes, we like while (true) more than for (;;) here)
@@ -3562,80 +3574,77 @@ class Database extends common.GrpcServiceObject {
   ): NodeJS.ReadableStream {
     const proxyStream: Transform = through.obj();
 
-    return startTrace(
-      'Database.batchWriteAtLeastOnce',
-      this._traceConfig,
-      span => {
-        this.pool_.getSession((err, session) => {
-          if (err) {
-            proxyStream.destroy(err);
-            setSpanError(span, err);
-            span.end();
-            return;
+    const traceConfig: traceConfig = {
+      ...this._traceConfig,
+      transactionTag: options?.requestOptions?.transactionTag,
+    };
+    return startTrace('Database.batchWriteAtLeastOnce', traceConfig, span => {
+      this.pool_.getSession((err, session) => {
+        if (err) {
+          proxyStream.destroy(err);
+          setSpanError(span, err);
+          span.end();
+          return;
+        }
+
+        span.addEvent('Using Session', {'session.id': session?.id});
+        const gaxOpts = extend(true, {}, options?.gaxOptions);
+        const reqOpts = Object.assign(
+          {} as spannerClient.spanner.v1.BatchWriteRequest,
+          {
+            session: session!.formattedName_!,
+            mutationGroups: mutationGroups.map(mg => mg.proto()),
+            requestOptions: options?.requestOptions,
+            excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
           }
-
-          span.addEvent('Using Session', {'session.id': session?.id});
-          const gaxOpts = extend(true, {}, options?.gaxOptions);
-          const reqOpts = Object.assign(
-            {} as spannerClient.spanner.v1.BatchWriteRequest,
-            {
-              session: session!.formattedName_!,
-              mutationGroups: mutationGroups.map(mg => mg.proto()),
-              requestOptions: options?.requestOptions,
-              excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
-            }
-          );
-          let dataReceived = false;
-          let dataStream = this.requestStream({
-            client: 'SpannerClient',
-            method: 'batchWrite',
-            reqOpts,
-            gaxOpts,
-            headers: this.commonHeaders_,
-          });
-          dataStream
-            .once('data', () => (dataReceived = true))
-            .once('error', err => {
-              setSpanError(span, err);
-
-              if (
-                !dataReceived &&
-                isSessionNotFoundError(err as grpc.ServiceError)
-              ) {
-                // If there's a 'Session not found' error and we have not yet received
-                // any data, we can safely retry the writes on a new session.
-                // Register the error on the session so the pool can discard it.
-                if (session) {
-                  session.lastError = err as grpc.ServiceError;
-                }
-                span.addEvent('No session available', {
-                  'session.id': session?.id,
-                });
-                // Remove the current data stream from the end user stream.
-                dataStream.unpipe(proxyStream);
-                dataStream.end();
-                span.end();
-                // Create a new stream and add it to the end user stream.
-                dataStream = this.batchWriteAtLeastOnce(
-                  mutationGroups,
-                  options
-                );
-                dataStream.pipe(proxyStream);
-              } else {
-                span.end();
-                proxyStream.destroy(err);
-              }
-            })
-            .once('end', () => {
-              span.end();
-              this.pool_.release(session!);
-            })
-            .pipe(proxyStream);
+        );
+        let dataReceived = false;
+        let dataStream = this.requestStream({
+          client: 'SpannerClient',
+          method: 'batchWrite',
+          reqOpts,
+          gaxOpts,
+          headers: this.commonHeaders_,
         });
+        dataStream
+          .once('data', () => (dataReceived = true))
+          .once('error', err => {
+            setSpanError(span, err);
 
-        return proxyStream as NodeJS.ReadableStream;
-      }
-    );
+            if (
+              !dataReceived &&
+              isSessionNotFoundError(err as grpc.ServiceError)
+            ) {
+              // If there's a 'Session not found' error and we have not yet received
+              // any data, we can safely retry the writes on a new session.
+              // Register the error on the session so the pool can discard it.
+              if (session) {
+                session.lastError = err as grpc.ServiceError;
+              }
+              span.addEvent('No session available', {
+                'session.id': session?.id,
+              });
+              // Remove the current data stream from the end user stream.
+              dataStream.unpipe(proxyStream);
+              dataStream.end();
+              span.end();
+              // Create a new stream and add it to the end user stream.
+              dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
+              dataStream.pipe(proxyStream);
+            } else {
+              span.end();
+              proxyStream.destroy(err);
+            }
+          })
+          .once('end', () => {
+            span.end();
+            this.pool_.release(session!);
+          })
+          .pipe(proxyStream);
+      });
+
+      return proxyStream as NodeJS.ReadableStream;
+    });
   }
 
   /**
