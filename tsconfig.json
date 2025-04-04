@@ -20,6 +20,9 @@
     "test/**/*.ts",
     "system-test/*.ts",
     "benchmark/*.ts",
-    "observability-test/*.ts"
+    "observability-test/*.ts",
+    "src/**/*.json",
+    "system-test/*.ts",
+    "protos/protos.json"
   ]
 }

@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as extend from 'extend';
-import PQueue from 'p-queue';
+const PQueue = require('p-queue');
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
