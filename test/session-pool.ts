@@ -359,7 +359,7 @@ describe('SessionPool', () => {
         assert.strictEqual(err!.name, 'SessionLeakError');
         assert.strictEqual(
           err!.message,
-          `${fakeLeaks.length} session leak(s) detected.`
+          `${fakeLeaks.length} session leak(s) detected.`,
         );
         assert.strictEqual(err!.messages, fakeLeaks);
         done();
@@ -534,7 +534,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Unable to release unknown resource.'
+          'Unable to release unknown resource.',
         );
         assert.strictEqual((e as sp.ReleaseError).resource, badResource);
       }
@@ -597,7 +597,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Database is closed.'
+          'Database is closed.',
         );
       }
     });
@@ -615,7 +615,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Timeout occurred while acquiring session.'
+          'Timeout occurred while acquiring session.',
         );
       }
     });
@@ -731,8 +731,8 @@ describe('SessionPool', () => {
       stub = sandbox.stub(sessionPool, '_createSessions').resolves();
     });
 
-    it('should create a single session', () => {
-      sessionPool._createSession();
+    it('should create a single session', async () => {
+      await sessionPool._createSession();
       const [numbers] = stub.lastCall.args;
       assert.deepStrictEqual(numbers, 1);
     });
@@ -829,7 +829,7 @@ describe('SessionPool', () => {
       assert.strictEqual(stub.callCount, 1);
     });
 
-    it('should emit any errors', done => {
+    it('should emit any errors', async done => {
       const error = new Error('err');
       const fakeSession = createSession();
       const stub = fakeSession.delete as sinon.SinonStub;
@@ -841,7 +841,7 @@ describe('SessionPool', () => {
         done();
       });
 
-      sessionPool._destroy(fakeSession);
+      await sessionPool._destroy(fakeSession);
     });
   });
 
@@ -923,27 +923,27 @@ describe('SessionPool', () => {
       sessionPool.options.min = 8;
     });
 
-    it('should create the min number of required sessions', () => {
-      sessionPool._fill();
+    it('should create the min number of required sessions', async () => {
+      await sessionPool._fill();
 
       const amount = stub.lastCall.args[0];
 
       assert.strictEqual(amount, 8);
     });
 
-    it('should respect the current size of the pool', () => {
+    it('should respect the current size of the pool', async () => {
       inventory.sessions = [createSession(), createSession(), createSession()];
 
-      sessionPool._fill();
+      await sessionPool._fill();
 
       const amount = stub.lastCall.args[0];
 
       assert.strictEqual(amount, 5);
     });
 
-    it('should noop when no sessions are needed', () => {
+    it('should noop when no sessions are needed', async () => {
       sessionPool.options.min = 0;
-      sessionPool._fill();
+      await sessionPool._fill();
 
       assert.strictEqual(stub.callCount, 0);
     });
@@ -1033,7 +1033,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'No resources available.'
+          'No resources available.',
         );
       }
     });
@@ -1047,7 +1047,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Database is closed.'
+          'Database is closed.',
         );
       }
     });
@@ -1075,7 +1075,7 @@ describe('SessionPool', () => {
         assert(isAround(timeout, end()));
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Timeout occurred while acquiring session.'
+          'Timeout occurred while acquiring session.',
         );
       }
     });
@@ -1198,12 +1198,12 @@ describe('SessionPool', () => {
       sandbox.stub(sessionPool, '_borrow');
     });
 
-    it('should borrow the session', () => {
+    it('should borrow the session', async () => {
       const fakeSession = createSession();
       const stub = sessionPool._borrow as sinon.SinonStub;
 
       stub.withArgs(fakeSession);
-      sessionPool._ping(fakeSession);
+      await sessionPool._ping(fakeSession);
 
       assert.strictEqual(stub.callCount, 1);
     });
@@ -1395,7 +1395,7 @@ describe('SessionPool', () => {
         assert.strictEqual(
           events.length > 0,
           true,
-          'Expecting at least 1 event'
+          'Expecting at least 1 event',
         );
 
         // Sort the events by earliest time of occurence.
@@ -1412,7 +1412,7 @@ describe('SessionPool', () => {
         assert.deepEqual(
           gotEventNames,
           wantEventNames,
-          `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
+          `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`,
         );
 
         done();

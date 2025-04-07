@@ -80,7 +80,7 @@ describe('startTrace', () => {
       assert.equal(
         span.name,
         SPAN_NAMESPACE_PREFIX + '.mySpan',
-        'name mismatch'
+        'name mismatch',
       );
     });
   });
@@ -92,7 +92,7 @@ describe('startTrace', () => {
       exporter: overridingExporter,
     });
     overridingProvider.addSpanProcessor(
-      new SimpleSpanProcessor(overridingExporter)
+      new SimpleSpanProcessor(overridingExporter),
     );
 
     startTrace(
@@ -106,19 +106,19 @@ describe('startTrace', () => {
         assert.strictEqual(
           gotSpansFromGlobal.length,
           0,
-          'Expected no spans from the global tracerProvider and exporter but got ${gotSpansFromGlobal.length}'
+          'Expected no spans from the global tracerProvider and exporter but got ${gotSpansFromGlobal.length}',
         );
 
         const gotSpansFromCurrent = overridingExporter.getFinishedSpans();
         assert.strictEqual(
           gotSpansFromCurrent.length,
           1,
-          'Expected exactly 1 span but got ${gotSpansFromCurrent.length}'
+          'Expected exactly 1 span but got ${gotSpansFromCurrent.length}',
         );
 
         overridingExporter.forceFlush();
         await overridingProvider.shutdown();
-      }
+      },
     );
   });
 
@@ -133,49 +133,49 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[ATTR_OTEL_SCOPE_NAME],
         TRACER_NAME,
-        'Missing OTEL_SCOPE_NAME attribute'
+        'Missing OTEL_SCOPE_NAME attribute',
       );
 
       assert.equal(
         span.attributes[ATTR_OTEL_SCOPE_VERSION],
         TRACER_VERSION,
-        'Missing OTEL_SCOPE_VERSION attribute'
+        'Missing OTEL_SCOPE_VERSION attribute',
       );
 
       assert.equal(
         span.attributes['gcp.client.service'],
         'spanner',
-        'Missing gcp.client.service attribute'
+        'Missing gcp.client.service attribute',
       );
 
       assert.equal(
         span.attributes['gcp.client.version'],
         TRACER_VERSION,
-        'Missing gcp.client.version attribute'
+        'Missing gcp.client.version attribute',
       );
 
       assert.equal(
         span.attributes['gcp.client.repo'],
         'googleapis/nodejs-spanner',
-        'Missing gcp.client.repo attribute'
+        'Missing gcp.client.repo attribute',
       );
 
       assert.equal(
         span.attributes[SEMATTRS_DB_SYSTEM],
         'spanner',
-        'Missing DB_SYSTEM attribute'
+        'Missing DB_SYSTEM attribute',
       );
 
       assert.equal(
         span.attributes[SEMATTRS_DB_SQL_TABLE],
         'table',
-        'Missing DB_SQL_TABLE attribute'
+        'Missing DB_SQL_TABLE attribute',
       );
 
       assert.equal(
         span.attributes[SEMATTRS_DB_NAME],
         'db',
-        'Missing DB_NAME attribute'
+        'Missing DB_NAME attribute',
       );
     });
   });
@@ -186,7 +186,7 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[SEMATTRS_DB_STATEMENT],
         undefined,
-        'Unexpected DB_STATEMENT attribute'
+        'Unexpected DB_STATEMENT attribute',
       );
     });
   });
@@ -201,7 +201,7 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[SEMATTRS_DB_STATEMENT],
         'SELECT CURRENT_TIMESTAMP()',
-        'Mismatched DB_STATEMENT attribute'
+        'Mismatched DB_STATEMENT attribute',
       );
     });
   });
@@ -216,7 +216,7 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[SEMATTRS_DB_STATEMENT],
         undefined,
-        'Mismatched DB_STATEMENT attribute'
+        'Mismatched DB_STATEMENT attribute',
       );
     });
   });
@@ -232,7 +232,7 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[SEMATTRS_DB_STATEMENT],
         'SELECT 1=1',
-        'Mismatched DB_STATEMENT attribute'
+        'Mismatched DB_STATEMENT attribute',
       );
     });
   });
@@ -248,7 +248,7 @@ describe('startTrace', () => {
       assert.equal(
         span.attributes[SEMATTRS_DB_STATEMENT],
         req.sql,
-        'Mismatched DB_STATEMENT attribute'
+        'Mismatched DB_STATEMENT attribute',
       );
     });
   });
@@ -260,7 +260,7 @@ describe('startTrace', () => {
       exporter: overridingExporter,
     });
     overridingProvider.addSpanProcessor(
-      new SimpleSpanProcessor(overridingExporter)
+      new SimpleSpanProcessor(overridingExporter),
     );
     overridingProvider.register();
 
@@ -275,19 +275,19 @@ describe('startTrace', () => {
         assert.strictEqual(
           gotSpansFromGlobal.length,
           0,
-          'Expected no spans but got ${gotSpansFromGlobal.length}'
+          'Expected no spans but got ${gotSpansFromGlobal.length}',
         );
 
         const gotSpansFromCurrent = overridingExporter.getFinishedSpans();
         assert.strictEqual(
           gotSpansFromCurrent.length,
           0,
-          'Expected no spans but got ${gotSpansFromCurrent.length}'
+          'Expected no spans but got ${gotSpansFromCurrent.length}',
         );
 
         overridingExporter.forceFlush();
         await overridingProvider.shutdown();
-      }
+      },
     );
   });
 });
@@ -327,32 +327,32 @@ describe('getActiveOrNoopSpan', () => {
       assert.strictEqual(
         span.name,
         SPAN_NAMESPACE_PREFIX + '.aSpan',
-        'names must match'
+        'names must match',
       );
       assert.strictEqual(
         span.name,
         activeSpan.name,
-        `names must match between activeSpan or current one\n\tGot:  ${span.name}\n\tWant: ${activeSpan.name}`
+        `names must match between activeSpan or current one\n\tGot:  ${span.name}\n\tWant: ${activeSpan.name}`,
       );
       assert.strictEqual(
         span.startTime,
         activeSpan.startTime,
-        'startTimes must match'
+        'startTimes must match',
       );
       assert.ok(
         span.duration,
         undefined,
-        'the unended span must have an undefined duration'
+        'the unended span must have an undefined duration',
       );
       assert.ok(
         activeSpan.duration,
         undefined,
-        'the unended span must have an undefined duration, got ${activeSpan.duration}'
+        'the unended span must have an undefined duration, got ${activeSpan.duration}',
       );
       assert.strictEqual(
         span.duration,
         activeSpan.duration,
-        'durations must match'
+        'durations must match',
       );
       span.end();
     });
@@ -390,7 +390,7 @@ describe('setError', () => {
       assert.strictEqual(
         status1,
         status2,
-        'setting null error should have no effect'
+        'setting null error should have no effect',
       );
 
       res = setSpanError(null, null);
@@ -445,7 +445,7 @@ describe('setErrorAndException', () => {
       assert.strictEqual(
         status1,
         status2,
-        'setting null error should have no effect'
+        'setting null error should have no effect',
       );
 
       res = setSpanErrorAndException(null, null);
@@ -470,7 +470,7 @@ describe('setErrorAndException', () => {
       assert.strictEqual(
         expSpan.events[0].attributes[SEMATTRS_EXCEPTION_MESSAGE],
         'this one',
-        'the exception must have been recorded'
+        'the exception must have been recorded',
       );
     });
   });

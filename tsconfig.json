@@ -23,6 +23,7 @@
     "observability-test/*.ts",
     "src/**/*.json",
     "system-test/*.ts",
-    "protos/protos.json"
+    "protos/protos.json",
+    "samples/**/*.d.ts"
   ]
 }

@@ -20,7 +20,7 @@ function main(
   databaseId = 'my-database',
   backupId = 'my-backup',
   projectId = 'my-project-id',
-  kmsKeyNames = 'key1,key2'
+  kmsKeyNames = 'key1,key2',
 ) {
   // [START spanner_create_backup_with_MR_CMEK]
   /**
@@ -52,8 +52,8 @@ function main(
         `Creating backup of database ${databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
-        )}.`
+          databaseId,
+        )}.`,
       );
 
       // Expire backup 14 days in the future
@@ -67,7 +67,7 @@ function main(
           database: databaseAdminClient.databasePath(
             projectId,
             instanceId,
-            databaseId
+            databaseId,
           ),
           expireTime: Spanner.timestamp(expireTime).toStruct(),
           name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
@@ -82,8 +82,8 @@ function main(
         `Waiting for backup ${databaseAdminClient.backupPath(
           projectId,
           instanceId,
-          backupId
-        )} to complete...`
+          backupId,
+        )} to complete...`,
       );
       await operation.promise();
 
@@ -101,7 +101,7 @@ function main(
           `Backup ${backupInfo.name} of size ` +
             `${backupInfo.sizeBytes} bytes was created at ` +
             `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
-            `using encryption key ${kmsKeyVersions}`
+            `using encryption key ${kmsKeyVersions}`,
         );
       } else {
         console.error('ERROR: Backup is not ready.');

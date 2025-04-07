@@ -127,7 +127,7 @@ describe('Spanner', () => {
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             projectId!,
-            INSTANCE_CONFIG.config
+            INSTANCE_CONFIG.config,
           ),
           nodeCount: 1,
           displayName: 'Test name for instance.',
@@ -189,7 +189,7 @@ describe('Spanner', () => {
         database: databaseAdminClient.databasePath(
           projectId!,
           instanceId!,
-          pgdatabaseId
+          pgdatabaseId,
         ),
         statements: statements,
       });
@@ -211,7 +211,7 @@ describe('Spanner', () => {
     if ('database' in operation.metadata!) {
       assert.strictEqual(
         operation.metadata!.name,
-        `${instance.formattedName_}/backups/${backupId}`
+        `${instance.formattedName_}/backups/${backupId}`,
       );
     }
 
@@ -231,7 +231,7 @@ describe('Spanner', () => {
     } else {
       instance = spanner.instance(envInstanceName);
       console.log(
-        `Not creating temp instance, using + ${instance.formattedName_}...`
+        `Not creating temp instance, using + ${instance.formattedName_}...`,
       );
     }
     if (IS_EMULATOR_ENABLED) {
@@ -266,8 +266,8 @@ describe('Spanner', () => {
         // Deleting all backups before an instance can be deleted.
         await Promise.all(
           RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
-            backup => backup.delete(GAX_OPTIONS)
-          )
+            backup => backup.delete(GAX_OPTIONS),
+          ),
         );
         /**
          * Deleting instances created during this test.
@@ -276,8 +276,8 @@ describe('Spanner', () => {
          */
         await Promise.all(
           RESOURCES_TO_CLEAN.filter(
-            resource => resource instanceof Instance
-          ).map(instance => instance.delete(GAX_OPTIONS))
+            resource => resource instanceof Instance,
+          ).map(instance => instance.delete(GAX_OPTIONS)),
         );
       } else {
         /**
@@ -288,8 +288,8 @@ describe('Spanner', () => {
         const limit = pLimit(5);
         await Promise.all(
           RESOURCES_TO_CLEAN.map(resource =>
-            limit(() => resource.delete(GAX_OPTIONS))
-          )
+            limit(() => resource.delete(GAX_OPTIONS)),
+          ),
         );
       }
     } catch (err) {
@@ -310,7 +310,7 @@ describe('Spanner', () => {
           });
           assert.strictEqual(
             metadata!.name,
-            instanceAdminClient.instancePath(projectId, instanceId)
+            instanceAdminClient.instancePath(projectId, instanceId),
           );
         } catch (err) {
           if (!err) {
@@ -335,18 +335,18 @@ describe('Spanner', () => {
           name: databaseAdminClient.databasePath(
             projectId,
             instanceId,
-            database
+            database,
           ),
         });
         assert.strictEqual(
           metadata!.name,
-          databaseAdminClient.databasePath(projectId, instanceId, database)
+          databaseAdminClient.databasePath(projectId, instanceId, database),
         );
         assert.strictEqual(metadata!.state, 'READY');
         if (IS_EMULATOR_ENABLED) {
           assert.strictEqual(
             metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED'
+            'DATABASE_DIALECT_UNSPECIFIED',
           );
         } else {
           assert.strictEqual(metadata!.databaseDialect, dialect);
@@ -354,7 +354,7 @@ describe('Spanner', () => {
       }
 
       it('GOOGLE_STANDARD_SQL should have created the database', async () => {
-        createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
+        await createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
       });
     });
   });
@@ -393,7 +393,7 @@ describe('Spanner', () => {
                 TimestampArray  ARRAY< TIMESTAMP >,
                 CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
-            `
+            `,
         );
         await googleSqlOperationUpdateDDL.promise();
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
@@ -423,7 +423,7 @@ describe('Spanner', () => {
                   "JsonbArray"      JSONB[],
                   "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
                 );
-            `
+            `,
         );
         await postgreSqlOperationUpdateDDL.promise();
       } else {
@@ -458,7 +458,7 @@ describe('Spanner', () => {
                 ProtoEnumArray ARRAY<examples.spanner.music.Genre>,
                 CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
-            `
+            `,
         );
         await googleSqlOperationUpdateDDL.promise();
         // TODO: add columns using Interval Value and Interval Array Value.
@@ -489,7 +489,7 @@ describe('Spanner', () => {
                   "JsonbArray"      JSONB[],
                   "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
                 );
-            `
+            `,
         );
         await postgreSqlOperationUpdateDDL.promise();
       }
@@ -507,7 +507,7 @@ describe('Spanner', () => {
       insertData,
       dialect,
       callback,
-      columnsMetadataForRead?: {}
+      columnsMetadataForRead?: {},
     ) {
       const id = generateName('id');
 
@@ -656,11 +656,11 @@ describe('Spanner', () => {
 
           assert.deepStrictEqual(
             JSON.stringify(rows![0][0].value[0][0]),
-            JSON.stringify(expected[0].value[0][0])
+            JSON.stringify(expected[0].value[0][0]),
           );
           assert.deepStrictEqual(
             JSON.stringify(rows![0][0].value[0][1]),
-            JSON.stringify(expected[0].value[0][1])
+            JSON.stringify(expected[0].value[0][1]),
           );
 
           done();
@@ -702,15 +702,15 @@ describe('Spanner', () => {
 
           assert.deepStrictEqual(
             JSON.stringify(rows![0][0]),
-            JSON.stringify(expected[0])
+            JSON.stringify(expected[0]),
           );
           assert.deepStrictEqual(
             JSON.stringify(rows![0][1].value[0][0]),
-            JSON.stringify(expected[1].value[0][0])
+            JSON.stringify(expected[1].value[0][0]),
           );
           assert.deepStrictEqual(
             JSON.stringify(rows![0][1].value[0][1]),
-            JSON.stringify(expected[1].value[0][1])
+            JSON.stringify(expected[1].value[0][1]),
           );
 
           done();
@@ -783,7 +783,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
             done();
-          }
+          },
         );
       });
 
@@ -1035,7 +1035,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1059,7 +1059,7 @@ describe('Spanner', () => {
               assert.ok(row.toJSON().Float32Array[i] - values[i] <= 0.00001);
             }
             done();
-          }
+          },
         );
       });
 
@@ -1158,7 +1158,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1180,7 +1180,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().FloatArray, values);
             done();
-          }
+          },
         );
       });
 
@@ -1208,7 +1208,7 @@ describe('Spanner', () => {
         numericInsert(
           done,
           Spanner.GOOGLE_STANDARD_SQL,
-          Spanner.numeric('3.141592653')
+          Spanner.numeric('3.141592653'),
         );
       });
 
@@ -1216,7 +1216,7 @@ describe('Spanner', () => {
         numericInsert(
           done,
           Spanner.POSTGRESQL,
-          Spanner.pgNumeric('3.141592653')
+          Spanner.pgNumeric('3.141592653'),
         );
       });
 
@@ -1243,7 +1243,7 @@ describe('Spanner', () => {
         numericInsertOutOfBounds(
           done,
           Spanner.GOOGLE_STANDARD_SQL,
-          Spanner.numeric('3.1415926535')
+          Spanner.numeric('3.1415926535'),
         );
       });
 
@@ -1251,7 +1251,7 @@ describe('Spanner', () => {
         numericInsertOutOfBounds(
           done,
           Spanner.POSTGRESQL,
-          Spanner.pgNumeric('1e131072')
+          Spanner.pgNumeric('1e131072'),
         );
       });
 
@@ -1279,7 +1279,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1305,7 +1305,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().NumericArray, values);
             done();
-          }
+          },
         );
       });
 
@@ -1373,7 +1373,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1393,7 +1393,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
             done();
-          }
+          },
         );
       });
 
@@ -1405,7 +1405,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
             done();
-          }
+          },
         );
       });
     });
@@ -1459,7 +1459,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1481,7 +1481,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().BytesArray, values);
             done();
-          }
+          },
         );
       });
 
@@ -1514,7 +1514,7 @@ describe('Spanner', () => {
               key2: 'value2',
             });
             done();
-          }
+          },
         );
       });
 
@@ -1553,7 +1553,7 @@ describe('Spanner', () => {
               {key2: 'value2'},
             ]);
             done();
-          }
+          },
         );
       });
     });
@@ -1602,7 +1602,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().TimestampArray, []);
             done();
-          }
+          },
         );
       });
 
@@ -1622,7 +1622,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
             done();
-          }
+          },
         );
       });
 
@@ -1644,7 +1644,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().TimestampArray, values);
             done();
-          }
+          },
         );
       });
 
@@ -1665,7 +1665,7 @@ describe('Spanner', () => {
           assert.ifError(err);
           assert.deepStrictEqual(
             Spanner.date(row.toJSON().DateValue),
-            Spanner.date()
+            Spanner.date(),
           );
           done();
         });
@@ -1777,17 +1777,17 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(
               row.toJSON().ProtoMessageValue,
-              music.SingerInfo.toObject(protoMessageParams.value)
+              music.SingerInfo.toObject(protoMessageParams.value),
             );
             done();
           },
-          {ProtoMessageValue: music.SingerInfo}
+          {ProtoMessageValue: music.SingerInfo},
         );
       });
 
       it('GOOGLE_STANDARD_SQL should write bytes in the protoMessage column', done => {
         const value = music.SingerInfo.encode(
-          protoMessageParams.value
+          protoMessageParams.value,
         ).finish();
         insert(
           {ProtoMessageValue: value},
@@ -1796,10 +1796,10 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(
               row.toJSON().ProtoMessageValue,
-              value.toString()
+              value.toString(),
             );
             done();
-          }
+          },
         );
       });
 
@@ -1811,7 +1811,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.equal(row.toJSON().ProtoMessageValue, null);
             done();
-          }
+          },
         );
       });
 
@@ -1827,13 +1827,13 @@ describe('Spanner', () => {
             ]);
             done();
           },
-          {ProtoMessageArray: music.SingerInfo}
+          {ProtoMessageArray: music.SingerInfo},
         );
       });
 
       it('GOOGLE_STANDARD_SQL should write bytes array in the protoMessageArray column', done => {
         const value = music.SingerInfo.encode(
-          protoMessageParams.value
+          protoMessageParams.value,
         ).finish();
         insert(
           {ProtoMessageArray: [value]},
@@ -1844,7 +1844,7 @@ describe('Spanner', () => {
               value.toString(),
             ]);
             done();
-          }
+          },
         );
       });
 
@@ -1856,7 +1856,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.equal(row.toJSON().ProtoMessageArray, null);
             done();
-          }
+          },
         );
       });
     });
@@ -1883,11 +1883,11 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(
               row.toJSON().ProtoEnumValue,
-              Object.getPrototypeOf(music.Genre)[enumParams.value]
+              Object.getPrototypeOf(music.Genre)[enumParams.value],
             );
             done();
           },
-          {ProtoEnumValue: music.Genre}
+          {ProtoEnumValue: music.Genre},
         );
       });
 
@@ -1900,10 +1900,10 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(
               row.toJSON().ProtoEnumValue,
-              value.toString()
+              value.toString(),
             );
             done();
-          }
+          },
         );
       });
 
@@ -1915,7 +1915,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.equal(row.toJSON().ProtoEnumValue, null);
             done();
-          }
+          },
         );
       });
 
@@ -1931,7 +1931,7 @@ describe('Spanner', () => {
             ]);
             done();
           },
-          {ProtoEnumArray: music.Genre}
+          {ProtoEnumArray: music.Genre},
         );
       });
 
@@ -1946,7 +1946,7 @@ describe('Spanner', () => {
               value.toString(),
             ]);
             done();
-          }
+          },
         );
       });
 
@@ -1958,7 +1958,7 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.equal(row.toJSON().ProtoEnumArray, null);
             done();
-          }
+          },
         );
       });
     });
@@ -2017,7 +2017,7 @@ describe('Spanner', () => {
               Spanner.pgJsonb({key2: 'value2'}),
             ]);
             done();
-          }
+          },
         );
       });
     });
@@ -2079,7 +2079,7 @@ describe('Spanner', () => {
         {
           autoCreate: true,
         },
-        INSTANCE_CONFIG
+        INSTANCE_CONFIG,
       );
 
       instance.get(config, err => {
@@ -2116,7 +2116,7 @@ describe('Spanner', () => {
           concat(instances => {
             assert(instances.length > 0);
             done();
-          })
+          }),
         );
     });
 
@@ -2138,7 +2138,7 @@ describe('Spanner', () => {
             assert.strictEqual(metadata!.displayName, newData.displayName);
             done();
           });
-        })
+        }),
       );
     });
 
@@ -2168,7 +2168,7 @@ describe('Spanner', () => {
           await instanceAdminClient.getInstanceConfig({
             name: instanceAdminClient.instanceConfigPath(
               projectId!,
-              INSTANCE_CONFIG.config
+              INSTANCE_CONFIG.config,
             ),
           });
         const [instanceConfigCreationOperation] =
@@ -2178,15 +2178,15 @@ describe('Spanner', () => {
             instanceConfig: {
               name: instanceAdminClient.instanceConfigPath(
                 projectId!,
-                instanceConfigId
+                instanceConfigId,
               ),
               baseConfig: instanceAdminClient.instanceConfigPath(
                 projectId!,
-                INSTANCE_CONFIG.config
+                INSTANCE_CONFIG.config,
               ),
               displayName: instanceConfigId,
               replicas: baseInstanceConfig.replicas!.concat(
-                baseInstanceConfig.optionalReplicas![0]
+                baseInstanceConfig.optionalReplicas![0],
               ),
             },
           });
@@ -2203,8 +2203,8 @@ describe('Spanner', () => {
        */
       await Promise.all(
         INSTANCE_CONFIGS_TO_CLEAN.map(instanceConfig =>
-          instanceConfig.delete({gaxOpts: GAX_OPTIONS})
-        )
+          instanceConfig.delete({gaxOpts: GAX_OPTIONS}),
+        ),
       );
     });
 
@@ -2246,7 +2246,7 @@ describe('Spanner', () => {
           concat(instanceConfigs => {
             assert(instanceConfigs.length > 0);
             done();
-          })
+          }),
         );
     });
 
@@ -2300,12 +2300,12 @@ describe('Spanner', () => {
       const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
         operation =>
           operation.name &&
-          operation.name.includes(instanceConfig.formattedName_)
+          operation.name.includes(instanceConfig.formattedName_),
       );
       assert.ok(operationForCurrentInstanceConfig);
       assert.strictEqual(
         operationForCurrentInstanceConfig!.metadata!.type_url,
-        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata',
       );
     });
 
@@ -2324,12 +2324,12 @@ describe('Spanner', () => {
       const operationForCurrentInstanceConfigWithFilterMetadata =
         CreateInstanceConfigMetadata.decode(
           operationForCurrentInstanceConfigWithFilter!.metadata!
-            .value! as Uint8Array
+            .value! as Uint8Array,
         );
       assert.strictEqual(
         operationForCurrentInstanceConfigWithFilterMetadata.instanceConfig!
           .name,
-        `${instanceConfig.formattedName_}`
+        `${instanceConfig.formattedName_}`,
       );
     });
 
@@ -2352,11 +2352,11 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.strictEqual(
               metadata!.displayName,
-              newData.instanceConfig.displayName
+              newData.instanceConfig.displayName,
             );
             done();
           });
-        })
+        }),
       );
     });
 
@@ -2407,7 +2407,7 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           assert.strictEqual(
             metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED'
+            'DATABASE_DIALECT_UNSPECIFIED',
           );
         } else {
           assert.strictEqual(metadata!.databaseDialect, dialect);
@@ -2455,7 +2455,7 @@ describe('Spanner', () => {
           concat(databases => {
             assert(databases.length > 0);
             done();
-          })
+          }),
         );
     });
 
@@ -2496,12 +2496,12 @@ describe('Spanner', () => {
               statements!.some(
                 s =>
                   replaceNewLinesAndSpacing(s, dialect) ===
-                  replaceNewLinesAndSpacing(createTableStatement, dialect)
-              )
+                  replaceNewLinesAndSpacing(createTableStatement, dialect),
+              ),
             );
             done();
           });
-        })
+        }),
       );
     };
 
@@ -2517,7 +2517,7 @@ describe('Spanner', () => {
         done,
         DATABASE,
         Spanner.GOOGLE_STANDARD_SQL,
-        createTableStatement
+        createTableStatement,
       );
     });
 
@@ -2552,10 +2552,10 @@ describe('Spanner', () => {
       const databaseCreateOperation = databaseCreateOperations[0];
       assert.strictEqual(
         databaseCreateOperation.metadata!.type_url,
-        'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata'
+        'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata',
       );
       const createMeta = CreateDatabaseMetadata.decode(
-        databaseCreateOperation.metadata!.value! as Uint8Array
+        databaseCreateOperation.metadata!.value! as Uint8Array,
       );
       assert.strictEqual(createMeta.database, databaseFullName);
     });
@@ -2573,10 +2573,10 @@ describe('Spanner', () => {
       const databaseCreateOperation = databaseOperations.find(
         op =>
           op.metadata!.type_url ===
-          'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata'
+          'type.googleapis.com/google.spanner.admin.database.v1.CreateDatabaseMetadata',
       );
       const createMeta = CreateDatabaseMetadata.decode(
-        databaseCreateOperation!.metadata!.value! as Uint8Array
+        databaseCreateOperation!.metadata!.value! as Uint8Array,
       );
       assert.strictEqual(createMeta.database, databaseFullName);
     };
@@ -2640,7 +2640,7 @@ describe('Spanner', () => {
               assert.ifError(err);
               assert.ok(statements.includes(query));
             });
-          })
+          }),
         );
       };
 
@@ -2663,7 +2663,7 @@ describe('Spanner', () => {
       const grantAccessToRole = async (
         database,
         createRoleQuery,
-        grantAccessQuery
+        grantAccessQuery,
       ) => {
         database.updateSchema(
           [createRoleQuery, grantAccessQuery],
@@ -2674,7 +2674,7 @@ describe('Spanner', () => {
               assert.ok(statements.includes(createRoleQuery));
               assert.ok(statements.includes(grantAccessQuery));
             });
-          })
+          }),
         );
       };
 
@@ -2685,7 +2685,7 @@ describe('Spanner', () => {
         await grantAccessToRole(
           DATABASE,
           'CREATE ROLE child',
-          'GRANT SELECT ON TABLE Singers TO ROLE child'
+          'GRANT SELECT ON TABLE Singers TO ROLE child',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2697,7 +2697,7 @@ describe('Spanner', () => {
         await grantAccessToRole(
           PG_DATABASE,
           'CREATE ROLE child',
-          'GRANT SELECT ON TABLE singers TO child'
+          'GRANT SELECT ON TABLE singers TO child',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2706,7 +2706,7 @@ describe('Spanner', () => {
         database,
         createRoleQuery,
         grantPermissionQuery,
-        revokePermissionQuery
+        revokePermissionQuery,
       ) => {
         database.updateSchema(
           [createRoleQuery, grantPermissionQuery],
@@ -2724,10 +2724,10 @@ describe('Spanner', () => {
                     assert.ifError(err);
                     assert.ok(!statements.includes(grantPermissionQuery));
                   });
-                })
+                }),
               );
             });
-          })
+          }),
         );
       };
 
@@ -2739,7 +2739,7 @@ describe('Spanner', () => {
           DATABASE,
           'CREATE ROLE orphan',
           'GRANT SELECT ON TABLE Singers TO ROLE orphan',
-          'REVOKE SELECT ON TABLE Singers FROM ROLE orphan'
+          'REVOKE SELECT ON TABLE Singers FROM ROLE orphan',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2752,7 +2752,7 @@ describe('Spanner', () => {
           PG_DATABASE,
           'CREATE ROLE orphan',
           'GRANT SELECT ON TABLE singers TO orphan',
-          'REVOKE SELECT ON TABLE singers FROM orphan'
+          'REVOKE SELECT ON TABLE singers FROM orphan',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2760,7 +2760,7 @@ describe('Spanner', () => {
       const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
-        dropRoleQuery
+        dropRoleQuery,
       ) => {
         database.updateSchema(
           [createRoleQuery],
@@ -2777,10 +2777,10 @@ describe('Spanner', () => {
                     assert.ifError(err);
                     assert.ok(!statements.includes(createRoleQuery));
                   });
-                })
+                }),
               );
             });
-          })
+          }),
         );
       };
 
@@ -2791,7 +2791,7 @@ describe('Spanner', () => {
         await userDefinedDatabaseRoleDropped(
           DATABASE,
           'CREATE ROLE new_parent',
-          'DROP ROLE new_parent'
+          'DROP ROLE new_parent',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2803,7 +2803,7 @@ describe('Spanner', () => {
         await userDefinedDatabaseRoleDropped(
           PG_DATABASE,
           'CREATE ROLE new_parent',
-          'DROP ROLE new_parent'
+          'DROP ROLE new_parent',
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2833,9 +2833,9 @@ describe('Spanner', () => {
                   table.deleteRows([id]);
                   done();
                 });
-              }
+              },
             );
-          })
+          }),
         );
       };
 
@@ -2846,7 +2846,7 @@ describe('Spanner', () => {
         grantAccessSuccess(
           done,
           DATABASE,
-          'GRANT SELECT ON TABLE Singers TO ROLE read_access'
+          'GRANT SELECT ON TABLE Singers TO ROLE read_access',
         );
       });
 
@@ -2857,7 +2857,7 @@ describe('Spanner', () => {
         grantAccessSuccess(
           done,
           PG_DATABASE,
-          'GRANT SELECT ON TABLE singers TO read_access'
+          'GRANT SELECT ON TABLE singers TO read_access',
         );
       });
 
@@ -2886,9 +2886,9 @@ describe('Spanner', () => {
                   table.deleteRows([id]);
                   done();
                 });
-              }
+              },
             );
-          })
+          }),
         );
       };
 
@@ -2899,7 +2899,7 @@ describe('Spanner', () => {
         grantAccessFailure(
           done,
           DATABASE,
-          'GRANT INSERT ON TABLE Singers TO ROLE write_access'
+          'GRANT INSERT ON TABLE Singers TO ROLE write_access',
         );
       });
 
@@ -2910,7 +2910,7 @@ describe('Spanner', () => {
         grantAccessFailure(
           done,
           PG_DATABASE,
-          'GRANT INSERT ON TABLE singers TO write_access'
+          'GRANT INSERT ON TABLE singers TO write_access',
         );
       });
 
@@ -2926,8 +2926,8 @@ describe('Spanner', () => {
           databaseRoles.find(
             role =>
               role.name ===
-              database.formattedName_ + '/databaseRoles/new_parent'
-          )
+              database.formattedName_ + '/databaseRoles/new_parent',
+          ),
         );
       };
 
@@ -3045,11 +3045,11 @@ describe('Spanner', () => {
       const createDatabaseWithFKADC = async (
         dialect,
         database_id,
-        database_schema
+        database_schema,
       ) => {
         const [database, operation] = await instance.createDatabase(
           database_id,
-          {databaseDialect: dialect}
+          {databaseDialect: dialect},
         );
         await operation.promise();
 
@@ -3060,7 +3060,7 @@ describe('Spanner', () => {
         const [schema] = await database.getSchema();
         assert.strictEqual(
           schema.filter(x => x.includes('FKShoppingCartsCustomerId')).length,
-          1
+          1,
         );
       };
 
@@ -3068,7 +3068,7 @@ describe('Spanner', () => {
         await createDatabaseWithFKADC(
           Spanner.GOOGLE_STANDARD_SQL,
           fkadc_database_id,
-          fkadc_schema
+          fkadc_schema,
         );
       });
 
@@ -3076,7 +3076,7 @@ describe('Spanner', () => {
         await createDatabaseWithFKADC(
           Spanner.POSTGRESQL,
           fkadc_database_pg_id,
-          fkadc_pg_schema
+          fkadc_pg_schema,
         );
       });
 
@@ -3090,26 +3090,26 @@ describe('Spanner', () => {
           `ALTER TABLE ShoppingCarts ADD CONSTRAINT ${constraint_name} FOREIGN KEY (CustomerName) REFERENCES Customers(CustomerName) ON DELETE CASCADE`,
         ];
         const [operationAddConstraint] = await database.updateSchema(
-          ddl_statements_add_constraints
+          ddl_statements_add_constraints,
         );
         await operationAddConstraint.promise();
         const [schema] = await database.getSchema();
         assert.strictEqual(
           schema.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
-          1
+          1,
         );
 
         const ddl_statements_drop_constraints = [
           'ALTER TABLE ShoppingCarts DROP CONSTRAINT FKShoppingCartsCustomerName',
         ];
         const [operationDropConstraint] = await database.updateSchema(
-          ddl_statements_drop_constraints
+          ddl_statements_drop_constraints,
         );
         await operationDropConstraint.promise();
         const [schema1] = await database.getSchema();
         assert.strictEqual(
           schema1.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
-          0
+          0,
         );
       };
 
@@ -3117,7 +3117,7 @@ describe('Spanner', () => {
         const fkadc_database = instance.database(fkadc_database_id);
         await alterDatabaseWithFKADC(
           Spanner.GOOGLE_STANDARD_SQL,
-          fkadc_database
+          fkadc_database,
         );
       });
 
@@ -3178,7 +3178,7 @@ describe('Spanner', () => {
         } catch (err) {
           assert.match(
             (err as grpc.ServiceError).message,
-            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `ShoppingCarts`\./
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `ShoppingCarts`\./,
           );
         }
       });
@@ -3190,14 +3190,14 @@ describe('Spanner', () => {
         } catch (err) {
           assert.match(
             (err as grpc.ServiceError).message,
-            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `shoppingcarts`\./
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `shoppingcarts`\./,
           );
         }
       });
 
       const insertAndDeleteInSameTransactionErrorWithFKADC = (
         done,
-        database
+        database,
       ) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
@@ -3209,7 +3209,7 @@ describe('Spanner', () => {
           transaction!.commit(err => {
             assert.match(
               (err as grpc.ServiceError).message.toLowerCase(),
-              /9 failed_precondition: cannot write a value for the referenced column `customers.customerid` and delete it in the same transaction\./
+              /9 failed_precondition: cannot write a value for the referenced column `customers.customerid` and delete it in the same transaction\./,
             );
             done();
           });
@@ -3228,7 +3228,7 @@ describe('Spanner', () => {
 
       const insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC = (
         done,
-        database
+        database,
       ) => {
         const customersTable = database.table('Customers');
         const cartsTable = database.table('ShoppingCarts');
@@ -3264,14 +3264,14 @@ describe('Spanner', () => {
                   transaction!.commit(err => {
                     assert.match(
                       (err as grpc.ServiceError).message.toLowerCase(),
-                      /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./
+                      /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./,
                     );
                     done();
                   });
                 });
-              }
+              },
             );
-          }
+          },
         );
       };
 
@@ -3279,7 +3279,7 @@ describe('Spanner', () => {
         const fkadc_database = instance.database(fkadc_database_id);
         insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
           done,
-          fkadc_database
+          fkadc_database,
         );
       });
 
@@ -3287,13 +3287,13 @@ describe('Spanner', () => {
         const fkadc_database_pg = instance.database(fkadc_database_pg_id);
         insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
           done,
-          fkadc_database_pg
+          fkadc_database_pg,
         );
       });
 
       const deleteRuleOnInformationSchemaReferentialConstraints = (
         done,
-        database
+        database,
       ) => {
         database.getSnapshot((err, transaction) => {
           assert.ifError(err);
@@ -3305,7 +3305,7 @@ describe('Spanner', () => {
               assert.strictEqual(rows[0][0].value, 'CASCADE');
               transaction!.end();
               done();
-            }
+            },
           );
         });
       };
@@ -3314,7 +3314,7 @@ describe('Spanner', () => {
         const fkadc_database = instance.database(fkadc_database_id);
         deleteRuleOnInformationSchemaReferentialConstraints(
           done,
-          fkadc_database
+          fkadc_database,
         );
       });
 
@@ -3322,7 +3322,7 @@ describe('Spanner', () => {
         const fkadc_database_pg = instance.database(fkadc_database_pg_id);
         deleteRuleOnInformationSchemaReferentialConstraints(
           done,
-          fkadc_database_pg
+          fkadc_database_pg,
         );
       });
     });
@@ -3391,12 +3391,12 @@ describe('Spanner', () => {
       await createBackup(
         googleSqlDatabase1,
         googleSqlBackup1Name,
-        backupExpiryDate
+        backupExpiryDate,
       );
       await createBackup(
         googleSqlDatabase2,
         googleSqlBackup2Name,
-        backupExpiryDate
+        backupExpiryDate,
       );
 
       googleSqlBackup1 = instance.backup(googleSqlBackup1Name);
@@ -3408,12 +3408,12 @@ describe('Spanner', () => {
         await createBackup(
           postgreSqlDatabase1,
           postgreSqlBackup1Name,
-          backupExpiryDate
+          backupExpiryDate,
         );
         await createBackup(
           postgreSqlDatabase2,
           postgreSqlBackup2Name,
-          backupExpiryDate
+          backupExpiryDate,
         );
 
         postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
@@ -3433,13 +3433,13 @@ describe('Spanner', () => {
       assert.strictEqual(backupInfo.state, 'READY');
       assert.strictEqual(
         backupInfo.name,
-        `${instance.formattedName_}/backups/${backup1Name}`
+        `${instance.formattedName_}/backups/${backup1Name}`,
       );
       assert.strictEqual(backupInfo.database, database1.formattedName_);
       assert.ok(backupInfo.createTime);
       assert.deepStrictEqual(
         Number(backupInfo.expireTime!.seconds),
-        backupExpiryPreciseDate.toStruct().seconds
+        backupExpiryPreciseDate.toStruct().seconds,
       );
       assert.ok(backupInfo.sizeBytes! > 0);
 
@@ -3449,7 +3449,7 @@ describe('Spanner', () => {
       const expireTime = await backup1.getExpireTime();
       assert.deepStrictEqual(
         expireTime!.getFullTime(),
-        backupExpiryPreciseDate.getFullTime()
+        backupExpiryPreciseDate.getFullTime(),
       );
       const exists = await backup1.exists();
       assert.strictEqual(exists, true);
@@ -3459,7 +3459,7 @@ describe('Spanner', () => {
       await completedBackup(
         googleSqlBackup1,
         googleSqlBackup1Name,
-        googleSqlDatabase1
+        googleSqlDatabase1,
       );
     });
 
@@ -3467,7 +3467,7 @@ describe('Spanner', () => {
       await completedBackup(
         postgreSqlBackup1,
         postgreSqlBackup1Name,
-        postgreSqlDatabase1
+        postgreSqlDatabase1,
       );
     });
 
@@ -3482,13 +3482,13 @@ describe('Spanner', () => {
           expireTime: backupExpiryDate,
         });
         assert.fail(
-          'Backup should have failed for expiration time in the past'
+          'Backup should have failed for expiration time in the past',
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date
         assert.strictEqual(
           (err as grpc.ServiceError).code,
-          grpc.status.INVALID_ARGUMENT
+          grpc.status.INVALID_ARGUMENT,
         );
       }
     };
@@ -3515,14 +3515,15 @@ describe('Spanner', () => {
       assert.ok(backups.length > 0);
       assert.ok(
         backups.find(
-          backup => backup.formattedName_ === googleSqlBackup1.formattedName_
-        )
+          backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
+        ),
       );
       if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           backups.find(
-            backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
-          )
+            backup =>
+              backup.formattedName_ === postgreSqlBackup1.formattedName_,
+          ),
         );
       }
     });
@@ -3552,24 +3553,26 @@ describe('Spanner', () => {
       assert.notStrictEqual(page2[0].formattedName_, page1[0].formattedName_);
       assert.ok(
         page3.find(
-          backup => backup.formattedName_ === googleSqlBackup1.formattedName_
-        )
+          backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
+        ),
       );
       assert.ok(
         page3.find(
-          backup => backup.formattedName_ === googleSqlBackup2.formattedName_
-        )
+          backup => backup.formattedName_ === googleSqlBackup2.formattedName_,
+        ),
       );
       if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           page3.find(
-            backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
-          )
+            backup =>
+              backup.formattedName_ === postgreSqlBackup1.formattedName_,
+          ),
         );
         assert.ok(
           page3.find(
-            backup => backup.formattedName_ === postgreSqlBackup2.formattedName_
-          )
+            backup =>
+              backup.formattedName_ === postgreSqlBackup2.formattedName_,
+          ),
         );
       }
     });
@@ -3593,13 +3596,13 @@ describe('Spanner', () => {
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(
         databaseMetadata.state === 'READY' ||
-          databaseMetadata.state === 'READY_OPTIMIZING'
+          databaseMetadata.state === 'READY_OPTIMIZING',
       );
 
       // Validate restore state of database directly.
       const restoreState = await restoreDatabase.getState();
       assert.ok(
-        restoreState === 'READY' || restoreState === 'READY_OPTIMIZING'
+        restoreState === 'READY' || restoreState === 'READY_OPTIMIZING',
       );
 
       // Validate new database has restored data.
@@ -3613,12 +3616,12 @@ describe('Spanner', () => {
       const restoreInfo = await restoreDatabase.getRestoreInfo();
       assert.strictEqual(
         restoreInfo!.backupInfo!.backup,
-        backup1.formattedName_
+        backup1.formattedName_,
       );
       const [originalDatabaseMetadata] = await database1.getMetadata();
       assert.strictEqual(
         restoreInfo!.backupInfo!.sourceDatabase,
-        originalDatabaseMetadata.name
+        originalDatabaseMetadata.name,
       );
       assert.strictEqual(restoreInfo!.sourceType, 'BACKUP');
 
@@ -3634,7 +3637,7 @@ describe('Spanner', () => {
       await restoreBackup(
         googleSqlRestoreDatabaseId,
         googleSqlBackup1,
-        googleSqlDatabase1
+        googleSqlDatabase1,
       );
     });
 
@@ -3643,7 +3646,7 @@ describe('Spanner', () => {
       await restoreBackup(
         postgreSqlRestoreDatabaseId,
         postgreSqlBackup1,
-        postgreSqlDatabase1
+        postgreSqlDatabase1,
       );
     });
 
@@ -3656,7 +3659,7 @@ describe('Spanner', () => {
         // Expect to get error indicating database already exists.
         assert.strictEqual(
           (err as grpc.ServiceError).code,
-          grpc.status.ALREADY_EXISTS
+          grpc.status.ALREADY_EXISTS,
         );
       }
     };
@@ -3677,12 +3680,12 @@ describe('Spanner', () => {
       // Read metadata, verify expiry date was updated.
       const [updatedMetadata] = await backup1.getMetadata();
       const expiryDateFromMetadataAfterUpdate = new PreciseDate(
-        updatedMetadata.expireTime as DateStruct
+        updatedMetadata.expireTime as DateStruct,
       );
 
       assert.deepStrictEqual(
         expiryDateFromMetadataAfterUpdate,
-        Spanner.timestamp(updatedBackupExpiryDate)
+        Spanner.timestamp(updatedBackupExpiryDate),
       );
     };
 
@@ -3700,13 +3703,13 @@ describe('Spanner', () => {
       try {
         await backup1.updateExpireTime(expiryDateInPast);
         assert.fail(
-          'Backup should have failed for expiration time in the past'
+          'Backup should have failed for expiration time in the past',
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date.
         assert.strictEqual(
           (err as grpc.ServiceError).code,
-          grpc.status.INVALID_ARGUMENT
+          grpc.status.INVALID_ARGUMENT,
         );
       }
     };
@@ -3731,7 +3734,7 @@ describe('Spanner', () => {
       } catch (err) {
         assert.strictEqual(
           (err as grpc.ServiceError).code,
-          grpc.status.NOT_FOUND
+          grpc.status.NOT_FOUND,
         );
       }
     };
@@ -3750,12 +3753,12 @@ describe('Spanner', () => {
       const [operationsWithoutFilter] = await instance.getBackupOperations();
       const operationForCurrentBackup = operationsWithoutFilter.find(
         operation =>
-          operation.name && operation.name.includes(backup1.formattedName_)
+          operation.name && operation.name.includes(backup1.formattedName_),
       );
       assert.ok(operationForCurrentBackup);
       assert.strictEqual(
         operationForCurrentBackup!.metadata!.type_url,
-        'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
+        'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata',
       );
 
       // With a filter.
@@ -3767,15 +3770,15 @@ describe('Spanner', () => {
       assert.ok(operationForCurrentBackupWithFilter);
       assert.strictEqual(
         operationForCurrentBackupWithFilter!.metadata!.type_url,
-        'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
+        'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata',
       );
       const operationForCurrentBackupWithFilterMetadata =
         CreateBackupMetadata.decode(
-          operationForCurrentBackupWithFilter!.metadata!.value! as Uint8Array
+          operationForCurrentBackupWithFilter!.metadata!.value! as Uint8Array,
         );
       assert.strictEqual(
         operationForCurrentBackupWithFilterMetadata.database,
-        database1.formattedName_
+        database1.formattedName_,
       );
     };
 
@@ -3910,7 +3913,7 @@ describe('Spanner', () => {
           const metadata = await session.getMetadata();
           assert.strictEqual('parent_role', metadata[0].databaseRole);
           await session.delete();
-        })
+        }),
       );
     });
 
@@ -3930,7 +3933,7 @@ describe('Spanner', () => {
           const metadata = await session.getMetadata();
           assert.strictEqual('child_role', metadata[0].databaseRole);
           await session.delete();
-        })
+        }),
       );
     });
 
@@ -3950,7 +3953,7 @@ describe('Spanner', () => {
           const metadata = await session.getMetadata();
           assert.strictEqual('orphan_role', metadata[0].databaseRole);
           await session.delete();
-        })
+        }),
       );
     });
   });
@@ -3978,7 +3981,7 @@ describe('Spanner', () => {
                   PhoneNumbers ARRAY<INT64>,
                   HasGear      BOOL,
                 ) PRIMARY KEY(SingerId)`,
-        GAX_OPTIONS
+        GAX_OPTIONS,
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
@@ -3994,7 +3997,7 @@ describe('Spanner', () => {
               "Created"  TIMESTAMPTZ,
               "HasGear"  BOOL
             )`,
-        GAX_OPTIONS
+        GAX_OPTIONS,
       );
       await onPromiseOperationComplete(postgreSqlCreateTable);
     });
@@ -4009,7 +4012,7 @@ describe('Spanner', () => {
         err => {
           assert.strictEqual(err!.code, 5);
           done();
-        }
+        },
       );
     };
 
@@ -4030,7 +4033,7 @@ describe('Spanner', () => {
         err => {
           assert.strictEqual(err!.code, 5);
           done();
-        }
+        },
       );
     };
 
@@ -4078,7 +4081,7 @@ describe('Spanner', () => {
 
               done();
             });
-        }
+        },
       );
     };
 
@@ -4122,7 +4125,7 @@ describe('Spanner', () => {
 
               done();
             });
-        }
+        },
       );
     };
 
@@ -4163,7 +4166,7 @@ describe('Spanner', () => {
               assert.strictEqual(rows[0].Int.value, '8');
               done();
             });
-        }
+        },
       );
     };
 
@@ -4206,7 +4209,7 @@ describe('Spanner', () => {
                 done();
               });
           });
-        }
+        },
       );
     };
 
@@ -4258,7 +4261,7 @@ describe('Spanner', () => {
                 done();
               });
           });
-        }
+        },
       );
     };
 
@@ -4272,7 +4275,7 @@ describe('Spanner', () => {
 
     const insertAndDeleteMultipleCompositeKeyRows = (
       database,
-      createTableStatement
+      createTableStatement,
     ) => {
       const id1 = 1;
       const name1 = generateName('name1');
@@ -4346,7 +4349,7 @@ describe('Spanner', () => {
           )`;
       insertAndDeleteMultipleCompositeKeyRows(
         PG_DATABASE,
-        createTableStatement
+        createTableStatement,
       );
     });
 
@@ -4387,7 +4390,7 @@ describe('Spanner', () => {
 
             done();
           });
-        }
+        },
       );
     };
 
@@ -4396,7 +4399,7 @@ describe('Spanner', () => {
         done,
         DATABASE,
         googleSqlTable,
-        `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`
+        `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
       );
     });
 
@@ -4405,7 +4408,7 @@ describe('Spanner', () => {
         done,
         PG_DATABASE,
         postgreSqlTable,
-        `SELECT * FROM ${TABLE_NAME} ORDER BY "SingerId"`
+        `SELECT * FROM ${TABLE_NAME} ORDER BY "SingerId"`,
       );
     });
 
@@ -4439,7 +4442,7 @@ describe('Spanner', () => {
               assert.strictEqual(row.Name, null);
 
               done();
-            }
+            },
           );
         });
       });
@@ -4484,7 +4487,7 @@ describe('Spanner', () => {
               assert.strictEqual(row.Name, updatedRow.Name);
 
               done();
-            }
+            },
           );
         });
       });
@@ -4555,7 +4558,7 @@ describe('Spanner', () => {
           for (const [key, value] of Object.entries(actualRows)) {
             if (value && key === 'Float32') {
               assert.ok(
-                EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+                EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
               );
             } else {
               assert.deepStrictEqual(EXPECTED_ROW[key], value);
@@ -4593,7 +4596,7 @@ describe('Spanner', () => {
             for (const [key, value] of Object.entries(rows)) {
               if (key === 'Float32') {
                 assert.ok(
-                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
                 );
               } else {
                 assert.deepStrictEqual(EXPECTED_ROW[key], value);
@@ -4638,7 +4641,7 @@ describe('Spanner', () => {
             for (const [key, value] of Object.entries(actualRows)) {
               if (key === 'Float32') {
                 assert.ok(
-                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001
+                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
                 );
               } else {
                 assert.deepStrictEqual(EXPECTED_ROW[key], value);
@@ -4728,7 +4731,7 @@ describe('Spanner', () => {
             // one mutation group is getting success
             assert.deepStrictEqual(
               actualStatusCode.sort(),
-              expectedStatusCode.sort()
+              expectedStatusCode.sort(),
             );
             done();
           });
@@ -4770,7 +4773,7 @@ describe('Spanner', () => {
           if (value && key === 'Float32') {
             assert.ok(
               GOOGLE_SQL_EXPECTED_ROW[key] - (value as unknown as number) <=
-                0.00001
+                0.00001,
             );
           } else {
             assert.deepStrictEqual(GOOGLE_SQL_EXPECTED_ROW[key], value);
@@ -4801,7 +4804,7 @@ describe('Spanner', () => {
           if (value && key === 'Float32') {
             assert.ok(
               POSTGRESQL_EXPECTED_ROW[key] - (value as unknown as number) <=
-                0.00001
+                0.00001,
             );
           } else {
             assert.deepStrictEqual(POSTGRESQL_EXPECTED_ROW[key], value);
@@ -4849,13 +4852,13 @@ describe('Spanner', () => {
           assert.strictEqual(values[0][0].value, 'a');
           assert.deepStrictEqual(
             JSON.stringify(values[0][1].value),
-            JSON.stringify({value: '1'})
+            JSON.stringify({value: '1'}),
           );
 
           assert.strictEqual(values[1][0].value, 'b');
           assert.deepStrictEqual(
             JSON.stringify(values[1][1].value),
-            JSON.stringify({value: '2'})
+            JSON.stringify({value: '2'}),
           );
 
           done();
@@ -5069,7 +5072,7 @@ describe('Spanner', () => {
 
               assert.strictEqual(
                 JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
+                JSON.stringify(expected),
               );
               done();
             });
@@ -5293,7 +5296,7 @@ describe('Spanner', () => {
                   assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
                 } else {
                   assert.ok(
-                    rows[0][0].value[i] - expected[i]!['value'] <= 0.00001
+                    rows[0][0].value[i] - expected[i]!['value'] <= 0.00001,
                   );
                 }
               }
@@ -5448,7 +5451,7 @@ describe('Spanner', () => {
 
               assert.strictEqual(
                 JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
+                JSON.stringify(expected),
               );
               done();
             });
@@ -5533,7 +5536,7 @@ describe('Spanner', () => {
 
               assert.strictEqual(
                 JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
+                JSON.stringify(expected),
               );
               done();
             });
@@ -5662,7 +5665,7 @@ describe('Spanner', () => {
 
               assert.strictEqual(
                 JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
+                JSON.stringify(expected),
               );
               done();
             });
@@ -6557,7 +6560,7 @@ describe('Spanner', () => {
               done,
               DATABASE,
               query,
-              new Interval(19, 768, BigInt('123456789123'))
+              new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
@@ -6572,7 +6575,7 @@ describe('Spanner', () => {
               done,
               DATABASE,
               query,
-              new Interval(19, 768, BigInt('123456789123'))
+              new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
@@ -6590,7 +6593,7 @@ describe('Spanner', () => {
               done,
               PG_DATABASE,
               query,
-              new Interval(19, 768, BigInt('123456789123'))
+              new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
@@ -6605,7 +6608,7 @@ describe('Spanner', () => {
               done,
               PG_DATABASE,
               query,
-              new Interval(-19, -768, BigInt('123456789123'))
+              new Interval(-19, -768, BigInt('123456789123')),
             );
           });
 
@@ -6680,7 +6683,7 @@ describe('Spanner', () => {
               done,
               DATABASE,
               query,
-              new Interval(100, 201, BigInt('123456789123'))
+              new Interval(100, 201, BigInt('123456789123')),
             );
           });
 
@@ -6852,7 +6855,7 @@ describe('Spanner', () => {
                                            BytesValue BYTES(MAX),
                                            BytesArray ARRAY<BYTES(MAX)>
               ) PRIMARY KEY (Key)`,
-            GAX_OPTIONS
+            GAX_OPTIONS,
           );
           await onPromiseOperationComplete(googleSqlCreateTable);
           await googleSqlTable.insert(googleSqlExpectedRow);
@@ -6863,7 +6866,7 @@ describe('Spanner', () => {
                                           "StringValue" VARCHAR,
                                           "BytesValue" BYTEA
               )`,
-            GAX_OPTIONS
+            GAX_OPTIONS,
           );
           await onPromiseOperationComplete(postgreSqlCreateTable);
           await postgreSqlTable.insert(postgreSqlExpectedRow);
@@ -6889,11 +6892,11 @@ describe('Spanner', () => {
               assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
               assert.strictEqual(
                 row.StringValue,
-                googleSqlExpectedRow.StringValue
+                googleSqlExpectedRow.StringValue,
               );
               assert.deepStrictEqual(
                 row.StringArray,
-                googleSqlExpectedRow.StringArray
+                googleSqlExpectedRow.StringArray,
               );
 
               row.BytesValue = base64ToBuffer(row.BytesValue);
@@ -6901,15 +6904,15 @@ describe('Spanner', () => {
 
               assert.deepStrictEqual(
                 row.BytesValue,
-                googleSqlExpectedRow.BytesValue
+                googleSqlExpectedRow.BytesValue,
               );
               assert.deepStrictEqual(
                 row.BytesArray,
-                googleSqlExpectedRow.BytesArray
+                googleSqlExpectedRow.BytesArray,
               );
 
               done();
-            }
+            },
           );
         });
 
@@ -6927,17 +6930,17 @@ describe('Spanner', () => {
               assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
               assert.strictEqual(
                 row.StringValue,
-                postgreSqlExpectedRow.StringValue
+                postgreSqlExpectedRow.StringValue,
               );
 
               row.BytesValue = base64ToBuffer(row.BytesValue);
               assert.deepStrictEqual(
                 row.BytesValue,
-                postgreSqlExpectedRow.BytesValue
+                postgreSqlExpectedRow.BytesValue,
               );
 
               done();
-            }
+            },
           );
         });
 
@@ -6957,11 +6960,11 @@ describe('Spanner', () => {
             assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
             assert.strictEqual(
               row.StringValue,
-              googleSqlExpectedRow.StringValue
+              googleSqlExpectedRow.StringValue,
             );
             assert.deepStrictEqual(
               row.StringArray,
-              googleSqlExpectedRow.StringArray
+              googleSqlExpectedRow.StringArray,
             );
 
             row.BytesValue = base64ToBuffer(row.BytesValue);
@@ -6969,11 +6972,11 @@ describe('Spanner', () => {
 
             assert.deepStrictEqual(
               row.BytesValue,
-              googleSqlExpectedRow.BytesValue
+              googleSqlExpectedRow.BytesValue,
             );
             assert.deepStrictEqual(
               row.BytesArray,
-              googleSqlExpectedRow.BytesArray
+              googleSqlExpectedRow.BytesArray,
             );
 
             done();
@@ -6996,13 +6999,13 @@ describe('Spanner', () => {
             assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
             assert.strictEqual(
               row.StringValue,
-              postgreSqlExpectedRow.StringValue
+              postgreSqlExpectedRow.StringValue,
             );
 
             row.BytesValue = base64ToBuffer(row.BytesValue);
             assert.deepStrictEqual(
               row.BytesValue,
-              postgreSqlExpectedRow.BytesValue
+              postgreSqlExpectedRow.BytesValue,
             );
 
             done();
@@ -7038,7 +7041,7 @@ describe('Spanner', () => {
                 assert.ifError(err);
                 assert.deepStrictEqual(rows![0].toJSON(), ROW);
                 done();
-              }
+              },
             );
           });
         });
@@ -7065,7 +7068,7 @@ describe('Spanner', () => {
               assert.ifError(err);
               assert.deepStrictEqual(rows![0].toJSON(), ROW);
               done();
-            }
+            },
           );
         });
       };
@@ -7095,7 +7098,7 @@ describe('Spanner', () => {
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)`,
-          GAX_OPTIONS
+          GAX_OPTIONS,
         );
         await onPromiseOperationComplete(googleSqlCreateTable);
         const googleSqlCreateIndex = await DATABASE.updateSchema(`
@@ -7118,7 +7121,7 @@ describe('Spanner', () => {
                   "Key" VARCHAR NOT NULL PRIMARY KEY, 
                   "StringValue" VARCHAR
               )`,
-          GAX_OPTIONS
+          GAX_OPTIONS,
         );
         await onPromiseOperationComplete(postgreSqlCreateTable);
         const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
@@ -7364,7 +7367,7 @@ describe('Spanner', () => {
             {
               index: 'ReadByValue',
             },
-            test.query
+            test.query,
           );
 
           if (query.keys) {
@@ -7516,12 +7519,12 @@ describe('Spanner', () => {
               rows!.some(
                 r =>
                   JSON.stringify(r.toJSON()) ===
-                  JSON.stringify({SingerId: id, Name: name})
-              )
+                  JSON.stringify({SingerId: id, Name: name}),
+              ),
             );
             done();
           });
-        }
+        },
       );
     });
 
@@ -7568,9 +7571,9 @@ describe('Spanner', () => {
               ]);
 
               done();
-            }
+            },
           );
-        }
+        },
       );
     });
 
@@ -7610,7 +7613,7 @@ describe('Spanner', () => {
 
               done();
             });
-        }
+        },
       );
     });
 
@@ -7644,9 +7647,9 @@ describe('Spanner', () => {
               ]);
 
               done();
-            }
+            },
           );
-        }
+        },
       );
     });
   });
@@ -7692,12 +7695,12 @@ describe('Spanner', () => {
         }
       };
       await onPromiseOperationComplete(
-        await googleSqlTable.create(googleSqlSchema, GAX_OPTIONS)
+        await googleSqlTable.create(googleSqlSchema, GAX_OPTIONS),
       );
       await insertRecords(googleSqlTable, googleSqlRecords);
 
       await onPromiseOperationComplete(
-        await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
+        await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS),
       );
       await insertRecords(postgreSqlTable, postgreSqlRecords);
     });
@@ -7762,7 +7765,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          postgreSqlRecords
+          postgreSqlRecords,
         );
       });
 
@@ -7852,7 +7855,7 @@ describe('Spanner', () => {
           done,
           DATABASE,
           googleSqlRecords,
-          `SELECT * FROM ${TABLE_NAME} ORDER BY Key`
+          `SELECT * FROM ${TABLE_NAME} ORDER BY Key`,
         );
       });
 
@@ -7861,7 +7864,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlRecords,
-          `SELECT * FROM ${TABLE_NAME} ORDER BY "Key"`
+          `SELECT * FROM ${TABLE_NAME} ORDER BY "Key"`,
         );
       });
 
@@ -7893,7 +7896,7 @@ describe('Spanner', () => {
         done,
         database,
         table,
-        records
+        records,
       ) => {
         const options = {
           strong: true,
@@ -7925,7 +7928,7 @@ describe('Spanner', () => {
                   transaction!.end();
                   done();
                 });
-              }
+              },
             );
           });
         });
@@ -7936,7 +7939,7 @@ describe('Spanner', () => {
           done,
           DATABASE,
           googleSqlTable,
-          googleSqlRecords
+          googleSqlRecords,
         );
       });
 
@@ -7945,7 +7948,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          postgreSqlRecords
+          postgreSqlRecords,
         );
       });
 
@@ -7953,7 +7956,7 @@ describe('Spanner', () => {
         done,
         database,
         table,
-        records
+        records,
       ) => {
         const options = {
           readTimestamp: records[records.length - 1].commitTimestamp,
@@ -7988,7 +7991,7 @@ describe('Spanner', () => {
                   transaction!.end();
                   done();
                 });
-              }
+              },
             );
           });
         });
@@ -7999,7 +8002,7 @@ describe('Spanner', () => {
           done,
           DATABASE,
           googleSqlTable,
-          googleSqlRecords
+          googleSqlRecords,
         );
       });
 
@@ -8008,7 +8011,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          postgreSqlRecords
+          postgreSqlRecords,
         );
       });
 
@@ -8016,7 +8019,7 @@ describe('Spanner', () => {
         done,
         database,
         table,
-        records
+        records,
       ) => {
         const options = {
           exactStaleness: Date.now() - records[0].localTimestamp,
@@ -8046,7 +8049,7 @@ describe('Spanner', () => {
                   transaction!.end();
                   done();
                 });
-              }
+              },
             );
           });
         });
@@ -8057,7 +8060,7 @@ describe('Spanner', () => {
           done,
           DATABASE,
           googleSqlTable,
-          googleSqlRecords
+          googleSqlRecords,
         );
       });
 
@@ -8066,7 +8069,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          postgreSqlRecords
+          postgreSqlRecords,
         );
       });
 
@@ -8098,7 +8101,7 @@ describe('Spanner', () => {
               assert.strictEqual(rows.length, googleSqlRecords.length);
               transaction!.end();
               done();
-            }
+            },
           );
         });
       });
@@ -8119,7 +8122,7 @@ describe('Spanner', () => {
               },
             });
             await transaction!.commit();
-          }
+          },
         );
 
         const gsqlTransaction = DATABASE.runTransactionAsync(
@@ -8135,7 +8138,7 @@ describe('Spanner', () => {
               },
             });
             await transaction!.commit();
-          }
+          },
         );
 
         return Promise.all([psqlTransaction, gsqlTransaction]);
@@ -8223,7 +8226,7 @@ describe('Spanner', () => {
         database,
         insertQuery,
         updateQuery,
-        selectQuery
+        selectQuery,
       ) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
@@ -8308,7 +8311,7 @@ describe('Spanner', () => {
           PG_DATABASE,
           insertQuery,
           updateQuery,
-          selectQuery
+          selectQuery,
         );
       });
 
@@ -8316,7 +8319,7 @@ describe('Spanner', () => {
         done,
         database,
         updateQuery,
-        selectQuery
+        selectQuery,
       ) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
@@ -8372,7 +8375,7 @@ describe('Spanner', () => {
         done,
         database,
         updateQuery,
-        selectQuery
+        selectQuery,
       ) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
@@ -8561,7 +8564,7 @@ describe('Spanner', () => {
           database,
           insertQuery,
           updateQuery,
-          deletequery
+          deletequery,
         ) => {
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
@@ -8597,7 +8600,7 @@ describe('Spanner', () => {
             DATABASE,
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
-            googleSqlDeleteReturning
+            googleSqlDeleteReturning,
           );
         });
 
@@ -8610,7 +8613,7 @@ describe('Spanner', () => {
             PG_DATABASE,
             postgreSqlInsertReturning,
             postgreSqlUpdateReturning,
-            postgreSqlDeleteReturning
+            postgreSqlDeleteReturning,
           );
         });
 
@@ -8631,7 +8634,7 @@ describe('Spanner', () => {
           database,
           insertQuery,
           updateQuery,
-          deletequery
+          deletequery,
         ) => {
           database.runTransaction((err, transaction) => {
             assert.ifError(err);
@@ -8664,7 +8667,7 @@ describe('Spanner', () => {
             DATABASE,
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
-            googleSqlDeleteReturning
+            googleSqlDeleteReturning,
           );
         });
 
@@ -8678,7 +8681,7 @@ describe('Spanner', () => {
             PG_DATABASE,
             postgreSqlInsertReturning,
             postgreSqlUpdateReturning,
-            postgreSqlDeleteReturning
+            postgreSqlDeleteReturning,
           );
         });
 
@@ -8686,7 +8689,7 @@ describe('Spanner', () => {
           database.runPartitionedUpdate(query, err => {
             assert.match(
               err.details,
-              /THEN RETURN is not supported in Partitioned DML\./
+              /THEN RETURN is not supported in Partitioned DML\./,
             );
             done();
           });
@@ -8711,7 +8714,7 @@ describe('Spanner', () => {
           database,
           insertquery,
           updateQuery,
-          deleteQuery
+          deleteQuery,
         ) => {
           const rowCounts = await database.runTransactionAsync(async txn => {
             const [rowCounts] = await txn.batchUpdate([
@@ -8733,7 +8736,7 @@ describe('Spanner', () => {
             DATABASE,
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
-            googleSqlDelete
+            googleSqlDelete,
           );
         });
 
@@ -8746,7 +8749,7 @@ describe('Spanner', () => {
             PG_DATABASE,
             postgreSqlInsertReturning,
             postgreSqlUpdateReturning,
-            postgreSqlDelete
+            postgreSqlDelete,
           );
         });
       });
@@ -8793,7 +8796,7 @@ describe('Spanner', () => {
       const longRunningPdml = async function (
         database,
         updateQuery,
-        selectQuery
+        selectQuery,
       ) {
         const count = 10000;
 
@@ -8939,7 +8942,7 @@ describe('Spanner', () => {
 
         assert.strictEqual(
           err.message,
-          'batchUpdate requires at least 1 DML statement.'
+          'batchUpdate requires at least 1 DML statement.',
         );
         assert.strictEqual(err.code, 3);
       };
@@ -8966,7 +8969,7 @@ describe('Spanner', () => {
         await multipleDependingStatements(
           DATABASE,
           googleSqlInsert,
-          googleSqlUpdate
+          googleSqlUpdate,
         );
       });
 
@@ -8974,7 +8977,7 @@ describe('Spanner', () => {
         await multipleDependingStatements(
           PG_DATABASE,
           postgreSqlInsert,
-          posgreSqlUpdate
+          posgreSqlUpdate,
         );
       });
 
@@ -9016,7 +9019,7 @@ describe('Spanner', () => {
         await runBeforeRunUpdate(
           PG_DATABASE,
           postgreSqlInsert,
-          posgreSqlUpdate
+          posgreSqlUpdate,
         );
       });
 
@@ -9024,7 +9027,7 @@ describe('Spanner', () => {
         database,
         insert,
         borked,
-        update
+        update,
       ) => {
         const err = await database.runTransactionAsync(async txn => {
           let err;
@@ -9052,7 +9055,7 @@ describe('Spanner', () => {
           DATABASE,
           googleSqlInsert,
           googleSqlBorked,
-          googleSqlUpdate
+          googleSqlUpdate,
         );
       });
 
@@ -9061,14 +9064,14 @@ describe('Spanner', () => {
           PG_DATABASE,
           postgreSqlInsert,
           postgreSqlBorked,
-          posgreSqlUpdate
+          posgreSqlUpdate,
         );
       });
 
       const ignoreAdditionalStatementErrors = async (
         database,
         insert,
-        borked
+        borked,
       ) => {
         const err = await database.runTransactionAsync(async txn => {
           let err;
@@ -9091,7 +9094,7 @@ describe('Spanner', () => {
         await ignoreAdditionalStatementErrors(
           DATABASE,
           googleSqlInsert,
-          googleSqlBorked
+          googleSqlBorked,
         );
       });
 
@@ -9099,7 +9102,7 @@ describe('Spanner', () => {
         await ignoreAdditionalStatementErrors(
           PG_DATABASE,
           postgreSqlInsert,
-          postgreSqlBorked
+          postgreSqlBorked,
         );
       });
     });
@@ -9266,7 +9269,7 @@ describe('Spanner', () => {
 
                 const row = rows[0].toJSON();
                 callback(null, row.NumberValue);
-              }
+              },
             );
           }
         };
@@ -9364,7 +9367,7 @@ describe('Spanner', () => {
         done,
         database,
         table,
-        query
+        query,
       ) => {
         const key = 'k888';
         let attempts = 0;
@@ -9459,7 +9462,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          query
+          query,
         );
       });
 
@@ -9552,7 +9555,7 @@ describe('Spanner', () => {
           done,
           PG_DATABASE,
           postgreSqlTable,
-          query
+          query,
         );
       });
 
@@ -9568,7 +9571,7 @@ describe('Spanner', () => {
           if (attempts++ === 1) {
             assert.strictEqual(err!.code, 4);
             assert(
-              err!.message.startsWith('Deadline for Transaction exceeded.')
+              err!.message.startsWith('Deadline for Transaction exceeded.'),
             );
 
             done();
@@ -9659,7 +9662,7 @@ describe('Spanner', () => {
               assert.strictEqual(err?.details, expectedErrorMessage);
               transaction!.end();
               done();
-            }
+            },
           );
         });
       });
@@ -9685,7 +9688,7 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
                 transaction!.commit(done);
-              }
+              },
             );
           });
         } else {
@@ -9810,7 +9813,7 @@ async function deleteOldTestInstances() {
   const toDelete = instances.filter(
     instance =>
       instance.id.includes(PREFIX) &&
-      isOld(Number(instance.metadata!.labels!.created))
+      isOld(Number(instance.metadata!.labels!.created)),
   );
 
   return deleteInstanceArray(toDelete);
@@ -9826,8 +9829,8 @@ function deleteInstanceArray(instanceArray) {
   const limit = pLimit(5);
   return Promise.all(
     instanceArray.map(instance =>
-      limit(() => setTimeout(deleteInstance, delay, instance))
-    )
+      limit(() => setTimeout(deleteInstance, delay, instance)),
+    ),
   );
 }
 async function deleteInstance(instance: Instance) {

@@ -112,7 +112,7 @@ export class SpannerClient {
    */
   constructor(
     opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
+    gaxInstance?: typeof gax | typeof gax.fallback,
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SpannerClient;
@@ -122,7 +122,7 @@ export class SpannerClient {
       opts?.universe_domain !== opts?.universeDomain
     ) {
       throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
+        'Please set either universe_domain or universeDomain, but not both.',
       );
     }
     const universeDomainEnvVar =
@@ -206,10 +206,10 @@ export class SpannerClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       databasePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}'
+        'projects/{project}/instances/{instance}/databases/{database}',
       ),
       sessionPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
+        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}',
       ),
     };
 
@@ -220,7 +220,7 @@ export class SpannerClient {
       listSessions: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'sessions'
+        'sessions',
       ),
     };
 
@@ -230,17 +230,17 @@ export class SpannerClient {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
       batchWrite: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
     };
 
@@ -249,7 +249,7 @@ export class SpannerClient {
       'google.spanner.v1.Spanner',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -283,12 +283,12 @@ export class SpannerClient {
     this.spannerStub = this._gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.spanner.v1.Spanner'
+            'google.spanner.v1.Spanner',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.v1.Spanner,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -322,8 +322,8 @@ export class SpannerClient {
                   stream.emit(
                     'error',
                     new this._gaxModule.GoogleError(
-                      'The client has already been closed.'
-                    )
+                      'The client has already been closed.',
+                    ),
                   );
                 });
                 return stream;
@@ -335,7 +335,7 @@ export class SpannerClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor =
@@ -346,7 +346,7 @@ export class SpannerClient {
         callPromise,
         this._defaults[methodName],
         descriptor,
-        this._opts.fallback
+        this._opts.fallback,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -367,7 +367,7 @@ export class SpannerClient {
     ) {
       process.emitWarning(
         'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -385,7 +385,7 @@ export class SpannerClient {
     ) {
       process.emitWarning(
         'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -430,7 +430,7 @@ export class SpannerClient {
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -478,7 +478,7 @@ export class SpannerClient {
    */
   createSession(
     request?: protos.google.spanner.v1.ICreateSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -493,7 +493,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
@@ -501,7 +501,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createSession(
     request?: protos.google.spanner.v1.ICreateSessionRequest,
@@ -516,7 +516,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -565,7 +565,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('createSession response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -596,7 +596,7 @@ export class SpannerClient {
    */
   batchCreateSessions(
     request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -611,7 +611,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
@@ -619,7 +619,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   batchCreateSessions(
     request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
@@ -636,7 +636,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -687,7 +687,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('batchCreateSessions response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -708,7 +708,7 @@ export class SpannerClient {
    */
   getSession(
     request?: protos.google.spanner.v1.IGetSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -723,7 +723,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
@@ -731,7 +731,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getSession(
     request?: protos.google.spanner.v1.IGetSessionRequest,
@@ -746,7 +746,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -795,7 +795,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('getSession response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -816,7 +816,7 @@ export class SpannerClient {
    */
   deleteSession(
     request?: protos.google.spanner.v1.IDeleteSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -831,7 +831,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
@@ -839,7 +839,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteSession(
     request?: protos.google.spanner.v1.IDeleteSessionRequest,
@@ -854,7 +854,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -903,7 +903,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('deleteSession response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1023,7 +1023,7 @@ export class SpannerClient {
    */
   executeSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1038,7 +1038,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -1046,7 +1046,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -1061,7 +1061,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1110,7 +1110,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('executeSql response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1174,7 +1174,7 @@ export class SpannerClient {
    */
   executeBatchDml(
     request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -1189,7 +1189,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
@@ -1197,7 +1197,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeBatchDml(
     request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
@@ -1212,7 +1212,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -1261,7 +1261,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('executeBatchDml response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1362,7 +1362,7 @@ export class SpannerClient {
    */
   read(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1377,7 +1377,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   read(
     request: protos.google.spanner.v1.IReadRequest,
@@ -1385,7 +1385,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   read(
     request?: protos.google.spanner.v1.IReadRequest,
@@ -1400,7 +1400,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1449,7 +1449,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('read response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1487,7 +1487,7 @@ export class SpannerClient {
    */
   beginTransaction(
     request?: protos.google.spanner.v1.IBeginTransactionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1502,7 +1502,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
@@ -1510,7 +1510,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   beginTransaction(
     request?: protos.google.spanner.v1.IBeginTransactionRequest,
@@ -1525,7 +1525,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1574,7 +1574,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('beginTransaction response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1641,7 +1641,7 @@ export class SpannerClient {
    */
   commit(
     request?: protos.google.spanner.v1.ICommitRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1656,7 +1656,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
@@ -1664,7 +1664,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   commit(
     request?: protos.google.spanner.v1.ICommitRequest,
@@ -1679,7 +1679,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1728,7 +1728,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('commit response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1757,7 +1757,7 @@ export class SpannerClient {
    */
   rollback(
     request?: protos.google.spanner.v1.IRollbackRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1772,7 +1772,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
@@ -1780,7 +1780,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   rollback(
     request?: protos.google.spanner.v1.IRollbackRequest,
@@ -1795,7 +1795,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1844,7 +1844,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('rollback response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1915,7 +1915,7 @@ export class SpannerClient {
    */
   partitionQuery(
     request?: protos.google.spanner.v1.IPartitionQueryRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1930,7 +1930,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
@@ -1938,7 +1938,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionQuery(
     request?: protos.google.spanner.v1.IPartitionQueryRequest,
@@ -1953,7 +1953,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -2002,7 +2002,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('partitionQuery response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -2062,7 +2062,7 @@ export class SpannerClient {
    */
   partitionRead(
     request?: protos.google.spanner.v1.IPartitionReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -2077,7 +2077,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
@@ -2085,7 +2085,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionRead(
     request?: protos.google.spanner.v1.IPartitionReadRequest,
@@ -2100,7 +2100,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -2149,7 +2149,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('partitionRead response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
 
@@ -2262,7 +2262,7 @@ export class SpannerClient {
    */
   executeStreamingSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -2368,7 +2368,7 @@ export class SpannerClient {
    */
   streamingRead(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -2432,7 +2432,7 @@ export class SpannerClient {
    */
   batchWrite(
     request?: protos.google.spanner.v1.IBatchWriteRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -2489,7 +2489,7 @@ export class SpannerClient {
    */
   listSessions(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -2504,7 +2504,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): void;
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
@@ -2512,7 +2512,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): void;
   listSessions(
     request?: protos.google.spanner.v1.IListSessionsRequest,
@@ -2527,7 +2527,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -2576,7 +2576,7 @@ export class SpannerClient {
         ]) => {
           this._log.info('listSessions values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -2618,7 +2618,7 @@ export class SpannerClient {
    */
   listSessionsStream(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2637,7 +2637,7 @@ export class SpannerClient {
     return this.descriptors.page.listSessions.createStream(
       this.innerApiCalls.listSessions as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -2680,7 +2680,7 @@ export class SpannerClient {
    */
   listSessionsAsync(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.v1.ISession> {
     request = request || {};
     options = options || {};
@@ -2699,7 +2699,7 @@ export class SpannerClient {
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.v1.ISession>;
   }
   // --------------------
@@ -2768,7 +2768,7 @@ export class SpannerClient {
     project: string,
     instance: string,
     database: string,
-    session: string
+    session: string,
   ) {
     return this.pathTemplates.sessionPathTemplate.render({
       project: project,

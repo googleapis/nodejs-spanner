@@ -30,7 +30,7 @@ import {protobuf, LROperation, operationsProtos} from 'google-gax';
 // Dynamically loaded proto JSON is needed to get the type information
 // to fill in default values for request objects
 const root = protobuf.Root.fromJSON(
-  require('../protos/protos.json')
+  require('../protos/protos.json'),
 ).resolveAll();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,7 +47,7 @@ function generateSampleMessage<T extends object>(instance: T) {
     instance.constructor as typeof protobuf.Message
   ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
+    filledObject,
   ) as T;
 }
 
@@ -59,7 +59,7 @@ function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
 
 function stubSimpleCallWithCallback<ResponseType>(
   response?: ResponseType,
-  error?: Error
+  error?: Error,
 ) {
   return error
     ? sinon.stub().callsArgWith(2, error)
@@ -69,7 +69,7 @@ function stubSimpleCallWithCallback<ResponseType>(
 function stubLongRunningCall<ResponseType>(
   response?: ResponseType,
   callError?: Error,
-  lroError?: Error
+  lroError?: Error,
 ) {
   const innerStub = lroError
     ? sinon.stub().rejects(lroError)
@@ -85,7 +85,7 @@ function stubLongRunningCall<ResponseType>(
 function stubLongRunningCallWithCallback<ResponseType>(
   response?: ResponseType,
   callError?: Error,
-  lroError?: Error
+  lroError?: Error,
 ) {
   const innerStub = lroError
     ? sinon.stub().rejects(lroError)
@@ -100,7 +100,7 @@ function stubLongRunningCallWithCallback<ResponseType>(
 
 function stubPageStreamingCall<ResponseType>(
   responses?: ResponseType[],
-  error?: Error
+  error?: Error,
 ) {
   const pagingStub = sinon.stub();
   if (responses) {
@@ -138,7 +138,7 @@ function stubPageStreamingCall<ResponseType>(
 
 function stubAsyncIterationCall<ResponseType>(
   responses?: ResponseType[],
-  error?: Error
+  error?: Error,
 ) {
   let counter = 0;
   const asyncIterable = {
@@ -288,9 +288,12 @@ describe('v1.InstanceAdminClient', () => {
         throw err;
       });
       assert(client.instanceAdminStub);
-      client.close().then(() => {
-        done();
-      });
+      client
+        .close()
+        .then(() => {
+          done();
+        })
+        .catch(err => done(err));
     });
 
     it('has close method for the non-initialized client', done => {
@@ -299,9 +302,12 @@ describe('v1.InstanceAdminClient', () => {
         projectId: 'bogus',
       });
       assert.strictEqual(client.instanceAdminStub, undefined);
-      client.close().then(() => {
-        done();
-      });
+      client
+        .close()
+        .then(() => {
+          done();
+        })
+        .catch(err => done(err));
     });
 
     it('has getProjectId method', async () => {
@@ -347,16 +353,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.InstanceConfig()
+        new protos.google.spanner.admin.instance.v1.InstanceConfig(),
       );
       client.innerApiCalls.getInstanceConfig = stubSimpleCall(expectedResponse);
       const [response] = await client.getInstanceConfig(request);
@@ -378,16 +384,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.InstanceConfig()
+        new protos.google.spanner.admin.instance.v1.InstanceConfig(),
       );
       client.innerApiCalls.getInstanceConfig =
         stubSimpleCallWithCallback(expectedResponse);
@@ -396,14 +402,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.spanner.admin.instance.v1.IInstanceConfig | null
+            result?: protos.google.spanner.admin.instance.v1.IInstanceConfig | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -425,18 +431,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getInstanceConfig = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.getInstanceConfig(request), expectedError);
       const actualRequest = (
@@ -456,15 +462,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.getInstanceConfig(request), expectedError);
     });
   });
@@ -477,16 +483,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstanceConfig =
         stubSimpleCall(expectedResponse);
@@ -509,16 +515,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstanceConfig =
         stubSimpleCallWithCallback(expectedResponse);
@@ -527,14 +533,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.protobuf.IEmpty | null
+            result?: protos.google.protobuf.IEmpty | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -556,18 +562,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteInstanceConfig = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.deleteInstanceConfig(request), expectedError);
       const actualRequest = (
@@ -587,15 +593,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.deleteInstanceConfig(request), expectedError);
     });
   });
@@ -608,16 +614,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.Instance()
+        new protos.google.spanner.admin.instance.v1.Instance(),
       );
       client.innerApiCalls.getInstance = stubSimpleCall(expectedResponse);
       const [response] = await client.getInstance(request);
@@ -639,16 +645,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.Instance()
+        new protos.google.spanner.admin.instance.v1.Instance(),
       );
       client.innerApiCalls.getInstance =
         stubSimpleCallWithCallback(expectedResponse);
@@ -657,14 +663,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.spanner.admin.instance.v1.IInstance | null
+            result?: protos.google.spanner.admin.instance.v1.IInstance | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -686,18 +692,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getInstance = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.getInstance(request), expectedError);
       const actualRequest = (
@@ -717,15 +723,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.getInstance(request), expectedError);
     });
   });
@@ -738,16 +744,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstance = stubSimpleCall(expectedResponse);
       const [response] = await client.deleteInstance(request);
@@ -769,16 +775,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstance =
         stubSimpleCallWithCallback(expectedResponse);
@@ -787,14 +793,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.protobuf.IEmpty | null
+            result?: protos.google.protobuf.IEmpty | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -816,18 +822,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteInstance = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.deleteInstance(request), expectedError);
       const actualRequest = (
@@ -847,15 +853,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.deleteInstance(request), expectedError);
     });
   });
@@ -868,16 +874,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest()
+        new protos.google.iam.v1.SetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.SetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protos.google.iam.v1.Policy(),
       );
       client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
       const [response] = await client.setIamPolicy(request);
@@ -899,16 +905,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest()
+        new protos.google.iam.v1.SetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.SetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protos.google.iam.v1.Policy(),
       );
       client.innerApiCalls.setIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
@@ -917,14 +923,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.iam.v1.IPolicy | null
+            result?: protos.google.iam.v1.IPolicy | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -946,18 +952,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest()
+        new protos.google.iam.v1.SetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.SetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.setIamPolicy = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.setIamPolicy(request), expectedError);
       const actualRequest = (
@@ -977,15 +983,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest()
+        new protos.google.iam.v1.SetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.SetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.setIamPolicy(request), expectedError);
     });
   });
@@ -998,16 +1004,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protos.google.iam.v1.GetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.GetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protos.google.iam.v1.Policy(),
       );
       client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
       const [response] = await client.getIamPolicy(request);
@@ -1029,16 +1035,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protos.google.iam.v1.GetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.GetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protos.google.iam.v1.Policy(),
       );
       client.innerApiCalls.getIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
@@ -1047,14 +1053,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.iam.v1.IPolicy | null
+            result?: protos.google.iam.v1.IPolicy | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -1076,18 +1082,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protos.google.iam.v1.GetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.GetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getIamPolicy = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.getIamPolicy(request), expectedError);
       const actualRequest = (
@@ -1107,15 +1113,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protos.google.iam.v1.GetIamPolicyRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.GetIamPolicyRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.getIamPolicy(request), expectedError);
     });
   });
@@ -1128,16 +1134,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest()
+        new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.TestIamPermissionsRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsResponse()
+        new protos.google.iam.v1.TestIamPermissionsResponse(),
       );
       client.innerApiCalls.testIamPermissions =
         stubSimpleCall(expectedResponse);
@@ -1160,16 +1166,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest()
+        new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.TestIamPermissionsRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsResponse()
+        new protos.google.iam.v1.TestIamPermissionsResponse(),
       );
       client.innerApiCalls.testIamPermissions =
         stubSimpleCallWithCallback(expectedResponse);
@@ -1178,14 +1184,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.iam.v1.ITestIamPermissionsResponse | null
+            result?: protos.google.iam.v1.ITestIamPermissionsResponse | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -1207,18 +1213,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest()
+        new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.TestIamPermissionsRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.testIamPermissions = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.testIamPermissions(request), expectedError);
       const actualRequest = (
@@ -1238,15 +1244,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest()
+        new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.iam.v1.TestIamPermissionsRequest',
-        ['resource']
+        ['resource'],
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.testIamPermissions(request), expectedError);
     });
   });
@@ -1259,16 +1265,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.InstancePartition()
+        new protos.google.spanner.admin.instance.v1.InstancePartition(),
       );
       client.innerApiCalls.getInstancePartition =
         stubSimpleCall(expectedResponse);
@@ -1291,16 +1297,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.InstancePartition()
+        new protos.google.spanner.admin.instance.v1.InstancePartition(),
       );
       client.innerApiCalls.getInstancePartition =
         stubSimpleCallWithCallback(expectedResponse);
@@ -1309,14 +1315,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.spanner.admin.instance.v1.IInstancePartition | null
+            result?: protos.google.spanner.admin.instance.v1.IInstancePartition | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -1338,18 +1344,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getInstancePartition = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.getInstancePartition(request), expectedError);
       const actualRequest = (
@@ -1369,15 +1375,15 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(client.getInstancePartition(request), expectedError);
     });
   });
@@ -1390,16 +1396,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstancePartition =
         stubSimpleCall(expectedResponse);
@@ -1422,16 +1428,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteInstancePartition =
         stubSimpleCallWithCallback(expectedResponse);
@@ -1440,14 +1446,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.protobuf.IEmpty | null
+            result?: protos.google.protobuf.IEmpty | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -1469,22 +1475,22 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteInstancePartition = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.deleteInstancePartition(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.deleteInstancePartition as SinonStub
@@ -1503,18 +1509,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      client.close();
+      await client.close();
       await assert.rejects(
         client.deleteInstancePartition(request),
-        expectedError
+        expectedError,
       );
     });
   });
@@ -1527,16 +1533,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstanceConfig =
         stubLongRunningCall(expectedResponse);
@@ -1560,16 +1566,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstanceConfig =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -1581,14 +1587,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstanceConfig,
               protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -1614,18 +1620,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createInstanceConfig = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.createInstanceConfig(request), expectedError);
       const actualRequest = (
@@ -1645,11 +1651,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -1657,7 +1663,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.createInstanceConfig = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.createInstanceConfig(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -1678,7 +1684,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -1686,7 +1692,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation = await client.checkCreateInstanceConfigProgress(
-        expectedResponse.name
+        expectedResponse.name,
       );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -1703,11 +1709,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkCreateInstanceConfigProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -1721,17 +1727,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest(),
       );
       request.instanceConfig ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
-        ['instanceConfig', 'name']
+        ['instanceConfig', 'name'],
       );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstanceConfig =
         stubLongRunningCall(expectedResponse);
@@ -1755,17 +1761,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest(),
       );
       request.instanceConfig ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
-        ['instanceConfig', 'name']
+        ['instanceConfig', 'name'],
       );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstanceConfig =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -1777,14 +1783,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstanceConfig,
               protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -1810,19 +1816,19 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest(),
       );
       request.instanceConfig ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
-        ['instanceConfig', 'name']
+        ['instanceConfig', 'name'],
       );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateInstanceConfig = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.updateInstanceConfig(request), expectedError);
       const actualRequest = (
@@ -1842,12 +1848,12 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest(),
       );
       request.instanceConfig ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
-        ['instanceConfig', 'name']
+        ['instanceConfig', 'name'],
       );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1 ?? ''}`;
@@ -1855,7 +1861,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.updateInstanceConfig = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.updateInstanceConfig(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -1876,7 +1882,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -1884,7 +1890,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation = await client.checkUpdateInstanceConfigProgress(
-        expectedResponse.name
+        expectedResponse.name,
       );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -1901,11 +1907,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkUpdateInstanceConfigProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -1919,16 +1925,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstance =
         stubLongRunningCall(expectedResponse);
@@ -1952,16 +1958,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstance =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -1973,14 +1979,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstance,
               protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -2006,18 +2012,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createInstance = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.createInstance(request), expectedError);
       const actualRequest = (
@@ -2037,11 +2043,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstanceRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -2049,7 +2055,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.createInstance = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.createInstance(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -2070,7 +2076,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -2078,7 +2084,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation = await client.checkCreateInstanceProgress(
-        expectedResponse.name
+        expectedResponse.name,
       );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -2095,11 +2101,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkCreateInstanceProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -2113,17 +2119,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest(),
       );
       request.instance ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
-        ['instance', 'name']
+        ['instance', 'name'],
       );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstance =
         stubLongRunningCall(expectedResponse);
@@ -2147,17 +2153,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest(),
       );
       request.instance ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
-        ['instance', 'name']
+        ['instance', 'name'],
       );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstance =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -2169,14 +2175,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstance,
               protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -2202,19 +2208,19 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest(),
       );
       request.instance ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
-        ['instance', 'name']
+        ['instance', 'name'],
       );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateInstance = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.updateInstance(request), expectedError);
       const actualRequest = (
@@ -2234,12 +2240,12 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest(),
       );
       request.instance ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
-        ['instance', 'name']
+        ['instance', 'name'],
       );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1 ?? ''}`;
@@ -2247,7 +2253,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.updateInstance = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.updateInstance(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -2268,7 +2274,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -2276,7 +2282,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation = await client.checkUpdateInstanceProgress(
-        expectedResponse.name
+        expectedResponse.name,
       );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -2293,11 +2299,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkUpdateInstanceProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -2311,16 +2317,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstancePartition =
         stubLongRunningCall(expectedResponse);
@@ -2344,16 +2350,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.createInstancePartition =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -2365,14 +2371,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstancePartition,
               protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -2398,22 +2404,22 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createInstancePartition = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.createInstancePartition(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.createInstancePartition as SinonStub
@@ -2432,11 +2438,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -2444,7 +2450,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.createInstancePartition = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.createInstancePartition(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -2465,7 +2471,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -2474,7 +2480,7 @@ describe('v1.InstanceAdminClient', () => {
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation =
         await client.checkCreateInstancePartitionProgress(
-          expectedResponse.name
+          expectedResponse.name,
         );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -2491,11 +2497,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkCreateInstancePartitionProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -2509,17 +2515,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest(),
       );
       request.instancePartition ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
-        ['instancePartition', 'name']
+        ['instancePartition', 'name'],
       );
       request.instancePartition.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstancePartition =
         stubLongRunningCall(expectedResponse);
@@ -2543,17 +2549,17 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest(),
       );
       request.instancePartition ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
-        ['instancePartition', 'name']
+        ['instancePartition', 'name'],
       );
       request.instancePartition.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.updateInstancePartition =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -2565,14 +2571,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IInstancePartition,
               protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -2598,23 +2604,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest(),
       );
       request.instancePartition ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
-        ['instancePartition', 'name']
+        ['instancePartition', 'name'],
       );
       request.instancePartition.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateInstancePartition = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.updateInstancePartition(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.updateInstancePartition as SinonStub
@@ -2633,12 +2639,12 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest(),
       );
       request.instancePartition ??= {};
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
-        ['instancePartition', 'name']
+        ['instancePartition', 'name'],
       );
       request.instancePartition.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1 ?? ''}`;
@@ -2646,7 +2652,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.updateInstancePartition = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.updateInstancePartition(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -2667,7 +2673,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -2676,7 +2682,7 @@ describe('v1.InstanceAdminClient', () => {
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation =
         await client.checkUpdateInstancePartitionProgress(
-          expectedResponse.name
+          expectedResponse.name,
         );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -2693,11 +2699,11 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.checkUpdateInstancePartitionProgress(''),
-        expectedError
+        expectedError,
       );
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
@@ -2711,16 +2717,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.MoveInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.moveInstance = stubLongRunningCall(expectedResponse);
       const [operation] = await client.moveInstance(request);
@@ -2743,16 +2749,16 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.MoveInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.moveInstance =
         stubLongRunningCallWithCallback(expectedResponse);
@@ -2764,14 +2770,14 @@ describe('v1.InstanceAdminClient', () => {
             result?: LROperation<
               protos.google.spanner.admin.instance.v1.IMoveInstanceResponse,
               protos.google.spanner.admin.instance.v1.IMoveInstanceMetadata
-            > | null
+            > | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const operation = (await promise) as LROperation<
@@ -2797,18 +2803,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.MoveInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.moveInstance = stubLongRunningCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.moveInstance(request), expectedError);
       const actualRequest = (
@@ -2828,11 +2834,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest()
+        new protos.google.spanner.admin.instance.v1.MoveInstanceRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.MoveInstanceRequest',
-        ['name']
+        ['name'],
       );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1 ?? ''}`;
@@ -2840,7 +2846,7 @@ describe('v1.InstanceAdminClient', () => {
       client.innerApiCalls.moveInstance = stubLongRunningCall(
         undefined,
         undefined,
-        expectedError
+        expectedError,
       );
       const [operation] = await client.moveInstance(request);
       await assert.rejects(operation.promise(), expectedError);
@@ -2861,7 +2867,7 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const expectedResponse = generateSampleMessage(
-        new operationsProtos.google.longrunning.Operation()
+        new operationsProtos.google.longrunning.Operation(),
       );
       expectedResponse.name = 'test';
       expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
@@ -2869,7 +2875,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
       const decodedOperation = await client.checkMoveInstanceProgress(
-        expectedResponse.name
+        expectedResponse.name,
       );
       assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
       assert(decodedOperation.metadata);
@@ -2886,7 +2892,7 @@ describe('v1.InstanceAdminClient', () => {
 
       client.operationsClient.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.checkMoveInstanceProgress(''), expectedError);
       assert((client.operationsClient.getOperation as SinonStub).getCall(0));
@@ -2901,23 +2907,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
       ];
       client.innerApiCalls.listInstanceConfigs =
@@ -2941,23 +2947,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
       ];
       client.innerApiCalls.listInstanceConfigs =
@@ -2969,14 +2975,14 @@ describe('v1.InstanceAdminClient', () => {
             err?: Error | null,
             result?:
               | protos.google.spanner.admin.instance.v1.IInstanceConfig[]
-              | null
+              | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -2998,18 +3004,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listInstanceConfigs = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.listInstanceConfigs(request), expectedError);
       const actualRequest = (
@@ -3029,23 +3035,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
       ];
       client.descriptors.page.listInstanceConfigs.createStream =
@@ -3057,10 +3063,10 @@ describe('v1.InstanceAdminClient', () => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.admin.instance.v1.InstanceConfig
+            response: protos.google.spanner.admin.instance.v1.InstanceConfig,
           ) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -3074,14 +3080,14 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstanceConfigs, request)
+          .calledWith(client.innerApiCalls.listInstanceConfigs, request),
       );
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3092,11 +3098,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3110,10 +3116,10 @@ describe('v1.InstanceAdminClient', () => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.admin.instance.v1.InstanceConfig
+            response: protos.google.spanner.admin.instance.v1.InstanceConfig,
           ) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -3126,14 +3132,14 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstanceConfigs, request)
+          .calledWith(client.innerApiCalls.listInstanceConfigs, request),
       );
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3144,23 +3150,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstanceConfig()
+          new protos.google.spanner.admin.instance.v1.InstanceConfig(),
         ),
       ];
       client.descriptors.page.listInstanceConfigs.asyncIterate =
@@ -3176,14 +3182,14 @@ describe('v1.InstanceAdminClient', () => {
         (
           client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3194,11 +3200,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3217,14 +3223,14 @@ describe('v1.InstanceAdminClient', () => {
         (
           client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
   });
@@ -3237,11 +3243,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3271,11 +3277,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3291,14 +3297,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.longrunning.IOperation[] | null
+            result?: protos.google.longrunning.IOperation[] | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -3320,22 +3326,22 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listInstanceConfigOperations = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.listInstanceConfigOperations(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.listInstanceConfigOperations as SinonStub
@@ -3354,11 +3360,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3392,8 +3398,8 @@ describe('v1.InstanceAdminClient', () => {
           .getCall(0)
           .calledWith(
             client.innerApiCalls.listInstanceConfigOperations,
-            request
-          )
+            request,
+          ),
       );
       assert(
         (
@@ -3402,8 +3408,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -3414,11 +3420,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3447,8 +3453,8 @@ describe('v1.InstanceAdminClient', () => {
           .getCall(0)
           .calledWith(
             client.innerApiCalls.listInstanceConfigOperations,
-            request
-          )
+            request,
+          ),
       );
       assert(
         (
@@ -3457,8 +3463,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -3469,11 +3475,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3495,7 +3501,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstanceConfigOperations
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -3504,8 +3510,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -3516,11 +3522,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3539,7 +3545,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstanceConfigOperations
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -3548,8 +3554,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
   });
@@ -3562,23 +3568,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
       ];
       client.innerApiCalls.listInstances = stubSimpleCall(expectedResponse);
@@ -3601,23 +3607,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
       ];
       client.innerApiCalls.listInstances =
@@ -3627,14 +3633,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.spanner.admin.instance.v1.IInstance[] | null
+            result?: protos.google.spanner.admin.instance.v1.IInstance[] | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -3656,18 +3662,18 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listInstances = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(client.listInstances(request), expectedError);
       const actualRequest = (
@@ -3687,23 +3693,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
       ];
       client.descriptors.page.listInstances.createStream =
@@ -3716,7 +3722,7 @@ describe('v1.InstanceAdminClient', () => {
           'data',
           (response: protos.google.spanner.admin.instance.v1.Instance) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -3730,14 +3736,14 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstances, request)
+          .calledWith(client.innerApiCalls.listInstances, request),
       );
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3748,11 +3754,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3767,7 +3773,7 @@ describe('v1.InstanceAdminClient', () => {
           'data',
           (response: protos.google.spanner.admin.instance.v1.Instance) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -3780,14 +3786,14 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstances, request)
+          .calledWith(client.innerApiCalls.listInstances, request),
       );
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3798,23 +3804,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.Instance()
+          new protos.google.spanner.admin.instance.v1.Instance(),
         ),
       ];
       client.descriptors.page.listInstances.asyncIterate =
@@ -3829,14 +3835,14 @@ describe('v1.InstanceAdminClient', () => {
         (
           client.descriptors.page.listInstances.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (client.descriptors.page.listInstances.asyncIterate as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
 
@@ -3847,11 +3853,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancesRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancesRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -3870,14 +3876,14 @@ describe('v1.InstanceAdminClient', () => {
         (
           client.descriptors.page.listInstances.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (client.descriptors.page.listInstances.asyncIterate as SinonStub)
           .getCall(0)
           .args[2].otherArgs.headers[
             'x-goog-request-params'
-          ].includes(expectedHeaderRequestParams)
+          ].includes(expectedHeaderRequestParams),
       );
     });
   });
@@ -3890,23 +3896,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
       ];
       client.innerApiCalls.listInstancePartitions =
@@ -3930,23 +3936,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
       ];
       client.innerApiCalls.listInstancePartitions =
@@ -3958,14 +3964,14 @@ describe('v1.InstanceAdminClient', () => {
             err?: Error | null,
             result?:
               | protos.google.spanner.admin.instance.v1.IInstancePartition[]
-              | null
+              | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -3987,22 +3993,22 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listInstancePartitions = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.listInstancePartitions(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.listInstancePartitions as SinonStub
@@ -4021,23 +4027,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
       ];
       client.descriptors.page.listInstancePartitions.createStream =
@@ -4049,10 +4055,10 @@ describe('v1.InstanceAdminClient', () => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.admin.instance.v1.InstancePartition
+            response: protos.google.spanner.admin.instance.v1.InstancePartition,
           ) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -4069,7 +4075,7 @@ describe('v1.InstanceAdminClient', () => {
             .createStream as SinonStub
         )
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstancePartitions, request)
+          .calledWith(client.innerApiCalls.listInstancePartitions, request),
       );
       assert(
         (
@@ -4078,8 +4084,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4090,11 +4096,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4108,10 +4114,10 @@ describe('v1.InstanceAdminClient', () => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.admin.instance.v1.InstancePartition
+            response: protos.google.spanner.admin.instance.v1.InstancePartition,
           ) => {
             responses.push(response);
-          }
+          },
         );
         stream.on('end', () => {
           resolve(responses);
@@ -4127,7 +4133,7 @@ describe('v1.InstanceAdminClient', () => {
             .createStream as SinonStub
         )
           .getCall(0)
-          .calledWith(client.innerApiCalls.listInstancePartitions, request)
+          .calledWith(client.innerApiCalls.listInstancePartitions, request),
       );
       assert(
         (
@@ -4136,8 +4142,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4148,23 +4154,23 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
         generateSampleMessage(
-          new protos.google.spanner.admin.instance.v1.InstancePartition()
+          new protos.google.spanner.admin.instance.v1.InstancePartition(),
         ),
       ];
       client.descriptors.page.listInstancePartitions.asyncIterate =
@@ -4181,7 +4187,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstancePartitions
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -4190,8 +4196,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4202,11 +4208,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4226,7 +4232,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstancePartitions
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -4235,8 +4241,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
   });
@@ -4249,11 +4255,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4283,11 +4289,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4303,14 +4309,14 @@ describe('v1.InstanceAdminClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.longrunning.IOperation[] | null
+            result?: protos.google.longrunning.IOperation[] | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -4332,22 +4338,22 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listInstancePartitionOperations = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.listInstancePartitionOperations(request),
-        expectedError
+        expectedError,
       );
       const actualRequest = (
         client.innerApiCalls.listInstancePartitionOperations as SinonStub
@@ -4366,11 +4372,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4404,8 +4410,8 @@ describe('v1.InstanceAdminClient', () => {
           .getCall(0)
           .calledWith(
             client.innerApiCalls.listInstancePartitionOperations,
-            request
-          )
+            request,
+          ),
       );
       assert(
         (
@@ -4414,8 +4420,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4426,11 +4432,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4459,8 +4465,8 @@ describe('v1.InstanceAdminClient', () => {
           .getCall(0)
           .calledWith(
             client.innerApiCalls.listInstancePartitionOperations,
-            request
-          )
+            request,
+          ),
       );
       assert(
         (
@@ -4469,8 +4475,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4481,11 +4487,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4507,7 +4513,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstancePartitionOperations
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -4516,8 +4522,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
 
@@ -4528,11 +4534,11 @@ describe('v1.InstanceAdminClient', () => {
       });
       await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest(),
       );
       const defaultValue1 = getTypeDefaultValue(
         '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
-        ['parent']
+        ['parent'],
       );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1 ?? ''}`;
@@ -4551,7 +4557,7 @@ describe('v1.InstanceAdminClient', () => {
           client.descriptors.page.listInstancePartitionOperations
             .asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert(
         (
@@ -4560,8 +4566,8 @@ describe('v1.InstanceAdminClient', () => {
         )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+            expectedHeaderRequestParams,
+          ),
       );
     });
   });
@@ -4591,7 +4597,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -4601,7 +4607,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -4611,7 +4617,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
@@ -4637,13 +4643,13 @@ describe('v1.InstanceAdminClient', () => {
       it('instanceConfigPath', () => {
         const result = client.instanceConfigPath(
           'projectValue',
-          'instanceConfigValue'
+          'instanceConfigValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -4653,7 +4659,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -4664,7 +4670,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
@@ -4692,7 +4698,7 @@ describe('v1.InstanceAdminClient', () => {
         const result = client.instancePartitionPath(
           'projectValue',
           'instanceValue',
-          'instancePartitionValue'
+          'instancePartitionValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
@@ -4701,7 +4707,7 @@ describe('v1.InstanceAdminClient', () => {
               .render as SinonStub
           )
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -4714,7 +4720,7 @@ describe('v1.InstanceAdminClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -4727,7 +4733,7 @@ describe('v1.InstanceAdminClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -4741,7 +4747,7 @@ describe('v1.InstanceAdminClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
@@ -4769,7 +4775,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.projectPathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -4779,7 +4785,7 @@ describe('v1.InstanceAdminClient', () => {
         assert(
           (client.pathTemplates.projectPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });

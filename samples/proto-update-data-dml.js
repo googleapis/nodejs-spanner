@@ -21,7 +21,7 @@ const music = singer.examples.spanner.music;
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_update_data_with_proto_types_with_dml]
   /**

@@ -47,8 +47,8 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
       `Creating database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}.`
+        databaseId,
+      )}.`,
     );
     const createSingersTableStatement = `
       CREATE TABLE Singers (
@@ -84,7 +84,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     console.log(`Waiting for creation of ${databaseId} to complete...`);
     await operation.promise();
     console.log(
-      `Created database ${databaseId} with default leader ${defaultLeader}.`
+      `Created database ${databaseId} with default leader ${defaultLeader}.`,
     );
   }
   createDatabaseWithDefaultLeader();

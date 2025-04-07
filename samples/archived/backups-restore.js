@@ -40,10 +40,10 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   // Restore the database
   console.log(
-    `Restoring database ${database.formattedName_} from backup ${backupId}.`
+    `Restoring database ${database.formattedName_} from backup ${backupId}.`,
   );
   const [, restoreOperation] = await database.restore(
-    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`
+    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`,
   );
 
   // Wait for restore to complete
@@ -56,7 +56,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
     `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
       `to ${databaseId} from backup ${restoreInfo.backupInfo.backup} ` +
       'with version time ' +
-      `${new PreciseDate(restoreInfo.backupInfo.versionTime).toISOString()}.`
+      `${new PreciseDate(restoreInfo.backupInfo.versionTime).toISOString()}.`,
   );
   // [END spanner_restore_backup]
 }

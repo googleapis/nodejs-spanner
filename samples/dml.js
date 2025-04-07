@@ -53,7 +53,7 @@ function insertUsingDml(instanceId, databaseId, projectId) {
       });
 
       console.log(
-        `Successfully inserted ${rowCount} record into the Singers table.`
+        `Successfully inserted ${rowCount} record into the Singers table.`,
       );
 
       await transaction.commit();
@@ -385,7 +385,7 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}`
+        `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}`,
       );
     });
   } catch (err) {
@@ -448,7 +448,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
         // Makes sure the second album's budget is large enough
         if (secondBudget < transferAmount) {
           throw new Error(
-            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`
+            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`,
           );
         }
       }),
@@ -488,7 +488,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
               params: {
                 Budget: secondBudget,
               },
-            })
+            }),
           );
       })
       .then(() => {
@@ -497,7 +497,7 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`
+          `Successfully executed read-write transaction using DML to transfer ${transferAmount} from Album 2 to Album 1.`,
         );
       })
       .then(() => {
@@ -616,7 +616,7 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
       const [rowCounts] = await transaction.batchUpdate(dmlStatements);
       await transaction.commit();
       console.log(
-        `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`
+        `Successfully executed ${rowCounts.length} SQL statements using Batch DML.`,
       );
     });
   } catch (err) {
@@ -632,7 +632,7 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
 async function insertWithCustomTimeoutAndRetrySettings(
   instanceId,
   databaseId,
-  projectId
+  projectId,
 ) {
   // [START spanner_set_custom_timeout_and_retry]
   // Imports the Google Cloud client library
@@ -703,19 +703,22 @@ require('yargs')
     'insertUsingDml <instanceName> <databaseName> <projectId>',
     'Inserts one record using DML into an example Cloud Spanner table.',
     {},
-    opts => insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'updateUsingDml <instanceName> <databaseName> <projectId>',
     'Updates one record using DML.',
     {},
-    opts => updateUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      updateUsingDml(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'deleteUsingDml <instanceName> <databaseName> <projectId>',
     'Deletes one record using DML.',
     {},
-    opts => deleteUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      deleteUsingDml(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'updateUsingDmlWithTimestamp <instanceName> <databaseName> <projectId>',
@@ -725,15 +728,19 @@ require('yargs')
       updateUsingDmlWithTimestamp(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'writeAndReadUsingDml <instanceName> <databaseName> <projectId>',
     'Inserts and reads one record using DML.',
     {},
     opts =>
-      writeAndReadUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+      writeAndReadUsingDml(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId,
+      ),
   )
   .command(
     'updateUsingDmlWithStruct <instanceName> <databaseName> <projectId>',
@@ -743,14 +750,14 @@ require('yargs')
       updateUsingDmlWithStruct(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'writeUsingDml <instanceName> <databaseName> <projectId>',
     'Inserts multiple records using DML.',
     {},
-    opts => writeUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => writeUsingDml(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithParameter <instanceName> <databaseName> <projectId>',
@@ -760,8 +767,8 @@ require('yargs')
       queryDataWithParameter(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'writeWithTransactionUsingDml <instanceName> <databaseName> <projectId>',
@@ -771,8 +778,8 @@ require('yargs')
       writeWithTransactionUsingDml(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'updateUsingPartitionedDml <instanceName> <databaseName> <projectId>',
@@ -782,8 +789,8 @@ require('yargs')
       updateUsingPartitionedDml(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'deleteUsingPartitionedDml <instanceName> <databaseName> <projectId>',
@@ -793,15 +800,15 @@ require('yargs')
       deleteUsingPartitionedDml(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'updateUsingBatchDml <instanceName> <databaseName> <projectId>',
     'Insert and Update records using Batch DML.',
     {},
     opts =>
-      updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId)
+      updateUsingBatchDml(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'insertWithCustomTimeoutAndRetrySettings <instanceName> <databaseName> <projectId>',
@@ -811,39 +818,39 @@ require('yargs')
       insertWithCustomTimeoutAndRetrySettings(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example('node $0 insertUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 updateUsingDml "my-instance" "my-database" "my-project-id"')
   .example('node $0 deleteUsingDml "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 updateUsingDmlWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 updateUsingDmlWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 writeAndReadUsingDml "my-instance" "my-database" "my-project-id"'
+    'node $0 writeAndReadUsingDml "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 updateUsingDmlWithStruct "my-instance" "my-database" "my-project-id"'
+    'node $0 updateUsingDmlWithStruct "my-instance" "my-database" "my-project-id"',
   )
   .example('node $0 writeUsingDml "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 queryWithParameter "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithParameter "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 writeWithTransactionUsingDml "my-instance" "my-database" "my-project-id"'
+    'node $0 writeWithTransactionUsingDml "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 updateUsingPartitionedDml "my-instance" "my-database" "my-project-id"'
+    'node $0 updateUsingPartitionedDml "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 deleteUsingPartitionedDml "my-instance" "my-database" "my-project-id"'
+    'node $0 deleteUsingPartitionedDml "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"'
+    'node $0 updateUsingBatchDml "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 insertWithCustomTimeoutAndRetrySettings "my-instance" "my-database" "my-project-id"'
+    'node $0 insertWithCustomTimeoutAndRetrySettings "my-instance" "my-database" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

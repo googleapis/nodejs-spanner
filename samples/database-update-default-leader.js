@@ -44,8 +44,8 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
       `Updating database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}.`
+        databaseId,
+      )}.`,
     );
     const setDefaultLeaderStatement = `
       ALTER DATABASE \`${databaseId}\`
@@ -54,7 +54,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: [setDefaultLeaderStatement],
     });
@@ -62,7 +62,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     console.log(`Waiting for updating of ${databaseId} to complete...`);
     await operation.promise();
     console.log(
-      `Updated database ${databaseId} with default leader ${defaultLeader}.`
+      `Updated database ${databaseId} with default leader ${defaultLeader}.`,
     );
   }
   updateDatabaseWithDefaultLeader();

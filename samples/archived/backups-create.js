@@ -20,7 +20,7 @@ async function createBackup(
   databaseId,
   backupId,
   projectId,
-  versionTime
+  versionTime,
 ) {
   // [START spanner_create_backup]
   // Imports the Google Cloud client library and precise date library
@@ -71,7 +71,7 @@ async function createBackup(
           `${backupInfo.sizeBytes} bytes was created at ` +
           `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
           'for version of database at ' +
-          `${new PreciseDate(backupInfo.versionTime).toISOString()}`
+          `${new PreciseDate(backupInfo.versionTime).toISOString()}`,
       );
     } else {
       console.error('ERROR: Backup is not ready.');

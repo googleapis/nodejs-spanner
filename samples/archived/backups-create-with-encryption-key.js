@@ -20,7 +20,7 @@ async function createBackupWithEncryptionKey(
   databaseId,
   backupId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_create_backup_with_encryption_key]
   // Imports the Google Cloud client library and precise date library
@@ -75,7 +75,7 @@ async function createBackupWithEncryptionKey(
         `Backup ${backupInfo.name} of size ` +
           `${backupInfo.sizeBytes} bytes was created at ` +
           `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
-          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`
+          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`,
       );
     } else {
       console.error('ERROR: Backup is not ready.');

@@ -98,7 +98,7 @@ export class GrpcServiceObject extends ServiceObject {
   setMetadata(metadata: Metadata, callback: ResponseCallback): void;
   setMetadata(
     metadata: Metadata,
-    callback?: ResponseCallback
+    callback?: ResponseCallback,
   ): void | Promise<SetMetadataResponse> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const protoOpts = (this.methods.setMetadata as any).protoOpts;
@@ -106,7 +106,7 @@ export class GrpcServiceObject extends ServiceObject {
       true,
       {},
       this.getOpts(this.methods.setMetadata),
-      metadata
+      metadata,
     );
     this.request(protoOpts, reqOpts, callback || util.noop);
   }

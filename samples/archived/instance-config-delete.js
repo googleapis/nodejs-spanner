@@ -21,7 +21,7 @@
 
 function main(
   instanceConfigId = 'custom-my-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_delete_instance_config]
 
@@ -51,7 +51,7 @@ function main(
         console.error(
           'Error: Instance config ',
           instanceConfigId,
-          ' still exists'
+          ' still exists',
         );
       } else {
         console.log(`Deleted instance config ${instanceConfigId}.\n`);
@@ -61,7 +61,7 @@ function main(
         'ERROR: Deleting instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

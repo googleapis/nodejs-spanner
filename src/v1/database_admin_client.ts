@@ -118,7 +118,7 @@ export class DatabaseAdminClient {
    */
   constructor(
     opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
+    gaxInstance?: typeof gax | typeof gax.fallback,
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof DatabaseAdminClient;
@@ -128,7 +128,7 @@ export class DatabaseAdminClient {
       opts?.universe_domain !== opts?.universeDomain
     ) {
       throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
+        'Please set either universe_domain or universeDomain, but not both.',
       );
     }
     const universeDomainEnvVar =
@@ -212,22 +212,22 @@ export class DatabaseAdminClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       backupPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/backups/{backup}'
+        'projects/{project}/instances/{instance}/backups/{backup}',
       ),
       backupSchedulePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}'
+        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}',
       ),
       cryptoKeyPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}'
+        'projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}',
       ),
       databasePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}'
+        'projects/{project}/instances/{instance}/databases/{database}',
       ),
       databaseRolePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}'
+        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}',
       ),
       instancePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}'
+        'projects/{project}/instances/{instance}',
       ),
     };
 
@@ -238,32 +238,32 @@ export class DatabaseAdminClient {
       listDatabases: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'databases'
+        'databases',
       ),
       listBackups: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'backups'
+        'backups',
       ),
       listDatabaseOperations: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'operations'
+        'operations',
       ),
       listBackupOperations: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'operations'
+        'operations',
       ),
       listDatabaseRoles: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'databaseRoles'
+        'databaseRoles',
       ),
       listBackupSchedules: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'backupSchedules'
+        'backupSchedules',
       ),
     };
 
@@ -327,72 +327,72 @@ export class DatabaseAdminClient {
       .lro(lroOptions)
       .operationsClient(opts);
     const createDatabaseResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.Database'
+      '.google.spanner.admin.database.v1.Database',
     ) as gax.protobuf.Type;
     const createDatabaseMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.CreateDatabaseMetadata'
+      '.google.spanner.admin.database.v1.CreateDatabaseMetadata',
     ) as gax.protobuf.Type;
     const updateDatabaseResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.Database'
+      '.google.spanner.admin.database.v1.Database',
     ) as gax.protobuf.Type;
     const updateDatabaseMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.UpdateDatabaseMetadata'
+      '.google.spanner.admin.database.v1.UpdateDatabaseMetadata',
     ) as gax.protobuf.Type;
     const updateDatabaseDdlResponse = protoFilesRoot.lookup(
-      '.google.protobuf.Empty'
+      '.google.protobuf.Empty',
     ) as gax.protobuf.Type;
     const updateDatabaseDdlMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata'
+      '.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata',
     ) as gax.protobuf.Type;
     const createBackupResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.Backup'
+      '.google.spanner.admin.database.v1.Backup',
     ) as gax.protobuf.Type;
     const createBackupMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.CreateBackupMetadata'
+      '.google.spanner.admin.database.v1.CreateBackupMetadata',
     ) as gax.protobuf.Type;
     const copyBackupResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.Backup'
+      '.google.spanner.admin.database.v1.Backup',
     ) as gax.protobuf.Type;
     const copyBackupMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.CopyBackupMetadata'
+      '.google.spanner.admin.database.v1.CopyBackupMetadata',
     ) as gax.protobuf.Type;
     const restoreDatabaseResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.Database'
+      '.google.spanner.admin.database.v1.Database',
     ) as gax.protobuf.Type;
     const restoreDatabaseMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.database.v1.RestoreDatabaseMetadata'
+      '.google.spanner.admin.database.v1.RestoreDatabaseMetadata',
     ) as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
       createDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createDatabaseResponse.decode.bind(createDatabaseResponse),
-        createDatabaseMetadata.decode.bind(createDatabaseMetadata)
+        createDatabaseMetadata.decode.bind(createDatabaseMetadata),
       ),
       updateDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         updateDatabaseResponse.decode.bind(updateDatabaseResponse),
-        updateDatabaseMetadata.decode.bind(updateDatabaseMetadata)
+        updateDatabaseMetadata.decode.bind(updateDatabaseMetadata),
       ),
       updateDatabaseDdl: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         updateDatabaseDdlResponse.decode.bind(updateDatabaseDdlResponse),
-        updateDatabaseDdlMetadata.decode.bind(updateDatabaseDdlMetadata)
+        updateDatabaseDdlMetadata.decode.bind(updateDatabaseDdlMetadata),
       ),
       createBackup: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createBackupResponse.decode.bind(createBackupResponse),
-        createBackupMetadata.decode.bind(createBackupMetadata)
+        createBackupMetadata.decode.bind(createBackupMetadata),
       ),
       copyBackup: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         copyBackupResponse.decode.bind(copyBackupResponse),
-        copyBackupMetadata.decode.bind(copyBackupMetadata)
+        copyBackupMetadata.decode.bind(copyBackupMetadata),
       ),
       restoreDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         restoreDatabaseResponse.decode.bind(restoreDatabaseResponse),
-        restoreDatabaseMetadata.decode.bind(restoreDatabaseMetadata)
+        restoreDatabaseMetadata.decode.bind(restoreDatabaseMetadata),
       ),
     };
 
@@ -401,7 +401,7 @@ export class DatabaseAdminClient {
       'google.spanner.admin.database.v1.DatabaseAdmin',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -435,12 +435,12 @@ export class DatabaseAdminClient {
     this.databaseAdminStub = this._gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.spanner.admin.database.v1.DatabaseAdmin'
+            'google.spanner.admin.database.v1.DatabaseAdmin',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.admin.database.v1.DatabaseAdmin,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -485,7 +485,7 @@ export class DatabaseAdminClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor =
@@ -496,7 +496,7 @@ export class DatabaseAdminClient {
         callPromise,
         this._defaults[methodName],
         descriptor,
-        this._opts.fallback
+        this._opts.fallback,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -517,7 +517,7 @@ export class DatabaseAdminClient {
     ) {
       process.emitWarning(
         'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -535,7 +535,7 @@ export class DatabaseAdminClient {
     ) {
       process.emitWarning(
         'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -580,7 +580,7 @@ export class DatabaseAdminClient {
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -609,7 +609,7 @@ export class DatabaseAdminClient {
    */
   getDatabase(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase,
@@ -626,7 +626,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
@@ -636,7 +636,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getDatabase(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
@@ -655,7 +655,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase,
@@ -709,7 +709,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('getDatabase response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -732,7 +732,7 @@ export class DatabaseAdminClient {
    */
   dropDatabase(
     request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -749,7 +749,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
@@ -759,7 +759,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   dropDatabase(
     request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
@@ -778,7 +778,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -832,7 +832,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('dropDatabase response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -855,7 +855,7 @@ export class DatabaseAdminClient {
    */
   getDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
@@ -875,7 +875,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
@@ -885,7 +885,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
@@ -904,7 +904,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
@@ -961,7 +961,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('getDatabaseDdl response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -998,7 +998,7 @@ export class DatabaseAdminClient {
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1013,7 +1013,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -1021,7 +1021,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -1036,7 +1036,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1085,7 +1085,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('setIamPolicy response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1115,7 +1115,7 @@ export class DatabaseAdminClient {
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1130,7 +1130,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1138,7 +1138,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1153,7 +1153,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1202,7 +1202,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('getIamPolicy response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1236,7 +1236,7 @@ export class DatabaseAdminClient {
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1251,7 +1251,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1259,7 +1259,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1274,7 +1274,7 @@ export class DatabaseAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1323,7 +1323,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('testIamPermissions response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1345,7 +1345,7 @@ export class DatabaseAdminClient {
    */
   getBackup(
     request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1362,7 +1362,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
@@ -1372,7 +1372,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getBackup(
     request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
@@ -1391,7 +1391,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1442,7 +1442,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('getBackup response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1471,7 +1471,7 @@ export class DatabaseAdminClient {
    */
   updateBackup(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1488,7 +1488,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
@@ -1498,7 +1498,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateBackup(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
@@ -1517,7 +1517,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1571,7 +1571,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('updateBackup response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1593,7 +1593,7 @@ export class DatabaseAdminClient {
    */
   deleteBackup(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1610,7 +1610,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
@@ -1620,7 +1620,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteBackup(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
@@ -1639,7 +1639,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1693,7 +1693,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('deleteBackup response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1722,7 +1722,7 @@ export class DatabaseAdminClient {
    */
   addSplitPoints(
     request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
@@ -1742,7 +1742,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   addSplitPoints(
     request: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
@@ -1752,7 +1752,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   addSplitPoints(
     request?: protos.google.spanner.admin.database.v1.IAddSplitPointsRequest,
@@ -1771,7 +1771,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IAddSplitPointsResponse,
@@ -1828,7 +1828,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('addSplitPoints response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1853,7 +1853,7 @@ export class DatabaseAdminClient {
    */
   createBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -1873,7 +1873,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createBackupSchedule(
     request: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
@@ -1883,7 +1883,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
@@ -1902,7 +1902,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -1959,7 +1959,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('createBackupSchedule response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -1980,7 +1980,7 @@ export class DatabaseAdminClient {
    */
   getBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -2000,7 +2000,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getBackupSchedule(
     request: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
@@ -2010,7 +2010,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
@@ -2029,7 +2029,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -2086,7 +2086,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('getBackupSchedule response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -2113,7 +2113,7 @@ export class DatabaseAdminClient {
    */
   updateBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -2133,7 +2133,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateBackupSchedule(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
@@ -2143,7 +2143,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
@@ -2162,7 +2162,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule,
@@ -2219,7 +2219,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('updateBackupSchedule response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
   /**
@@ -2240,7 +2240,7 @@ export class DatabaseAdminClient {
    */
   deleteBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -2260,7 +2260,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteBackupSchedule(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
@@ -2270,7 +2270,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteBackupSchedule(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
@@ -2289,7 +2289,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -2346,7 +2346,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('deleteBackupSchedule response %j', response);
           return [response, options, rawResponse];
-        }
+        },
       );
   }
 
@@ -2409,7 +2409,7 @@ export class DatabaseAdminClient {
    */
   createDatabase(
     request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2430,7 +2430,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
@@ -2441,7 +2441,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createDatabase(
     request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
@@ -2462,7 +2462,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2520,7 +2520,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('createDatabase response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -2533,7 +2533,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkCreateDatabaseProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2543,13 +2543,13 @@ export class DatabaseAdminClient {
     this._log.info('createDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.createDatabase,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2614,7 +2614,7 @@ export class DatabaseAdminClient {
    */
   updateDatabase(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2635,7 +2635,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateDatabase(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
@@ -2646,7 +2646,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateDatabase(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
@@ -2667,7 +2667,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2725,7 +2725,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('updateDatabase response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -2738,7 +2738,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkUpdateDatabaseProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2748,13 +2748,13 @@ export class DatabaseAdminClient {
     this._log.info('updateDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.updateDatabase,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2825,7 +2825,7 @@ export class DatabaseAdminClient {
    */
   updateDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2846,7 +2846,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
@@ -2857,7 +2857,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
@@ -2878,7 +2878,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2936,7 +2936,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('updateDatabaseDdl response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -2949,7 +2949,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkUpdateDatabaseDdlProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.protobuf.Empty,
@@ -2959,13 +2959,13 @@ export class DatabaseAdminClient {
     this._log.info('updateDatabaseDdl long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.updateDatabaseDdl,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.protobuf.Empty,
@@ -3018,7 +3018,7 @@ export class DatabaseAdminClient {
    */
   createBackup(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -3039,7 +3039,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
@@ -3050,7 +3050,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createBackup(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
@@ -3071,7 +3071,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -3129,7 +3129,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('createBackup response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -3142,7 +3142,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkCreateBackupProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -3152,13 +3152,13 @@ export class DatabaseAdminClient {
     this._log.info('createBackup long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.createBackup,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -3219,7 +3219,7 @@ export class DatabaseAdminClient {
    */
   copyBackup(
     request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -3240,7 +3240,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   copyBackup(
     request: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
@@ -3251,7 +3251,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   copyBackup(
     request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
@@ -3272,7 +3272,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -3330,7 +3330,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('copyBackup response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -3343,7 +3343,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkCopyBackupProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -3353,13 +3353,13 @@ export class DatabaseAdminClient {
     this._log.info('copyBackup long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.copyBackup,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -3419,7 +3419,7 @@ export class DatabaseAdminClient {
    */
   restoreDatabase(
     request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -3440,7 +3440,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -3451,7 +3451,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   restoreDatabase(
     request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -3472,7 +3472,7 @@ export class DatabaseAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -3530,7 +3530,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('restoreDatabase response %j', rawResponse);
           return [response, rawResponse, _];
-        }
+        },
       );
   }
   /**
@@ -3543,7 +3543,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   async checkRestoreDatabaseProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -3553,13 +3553,13 @@ export class DatabaseAdminClient {
     this._log.info('restoreDatabase long-running');
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.restoreDatabase,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -3596,7 +3596,7 @@ export class DatabaseAdminClient {
    */
   listDatabases(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
@@ -3613,7 +3613,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabase
-    >
+    >,
   ): void;
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -3623,7 +3623,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabase
-    >
+    >,
   ): void;
   listDatabases(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -3642,7 +3642,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabase
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
@@ -3693,7 +3693,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listDatabases values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -3725,7 +3725,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3744,7 +3744,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabases.createStream(
       this.innerApiCalls.listDatabases as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -3777,7 +3777,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase> {
     request = request || {};
     options = options || {};
@@ -3796,7 +3796,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
   /**
@@ -3873,7 +3873,7 @@ export class DatabaseAdminClient {
    */
   listBackups(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup[],
@@ -3890,7 +3890,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackup
-    >
+    >,
   ): void;
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -3900,7 +3900,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackup
-    >
+    >,
   ): void;
   listBackups(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -3919,7 +3919,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackup
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup[],
@@ -3970,7 +3970,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listBackups values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -4044,7 +4044,7 @@ export class DatabaseAdminClient {
    */
   listBackupsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -4063,7 +4063,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackups.createStream(
       this.innerApiCalls.listBackups as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -4138,7 +4138,7 @@ export class DatabaseAdminClient {
    */
   listBackupsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackup> {
     request = request || {};
     options = options || {};
@@ -4157,7 +4157,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
   /**
@@ -4244,7 +4244,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperations(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -4261,7 +4261,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -4271,7 +4271,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listDatabaseOperations(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -4290,7 +4290,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -4341,7 +4341,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listDatabaseOperations values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -4420,7 +4420,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -4439,7 +4439,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabaseOperations.createStream(
       this.innerApiCalls.listDatabaseOperations as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -4519,7 +4519,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -4538,7 +4538,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   /**
@@ -4652,7 +4652,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperations(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -4669,7 +4669,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
@@ -4679,7 +4679,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listBackupOperations(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
@@ -4698,7 +4698,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -4749,7 +4749,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listBackupOperations values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -4853,7 +4853,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -4872,7 +4872,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackupOperations.createStream(
       this.innerApiCalls.listBackupOperations as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -4977,7 +4977,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -4996,7 +4996,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   /**
@@ -5030,7 +5030,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseRoles(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabaseRole[],
@@ -5047,7 +5047,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabaseRole
-    >
+    >,
   ): void;
   listDatabaseRoles(
     request: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
@@ -5057,7 +5057,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabaseRole
-    >
+    >,
   ): void;
   listDatabaseRoles(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
@@ -5076,7 +5076,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IDatabaseRole
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabaseRole[],
@@ -5127,7 +5127,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listDatabaseRoles values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -5160,7 +5160,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseRolesStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -5179,7 +5179,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabaseRoles.createStream(
       this.innerApiCalls.listDatabaseRoles as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -5213,7 +5213,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseRolesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole> {
     request = request || {};
     options = options || {};
@@ -5232,7 +5232,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listDatabaseRoles.asyncIterate(
       this.innerApiCalls['listDatabaseRoles'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole>;
   }
   /**
@@ -5267,7 +5267,7 @@ export class DatabaseAdminClient {
    */
   listBackupSchedules(
     request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule[],
@@ -5284,7 +5284,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackupSchedule
-    >
+    >,
   ): void;
   listBackupSchedules(
     request: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
@@ -5294,7 +5294,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackupSchedule
-    >
+    >,
   ): void;
   listBackupSchedules(
     request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
@@ -5313,7 +5313,7 @@ export class DatabaseAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.database.v1.IBackupSchedule
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackupSchedule[],
@@ -5364,7 +5364,7 @@ export class DatabaseAdminClient {
         ]) => {
           this._log.info('listBackupSchedules values %j', response);
           return [response, input, output];
-        }
+        },
       );
   }
 
@@ -5398,7 +5398,7 @@ export class DatabaseAdminClient {
    */
   listBackupSchedulesStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -5417,7 +5417,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackupSchedules.createStream(
       this.innerApiCalls.listBackupSchedules as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -5452,7 +5452,7 @@ export class DatabaseAdminClient {
    */
   listBackupSchedulesAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackupSchedule> {
     request = request || {};
     options = options || {};
@@ -5471,7 +5471,7 @@ export class DatabaseAdminClient {
     return this.descriptors.page.listBackupSchedules.asyncIterate(
       this.innerApiCalls['listBackupSchedules'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackupSchedule>;
   }
   /**
@@ -5517,7 +5517,7 @@ export class DatabaseAdminClient {
       protos.google.longrunning.Operation,
       protos.google.longrunning.GetOperationRequest,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.longrunning.Operation]> {
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
@@ -5567,7 +5567,7 @@ export class DatabaseAdminClient {
    */
   listOperationsAsync(
     request: protos.google.longrunning.ListOperationsRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -5622,7 +5622,7 @@ export class DatabaseAdminClient {
       protos.google.longrunning.CancelOperationRequest,
       protos.google.protobuf.Empty,
       {} | undefined | null
-    >
+    >,
   ): Promise<protos.google.protobuf.Empty> {
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
@@ -5679,7 +5679,7 @@ export class DatabaseAdminClient {
       protos.google.protobuf.Empty,
       protos.google.longrunning.DeleteOperationRequest,
       {} | null | undefined
-    >
+    >,
   ): Promise<protos.google.protobuf.Empty> {
     let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
@@ -5764,7 +5764,7 @@ export class DatabaseAdminClient {
     project: string,
     instance: string,
     database: string,
-    schedule: string
+    schedule: string,
   ) {
     return this.pathTemplates.backupSchedulePathTemplate.render({
       project: project,
@@ -5783,7 +5783,7 @@ export class DatabaseAdminClient {
    */
   matchProjectFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).project;
   }
 
@@ -5796,7 +5796,7 @@ export class DatabaseAdminClient {
    */
   matchInstanceFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).instance;
   }
 
@@ -5809,7 +5809,7 @@ export class DatabaseAdminClient {
    */
   matchDatabaseFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).database;
   }
 
@@ -5822,7 +5822,7 @@ export class DatabaseAdminClient {
    */
   matchScheduleFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).schedule;
   }
 
@@ -5839,7 +5839,7 @@ export class DatabaseAdminClient {
     project: string,
     location: string,
     keyRing: string,
-    cryptoKey: string
+    cryptoKey: string,
   ) {
     return this.pathTemplates.cryptoKeyPathTemplate.render({
       project: project,
@@ -5959,7 +5959,7 @@ export class DatabaseAdminClient {
     project: string,
     instance: string,
     database: string,
-    role: string
+    role: string,
   ) {
     return this.pathTemplates.databaseRolePathTemplate.render({
       project: project,

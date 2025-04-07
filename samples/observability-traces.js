@@ -23,7 +23,7 @@
 async function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
-  databaseId = 'my-project-id'
+  databaseId = 'my-project-id',
 ) {
   // [START spanner_opentelemetry_traces_cloudtrace_usage]
 

@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_cast_data_type]
   /**
@@ -64,7 +64,7 @@ function main(
             `Bytes: ${json.bytes.valueOf()} \n` +
             `Float: ${json.float} \n` +
             `Bool: ${json.bool} \n` +
-            `Timestamp: ${Spanner.timestamp(json.timestamp)}`
+            `Timestamp: ${Spanner.timestamp(json.timestamp)}`,
         );
       });
     } catch (err) {

@@ -56,7 +56,7 @@ describe('Transaction', () => {
   };
 
   const withAllSpansHaveDBName = generateWithAllSpansHaveDBName(
-    DATABASE.formattedName_
+    DATABASE.formattedName_,
   );
 
   const SESSION = {
@@ -169,7 +169,7 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = [
@@ -179,7 +179,7 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           done();
@@ -202,14 +202,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = ['Begin Transaction'];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -218,12 +218,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             'begin.error',
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
 
           done();
@@ -255,14 +255,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = [];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -271,12 +271,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             'read.error',
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
 
           done();
@@ -300,14 +300,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = [];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -316,12 +316,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.UNSET,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             undefined,
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
 
           done();
@@ -357,14 +357,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = [];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -373,12 +373,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.UNSET,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             undefined,
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
           done();
         });
@@ -401,14 +401,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = [];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -417,12 +417,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             'run.error',
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
 
           done();
@@ -452,7 +452,7 @@ describe('Transaction', () => {
         stream.on('error', error => {
           assert.strictEqual(
             error.message,
-            'Value of type undefined not recognized.'
+            'Value of type undefined not recognized.',
           );
 
           const exportResults = extractExportedSpans();
@@ -463,14 +463,14 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const expectedEventNames = ['Starting stream', 'exception'];
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the final span that got retries did not error.
@@ -479,12 +479,12 @@ describe('Transaction', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Unexpected an span status code'
+            'Unexpected an span status code',
           );
           assert.strictEqual(
             'Value of type undefined not recognized.',
             firstSpan.status.message,
-            'Unexpected span status message'
+            'Unexpected span status message',
           );
 
           done();
@@ -503,7 +503,7 @@ describe('Transaction', () => {
 
     it('no error with unset `id`', done => {
       const expectedError = new Error(
-        'Transaction ID is unknown, nothing to rollback.'
+        'Transaction ID is unknown, nothing to rollback.',
       );
       delete transaction.id;
 
@@ -518,7 +518,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
         );
 
         const expectedEventNames = [
@@ -527,7 +527,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
         );
 
         // Ensure that the final span that got retries did not error.
@@ -536,12 +536,12 @@ describe('Transaction', () => {
         assert.strictEqual(
           SpanStatusCode.UNSET,
           firstSpan.status.code,
-          'Unexpected span status code'
+          'Unexpected span status code',
         );
         assert.strictEqual(
           undefined,
           firstSpan.status.message,
-          'Unexpected span status message'
+          'Unexpected span status message',
         );
 
         done();
@@ -565,14 +565,14 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
         );
 
         const expectedEventNames = [];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
         );
 
         // Ensure that the final span that got retries did not error.
@@ -581,12 +581,12 @@ describe('Transaction', () => {
         assert.strictEqual(
           SpanStatusCode.ERROR,
           firstSpan.status.code,
-          'Unexpected span status code'
+          'Unexpected span status code',
         );
         assert.strictEqual(
           'our request error',
           firstSpan.status.message,
-          'Unexpected span status message'
+          'Unexpected span status message',
         );
 
         done();
@@ -609,14 +609,14 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
         );
 
         const expectedEventNames = [];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
         );
 
         // Ensure that the final span that got retries did not error.
@@ -625,12 +625,12 @@ describe('Transaction', () => {
         assert.strictEqual(
           SpanStatusCode.UNSET,
           firstSpan.status.code,
-          'Unexpected span status code'
+          'Unexpected span status code',
         );
         assert.strictEqual(
           undefined,
           firstSpan.status.message,
-          'Unexpected span status message'
+          'Unexpected span status message',
         );
 
         done();
@@ -660,14 +660,14 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
         );
 
         const expectedEventNames = ['Starting Commit', 'Commit Done'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
         );
 
         // Ensure that the final span that got retries did not error.
@@ -676,12 +676,12 @@ describe('Transaction', () => {
         assert.strictEqual(
           SpanStatusCode.UNSET,
           firstSpan.status.code,
-          'Unexpected span status code'
+          'Unexpected span status code',
         );
         assert.strictEqual(
           undefined,
           firstSpan.status.message,
-          'Unexpected span status message'
+          'Unexpected span status message',
         );
 
         done();
@@ -705,14 +705,14 @@ describe('Transaction', () => {
         assert.deepStrictEqual(
           actualSpanNames,
           expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
         );
 
         const expectedEventNames = ['Starting Commit', 'Commit failed'];
         assert.deepStrictEqual(
           actualEventNames,
           expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
         );
 
         // Ensure that the final span that got retries did not error.
@@ -722,12 +722,12 @@ describe('Transaction', () => {
         assert.strictEqual(
           SpanStatusCode.ERROR,
           firstSpan.status.code,
-          'Unexpected span status code'
+          'Unexpected span status code',
         );
         assert.strictEqual(
           fakeError.message,
           firstSpan.status.message,
-          'Unexpected span status message'
+          'Unexpected span status message',
         );
 
         withAllSpansHaveDBName(spans);

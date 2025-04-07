@@ -47,7 +47,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             {
               minNodes: 1,
               maxNodes: 2,
-            }
+            },
           ),
         // highPriorityCpuUtilizationPercent and storageUtilizationPercent are both
         // percentages and must lie between 0 and 100.
@@ -56,7 +56,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             {
               highPriorityCpuUtilizationPercent: 65,
               storageUtilizationPercent: 95,
-            }
+            },
           ),
       });
 
@@ -67,8 +67,8 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
       console.log(
         `Creating instance ${instanceAdminClient.instancePath(
           projectId,
-          instanceId
-        )}.`
+          instanceId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.createInstance({
         instanceId: instanceId,
@@ -76,7 +76,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             projectId,
-            'regional-us-central1'
+            'regional-us-central1',
           ),
           displayName: 'Display name for the instance.',
           autoscalingConfig: autoscalingConfig,
@@ -109,7 +109,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
           '\n' +
           `High priority cpu utilization percent: ${metadata.autoscalingConfig.autoscalingTargets.highPriorityCpuUtilizationPercent}.` +
           '\n' +
-          `Storage utilization percent: ${metadata.autoscalingConfig.autoscalingTargets.storageUtilizationPercent}.`
+          `Storage utilization percent: ${metadata.autoscalingConfig.autoscalingTargets.storageUtilizationPercent}.`,
       );
     } catch (err) {
       console.error('ERROR:', err);

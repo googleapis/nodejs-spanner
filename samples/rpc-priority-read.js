@@ -58,13 +58,13 @@ async function main(instanceId, databaseId, projectId) {
       const [rows] = await albumsTable.read(query);
 
       console.log(
-        `Successfully fetched ${rows.length} rows using low RPC priority.`
+        `Successfully fetched ${rows.length} rows using low RPC priority.`,
       );
 
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
         );
       });
     } catch (err) {

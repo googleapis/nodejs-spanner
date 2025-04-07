@@ -18,7 +18,7 @@ async function createDatabaseWithEncryptionKey(
   instanceId,
   databaseId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_create_database_with_encryption_key]
   // Imports the Google Cloud client library
@@ -50,7 +50,7 @@ async function createDatabaseWithEncryptionKey(
   // Creates a database
   const [database, operation] = await instance.createDatabase(
     databaseId,
-    request
+    request,
   );
 
   console.log(`Waiting for operation on ${database.id} to complete...`);
@@ -62,7 +62,7 @@ async function createDatabaseWithEncryptionKey(
   const [data] = await database.get();
 
   console.log(
-    `Database encrypted with key ${data.metadata.encryptionConfig.kmsKeyName}.`
+    `Database encrypted with key ${data.metadata.encryptionConfig.kmsKeyName}.`,
   );
   // [END spanner_create_database_with_encryption_key]
 }
