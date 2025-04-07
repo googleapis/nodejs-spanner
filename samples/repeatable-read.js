@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Performs a read-write transaction with isolation level option
-//  usage: node snapshot-isolation.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node repeatable-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
