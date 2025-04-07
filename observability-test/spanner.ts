@@ -1651,7 +1651,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
           database
             .close()
             .then(() => done())
-            .catch((err) => done(err));
+            .catch(err => done(err));
         });
       });
 
@@ -1671,7 +1671,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
           database
             .close()
             .then(() => done())
-            .catch((err) => done(err));
+            .catch(err => done(err));
         });
       });
 
@@ -1744,7 +1744,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
                 done();
               })
-              .catch((err) => done(err));
+              .catch(err => done(err));
           });
       });
     });

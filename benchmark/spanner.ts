@@ -679,11 +679,11 @@ function queueWriteOperations(
                 tx!
                   .commit()
                   .then(() => resolve(performance.now() - t1))
-                  .catch((err) => {
+                  .catch(err => {
                     rejects(err);
                   }),
               )
-              .catch((err) => {
+              .catch(err => {
                 rejects(err);
               });
           });
