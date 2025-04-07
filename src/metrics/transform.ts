@@ -26,8 +26,8 @@ import {MetricKind, ValueType} from './external-types';
 import {monitoring_v3} from 'googleapis';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {
-  GAX_METER_NAME,
-  NATIVE_METRICS_PREFIX,
+  SPANNER_METER_NAME,
+  CLIENT_METRICS_PREFIX,
   SPANNER_RESOURCE_TYPE,
   METRIC_LABELS,
   MONITORED_RESOURCE_LABELS,
@@ -89,7 +89,7 @@ export function transformResourceMetricToTimeSeriesArray({
   return (
     scopeMetrics
       // Only keep those whose scope.name matches 'gax-nodejs'.
-      .filter(({scope: {name}}) => name === GAX_METER_NAME)
+      .filter(({scope: {name}}) => name === SPANNER_METER_NAME)
       // Takes each metric array and flattens it into one array
       .flatMap(({metrics}) =>
         // Only keeps metrics that match our spanner metric names
@@ -110,7 +110,7 @@ function createTimeSeries<T>(
   metric: MetricData,
   dataPoint: DataPoint<T>
 ): monitoring_v3.Schema$TimeSeries {
-  const type = path.posix.join(NATIVE_METRICS_PREFIX, metric.descriptor.name);
+  const type = path.posix.join(CLIENT_METRICS_PREFIX, metric.descriptor.name);
   const {metricLabels: labels, monitoredResourceLabels} =
     _extractLabels(dataPoint);
   const transformedMetric = {

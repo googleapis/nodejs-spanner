@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export const GAX_METER_NAME = 'gax-nodejs';
-export const NATIVE_METRICS_PREFIX = 'spanner.googleapis.com/internal/client';
+export const SPANNER_METER_NAME = 'spanner-nodejs';
+export const CLIENT_METRICS_PREFIX = 'spanner.googleapis.com/internal/client';
 export const SPANNER_RESOURCE_TYPE = 'spanner_instance_client';
 
 // Monitored resource labels
@@ -36,16 +36,12 @@ export const METRIC_LABEL_KEY_CLIENT_NAME = 'client_name';
 export const METRIC_LABEL_KEY_DATABASE = 'database';
 export const METRIC_LABEL_KEY_METHOD = 'method';
 export const METRIC_LABEL_KEY_STATUS = 'status';
-export const METRIC_LABEL_KEY_DIRECT_PATH_ENABLED = 'directpath_enabled';
-export const METRIC_LABEL_KEY_DIRECT_PATH_USED = 'directpath_used';
 export const METRIC_LABELS = new Set([
   METRIC_LABEL_KEY_CLIENT_UID,
   METRIC_LABEL_KEY_CLIENT_NAME,
   METRIC_LABEL_KEY_DATABASE,
   METRIC_LABEL_KEY_METHOD,
   METRIC_LABEL_KEY_STATUS,
-  METRIC_LABEL_KEY_DIRECT_PATH_ENABLED,
-  METRIC_LABEL_KEY_DIRECT_PATH_USED,
 ]);
 
 // Metric names
@@ -54,12 +50,13 @@ export const METRIC_NAME_ATTEMPT_LATENCIES = 'attempt_latencies';
 export const METRIC_NAME_OPERATION_COUNT = 'operation_count';
 export const METRIC_NAME_ATTEMPT_COUNT = 'attempt_count';
 export const METRIC_NAME_GFE_LATENCY = 'gfe_latency';
-export const METRIC_NAME_GFE_MISSING_HEADER_COUNT = 'gfe_missing_header_count';
+export const METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT =
+  'gfe_connectivity_error_count';
 export const METRIC_NAMES = new Set([
   METRIC_NAME_OPERATION_LATENCIES,
   METRIC_NAME_ATTEMPT_LATENCIES,
   METRIC_NAME_GFE_LATENCY,
   METRIC_NAME_OPERATION_COUNT,
   METRIC_NAME_ATTEMPT_COUNT,
-  METRIC_NAME_GFE_MISSING_HEADER_COUNT,
+  METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
 ]);

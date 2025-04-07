@@ -36,7 +36,7 @@ import {
 } from '@opentelemetry/api';
 import {
   SPANNER_RESOURCE_TYPE,
-  GAX_METER_NAME,
+  SPANNER_METER_NAME,
   METRIC_NAME_ATTEMPT_COUNT,
 } from '../../src/metrics/constants';
 import {PreciseDate} from '@google-cloud/precise-date';
@@ -86,8 +86,6 @@ describe('transform', () => {
       database: 'database_id',
       method: 'test_method',
       status: 'test_status',
-      directpath_enabled: 'true',
-      directpath_used: 'false',
       other: 'ignored',
     } as Attributes;
 
@@ -228,8 +226,6 @@ describe('transform', () => {
     assert.strictEqual(metricLabels['database'], 'database_id');
     assert.strictEqual(metricLabels['method'], 'test_method');
     assert.strictEqual(metricLabels['status'], 'test_status');
-    assert.strictEqual(metricLabels['directpath_enabled'], 'true');
-    assert.strictEqual(metricLabels['directpath_used'], 'false');
 
     // Resource Labels
     assert.strictEqual(monitoredResourceLabels['project_id'], 'project_id');
@@ -362,7 +358,7 @@ describe('transform', () => {
   });
 
   it('should convert otel metrics to GCM TimeSeries', async () => {
-    const meter: Meter = meterProvider.getMeter(GAX_METER_NAME);
+    const meter: Meter = meterProvider.getMeter(SPANNER_METER_NAME);
 
     const attemptCounter: Counter = meter.createCounter(
       METRIC_NAME_ATTEMPT_COUNT,

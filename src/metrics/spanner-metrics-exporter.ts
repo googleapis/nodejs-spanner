@@ -151,7 +151,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
     }
 
     const authClient = await this._authorize();
-    await this._monitoring.projects.timeSeries.create({
+    await this._monitoring.projects.timeSeries.createService({
       name: `projects/${this._projectId}`,
       requestBody: {timeSeries},
       auth: authClient,

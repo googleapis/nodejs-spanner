@@ -17,27 +17,23 @@ import * as sinon from 'sinon';
 import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
 import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 import {
-  GAX_METER_NAME,
+  SPANNER_METER_NAME,
   METRIC_NAME_ATTEMPT_COUNT,
   METRIC_NAME_ATTEMPT_LATENCIES,
   METRIC_NAME_OPERATION_COUNT,
   METRIC_NAME_OPERATION_LATENCIES,
-  METRIC_NAME_GFE_MISSING_HEADER_COUNT,
+  METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
   METRIC_NAME_GFE_LATENCY,
 } from '../../src/metrics/constants';
 import {Counter, Meter, Histogram} from '@opentelemetry/api';
 import {ExportResult, ExportResultCode} from '@opentelemetry/core';
 
-const PROJECT_ID = 'test_projectid';
+const PROJECT_ID = 'test-project';
 const INSTANCE_ID = 'test_instance';
 const DATABASE_ID = 'test_db';
 
 // Ensure custom exporter is valid
 describe('CustomExporter', () => {
-  beforeEach(() => {
-    process.env.GCLOUD_PROJECT = PROJECT_ID;
-  });
-
   it('should construct an exporter', () => {
     const exporter = new CloudMonitoringMetricsExporter();
     assert.ok(typeof exporter.export === 'function');
@@ -82,7 +78,7 @@ describe('Export', () => {
   let meter: Meter;
   let attempt_counter: Counter;
   let operation_counter: Counter;
-  let gfe_missing_header_count: Counter;
+  let gfe_connectivity_error_count: Counter;
   let attempt_latency: Histogram;
   let operation_latency: Histogram;
   let gfe_latencey: Histogram;
@@ -94,7 +90,7 @@ describe('Export', () => {
     meterProvider = new MeterProvider({
       readers: [reader],
     });
-    meter = meterProvider.getMeter(GAX_METER_NAME);
+    meter = meterProvider.getMeter(SPANNER_METER_NAME);
     metricAttributes = {
       project_id: PROJECT_ID,
       instance_id: INSTANCE_ID,
@@ -121,8 +117,8 @@ describe('Export', () => {
       unit: '1',
     });
 
-    gfe_missing_header_count = meter.createCounter(
-      METRIC_NAME_GFE_MISSING_HEADER_COUNT,
+    gfe_connectivity_error_count = meter.createCounter(
+      METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
       {
         description: 'Count of missing headers',
         unit: '1',
@@ -150,7 +146,7 @@ describe('Export', () => {
   it('should export GCM metrics', async () => {
     attempt_counter.add(10, metricAttributes);
     operation_counter.add(25, metricAttributes);
-    gfe_missing_header_count.add(12, metricAttributes);
+    gfe_connectivity_error_count.add(12, metricAttributes);
     attempt_latency.record(30, metricAttributes);
     operation_latency.record(45, metricAttributes);
     gfe_latencey.record(22, metricAttributes);

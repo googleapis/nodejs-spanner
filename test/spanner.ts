@@ -311,7 +311,6 @@ describe('Spanner with mock server', () => {
     // TODO(loite): Enable when SPANNER_EMULATOR_HOST is supported.
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
-    process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     spanner = new Spanner({
       servicePath: 'localhost',
       port,
