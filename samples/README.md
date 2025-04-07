@@ -1878,7 +1878,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node snapshot-isolation.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+`node repeatable-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
