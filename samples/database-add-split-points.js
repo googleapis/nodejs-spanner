@@ -45,19 +45,18 @@ function main(
       const [response] = await client.addSplitPoints({
         database: client.databasePath(projectId, instanceId, databaseId),
         splitPoints: [
-           {
-                table: 'Singers',
-                keys: [{keyParts:  {values: ['42']}}],
-           },
-           {
+          {
+            table: 'Singers',
+            keys: [{keyParts: {values: ['42']}}],
+          },
+          {
             index: 'SingersByFirstLastName',
-            keys: [ {keyParts: {values: ['Jane','Doe']} } ],
-           },
-           {
+            keys: [ {keyParts: {values: ['Jane', 'Doe']} } ],
+          },
+          {
             index: 'SingersByFirstLastName',
-            keys: [ {keyParts:  {values: ['38']}},{keyParts: {values: ['John','Doe']} }],
-           },
-        ],
+            keys: [ {keyParts: {values: ['38']}},{keyParts: {values: ['John', 'Doe']} }],
+          },],
       });
       console.log('Added Split Points:', response);
     } catch (err) {
