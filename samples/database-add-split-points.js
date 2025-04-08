@@ -22,7 +22,7 @@
 function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
-  databaseId = 'my-database-id',
+  databaseId = 'my-database-id'
 ) {
   async function addSplitPoints() {
     // [START spanner_database_add_split_points]
@@ -44,20 +44,20 @@ function main(
       // Add split points to table and index
       const [response] = await client.addSplitPoints({
         database: client.databasePath(projectId, instanceId, databaseId),
-        splitPoints : ([
+        splitPoints : [
             {
-                table : "Singers",
-                keys : ([ keyParts = (["42"])]),
+                table : 'Singers',
+                keys : [{keyParts :  {values : ['42']}}],
             },
            {
-            index : "SingersByFirstLastName",
-            keys : ([ keyParts = ["Jane","Doe"]]),
+            index : 'SingersByFirstLastName',
+            keys : [ {keyParts : {values : ['Jane','Doe']} } ],
            },
            {
-            index : "SingersByFirstLastName",
-            keys : ([ keyParts = (["38"]),keyParts = ["John","Doe"]]),
+            index : 'SingersByFirstLastName',
+            keys : [ {keyParts :  {values : ['38']}},{keyParts : {values : ['John','Doe']} }],
            },
-        ])
+        ]
     });
       console.log('Added Split Points:', response);
     } catch (err) {
