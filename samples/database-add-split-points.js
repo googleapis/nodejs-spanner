@@ -51,13 +51,12 @@ function main(
           },
           {
             index: 'SingersByFirstLastName',
-            keys: [ {keyParts: {values: ['Jane', 'Doe']}} ],
+            keys: [{keyParts: {values: ['Jane', 'Doe']}} ],
           },
           {
             index: 'SingersByFirstLastName',
-            keys: [ {keyParts: {values: ['38']}},{keyParts: {values: ['John', 'Doe']}}],
-          },
-                  ],
+            keys: [{keyParts: {values: ['38']}},{keyParts: {values: ['John', 'Doe']}}],
+          },],
       });
       console.log('Added Split Points:', response);
     } catch (err) {
