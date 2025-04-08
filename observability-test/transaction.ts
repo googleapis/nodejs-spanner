@@ -95,8 +95,8 @@ describe('Transaction', () => {
     tracerProvider = new NodeTracerProvider({
       sampler: sampler,
       exporter: traceExporter,
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
     });
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     const SNAPSHOT_OPTIONS = {a: 'b', c: 'd'};
     sandbox.stub(Snapshot, 'encodeTimestampBounds').returns(SNAPSHOT_OPTIONS);

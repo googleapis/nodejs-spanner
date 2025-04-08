@@ -136,8 +136,8 @@ describe('EndToEnd', async () => {
   const tracerProvider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
   });
-  tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   const setupResult = await setup({
     tracerProvider: tracerProvider,
@@ -402,8 +402,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const tracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
     });
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     const observabilityOptions: typeof ObservabilityOptions = {
       tracerProvider: tracerProvider,
@@ -463,8 +463,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const tracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
     });
-    tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     const observabilityOptions: typeof ObservabilityOptions = {
       tracerProvider: tracerProvider,
@@ -730,20 +730,16 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const globalTracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: globalTraceExporter,
+      spanProcessors: [new SimpleSpanProcessor(globalTraceExporter)]
     });
-    globalTracerProvider.addSpanProcessor(
-      new SimpleSpanProcessor(globalTraceExporter),
-    );
     globalTracerProvider.register();
 
     const injectedTraceExporter = new InMemorySpanExporter();
     const injectedTracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: injectedTraceExporter,
+      spanProcessors: [new SimpleSpanProcessor(injectedTraceExporter)]
     });
-    injectedTracerProvider.addSpanProcessor(
-      new SimpleSpanProcessor(injectedTraceExporter),
-    );
 
     const observabilityOptions: typeof ObservabilityOptions = {
       tracerProvider: injectedTracerProvider,
@@ -841,8 +837,8 @@ describe('E2E traces with async/await', async () => {
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
     });
-    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     observabilityOptions = {
       tracerProvider: provider,
@@ -1039,8 +1035,8 @@ SELECT 1p
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
     });
-    provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
     observabilityOptions = {
       tracerProvider: provider,
@@ -1416,8 +1412,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
   const tracerProvider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
   });
-  tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   function newTestDatabase(): Database {
     return instance.database(`database-${dbCounter++}`);

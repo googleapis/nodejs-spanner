@@ -280,8 +280,8 @@ describe('Database', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   afterEach(() => {
     sandbox.restore();

@@ -56,8 +56,8 @@ describe('startTrace', () => {
   const globalProvider = new NodeTracerProvider({
     sampler: sampler,
     exporter: globalExporter,
+    spanProcessors: [new SimpleSpanProcessor(globalExporter)]
   });
-  globalProvider.addSpanProcessor(new SimpleSpanProcessor(globalExporter));
   globalProvider.register();
 
   const contextManager = new AsyncHooksContextManager();
@@ -90,10 +90,8 @@ describe('startTrace', () => {
     const overridingProvider = new NodeTracerProvider({
       sampler: sampler,
       exporter: overridingExporter,
+      spanProcessors: [new SimpleSpanProcessor(overridingExporter)]
     });
-    overridingProvider.addSpanProcessor(
-      new SimpleSpanProcessor(overridingExporter),
-    );
 
     startTrace(
       'aSpan',
@@ -258,10 +256,8 @@ describe('startTrace', () => {
     const overridingProvider = new NodeTracerProvider({
       sampler: new AlwaysOffSampler(),
       exporter: overridingExporter,
+      spanProcessors: [new SimpleSpanProcessor(overridingExporter)]
     });
-    overridingProvider.addSpanProcessor(
-      new SimpleSpanProcessor(overridingExporter),
-    );
     overridingProvider.register();
 
     startTrace(
@@ -301,8 +297,8 @@ describe('getActiveOrNoopSpan', () => {
     globalProvider = new NodeTracerProvider({
       sampler: new AlwaysOffSampler(),
       exporter: exporter,
+      spanProcessors: [new SimpleSpanProcessor(exporter)]
     });
-    globalProvider.addSpanProcessor(new SimpleSpanProcessor(exporter));
     globalProvider.register();
   });
 
@@ -364,8 +360,8 @@ describe('setError', () => {
   const provider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: exporter,
+    spanProcessors: [new SimpleSpanProcessor(exporter)]
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
   provider.register();
 
   const contextManager = new AsyncHooksContextManager();
@@ -420,8 +416,8 @@ describe('setErrorAndException', () => {
   const provider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: exporter,
+    spanProcessors: [new SimpleSpanProcessor(exporter)]
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
   provider.register();
 
   const contextManager = new AsyncHooksContextManager();

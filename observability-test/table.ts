@@ -78,8 +78,8 @@ describe('Table', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   const NAME = 'table-name';
 
