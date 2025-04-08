@@ -97,7 +97,7 @@ import {
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
-const arrify = require('arrify');
+import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
