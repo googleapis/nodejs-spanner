@@ -23,6 +23,7 @@ import {GoogleAuth, JWT} from 'google-auth-library';
 import {monitoring_v3} from 'googleapis';
 import {transformResourceMetricToTimeSeriesArray} from './transform';
 import {version} from '../../package.json';
+import {status} from '@grpc/grpc-js';
 
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
@@ -54,14 +55,8 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
 
   private _monitoring: monitoring_v3.Monitoring;
 
-  constructor({authOptions, userAgent, apiEndpoint}: ExporterOptions = {}) {
-    this._auth = new GoogleAuth({
-      credentials: authOptions?.credentials,
-      keyFile: authOptions?.keyFile,
-      keyFilename: authOptions?.keyFilename,
-      projectId: authOptions?.projectId,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
+  constructor({auth, userAgent, apiEndpoint}: ExporterOptions) {
+    this._auth = auth;
 
     this._monitoring = new monitoring_v3.Monitoring({
       rootUrl: `https://${apiEndpoint || DEFAULT_API_ENDPOINT}`,
@@ -125,18 +120,21 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
     };
     await Promise.all(
       this._partitionList(timeSeriesList, MAX_BATCH_EXPORT_SIZE).map(
-        async batchedTimeSeries => {
-          try {
-            await this._sendTimeSeries(batchedTimeSeries);
-          } catch (e) {
-            const err = asError(e);
-            err.message = `Send TimeSeries failed: ${err.message}`;
-            failure = {sendFailed: true, error: err};
-            console.error(`ERROR: ${err.message}`);
-          }
-        }
+        async batchedTimeSeries => this._sendTimeSeries(batchedTimeSeries)
       )
-    );
+    ).catch(e => {
+      const error = e as {code: number};
+      if (error.code === status.PERMISSION_DENIED) {
+        console.warn(
+          `Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`
+        );
+      }
+      const err = asError(e);
+      err.message = `Send TimeSeries failed: ${err.message}`;
+      failure = {sendFailed: true, error: err};
+      console.error(`ERROR: ${err.message}`);
+    });
+
     return failure.sendFailed
       ? {
           code: ExportResultCode.FAILED,

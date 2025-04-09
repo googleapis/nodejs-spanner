@@ -44,11 +44,11 @@ import {MetricKind, ValueType} from '../../src/metrics/external-types';
 
 const {
   _normalizeLabelKey,
-  transformMetricKind,
+  _transformMetricKind,
   _extractLabels,
-  transformResource,
-  transformValueType,
-  transformPoint,
+  _transformResource,
+  _transformValueType,
+  _transformPoint,
   transformResourceMetricToTimeSeriesArray,
 } = _TEST_ONLY;
 
@@ -183,7 +183,7 @@ describe('transform', () => {
   });
 
   it('should convert metric types to GCM metric kinds', () => {
-    assert.strictEqual(transformMetricKind(metricSum), MetricKind.CUMULATIVE);
+    assert.strictEqual(_transformMetricKind(metricSum), MetricKind.CUMULATIVE);
 
     const nonMonotonicMetricSum = {
       dataPoints: [],
@@ -194,24 +194,24 @@ describe('transform', () => {
     } as SumMetricData;
 
     assert.strictEqual(
-      transformMetricKind(nonMonotonicMetricSum),
+      _transformMetricKind(nonMonotonicMetricSum),
       MetricKind.GAUGE
     );
 
-    assert.strictEqual(transformMetricKind(metricGauge), MetricKind.GAUGE);
+    assert.strictEqual(_transformMetricKind(metricGauge), MetricKind.GAUGE);
 
     assert.strictEqual(
-      transformMetricKind(metricHistogram),
+      _transformMetricKind(metricHistogram),
       MetricKind.CUMULATIVE
     );
 
     assert.strictEqual(
-      transformMetricKind(metricExponentialHistogram),
+      _transformMetricKind(metricExponentialHistogram),
       MetricKind.CUMULATIVE
     );
 
     assert.strictEqual(
-      transformMetricKind(metricUnknown),
+      _transformMetricKind(metricUnknown),
       MetricKind.UNSPECIFIED
     );
   });
@@ -243,22 +243,22 @@ describe('transform', () => {
   });
 
   it('should transform otel value types to GCM value types', () => {
-    assert.strictEqual(transformValueType(metricSum), ValueType.INT64);
+    assert.strictEqual(_transformValueType(metricSum), ValueType.INT64);
 
-    assert.strictEqual(transformValueType(metricGauge), ValueType.INT64);
+    assert.strictEqual(_transformValueType(metricGauge), ValueType.INT64);
 
     assert.strictEqual(
-      transformValueType(metricHistogram),
+      _transformValueType(metricHistogram),
       ValueType.DISTRIBUTION
     );
 
     assert.strictEqual(
-      transformValueType(metricExponentialHistogram),
+      _transformValueType(metricExponentialHistogram),
       ValueType.DISTRIBUTION
     );
 
     assert.strictEqual(
-      transformValueType(metricUnknown),
+      _transformValueType(metricUnknown),
       ValueType.VALUE_TYPE_UNSPECIFIED
     );
   });
@@ -274,7 +274,7 @@ describe('transform', () => {
       },
     };
     assert.deepStrictEqual(
-      transformPoint(metricSum, sumDataPoint),
+      _transformPoint(metricSum, sumDataPoint),
       sumExpectation
     );
 
@@ -288,7 +288,7 @@ describe('transform', () => {
     };
 
     assert.deepStrictEqual(
-      transformPoint(metricGauge, sumDataPoint),
+      _transformPoint(metricGauge, sumDataPoint),
       gaugeExpectation
     );
 
@@ -315,7 +315,7 @@ describe('transform', () => {
     };
 
     assert.deepStrictEqual(
-      transformPoint(metricHistogram, histogramDataPoint),
+      _transformPoint(metricHistogram, histogramDataPoint),
       histogramExpectation
     );
 
@@ -345,14 +345,17 @@ describe('transform', () => {
     };
 
     assert.deepStrictEqual(
-      transformPoint(metricExponentialHistogram, exponentialHistogramDataPoint),
+      _transformPoint(
+        metricExponentialHistogram,
+        exponentialHistogramDataPoint
+      ),
       exponentialHistogramExpectation
     );
   });
 
   it('should create a MonitoredResource with spanner type', () => {
     const labels = {};
-    const resource = transformResource(labels);
+    const resource = _transformResource(labels);
     assert(resource);
     assert.strictEqual(resource.type, SPANNER_RESOURCE_TYPE);
   });
@@ -389,7 +392,7 @@ describe('transform', () => {
     assert.strictEqual(ts.points[0].value?.int64Value, '3');
   });
 
-  it('should filter out metrics without gax-nodejs scope', async () => {
+  it('should filter out metrics without spanner-nodejs scope', async () => {
     reader = new InMemoryMetricReader();
     meterProvider = new MeterProvider({
       readers: [reader],

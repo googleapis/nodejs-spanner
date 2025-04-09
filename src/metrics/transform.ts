@@ -35,7 +35,7 @@ import {
 } from './constants';
 
 /** Transforms a OpenTelemetry instrument type to a GCM MetricKind. */
-function transformMetricKind(metric: MetricData): MetricKind {
+function _transformMetricKind(metric: MetricData): MetricKind {
   switch (metric.dataPointType) {
     case DataPointType.SUM:
       return metric.isMonotonic ? MetricKind.CUMULATIVE : MetricKind.GAUGE;
@@ -52,7 +52,9 @@ function transformMetricKind(metric: MetricData): MetricKind {
 }
 
 /** Transforms resource to Google Cloud Monitoring monitored resource */
-function transformResource(labels: {[key: string]: string}): MonitoredResource {
+function _transformResource(labels: {
+  [key: string]: string;
+}): MonitoredResource {
   return {
     type: SPANNER_RESOURCE_TYPE,
     labels: labels,
@@ -60,7 +62,7 @@ function transformResource(labels: {[key: string]: string}): MonitoredResource {
 }
 
 /** Transforms a OpenTelemetry ValueType to a GCM ValueType. */
-function transformValueType(metric: MetricData): ValueType {
+function _transformValueType(metric: MetricData): ValueType {
   const {
     dataPointType,
     descriptor: {name},
@@ -88,7 +90,7 @@ export function transformResourceMetricToTimeSeriesArray({
 
   return (
     scopeMetrics
-      // Only keep those whose scope.name matches 'gax-nodejs'.
+      // Only keep those whose scope.name matches 'spanner-nodejs'.
       .filter(({scope: {name}}) => name === SPANNER_METER_NAME)
       // Takes each metric array and flattens it into one array
       .flatMap(({metrics}) =>
@@ -98,7 +100,7 @@ export function transformResourceMetricToTimeSeriesArray({
       // Flatmap the data points in each metric to create a TimeSeries for each point
       .flatMap(metric =>
         metric.dataPoints.flatMap(dataPoint =>
-          createTimeSeries(metric, dataPoint)
+          _createTimeSeries(metric, dataPoint)
         )
       )
   );
@@ -106,7 +108,7 @@ export function transformResourceMetricToTimeSeriesArray({
 /**
  * Creates a GCM TimeSeries.
  */
-function createTimeSeries<T>(
+function _createTimeSeries<T>(
   metric: MetricData,
   dataPoint: DataPoint<T>
 ): monitoring_v3.Schema$TimeSeries {
@@ -120,10 +122,10 @@ function createTimeSeries<T>(
 
   return {
     metric: transformedMetric,
-    resource: transformResource(monitoredResourceLabels),
-    metricKind: transformMetricKind(metric),
-    valueType: transformValueType(metric),
-    points: [transformPoint(metric, dataPoint)],
+    resource: _transformResource(monitoredResourceLabels),
+    metricKind: _transformMetricKind(metric),
+    valueType: _transformValueType(metric),
+    points: [_transformPoint(metric, dataPoint)],
     unit: metric.descriptor.unit,
   };
 }
@@ -131,7 +133,7 @@ function createTimeSeries<T>(
 /**
  * Transform timeseries's point, so that metric can be uploaded to GCM.
  */
-function transformPoint<T>(
+function _transformPoint<T>(
   metric: MetricData,
   dataPoint: DataPoint<T>
 ): monitoring_v3.Schema$Point {
@@ -139,8 +141,8 @@ function transformPoint<T>(
     case DataPointType.SUM:
     case DataPointType.GAUGE:
       return {
-        value: transformNumberValue(
-          transformValueType(metric),
+        value: _transformNumberValue(
+          _transformValueType(metric),
           dataPoint.value as number
         ),
         interval: {
@@ -155,7 +157,7 @@ function transformPoint<T>(
       };
     case DataPointType.HISTOGRAM:
       return {
-        value: transformHistogramValue(dataPoint.value as Histogram),
+        value: _transformHistogramValue(dataPoint.value as Histogram),
         interval: {
           startTime: new PreciseDate(dataPoint.startTime).toISOString(),
           endTime: new PreciseDate(dataPoint.endTime).toISOString(),
@@ -163,7 +165,7 @@ function transformPoint<T>(
       };
     case DataPointType.EXPONENTIAL_HISTOGRAM:
       return {
-        value: transformExponentialHistogramValue(
+        value: _transformExponentialHistogramValue(
           dataPoint.value as ExponentialHistogram
         ),
         interval: {
@@ -215,7 +217,7 @@ function _normalizeLabelKey(key: string): string {
 }
 
 /** Transforms a OpenTelemetry Point's value to a GCM Point value. */
-function transformNumberValue(
+function _transformNumberValue(
   valueType: ValueType,
   value: number
 ): monitoring_v3.Schema$TypedValue {
@@ -227,7 +229,7 @@ function transformNumberValue(
   throw Error(`unsupported value type: ${valueType}`);
 }
 
-function transformHistogramValue(
+function _transformHistogramValue(
   value: Histogram
 ): monitoring_v3.Schema$TypedValue {
   return {
@@ -243,7 +245,7 @@ function transformHistogramValue(
   };
 }
 
-function transformExponentialHistogramValue(
+function _transformExponentialHistogramValue(
   value: ExponentialHistogram
 ): monitoring_v3.Schema$TypedValue {
   // Adapated from reference impl in Go which has more explanatory comments
@@ -297,10 +299,10 @@ function exhaust(switchValue: never) {
 
 export const _TEST_ONLY = {
   _normalizeLabelKey,
-  transformMetricKind,
+  _transformMetricKind,
   _extractLabels,
-  transformResource,
-  transformPoint,
-  transformValueType,
+  _transformResource,
+  _transformPoint,
+  _transformValueType,
   transformResourceMetricToTimeSeriesArray,
 };

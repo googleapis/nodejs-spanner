@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {GoogleAuthOptions} from 'google-auth-library';
+import {GoogleAuth} from 'google-auth-library';
 
 export interface ExporterOptions {
   /**
    * Optional authentication options for Google services.
    */
-  authOptions?: GoogleAuthOptions;
-  /**
-   * Prefix prepended to OpenTelemetry metric names when writing to Cloud Monitoring. See
-   * https://cloud.google.com/monitoring/custom-metrics#identifier for more details.
-   *
-   * Optional, default is `workload.googleapis.com`.
-   */
-  prefix?: string;
+  auth: GoogleAuth;
   /**
    * Add a custom user agent and version strings to all monitoring exports
    */

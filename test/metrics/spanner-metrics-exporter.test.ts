@@ -15,6 +15,7 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
+import {GoogleAuth} from 'google-auth-library';
 import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 import {
   SPANNER_METER_NAME,
@@ -32,23 +33,24 @@ const PROJECT_ID = 'test-project';
 const INSTANCE_ID = 'test_instance';
 const DATABASE_ID = 'test_db';
 
+const auth = new GoogleAuth();
+
 // Ensure custom exporter is valid
 describe('CustomExporter', () => {
   it('should construct an exporter', () => {
-    const exporter = new CloudMonitoringMetricsExporter();
+    const exporter = new CloudMonitoringMetricsExporter({auth});
     assert.ok(typeof exporter.export === 'function');
     assert.ok(typeof exporter.shutdown === 'function');
   });
 
   it('should construct an exporter with credentials', () => {
-    const exporter = new CloudMonitoringMetricsExporter({
-      authOptions: {
-        credentials: {
-          client_email: 'noreply@fake.example.com',
-          private_key: 'this is a key',
-        },
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: 'fake',
+        private_key: '',
       },
     });
+    const exporter = new CloudMonitoringMetricsExporter({auth});
 
     assert(exporter);
     return (exporter['_projectId'] as Promise<string>).then(id => {
@@ -57,12 +59,12 @@ describe('CustomExporter', () => {
   });
 
   it('should be able to shutdown', async () => {
-    const exporter = new CloudMonitoringMetricsExporter();
+    const exporter = new CloudMonitoringMetricsExporter({auth});
     await assert.doesNotReject(exporter.shutdown());
   });
 
   it('should be able to force flush', async () => {
-    const exporter = new CloudMonitoringMetricsExporter();
+    const exporter = new CloudMonitoringMetricsExporter({auth});
     await assert.doesNotReject(exporter.forceFlush());
   });
 });
@@ -102,8 +104,6 @@ describe('Export', () => {
       database: DATABASE_ID,
       method: 'test_method',
       status: 'test_status',
-      directpath_enabled: 'true',
-      directpath_used: 'false',
       other: 'ignored',
     };
 
@@ -140,7 +140,7 @@ describe('Export', () => {
       unit: 'ms',
     });
 
-    exporter = new CloudMonitoringMetricsExporter();
+    exporter = new CloudMonitoringMetricsExporter({auth});
   });
 
   it('should export GCM metrics', async () => {
