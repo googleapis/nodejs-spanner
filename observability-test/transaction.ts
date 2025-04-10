@@ -33,6 +33,7 @@ const {
   SimpleSpanProcessor,
 } = require('@opentelemetry/sdk-trace-base');
 const {generateWithAllSpansHaveDBName} = require('./helper');
+import {ExecuteSqlRequest, ReadRequest} from '../src/transaction';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -445,10 +446,12 @@ describe('Transaction', () => {
       it('with error', done => {
         REQUEST_STREAM.resetHistory();
 
-        const fakeQuery = Object.assign({}, QUERY, {
+        const fakeQuery: ExecuteSqlRequest = Object.assign({}, QUERY, {
           params: {a: undefined},
+          requestOptions: {requestTag: 'request-tag'},
         });
 
+        snapshot.requestOptions = {transactionTag: 'transaction-tag'};
         const stream = snapshot.runStream(fakeQuery);
         stream.on('error', error => {
           assert.strictEqual(
@@ -488,9 +491,50 @@ describe('Transaction', () => {
             'Unexpected span status message'
           );
 
+          const attributes = exportResults.spans[0].attributes;
+          assert.strictEqual(attributes['transaction.tag'], 'transaction-tag');
+          assert.strictEqual(attributes['db.name'], 'formatted-database-name');
+          assert.strictEqual(attributes['request.tag'], 'request-tag');
           done();
         });
         assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+      });
+    });
+
+    describe('createReadStream', () => {
+      const TABLE = 'my-table-123';
+
+      beforeEach(() => {
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('without error', done => {
+        const fakeStream = new EventEmitter();
+        REQUEST_STREAM.returns(fakeStream);
+        const request: ReadRequest = {
+          requestOptions: {requestTag: 'request-tag'},
+        };
+        snapshot.requestOptions = {transactionTag: 'transaction-tag'};
+        const stream = snapshot.createReadStream(TABLE, request);
+        stream.on('end', () => {
+          const exportResults = extractExportedSpans();
+          const actualSpanNames = exportResults.spanNames;
+
+          const expectedSpanNames = ['CloudSpanner.Snapshot.createReadStream'];
+          assert.deepStrictEqual(
+            actualSpanNames,
+            expectedSpanNames,
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          );
+
+          const attributes = exportResults.spans[0].attributes;
+          assert.strictEqual(attributes['transaction.tag'], 'transaction-tag');
+          assert.strictEqual(attributes['db.sql.table'], TABLE);
+          assert.strictEqual(attributes['db.name'], 'formatted-database-name');
+          assert.strictEqual(attributes['request.tag'], 'request-tag');
+          done();
+        });
+        fakeStream.emit('end');
       });
     });
   });

@@ -453,31 +453,38 @@ export class Snapshot extends EventEmitter {
       addLeaderAwareRoutingHeader(headers);
     }
 
-    return startTrace('Snapshot.begin', this._traceConfig, span => {
-      span.addEvent('Begin Transaction');
+    return startTrace(
+      'Snapshot.begin',
+      {
+        transactionTag: this.requestOptions?.transactionTag,
+        ...this._traceConfig,
+      },
+      span => {
+        span.addEvent('Begin Transaction');
 
-      this.request(
-        {
-          client: 'SpannerClient',
-          method: 'beginTransaction',
-          reqOpts,
-          gaxOpts,
-          headers: injectRequestIDIntoHeaders(headers, this.session),
-        },
-        (
-          err: null | grpc.ServiceError,
-          resp: spannerClient.spanner.v1.ITransaction
-        ) => {
-          if (err) {
-            setSpanError(span, err);
-          } else {
-            this._update(resp);
+        this.request(
+          {
+            client: 'SpannerClient',
+            method: 'beginTransaction',
+            reqOpts,
+            gaxOpts,
+            headers: injectRequestIDIntoHeaders(headers, this.session),
+          },
+          (
+            err: null | grpc.ServiceError,
+            resp: spannerClient.spanner.v1.ITransaction
+          ) => {
+            if (err) {
+              setSpanError(span, err);
+            } else {
+              this._update(resp);
+            }
+            span.end();
+            callback!(err, resp);
           }
-          span.end();
-          callback!(err, resp);
-        }
-      );
-    });
+        );
+      }
+    );
   }
 
   /**
@@ -715,6 +722,7 @@ export class Snapshot extends EventEmitter {
     }
 
     const traceConfig: traceConfig = {
+      ...this._traceConfig,
       tableName: table,
       transactionTag: this.requestOptions?.transactionTag,
       requestTag: requestOptions?.requestTag,
@@ -1006,7 +1014,6 @@ export class Snapshot extends EventEmitter {
       {
         tableName: table,
         ...this._traceConfig,
-        requestTag: request.requestOptions?.requestTag,
       },
       span => {
         this.createReadStream(table, request)
@@ -1313,6 +1320,7 @@ export class Snapshot extends EventEmitter {
 
     const traceConfig: traceConfig = {
       transactionTag: this.requestOptions?.transactionTag,
+      requestTag: requestOptions?.requestTag,
       ...query,
       ...this._traceConfig,
     };
@@ -1714,6 +1722,8 @@ export class Dml extends Snapshot {
       {
         ...query,
         ...this._traceConfig,
+        transactionTag: this.requestOptions?.transactionTag,
+        requestTag: query.requestOptions?.requestTag,
       },
       span => {
         this.run(
@@ -2175,94 +2185,107 @@ export class Transaction extends Dml {
     const requestOptions = (options as CommitOptions).requestOptions;
     const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
-    return startTrace('Transaction.commit', this._traceConfig, span => {
-      if (this.id) {
-        reqOpts.transactionId = this.id as Uint8Array;
-      } else if (!this._useInRunner) {
-        reqOpts.singleUseTransaction = this._options;
-      } else {
-        this.begin().then(
-          () => {
-            this.commit(options, (err, resp) => {
-              if (err) {
-                setSpanError(span, err);
-              }
+    return startTrace(
+      'Transaction.commit',
+      {
+        transactionTag: this.requestOptions?.transactionTag,
+        ...this._traceConfig,
+      },
+      span => {
+        if (this.id) {
+          reqOpts.transactionId = this.id as Uint8Array;
+        } else if (!this._useInRunner) {
+          reqOpts.singleUseTransaction = this._options;
+        } else {
+          this.begin().then(
+            () => {
+              this.commit(options, (err, resp) => {
+                if (err) {
+                  setSpanError(span, err);
+                }
+                span.end();
+                callback(err, resp);
+              });
+            },
+            err => {
+              setSpanError(span, err);
               span.end();
-              callback(err, resp);
-            });
+              callback(err, null);
+            }
+          );
+          return;
+        }
+
+        if (
+          'returnCommitStats' in options &&
+          (options as CommitOptions).returnCommitStats
+        ) {
+          reqOpts.returnCommitStats = (
+            options as CommitOptions
+          ).returnCommitStats;
+        }
+        if (
+          'maxCommitDelay' in options &&
+          (options as CommitOptions).maxCommitDelay
+        ) {
+          reqOpts.maxCommitDelay = (options as CommitOptions).maxCommitDelay;
+        }
+        reqOpts.requestOptions = Object.assign(
+          requestOptions || {},
+          this.requestOptions
+        );
+
+        const headers = this.commonHeaders_;
+        if (this._getSpanner().routeToLeaderEnabled) {
+          addLeaderAwareRoutingHeader(headers);
+        }
+
+        span.addEvent('Starting Commit');
+
+        const database = this.session.parent as Database;
+        this.request(
+          {
+            client: 'SpannerClient',
+            method: 'commit',
+            reqOpts,
+            gaxOpts: gaxOpts,
+            headers: injectRequestIDIntoHeaders(
+              headers,
+              this.session,
+              nextNthRequest(database),
+              1
+            ),
           },
-          err => {
-            setSpanError(span, err);
+          (
+            err: null | Error,
+            resp: spannerClient.spanner.v1.ICommitResponse
+          ) => {
+            this.end();
+
+            if (err) {
+              span.addEvent('Commit failed');
+              setSpanError(span, err);
+            } else {
+              span.addEvent('Commit Done');
+            }
+
+            if (resp && resp.commitTimestamp) {
+              this.commitTimestampProto = resp.commitTimestamp;
+              this.commitTimestamp = new PreciseDate(
+                resp.commitTimestamp as DateStruct
+              );
+            }
+            err = Transaction.decorateCommitError(
+              err as ServiceError,
+              mutations
+            );
+
             span.end();
-            callback(err, null);
+            callback!(err as ServiceError | null, resp);
           }
         );
-        return;
       }
-
-      if (
-        'returnCommitStats' in options &&
-        (options as CommitOptions).returnCommitStats
-      ) {
-        reqOpts.returnCommitStats = (
-          options as CommitOptions
-        ).returnCommitStats;
-      }
-      if (
-        'maxCommitDelay' in options &&
-        (options as CommitOptions).maxCommitDelay
-      ) {
-        reqOpts.maxCommitDelay = (options as CommitOptions).maxCommitDelay;
-      }
-      reqOpts.requestOptions = Object.assign(
-        requestOptions || {},
-        this.requestOptions
-      );
-
-      const headers = this.commonHeaders_;
-      if (this._getSpanner().routeToLeaderEnabled) {
-        addLeaderAwareRoutingHeader(headers);
-      }
-
-      span.addEvent('Starting Commit');
-
-      const database = this.session.parent as Database;
-      this.request(
-        {
-          client: 'SpannerClient',
-          method: 'commit',
-          reqOpts,
-          gaxOpts: gaxOpts,
-          headers: injectRequestIDIntoHeaders(
-            headers,
-            this.session,
-            nextNthRequest(database),
-            1
-          ),
-        },
-        (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
-          this.end();
-
-          if (err) {
-            span.addEvent('Commit failed');
-            setSpanError(span, err);
-          } else {
-            span.addEvent('Commit Done');
-          }
-
-          if (resp && resp.commitTimestamp) {
-            this.commitTimestampProto = resp.commitTimestamp;
-            this.commitTimestamp = new PreciseDate(
-              resp.commitTimestamp as DateStruct
-            );
-          }
-          err = Transaction.decorateCommitError(err as ServiceError, mutations);
-
-          span.end();
-          callback!(err as ServiceError | null, resp);
-        }
-      );
-    });
+    );
   }
 
   /**
