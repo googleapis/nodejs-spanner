@@ -34,7 +34,7 @@ const INSTANCE_ID = 'test_instance';
 const DATABASE_ID = 'test_db';
 
 const auth = new GoogleAuth();
-
+process.env.GCLOUD_PROJECT = PROJECT_ID;
 // Ensure custom exporter is valid
 describe('CustomExporter', () => {
   it('should construct an exporter', () => {
