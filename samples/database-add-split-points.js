@@ -38,12 +38,40 @@ function main(
 
     // Create a Spanner database admin client.
     const spanner = new Spanner({projectId});
-    const client = spanner.getDatabaseAdminClient();
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
     try {
       // Add split points to table and index
-      const [response] = await client.addSplitPoints({
-        database: client.databasePath(projectId, instanceId, databaseId),
+      // first is a table level split that takes table primary key value
+      // second is index level split with index key parts
+      // third is index level split having index key part and table key part
+      // Assume the following table and index structure
+      // CREATE TABLE Singers (
+      // SingerId INT64 NOT NULL,
+      // FirstName STRING(1024),
+      // LastName STRING(1024),
+      // SingerInfo BYTES(MAX),
+      // ) PRIMARY KEY(SingerId);
+      // 
+      // CREATE INDEX SingersByFirstLastName ON Singers(FirstName, LastName);
+      const request = ['CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName, LastName)'];
+
+      const [operation] = await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        statements: request,
+      });
+  
+      console.log('Waiting for operation to complete...');
+      await operation.promise();
+  
+      console.log('Added the SingersByFirstLastName index.');
+      
+      databaseAdminClient.addSplitPoints({
+        database: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
         splitPoints: [
           {
             table: 'Singers',
@@ -62,7 +90,7 @@ function main(
           },
         ],
       });
-      console.log('Added Split Points:', response);
+      console.log('Added Split Points');
     } catch (err) {
       console.error('ERROR:', err);
     }

@@ -135,6 +135,7 @@ and automatic, synchronous replication for high availability.
   * [Transaction](#transaction)
   * [Updates a backup schedule](#updates-a-backup-schedule)
   * [Updates an instance.](#updates-an-instance.)
+  * [Adds split points](#add-split-points)
 
 ## Before you begin
 
@@ -161,6 +162,22 @@ __Usage:__
 
 
 `node add-and-drop-new-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+### Add split points
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-add-split-points.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-add-split-points.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-add-split-points.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
