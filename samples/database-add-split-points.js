@@ -15,7 +15,7 @@
 
 // sample-metadata:
 //  title: Adds split points to a database.
-//  usage: node database-add-split-points.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID>
+//  usage: node database-add-split-points.js  <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -52,9 +52,11 @@ function main(
       // LastName STRING(1024),
       // SingerInfo BYTES(MAX),
       // ) PRIMARY KEY(SingerId);
-      // 
+      //
       // CREATE INDEX SingersByFirstLastName ON Singers(FirstName, LastName);
-      const request = ['CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName, LastName)'];
+      const request = [
+        'CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName, LastName)'
+      ];
 
       const [operation] = await databaseAdminClient.updateDatabaseDdl({
         database: databaseAdminClient.databasePath(
@@ -64,14 +66,18 @@ function main(
         ),
         statements: request,
       });
-  
+
       console.log('Waiting for operation to complete...');
       await operation.promise();
-  
+
       console.log('Added the SingersByFirstLastName index.');
-      
+
       databaseAdminClient.addSplitPoints({
-        database: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+          ),
         splitPoints: [
           {
             table: 'Singers',
