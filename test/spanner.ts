@@ -1047,7 +1047,7 @@ describe('Spanner with mock server', () => {
                 .catch(() => done());
             });
         })
-        .catch((err) => done(err));
+        .catch(err => done(err));
     });
 
     it('should call callback with statistics', done => {
@@ -1225,7 +1225,7 @@ describe('Spanner with mock server', () => {
             assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
             done();
           })
-          .catch((err) => done(err));
+          .catch(err => done(err));
       });
     });
 
@@ -1244,7 +1244,7 @@ describe('Spanner with mock server', () => {
         database
           .close()
           .then(() => done())
-          .catch((err) => done(err));
+          .catch(err => done(err));
       });
     });
 
@@ -1265,7 +1265,7 @@ describe('Spanner with mock server', () => {
           database
             .close()
             .then(() => done())
-            .catch((err) => done(err));
+            .catch(err => done(err));
         })
         .on('data', row => rows.push(row))
         .on('end', () => {
@@ -1434,7 +1434,7 @@ describe('Spanner with mock server', () => {
               .then(() => {
                 done(assert.fail('missing error'));
               })
-              .catch((err) => done(err));
+              .catch(err => done(err));
           });
       });
     });
@@ -1624,7 +1624,7 @@ describe('Spanner with mock server', () => {
             database
               .close()
               .then(() => done())
-              .catch((err) => done(err));
+              .catch(err => done(err));
           });
         });
 
@@ -1648,7 +1648,7 @@ describe('Spanner with mock server', () => {
             database
               .close()
               .then(() => done())
-              .catch((err) => done(err));
+              .catch(err => done(err));
           });
         });
 
@@ -1675,7 +1675,7 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch((err) => done(err));
+                .catch(err => done(err));
             })
             // We will receive data for the partial result sets that are
             // returned before the error occurs.
@@ -1729,7 +1729,7 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch((err) => done(err));
+                .catch(err => done(err));
             })
             .catch(() => {});
         });
@@ -1769,7 +1769,7 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch((err) => done(err));
+                .catch(err => done(err));
             })
             .catch(done);
         });
@@ -3423,9 +3423,9 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch((err) => done(err));
+                .catch(err => done(err));
             })
-            .catch((err) => done(err));
+            .catch(err => done(err));
         });
       });
     });
@@ -3520,7 +3520,7 @@ describe('Spanner with mock server', () => {
             database
               .close()
               .then(() => done())
-              .catch((err) => done(err));
+              .catch(err => done(err));
           });
         });
       });
