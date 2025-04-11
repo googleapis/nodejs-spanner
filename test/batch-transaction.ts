@@ -472,7 +472,7 @@ describe('BatchTransaction', () => {
 
     beforeEach(() => {
       batchTransaction.id = ID;
-      batchTransaction.session = SESSION as Session;
+      batchTransaction.session = SESSION as unknown as Session;
       batchTransaction.readTimestampProto = TIMESTAMP;
     });
 
