@@ -39,21 +39,31 @@ describe('SessionFactory', () => {
   } as unknown as Database;
 
   const createMuxSession = (name = 'id', props?): Session => {
-    props = props || {multiplexed: true};
+    props = props || {};
 
-    return Object.assign(new Session(DATABASE, name), props, {
+    const muxSession = Object.assign(new Session(DATABASE, name), props, {
       create: sandbox.stub().resolves(),
       transaction: sandbox.stub().returns(new FakeTransaction()),
     });
+
+    muxSession.metadata = {
+      multiplexed: true,
+    };
+
+    return muxSession;
   };
 
   const createSession = (name = 'id', props?): Session => {
     props = props || {};
 
-    return Object.assign(new Session(DATABASE, name), props, {
+    const session = Object.assign(new Session(DATABASE, name), props, {
       create: sandbox.stub().resolves(),
       transaction: sandbox.stub().returns(new FakeTransaction()),
     });
+
+    session.metadata = {multiplexed: false};
+
+    return session;
   };
 
   beforeEach(() => {
@@ -108,6 +118,11 @@ describe('SessionFactory', () => {
 
         assert.strictEqual(openStub.callCount, 1);
       });
+
+      it('should correctly initialize the isMultiplexedEnabled field when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexed, false);
+      });
     });
 
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
@@ -129,6 +144,12 @@ describe('SessionFactory', () => {
         new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
 
         assert.strictEqual(createSessionStub.callCount, 1);
+      });
+
+      it('should correctly initialize the isMultiplexedEnabled field when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexed, true);
       });
     });
   });
@@ -178,8 +199,8 @@ describe('SessionFactory', () => {
         sessionFactory.getSession((err, resp) => {
           assert.strictEqual(err, null);
           assert.strictEqual(resp, fakeMuxSession);
-          assert.strictEqual(resp?.multiplexed, true);
-          assert.strictEqual(fakeMuxSession.multiplexed, true);
+          assert.strictEqual(resp?.metadata.multiplexed, true);
+          assert.strictEqual(fakeMuxSession.metadata.multiplexed, true);
           done();
         });
       });
@@ -217,8 +238,8 @@ describe('SessionFactory', () => {
 
       it('should not call the release method', () => {
         const releaseStub = sandbox.stub(sessionFactory.pool_, 'release');
-        const fakeSession = createSession();
-        sessionFactory.release(fakeSession);
+        const fakeMuxSession = createMuxSession();
+        sessionFactory.release(fakeMuxSession);
         assert.strictEqual(releaseStub.callCount, 0);
       });
     });
@@ -247,6 +268,28 @@ describe('SessionFactory', () => {
           );
           assert.strictEqual((error as ReleaseError).resource, fakeSession);
         }
+      });
+    });
+  });
+
+  describe('isMultiplexedEnabled', () => {
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+      it('should have enabled the multiplexed', () => {
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexedEnabled(), true);
+      });
+    });
+
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+      it('should not have enabled the multiplexed', () => {
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexedEnabled(), false);
       });
     });
   });

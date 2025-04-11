@@ -1,5 +1,5 @@
 /*!
- * Copyright 2024 Google LLC. All Rights Reserved.
+ * Copyright 2025 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,70 +20,51 @@
 
 'use strict';
 
-// Setup OpenTelemetry and the trace exporter.
-const {
-  NodeTracerProvider,
-  TraceIdRatioBasedSampler,
-} = require('@opentelemetry/sdk-trace-node');
-const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-
-// Create the Google Cloud Trace exporter for OpenTelemetry.
-const {
-  TraceExporter,
-} = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-const exporter = new TraceExporter();
-
-// Create the OpenTelemetry tracerProvider that the exporter shall be attached to.
-const provider = new NodeTracerProvider({
-  // Modify the following line to adjust the sampling rate.
-  // It is currently set to 1.0, meaning all requests will be traced.
-  sampler: new TraceIdRatioBasedSampler(1.0),
-});
-provider.addSpanProcessor(new BatchSpanProcessor(exporter));
-
-// Set global propagator to propogate the trace context for end to end tracing.
-const {propagation} = require('@opentelemetry/api');
-const {W3CTraceContextPropagator} = require('@opentelemetry/core');
-propagation.setGlobalPropagator(new W3CTraceContextPropagator());
-
-// Uncomment following line to register global tracerProvider instead
-// of passing it into SpannerOptions.observabilityOptions.
-// provider.register();
-
-// Set `enableGrpcInstrumentation` to `true` to enable gRPC instrumentation.
-const enableGrpcInstrumentation = false;
-if (enableGrpcInstrumentation) {
-  const {registerInstrumentations} = require('@opentelemetry/instrumentation');
-  const {GrpcInstrumentation} = require('@opentelemetry/instrumentation-grpc');
-  registerInstrumentations({
-    tracerProvider: provider,
-    instrumentations: [new GrpcInstrumentation()],
-  });
-}
-
 async function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-project-id'
 ) {
-  // Create the Cloud Spanner Client.
+  // [START spanner_opentelemetry_traces_cloudtrace_usage]
+
+  const {NodeTracerProvider} = require('@opentelemetry/sdk-trace-node');
+  const {
+    TraceExporter,
+  } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
+  const {
+    BatchSpanProcessor,
+    TraceIdRatioBasedSampler,
+  } = require('@opentelemetry/sdk-trace-base');
   const {Spanner} = require('@google-cloud/spanner');
 
-  /**
-   * TODO(developer): Uncomment these variables before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance-id';
-  // const databaseId = 'my-database-id';
+  const traceExporter = new TraceExporter();
+
+  // Create a provider with a custom sampler
+  const provider = new NodeTracerProvider({
+    sampler: new TraceIdRatioBasedSampler(1.0), // Sample 100% of traces
+    spanProcessors: [new BatchSpanProcessor(traceExporter)],
+  });
+
+  // Uncomment following line to register tracerProvider globally or pass it in Spanner object
+  // provider.register();
+
+  // Set global propagator to propogate the trace context for end to end tracing.
+  const {propagation} = require('@opentelemetry/api');
+  const {W3CTraceContextPropagator} = require('@opentelemetry/core');
+  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
 
   const spanner = new Spanner({
     projectId: projectId,
     observabilityOptions: {
       tracerProvider: provider,
+      // Enable extended tracing to allow your SQL statements to be annotated.
       enableExtendedTracing: true,
+      // Enable end to end tracing.
       enableEndToEndTracing: true,
     },
   });
+
+  // [END spanner_opentelemetry_traces_cloudtrace_usage]
 
   // Acquire the database handle.
   const instance = spanner.instance(instanceId);

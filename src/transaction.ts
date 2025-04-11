@@ -41,6 +41,7 @@ import {
   getCommonHeaders,
 } from './common';
 import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
@@ -52,6 +53,8 @@ import {
   setSpanError,
   setSpanErrorAndException,
 } from './instrument';
+import {RunTransactionOptions} from './transaction-runner';
+import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -127,6 +130,8 @@ export interface Statement {
   sql: string;
   params?: {[param: string]: Value};
   types?: Type | {[param: string]: Value};
+  // This property is used internally as a mapping for types. Do not set it manually
+  paramTypes?: {[k: string]: google.spanner.v1.Type} | null;
 }
 
 export interface ExecuteSqlRequest extends Statement, RequestOptions {
@@ -455,7 +460,7 @@ export class Snapshot extends EventEmitter {
           method: 'beginTransaction',
           reqOpts,
           gaxOpts,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(headers, this.session),
         },
         (
           err: null | grpc.ServiceError,
@@ -712,8 +717,11 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName!,
     };
+
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         if (this.id && transaction.begin) {
           delete transaction.begin;
@@ -740,7 +748,12 @@ export class Snapshot extends EventEmitter {
           method: 'streamingRead',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nthRequest,
+            attempt
+          ),
         });
       };
 
@@ -1298,6 +1311,8 @@ export class Snapshot extends EventEmitter {
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
       let attempt = 0;
+      const database = this.session.parent as Database;
+      const nthRequest = nextNthRequest(database);
       const makeRequest = (resumeToken?: ResumeToken): Readable => {
         attempt++;
 
@@ -1331,7 +1346,12 @@ export class Snapshot extends EventEmitter {
           method: 'executeStreamingSql',
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nthRequest,
+            attempt
+          ),
         });
       };
 
@@ -1500,10 +1520,11 @@ export class Snapshot extends EventEmitter {
   static encodeParams(request: ExecuteSqlRequest) {
     const typeMap = request.types || {};
 
-    const params: p.IStruct = {};
-    const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} = {};
+    const params: p.IStruct = {fields: request.params?.fields || {}};
+    const paramTypes: {[field: string]: spannerClient.spanner.v1.Type} =
+      request.paramTypes || {};
 
-    if (request.params) {
+    if (request.params && !request.params.fields) {
       const fields = {};
 
       Object.keys(request.params).forEach(param => {
@@ -1819,6 +1840,7 @@ export class Transaction extends Dml {
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+    this._options.isolationLevel = IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
     this.requestOptions = requestOptions;
   }
 
@@ -1957,7 +1979,13 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const headers = this.commonHeaders_;
+    const database = this.session.parent as Database;
+    const headers = injectRequestIDIntoHeaders(
+      this.commonHeaders_,
+      this.session,
+      nextNthRequest(database),
+      1
+    );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
@@ -2190,13 +2218,19 @@ export class Transaction extends Dml {
 
       span.addEvent('Starting Commit');
 
+      const database = this.session.parent as Database;
       this.request(
         {
           client: 'SpannerClient',
           method: 'commit',
           reqOpts,
           gaxOpts: gaxOpts,
-          headers: headers,
+          headers: injectRequestIDIntoHeaders(
+            headers,
+            this.session,
+            nextNthRequest(database),
+            1
+          ),
         },
         (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
           this.end();
@@ -2517,12 +2551,9 @@ export class Transaction extends Dml {
     };
     return startTrace('Transaction.rollback', traceConfig, span => {
       if (!this.id) {
-        const err = new Error(
-          'Transaction ID is unknown, nothing to rollback.'
-        ) as ServiceError;
-        setSpanError(span, err);
+        span.addEvent('Transaction ID is unknown, nothing to rollback.');
         span.end();
-        callback!(err);
+        callback(null);
         return;
       }
 
@@ -2699,6 +2730,28 @@ export class Transaction extends Dml {
    */
   excludeTxnFromChangeStreams(): void {
     this._options.excludeTxnFromChangeStreams = true;
+  }
+
+  setReadWriteTransactionOptions(options: RunTransactionOptions) {
+    /**
+     * Set optimistic concurrency control for the transaction.
+     */
+    if (options?.optimisticLock) {
+      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
+    }
+    /**
+     * Set option excludeTxnFromChangeStreams=true to exclude read/write transactions
+     * from being tracked in change streams.
+     */
+    if (options?.excludeTxnFromChangeStreams) {
+      this._options.excludeTxnFromChangeStreams = true;
+    }
+    /**
+     * Set isolation level .
+     */
+    this._options.isolationLevel = options?.isolationLevel
+      ? options?.isolationLevel
+      : this._getSpanner().defaultTransactionOptions.isolationLevel;
   }
 }
 

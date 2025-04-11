@@ -4,6 +4,53 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.20.0](https://github.com/googleapis/nodejs-spanner/compare/v7.19.1...v7.20.0) (2025-04-11)
+
+
+### Features
+
+* Add support for Interval ([#2192](https://github.com/googleapis/nodejs-spanner/issues/2192)) ([8c886cb](https://github.com/googleapis/nodejs-spanner/commit/8c886cbc0d7523fb99e65cfc5d8f565b630e26f0))
+* **debugging:** Implement x-goog-spanner-request-id propagation per request ([#2205](https://github.com/googleapis/nodejs-spanner/issues/2205)) ([e42caea](https://github.com/googleapis/nodejs-spanner/commit/e42caeaaa656c395d240f4af412ddb947f29c59b))
+* **spanner:** Add support for snapshot isolation ([#2245](https://github.com/googleapis/nodejs-spanner/issues/2245)) ([b60a683](https://github.com/googleapis/nodejs-spanner/commit/b60a683c0e1ddbf704766eb99f102fed925a348c))
+* **spanner:** Support for Multiplexed Session Partitioned Ops ([#2252](https://github.com/googleapis/nodejs-spanner/issues/2252)) ([e7ce471](https://github.com/googleapis/nodejs-spanner/commit/e7ce471332f6e73614638b96ed54c87095d785a2))
+
+## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
+
+
+### Bug Fixes
+
+* CreateQueryPartition with query params ([91f5afd](https://github.com/googleapis/nodejs-spanner/commit/91f5afda53bd9c46fcd1a1fe33f579b6aed5223a))
+
+## [7.19.0](https://github.com/googleapis/nodejs-spanner/compare/v7.18.1...v7.19.0) (2025-02-26)
+
+
+### Features
+
+* Add AddSplitPoints API ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Paging changes for bigquery ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** A new enum `IsolationLevel` is added ([#2225](https://github.com/googleapis/nodejs-spanner/issues/2225)) ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** A new field `isolation_level` is added to message `.google.spanner.v1.TransactionOptions` ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** Add instance partitions field in backup proto ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* **spanner:** Add support for Multiplexed Session for Read Only Tran… ([#2214](https://github.com/googleapis/nodejs-spanner/issues/2214)) ([3a7a51b](https://github.com/googleapis/nodejs-spanner/commit/3a7a51bee00730c2daf1b9791b45f75531c14a2c))
+* **x-goog-spanner-request-id:** Add bases ([#2211](https://github.com/googleapis/nodejs-spanner/issues/2211)) ([0008038](https://github.com/googleapis/nodejs-spanner/commit/000803812e670ce0f4bac4a6460351f2b08ec660))
+
+
+### Bug Fixes
+
+* Add x-goog-request params to headers for LRO-polling methods ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Error from fill method should not be emitted ([#2233](https://github.com/googleapis/nodejs-spanner/issues/2233)) ([2cc44cf](https://github.com/googleapis/nodejs-spanner/commit/2cc44cf238bd18f5a456c76ddb8280c2252c2e87)), closes [#2103](https://github.com/googleapis/nodejs-spanner/issues/2103)
+* Finalize fixing typings for headers in generator ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Fix typings for headers in generator ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Remove extra protos in ESM & capture ESM in headers ([e4d389a](https://github.com/googleapis/nodejs-spanner/commit/e4d389a23ff4b73b2d0774ad31a84c9a6c19e306))
+* Rollback with no id ([#2231](https://github.com/googleapis/nodejs-spanner/issues/2231)) ([a6919b1](https://github.com/googleapis/nodejs-spanner/commit/a6919b15bd01ed93c62d32533d78181cbd333f5e)), closes [#2103](https://github.com/googleapis/nodejs-spanner/issues/2103)
+
+## [7.18.1](https://github.com/googleapis/nodejs-spanner/compare/v7.18.0...v7.18.1) (2025-02-05)
+
+
+### Bug Fixes
+
+* Fix NodeJS release ([#2229](https://github.com/googleapis/nodejs-spanner/issues/2229)) ([f830fc8](https://github.com/googleapis/nodejs-spanner/commit/f830fc82ce666902db3cddc667326dc2731c14a1))
+
 ## [7.18.0](https://github.com/googleapis/nodejs-spanner/compare/v7.17.1...v7.18.0) (2025-01-29)
 
 
