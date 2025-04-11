@@ -90,6 +90,7 @@ import {
   ensureInitialContextManagerSet,
 } from './instrument';
 import {
+  attributeXGoogSpannerRequestIdToActiveSpan,
   injectRequestIDIntoError,
   nextSpannerClientId,
 } from './request_id_header';
@@ -1562,6 +1563,8 @@ class Spanner extends GrpcService {
           carrier[key] = value; // Set the span context (trace and span ID)
         },
       });
+      // Attach the x-goog-spanner-request-id to the currently active span.
+      attributeXGoogSpannerRequestIdToActiveSpan(config);
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
