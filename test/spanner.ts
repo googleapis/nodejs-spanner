@@ -5803,8 +5803,8 @@ describe('Spanner with mock server', () => {
     const provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: exporter,
+      spanProcessors: [new SimpleSpanProcessor(exporter)],
     });
-    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
     provider.register();
 
     beforeEach(async () => {
