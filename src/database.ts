@@ -3354,6 +3354,11 @@ class Database extends common.GrpcServiceObject {
           }
 
           transaction!._observabilityOptions = this._observabilityOptions;
+          
+          transaction!.requestOptions = Object.assign(
+            transaction!.requestOptions || {},
+            options.requestOptions
+          );
 
           transaction!.setReadWriteTransactionOptions(
             options as RunTransactionOptions
