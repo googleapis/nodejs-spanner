@@ -55,7 +55,7 @@ function main(
       //
       // CREATE INDEX SingersByFirstLastName ON Singers(FirstName, LastName);
       const request = [
-        'CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName, LastName)'
+        'CREATE INDEX IF NOT EXISTS SingersByFirstLastName ON Singers(FirstName, LastName)',
       ];
 
       const [operation] = await databaseAdminClient.updateDatabaseDdl({
@@ -77,7 +77,7 @@ function main(
           projectId,
           instanceId,
           databaseId
-          ),
+        ),
         splitPoints: [
           {
             table: 'Singers',
