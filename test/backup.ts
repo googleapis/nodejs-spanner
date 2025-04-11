@@ -119,7 +119,7 @@ describe('Backup', () => {
     it('should localize the formatted instance name', () => {
       assert.strictEqual(
         backup.instanceFormattedName_,
-        INSTANCE.formattedName_
+        INSTANCE.formattedName_,
       );
     });
 
@@ -184,7 +184,7 @@ describe('Backup', () => {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -204,7 +204,7 @@ describe('Backup', () => {
           expireTime: BACKUP_EXPIRE_TIME,
           gaxOptions,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -225,7 +225,7 @@ describe('Backup', () => {
           expireTime: BACKUP_EXPIRE_TIME,
           encryptionConfig,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -243,7 +243,7 @@ describe('Backup', () => {
       backup.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.backup.expireTime,
-          EXP_BACKUP_EXPIRE_TIME.toStruct()
+          EXP_BACKUP_EXPIRE_TIME.toStruct(),
         );
         done();
       };
@@ -253,7 +253,7 @@ describe('Backup', () => {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -268,7 +268,7 @@ describe('Backup', () => {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -276,7 +276,7 @@ describe('Backup', () => {
       backup.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.backup.versionTime,
-          EXP_BACKUP_VERSION_TIME.toStruct()
+          EXP_BACKUP_VERSION_TIME.toStruct(),
         );
         done();
       };
@@ -287,7 +287,7 @@ describe('Backup', () => {
           expireTime: BACKUP_EXPIRE_TIME,
           versionTime: BACKUP_VERSION_TIME,
         },
-        assert.ifError
+        assert.ifError,
       );
     });
 
@@ -313,7 +313,7 @@ describe('Backup', () => {
             assert.strictEqual(op, null);
             assert.deepStrictEqual(resp, API_RESPONSE);
             done();
-          }
+          },
         );
       });
     });
@@ -340,7 +340,7 @@ describe('Backup', () => {
             assert.strictEqual(op, OPERATION);
             assert.strictEqual(resp, API_RESPONSE);
             done();
-          }
+          },
         );
       });
     });
@@ -733,14 +733,14 @@ describe('Backup', () => {
     it('should return the name if already formatted', () => {
       assert.strictEqual(
         Backup.formatName_(INSTANCE.formattedName_, BACKUP_FORMATTED_NAME),
-        BACKUP_FORMATTED_NAME
+        BACKUP_FORMATTED_NAME,
       );
     });
 
     it('should format the name', () => {
       const formattedName_ = Backup.formatName_(
         INSTANCE.formattedName_,
-        BACKUP_NAME
+        BACKUP_NAME,
       );
       assert.strictEqual(formattedName_, BACKUP_FORMATTED_NAME);
     });

@@ -20,7 +20,7 @@ async function restoreBackupWithEncryptionKey(
   databaseId,
   backupId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_restore_backup_with_encryption_key]
   // Imports the Google Cloud client library and precise date library
@@ -47,7 +47,7 @@ async function restoreBackupWithEncryptionKey(
 
   // Restore the database
   console.log(
-    `Restoring database ${database.formattedName_} from backup ${backupId}.`
+    `Restoring database ${database.formattedName_} from backup ${backupId}.`,
   );
   const [, restoreOperation] = await database.restore(
     `projects/${projectId}/instances/${instanceId}/backups/${backupId}`,
@@ -56,7 +56,7 @@ async function restoreBackupWithEncryptionKey(
         encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
         kmsKeyName: keyName,
       },
-    }
+    },
   );
 
   // Wait for restore to complete
@@ -69,7 +69,7 @@ async function restoreBackupWithEncryptionKey(
   console.log(
     `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
       `to ${databaseId} from backup ${restoreInfo.backupInfo.backup} ` +
-      `using encryption key ${data.metadata.encryptionConfig.kmsKeyName}.`
+      `using encryption key ${data.metadata.encryptionConfig.kmsKeyName}.`,
   );
   // [END spanner_restore_backup_with_encryption_key]
 }

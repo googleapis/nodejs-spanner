@@ -359,7 +359,7 @@ describe('SessionPool', () => {
         assert.strictEqual(err!.name, 'SessionLeakError');
         assert.strictEqual(
           err!.message,
-          `${fakeLeaks.length} session leak(s) detected.`
+          `${fakeLeaks.length} session leak(s) detected.`,
         );
         assert.strictEqual(err!.messages, fakeLeaks);
         done();
@@ -534,7 +534,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Unable to release unknown resource.'
+          'Unable to release unknown resource.',
         );
         assert.strictEqual((e as sp.ReleaseError).resource, badResource);
       }
@@ -597,7 +597,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Database is closed.'
+          'Database is closed.',
         );
       }
     });
@@ -615,7 +615,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Timeout occurred while acquiring session.'
+          'Timeout occurred while acquiring session.',
         );
       }
     });
@@ -1033,7 +1033,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'No resources available.'
+          'No resources available.',
         );
       }
     });
@@ -1047,7 +1047,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Database is closed.'
+          'Database is closed.',
         );
       }
     });
@@ -1075,7 +1075,7 @@ describe('SessionPool', () => {
         assert(isAround(timeout, end()));
         assert.strictEqual(
           (e as sp.ReleaseError).message,
-          'Timeout occurred while acquiring session.'
+          'Timeout occurred while acquiring session.',
         );
       }
     });
@@ -1395,7 +1395,7 @@ describe('SessionPool', () => {
         assert.strictEqual(
           events.length > 0,
           true,
-          'Expecting at least 1 event'
+          'Expecting at least 1 event',
         );
 
         // Sort the events by earliest time of occurence.
@@ -1412,7 +1412,7 @@ describe('SessionPool', () => {
         assert.deepEqual(
           gotEventNames,
           wantEventNames,
-          `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`
+          `Mismatched events\n\tGot:  ${gotEventNames}\n\tWant: ${wantEventNames}`,
         );
 
         done();

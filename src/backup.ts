@@ -91,7 +91,7 @@ type DeleteCallback = RequestCallback<databaseAdmin.protobuf.IEmpty>;
 interface BackupRequest {
   (
     config: RequestConfig,
-    callback: ResourceCallback<GaxOperation, IOperation>
+    callback: ResourceCallback<GaxOperation, IOperation>,
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
 }
@@ -208,15 +208,15 @@ class Backup {
    * ```
    */
   create(
-    options: CreateBackupOptions | CopyBackupOptions
+    options: CreateBackupOptions | CopyBackupOptions,
   ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse>;
   create(
     options: CreateBackupOptions | CopyBackupOptions,
-    callback: CreateBackupCallback | CopyBackupCallback
+    callback: CreateBackupCallback | CopyBackupCallback,
   ): void;
   create(
     options: CreateBackupOptions | CopyBackupOptions,
-    callback?: CreateBackupCallback | CopyBackupCallback
+    callback?: CreateBackupCallback | CopyBackupCallback,
   ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
     if ('databasePath' in options) {
@@ -232,7 +232,7 @@ class Backup {
         };
       if ('versionTime' in options) {
         reqOpts.backup!.versionTime = Spanner.timestamp(
-          options.versionTime
+          options.versionTime,
         ).toStruct();
       }
       if (
@@ -257,7 +257,7 @@ class Backup {
             return;
           }
           callback!(null, this, operation, resp);
-        }
+        },
       );
     } else if (this.sourceName) {
       delete options.gaxOptions;
@@ -279,7 +279,7 @@ class Backup {
             return;
           }
           callback!(null, this, operation, resp);
-        }
+        },
       );
     }
   }
@@ -323,7 +323,7 @@ class Backup {
   getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
   getMetadata(
     gaxOptionsOrCallback?: CallOptions | GetMetadataCallback,
-    cb?: GetMetadataCallback
+    cb?: GetMetadataCallback,
   ): void | Promise<GetMetadataResponse> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
@@ -349,7 +349,7 @@ class Backup {
           this.metadata = response;
         }
         callback!(err, response);
-      }
+      },
     );
   }
 
@@ -486,25 +486,25 @@ class Backup {
    * ```
    */
   updateExpireTime(
-    expireTime: string | number | p.ITimestamp | PreciseDate
+    expireTime: string | number | p.ITimestamp | PreciseDate,
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
-    callback: UpdateExpireTimeCallback
+    callback: UpdateExpireTimeCallback,
   ): void;
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptions: CallOptions,
-    callback: UpdateExpireTimeCallback
+    callback: UpdateExpireTimeCallback,
   ): void;
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
-    cb?: UpdateExpireTimeCallback
+    cb?: UpdateExpireTimeCallback,
   ): void | Promise<databaseAdmin.spanner.admin.database.v1.IBackup> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
@@ -534,7 +534,7 @@ class Backup {
       },
       (err, response) => {
         callback!(err, response);
-      }
+      },
     );
   }
 
@@ -562,7 +562,7 @@ class Backup {
   delete(gaxOptions: CallOptions, callback: DeleteCallback): void;
   delete(
     gaxOptionsOrCallback?: CallOptions | DeleteCallback,
-    cb?: DeleteCallback
+    cb?: DeleteCallback,
   ): void | Promise<databaseAdmin.protobuf.IEmpty> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
@@ -586,7 +586,7 @@ class Backup {
       },
       err => {
         callback!(err);
-      }
+      },
     );
   }
 

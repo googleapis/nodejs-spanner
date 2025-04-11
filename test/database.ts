@@ -107,12 +107,12 @@ export class FakeSession {
   }
   partitionedDml(): FakeTransaction {
     return new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.PartitionedDml
+      {} as google.spanner.v1.TransactionOptions.PartitionedDml,
     );
   }
   snapshot(): FakeTransaction {
     return new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.ReadOnly
+      {} as google.spanner.v1.TransactionOptions.ReadOnly,
     );
   }
 }
@@ -189,7 +189,7 @@ class FakeTransaction extends EventEmitter {
   setReadWriteTransactionOptions(options: RunTransactionOptions) {}
   commit(
     options?: CommitOptions,
-    callback?: CommitCallback
+    callback?: CommitCallback,
   ): void | Promise<google.spanner.v1.ICommitResponse> {
     if (callback) {
       callback(null, {commitTimestamp: {seconds: 1, nanos: 0}});
@@ -343,7 +343,7 @@ describe('Database', () => {
       const database = new Database(
         INSTANCE,
         NAME,
-        FakePool as {} as db.SessionPoolConstructor
+        FakePool as {} as db.SessionPoolConstructor,
       );
       assert(database.pool_ instanceof FakeSessionPool);
     });
@@ -409,14 +409,14 @@ describe('Database', () => {
     it('should return the name if already formatted', () => {
       assert.strictEqual(
         Database.formatName_(INSTANCE.formattedName_, DATABASE_FORMATTED_NAME),
-        DATABASE_FORMATTED_NAME
+        DATABASE_FORMATTED_NAME,
       );
     });
 
     it('should format the name', () => {
       const formattedName_ = Database.formatName_(
         INSTANCE.formattedName_,
-        NAME
+        NAME,
       );
       assert.strictEqual(formattedName_, DATABASE_FORMATTED_NAME);
     });
@@ -443,8 +443,8 @@ describe('Database', () => {
             [LEADER_AWARE_ROUTING_HEADER]: true,
             [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
           },
-          database.commonHeaders_
-        )
+          database.commonHeaders_,
+        ),
       );
     });
 
@@ -474,7 +474,7 @@ describe('Database', () => {
 
       database.batchCreateSessions(
         {count: 10, databaseRole: 'child_role'},
-        assert.ifError
+        assert.ifError,
       );
 
       const {reqOpts} = stub.lastCall.args[0];
@@ -491,7 +491,7 @@ describe('Database', () => {
 
       assert.deepStrictEqual(
         reqOpts.sessionTemplate.creatorRole,
-        'parent_role'
+        'parent_role',
       );
     });
 
@@ -708,7 +708,7 @@ describe('Database', () => {
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
           excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
-        }
+        },
       );
 
       database.batchWriteAtLeastOnce(mutationGroups, options);
@@ -778,7 +778,7 @@ describe('Database', () => {
       database
         .batchWriteAtLeastOnce(
           [FakeMutationGroup1, FakeMutationGroup2],
-          options
+          options,
         )
         .on('data', data => {
           assert.strictEqual(data, 'testData');
@@ -834,7 +834,7 @@ describe('Database', () => {
     const SESSION = new FakeSession();
     const RESPONSE = {commitTimestamp: {seconds: 1, nanos: 0}};
     const TRANSACTION = new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.ReadWrite
+      {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
     let sessionFactory: FakeSessionFactory;
@@ -867,7 +867,7 @@ describe('Database', () => {
             const fakeErr = new Error('err');
 
             (sessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
-              callback(fakeErr, null, null)
+              callback(fakeErr, null, null),
             );
 
             database.writeAtLeastOnce(mutations, err => {
@@ -883,7 +883,7 @@ describe('Database', () => {
                 assert.ifError(err);
                 assert.deepStrictEqual(
                   response.commitTimestamp,
-                  RESPONSE.commitTimestamp
+                  RESPONSE.commitTimestamp,
                 );
               });
               done();
@@ -899,9 +899,9 @@ describe('Database', () => {
               const errorMessage = (err as grpc.ServiceError).message;
               assert.ok(
                 errorMessage.includes(
-                  "Cannot read properties of null (reading 'proto')"
+                  "Cannot read properties of null (reading 'proto')",
                 ) ||
-                  errorMessage.includes("Cannot read property 'proto' of null")
+                  errorMessage.includes("Cannot read property 'proto' of null"),
               );
 
               done();
@@ -921,10 +921,10 @@ describe('Database', () => {
             const [response] = await database.writeAtLeastOnce(mutations, {});
             assert.deepStrictEqual(
               response.commitTimestamp,
-              RESPONSE.commitTimestamp
+              RESPONSE.commitTimestamp,
             );
           });
-        }
+        },
       );
     });
   });
@@ -1623,7 +1623,7 @@ describe('Database', () => {
           config.reqOpts,
           extend({}, CONFIG.reqOpts, {
             session: SESSION.formattedName_,
-          })
+          }),
         );
         done();
       };
@@ -1952,10 +1952,10 @@ describe('Database', () => {
             fakeSession = new FakeSession();
             fakeSession2 = new FakeSession();
             fakeSnapshot = new FakeTransaction(
-              {} as google.spanner.v1.TransactionOptions.ReadOnly
+              {} as google.spanner.v1.TransactionOptions.ReadOnly,
             );
             fakeSnapshot2 = new FakeTransaction(
-              {} as google.spanner.v1.TransactionOptions.ReadOnly
+              {} as google.spanner.v1.TransactionOptions.ReadOnly,
             );
             fakeStream = through.obj();
             fakeStream2 = through.obj();
@@ -2079,7 +2079,7 @@ describe('Database', () => {
             it('should release the session on transaction end', () => {
               const releaseStub = sandbox.stub(
                 fakeSessionFactory,
-                'release'
+                'release',
               ) as sinon.SinonStub;
 
               database.runStream(QUERY);
@@ -2116,7 +2116,7 @@ describe('Database', () => {
               fakeStream2.push(null);
             });
           }
-        }
+        },
       );
     });
   });
@@ -2222,8 +2222,8 @@ describe('Database', () => {
               [LEADER_AWARE_ROUTING_HEADER]: 'true',
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
             },
-            database.commonHeaders_
-          )
+            database.commonHeaders_,
+          ),
         );
 
         done();
@@ -2271,7 +2271,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.session.creatorRole,
-          databaseRole.databaseRole
+          databaseRole.databaseRole,
         );
         assert.deepStrictEqual(options, originalOptions);
         done();
@@ -2288,7 +2288,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.session.creatorRole,
-          databaseRole.databaseRole
+          databaseRole.databaseRole,
         );
         assert.deepStrictEqual(options, originalOptions);
         done();
@@ -2305,7 +2305,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.session.multiplexed,
-          multiplexed.multiplexed
+          multiplexed.multiplexed,
         );
         assert.deepStrictEqual(options, originalOptions);
         done();
@@ -2395,7 +2395,7 @@ describe('Database', () => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
             fakeSnapshot = new FakeTransaction(
-              {} as google.spanner.v1.TransactionOptions.ReadOnly
+              {} as google.spanner.v1.TransactionOptions.ReadOnly,
             );
 
             beginSnapshotStub = (
@@ -2413,7 +2413,7 @@ describe('Database', () => {
             (
               sandbox.stub(
                 fakeSessionFactory,
-                'isMultiplexedEnabled'
+                'isMultiplexedEnabled',
               ) as sinon.SinonStub
             ).returns(isMuxEnabled ? true : false);
           });
@@ -2431,7 +2431,7 @@ describe('Database', () => {
                 assert.strictEqual(err, fakeError);
                 done();
               });
-            }
+            },
           );
 
           it('should pass the timestamp bounds to the snapshot', () => {
@@ -2450,7 +2450,7 @@ describe('Database', () => {
               assert.strictEqual(err.code, 3);
               assert.strictEqual(
                 err.message,
-                'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+                'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.',
               );
             });
           });
@@ -2462,7 +2462,7 @@ describe('Database', () => {
               assert.strictEqual(err.code, 3);
               assert.strictEqual(
                 err.message,
-                'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+                'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.',
               );
             });
           });
@@ -2524,7 +2524,7 @@ describe('Database', () => {
 
               const fakeSession2 = new FakeSession();
               const fakeSnapshot2 = new FakeTransaction(
-                {} as google.spanner.v1.TransactionOptions.ReadOnly
+                {} as google.spanner.v1.TransactionOptions.ReadOnly,
               );
               (
                 sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub
@@ -2570,7 +2570,7 @@ describe('Database', () => {
               });
             });
           }
-        }
+        },
       );
     });
   });
@@ -2588,7 +2588,7 @@ describe('Database', () => {
       fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakeTransaction = new FakeTransaction(
-        {} as google.spanner.v1.TransactionOptions.ReadWrite
+        {} as google.spanner.v1.TransactionOptions.ReadWrite,
       );
 
       getSessionStub = (
@@ -2700,7 +2700,7 @@ describe('Database', () => {
         {
           database: database.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -2732,7 +2732,7 @@ describe('Database', () => {
           pageSize: optionsPageSize,
           pageToken: optionsPageToken,
           gaxOptions,
-        }
+        },
       );
       const expectedReqOpts = extend(
         {},
@@ -2740,7 +2740,7 @@ describe('Database', () => {
         {
           database: database.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -2870,7 +2870,7 @@ describe('Database', () => {
         {
           database: database.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       database.requestStream = config => {
@@ -2904,7 +2904,7 @@ describe('Database', () => {
         {
           database: database.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       database.requestStream = config => {
@@ -2997,7 +2997,7 @@ describe('Database', () => {
             getSessionStub = (
               sandbox.stub(
                 fakeSessionFactory,
-                'getSessionForPartitionedOps'
+                'getSessionForPartitionedOps',
               ) as sinon.SinonStub
             ).callsFake(callback => {
               callback(null, fakeSession);
@@ -3113,7 +3113,7 @@ describe('Database', () => {
                   priority: RequestOptions.Priority.PRIORITY_LOW,
                 },
               },
-              fakeCallback
+              fakeCallback,
             );
 
             const [query] = runUpdateStub.lastCall.args;
@@ -3133,7 +3133,7 @@ describe('Database', () => {
               {
                 excludeTxnFromChangeStream: true,
               },
-              fakeCallback
+              fakeCallback,
             );
 
             const [query] = runUpdateStub.lastCall.args;
@@ -3160,7 +3160,7 @@ describe('Database', () => {
                   priority: RequestOptions.Priority.PRIORITY_LOW,
                 },
               },
-              fakeCallback
+              fakeCallback,
             );
 
             const [query] = runUpdateStub.lastCall.args;
@@ -3172,7 +3172,7 @@ describe('Database', () => {
             });
             assert.ok(fakeCallback.calledOnce);
           });
-        }
+        },
       );
     });
   });
@@ -3180,7 +3180,7 @@ describe('Database', () => {
   describe('runTransaction', () => {
     const SESSION = new FakeSession();
     const TRANSACTION = new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.ReadWrite
+      {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
     let pool: FakeSessionPool;
@@ -3191,7 +3191,7 @@ describe('Database', () => {
       (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
-        }
+        },
       );
     });
 
@@ -3199,7 +3199,7 @@ describe('Database', () => {
       const fakeErr = new Error('err');
 
       (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr)
+        callback(fakeErr),
       );
 
       database.runTransaction(err => {
@@ -3279,7 +3279,7 @@ describe('Database', () => {
   describe('runTransactionAsync', () => {
     const SESSION = new FakeSession();
     const TRANSACTION = new FakeTransaction(
-      {} as google.spanner.v1.TransactionOptions.ReadWrite
+      {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
     let pool: FakeSessionPool;
@@ -3290,7 +3290,7 @@ describe('Database', () => {
       (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
-        }
+        },
       );
     });
 
@@ -3464,7 +3464,7 @@ describe('Database', () => {
       database.instance.getDatabaseOperations = async options => {
         assert.strictEqual(
           options.filter,
-          `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`
+          `(name:${DATABASE_FORMATTED_NAME}) AND (someOtherAttribute: aValue)`,
         );
         return [operations, {}];
       };
@@ -3563,7 +3563,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.encryptionConfig,
-          encryptionConfig
+          encryptionConfig,
         );
         done();
       };
@@ -3593,7 +3593,7 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.encryptionConfig,
-          encryptionConfig
+          encryptionConfig,
         );
         assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
         done();

@@ -233,7 +233,7 @@ describe('Spanner', () => {
     it('should create an auth instance from google-auth-library', () => {
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
-        EXPECTED_OPTIONS
+        EXPECTED_OPTIONS,
       );
     });
 
@@ -251,7 +251,7 @@ describe('Spanner', () => {
 
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
-        expectedOptions
+        expectedOptions,
       );
     });
 
@@ -265,11 +265,11 @@ describe('Spanner', () => {
       const expectedOptions = Object.assign(
         {},
         EXPECTED_OPTIONS,
-        keepaliveOptions
+        keepaliveOptions,
       );
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
-        expectedOptions
+        expectedOptions,
       );
     });
 
@@ -339,14 +339,14 @@ describe('Spanner', () => {
       const spanner = new Spanner(fakeDefaultTxnOptions);
       assert.strictEqual(
         spanner.defaultTransactionOptions,
-        fakeDefaultTxnOptions.defaultTransactionOptions
+        fakeDefaultTxnOptions.defaultTransactionOptions,
       );
     });
 
     it('should set projectFormattedName_', () => {
       assert.strictEqual(
         spanner.projectFormattedName_,
-        `projects/${spanner.projectId}`
+        `projects/${spanner.projectId}`,
       );
     });
 
@@ -400,7 +400,7 @@ describe('Spanner', () => {
         } catch (e) {
           assert.strictEqual(
             (e as Error).message,
-            'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+            'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)',
           );
         }
       });
@@ -414,7 +414,7 @@ describe('Spanner', () => {
         } catch (e) {
           assert.strictEqual(
             (e as Error).message,
-            'Invalid port number: not_a_port'
+            'Invalid port number: not_a_port',
           );
         }
       });
@@ -836,7 +836,7 @@ describe('Spanner', () => {
       spanner.request = config => {
         assert.strictEqual(
           config.reqOpts.instance.processingUnits,
-          processingUnits
+          processingUnits,
         );
         assert.strictEqual(config.reqOpts.instance.nodeCount, undefined);
         done();
@@ -887,7 +887,7 @@ describe('Spanner', () => {
           const reqOpts = config_.reqOpts;
           assert.strictEqual(
             reqOpts.instance.config,
-            'projects/' + spanner.projectId + '/instanceConfigs/' + name
+            'projects/' + spanner.projectId + '/instanceConfigs/' + name,
           );
           done();
         };
@@ -990,7 +990,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       const expectedGaxOpts = {timeout: 1000};
 
@@ -1025,7 +1025,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       const expectedGaxOpts = {timeout: 1000};
@@ -1128,7 +1128,7 @@ describe('Spanner', () => {
         const EXPECTEDNEXTQUERY = extend(
           {},
           GETINSTANCESOPTIONS,
-          NEXTPAGEREQUEST
+          NEXTPAGEREQUEST,
         );
         spanner.request = (config, callback) => {
           callback(...GAX_RESPONSE_ARGS);
@@ -1181,7 +1181,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       const expectedGaxOpts = {timeout: 1000};
 
@@ -1216,7 +1216,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       const expectedGaxOpts = {timeout: 1000};
 
@@ -1333,7 +1333,7 @@ describe('Spanner', () => {
       spanner.request = config => {
         assert.strictEqual(
           config.reqOpts.instanceConfig.displayName,
-          displayName
+          displayName,
         );
         done();
       };
@@ -1370,7 +1370,7 @@ describe('Spanner', () => {
             assert.strictEqual(op, null);
             assert.strictEqual(resp, API_RESPONSE);
             done();
-          }
+          },
         );
       });
     });
@@ -1404,7 +1404,7 @@ describe('Spanner', () => {
             assert.strictEqual(op, OPERATION);
             assert.strictEqual(resp, API_RESPONSE);
             done();
-          }
+          },
         );
       });
     });
@@ -1459,7 +1459,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       const expectedGaxOpts = {timeout: 1000};
 
@@ -1494,7 +1494,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       const expectedGaxOpts = {timeout: 1000};
 
@@ -1544,7 +1544,7 @@ describe('Spanner', () => {
       const EXPECTEDNEXTQUERY = extend(
         {},
         GETINSTANCECONFIGSOPTIONS,
-        NEXTPAGEREQUEST
+        NEXTPAGEREQUEST,
       );
       spanner.request = (config, callback) => {
         callback(...RESPONSE);
@@ -1600,7 +1600,7 @@ describe('Spanner', () => {
         {
           parent: spanner.projectFormattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       spanner.request = config => {
@@ -1634,7 +1634,7 @@ describe('Spanner', () => {
         {
           parent: spanner.projectFormattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       spanner.request = config => {
@@ -1681,7 +1681,7 @@ describe('Spanner', () => {
       const EXPECTED_NEXT_QUERY = extend(
         {},
         GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
-        NEXT_PAGE_REQUEST
+        NEXT_PAGE_REQUEST,
       );
       spanner.request = (config, callback) => {
         callback(...RESPONSE);
@@ -1692,7 +1692,7 @@ describe('Spanner', () => {
       }
       spanner.getInstanceConfigOperations(
         GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
-        callback
+        callback,
       );
     });
   });
@@ -1729,7 +1729,7 @@ describe('Spanner', () => {
       };
 
       const returnedValue = spanner.getInstanceConfigsStream(
-        OPTIONS as GetInstanceConfigsOptions
+        OPTIONS as GetInstanceConfigsOptions,
       );
       assert.strictEqual(returnedValue, returnValue);
     });
@@ -1767,7 +1767,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       delete expectedReqOpts.gaxOptions;
       const expectedGaxOpts = {timeout: 1000};
@@ -1799,7 +1799,7 @@ describe('Spanner', () => {
           pageSize: optionsPageSize,
           pageToken: optionsPageToken,
           gaxOptions,
-        }
+        },
       );
       const expectedReqOpts: {gaxOptions?: {}} = extend(
         {},
@@ -1807,7 +1807,7 @@ describe('Spanner', () => {
         {
           parent: 'projects/' + spanner.projectId,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       delete expectedReqOpts.gaxOptions;
       const expectedGaxOpts = {timeout: 1000};
@@ -1862,7 +1862,7 @@ describe('Spanner', () => {
       const returnedValue = spanner.getInstanceConfig(
         'nam1',
         options,
-        callback
+        callback,
       );
       assert.strictEqual(returnedValue, returnValue);
     });

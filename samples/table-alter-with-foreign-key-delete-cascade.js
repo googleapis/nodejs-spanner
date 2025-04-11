@@ -50,7 +50,7 @@ function main(instanceId, databaseId, projectId) {
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: request,
     });

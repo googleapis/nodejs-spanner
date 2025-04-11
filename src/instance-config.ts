@@ -64,7 +64,7 @@ export type IInstanceConfig =
 interface InstanceConfigRequest {
   (
     config: RequestConfig,
-    callback: ResourceCallback<GaxOperation, IOperation>
+    callback: ResourceCallback<GaxOperation, IOperation>,
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
@@ -166,7 +166,7 @@ class InstanceConfig extends common.GrpcServiceObject {
       createMethod(
         _: {},
         options: CreateInstanceConfigRequest,
-        callback: CreateInstanceConfigCallback
+        callback: CreateInstanceConfigCallback,
       ): void {
         spanner.createInstanceConfig(formattedName_, options, callback);
       },
@@ -237,11 +237,11 @@ class InstanceConfig extends common.GrpcServiceObject {
   get(callback: GetInstanceConfigCallback): void;
   get(
     options: GetInstanceConfigOptions,
-    callback: GetInstanceConfigCallback
+    callback: GetInstanceConfigCallback,
   ): void;
   get(
     optionsOrCallback?: GetInstanceConfigOptions | GetInstanceConfigCallback,
-    cb?: GetInstanceConfigCallback
+    cb?: GetInstanceConfigCallback,
   ): void | Promise<GetInstanceConfigResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -305,22 +305,22 @@ class InstanceConfig extends common.GrpcServiceObject {
    * ```
    */
   setMetadata(
-    config: SetInstanceConfigMetadataRequest
+    config: SetInstanceConfigMetadataRequest,
   ): Promise<SetInstanceConfigMetadataResponse>;
   setMetadata(
     config: SetInstanceConfigMetadataRequest,
-    callback: SetInstanceConfigMetadataCallback
+    callback: SetInstanceConfigMetadataCallback,
   ): void;
   setMetadata(
     config: SetInstanceConfigMetadataRequest,
-    callback?: SetInstanceConfigMetadataCallback
+    callback?: SetInstanceConfigMetadataCallback,
   ): void | Promise<SetInstanceConfigMetadataResponse> {
     const reqOpts = {
       instanceConfig: extend(
         {
           name: this.formattedName_,
         },
-        config.instanceConfig
+        config.instanceConfig,
       ),
       updateMask: {
         paths: Object.keys(config.instanceConfig).map(snakeCase),
@@ -343,7 +343,7 @@ class InstanceConfig extends common.GrpcServiceObject {
             : config.gaxOpts,
         headers: this.resourceHeader_,
       },
-      callback!
+      callback!,
     );
   }
 
@@ -395,18 +395,18 @@ class InstanceConfig extends common.GrpcServiceObject {
    * ```
    */
   delete(
-    config?: DeleteInstanceConfigRequest
+    config?: DeleteInstanceConfigRequest,
   ): Promise<DeleteInstanceConfigResponse>;
   delete(callback: DeleteInstanceConfigCallback): void;
   delete(
     config: DeleteInstanceConfigRequest,
-    callback: DeleteInstanceConfigCallback
+    callback: DeleteInstanceConfigCallback,
   ): void;
   delete(
     optionsOrCallback?:
       | DeleteInstanceConfigRequest
       | DeleteInstanceConfigCallback,
-    cb?: DeleteInstanceConfigCallback
+    cb?: DeleteInstanceConfigCallback,
   ): void | Promise<DeleteInstanceConfigResponse> {
     const config =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -441,7 +441,7 @@ class InstanceConfig extends common.GrpcServiceObject {
           this.parent.instanceConfigs_.delete(this.id);
         }
         callback!(err, resp!);
-      }
+      },
     );
   }
 

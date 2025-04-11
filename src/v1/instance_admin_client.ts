@@ -129,7 +129,7 @@ export class InstanceAdminClient {
    */
   constructor(
     opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
+    gaxInstance?: typeof gax | typeof gax.fallback,
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof InstanceAdminClient;
@@ -139,7 +139,7 @@ export class InstanceAdminClient {
       opts?.universe_domain !== opts?.universeDomain
     ) {
       throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
+        'Please set either universe_domain or universeDomain, but not both.',
       );
     }
     const universeDomainEnvVar =
@@ -223,16 +223,16 @@ export class InstanceAdminClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       instancePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}'
+        'projects/{project}/instances/{instance}',
       ),
       instanceConfigPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instanceConfigs/{instance_config}'
+        'projects/{project}/instanceConfigs/{instance_config}',
       ),
       instancePartitionPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}'
+        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}',
       ),
       projectPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}'
+        'projects/{project}',
       ),
     };
 
@@ -243,27 +243,27 @@ export class InstanceAdminClient {
       listInstanceConfigs: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'instanceConfigs'
+        'instanceConfigs',
       ),
       listInstanceConfigOperations: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'operations'
+        'operations',
       ),
       listInstances: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'instances'
+        'instances',
       ),
       listInstancePartitions: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'instancePartitions'
+        'instancePartitions',
       ),
       listInstancePartitionOperations: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'operations'
+        'operations',
       ),
     };
 
@@ -312,91 +312,91 @@ export class InstanceAdminClient {
       .lro(lroOptions)
       .operationsClient(opts);
     const createInstanceConfigResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstanceConfig'
+      '.google.spanner.admin.instance.v1.InstanceConfig',
     ) as gax.protobuf.Type;
     const createInstanceConfigMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      '.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata',
     ) as gax.protobuf.Type;
     const updateInstanceConfigResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstanceConfig'
+      '.google.spanner.admin.instance.v1.InstanceConfig',
     ) as gax.protobuf.Type;
     const updateInstanceConfigMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata'
+      '.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata',
     ) as gax.protobuf.Type;
     const createInstanceResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.Instance'
+      '.google.spanner.admin.instance.v1.Instance',
     ) as gax.protobuf.Type;
     const createInstanceMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.CreateInstanceMetadata'
+      '.google.spanner.admin.instance.v1.CreateInstanceMetadata',
     ) as gax.protobuf.Type;
     const updateInstanceResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.Instance'
+      '.google.spanner.admin.instance.v1.Instance',
     ) as gax.protobuf.Type;
     const updateInstanceMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.UpdateInstanceMetadata'
+      '.google.spanner.admin.instance.v1.UpdateInstanceMetadata',
     ) as gax.protobuf.Type;
     const createInstancePartitionResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstancePartition'
+      '.google.spanner.admin.instance.v1.InstancePartition',
     ) as gax.protobuf.Type;
     const createInstancePartitionMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata'
+      '.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata',
     ) as gax.protobuf.Type;
     const updateInstancePartitionResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstancePartition'
+      '.google.spanner.admin.instance.v1.InstancePartition',
     ) as gax.protobuf.Type;
     const updateInstancePartitionMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata'
+      '.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata',
     ) as gax.protobuf.Type;
     const moveInstanceResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.MoveInstanceResponse'
+      '.google.spanner.admin.instance.v1.MoveInstanceResponse',
     ) as gax.protobuf.Type;
     const moveInstanceMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.MoveInstanceMetadata'
+      '.google.spanner.admin.instance.v1.MoveInstanceMetadata',
     ) as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
       createInstanceConfig: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createInstanceConfigResponse.decode.bind(createInstanceConfigResponse),
-        createInstanceConfigMetadata.decode.bind(createInstanceConfigMetadata)
+        createInstanceConfigMetadata.decode.bind(createInstanceConfigMetadata),
       ),
       updateInstanceConfig: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         updateInstanceConfigResponse.decode.bind(updateInstanceConfigResponse),
-        updateInstanceConfigMetadata.decode.bind(updateInstanceConfigMetadata)
+        updateInstanceConfigMetadata.decode.bind(updateInstanceConfigMetadata),
       ),
       createInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createInstanceResponse.decode.bind(createInstanceResponse),
-        createInstanceMetadata.decode.bind(createInstanceMetadata)
+        createInstanceMetadata.decode.bind(createInstanceMetadata),
       ),
       updateInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         updateInstanceResponse.decode.bind(updateInstanceResponse),
-        updateInstanceMetadata.decode.bind(updateInstanceMetadata)
+        updateInstanceMetadata.decode.bind(updateInstanceMetadata),
       ),
       createInstancePartition: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createInstancePartitionResponse.decode.bind(
-          createInstancePartitionResponse
+          createInstancePartitionResponse,
         ),
         createInstancePartitionMetadata.decode.bind(
-          createInstancePartitionMetadata
-        )
+          createInstancePartitionMetadata,
+        ),
       ),
       updateInstancePartition: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         updateInstancePartitionResponse.decode.bind(
-          updateInstancePartitionResponse
+          updateInstancePartitionResponse,
         ),
         updateInstancePartitionMetadata.decode.bind(
-          updateInstancePartitionMetadata
-        )
+          updateInstancePartitionMetadata,
+        ),
       ),
       moveInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         moveInstanceResponse.decode.bind(moveInstanceResponse),
-        moveInstanceMetadata.decode.bind(moveInstanceMetadata)
+        moveInstanceMetadata.decode.bind(moveInstanceMetadata),
       ),
     };
 
@@ -405,7 +405,7 @@ export class InstanceAdminClient {
       'google.spanner.admin.instance.v1.InstanceAdmin',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -439,12 +439,12 @@ export class InstanceAdminClient {
     this.instanceAdminStub = this._gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.spanner.admin.instance.v1.InstanceAdmin'
+            'google.spanner.admin.instance.v1.InstanceAdmin',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.admin.instance.v1.InstanceAdmin,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -484,7 +484,7 @@ export class InstanceAdminClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor =
@@ -495,7 +495,7 @@ export class InstanceAdminClient {
         callPromise,
         this._defaults[methodName],
         descriptor,
-        this._opts.fallback
+        this._opts.fallback,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -516,7 +516,7 @@ export class InstanceAdminClient {
     ) {
       process.emitWarning(
         'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -534,7 +534,7 @@ export class InstanceAdminClient {
     ) {
       process.emitWarning(
         'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -579,7 +579,7 @@ export class InstanceAdminClient {
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -608,7 +608,7 @@ export class InstanceAdminClient {
    */
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig,
@@ -628,7 +628,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
@@ -638,7 +638,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
@@ -657,7 +657,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig,
@@ -722,7 +722,7 @@ export class InstanceAdminClient {
    */
   deleteInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -742,7 +742,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
@@ -752,7 +752,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
@@ -771,7 +771,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -822,7 +822,7 @@ export class InstanceAdminClient {
    */
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance,
@@ -839,7 +839,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstance(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
@@ -849,7 +849,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
@@ -868,7 +868,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance,
@@ -921,7 +921,7 @@ export class InstanceAdminClient {
    */
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -941,7 +941,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstance(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
@@ -951,7 +951,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
@@ -970,7 +970,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1031,7 +1031,7 @@ export class InstanceAdminClient {
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1046,7 +1046,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -1054,7 +1054,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -1069,7 +1069,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1119,7 +1119,7 @@ export class InstanceAdminClient {
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1134,7 +1134,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1142,7 +1142,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1157,7 +1157,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -1210,7 +1210,7 @@ export class InstanceAdminClient {
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1225,7 +1225,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1233,7 +1233,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1248,7 +1248,7 @@ export class InstanceAdminClient {
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -1292,7 +1292,7 @@ export class InstanceAdminClient {
    */
   getInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstancePartition,
@@ -1312,7 +1312,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstancePartition(
     request: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
@@ -1322,7 +1322,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
@@ -1341,7 +1341,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstancePartition,
@@ -1399,7 +1399,7 @@ export class InstanceAdminClient {
    */
   deleteInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1419,7 +1419,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstancePartition(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
@@ -1429,7 +1429,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
@@ -1448,7 +1448,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1478,7 +1478,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.deleteInstancePartition(
       request,
       options,
-      callback
+      callback,
     );
   }
 
@@ -1555,7 +1555,7 @@ export class InstanceAdminClient {
    */
   createInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -1576,7 +1576,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
@@ -1587,7 +1587,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
@@ -1608,7 +1608,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -1647,7 +1647,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkCreateInstanceConfigProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.InstanceConfig,
@@ -1656,13 +1656,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.createInstanceConfig,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.InstanceConfig,
@@ -1746,7 +1746,7 @@ export class InstanceAdminClient {
    */
   updateInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -1767,7 +1767,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
@@ -1778,7 +1778,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
@@ -1799,7 +1799,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -1838,7 +1838,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkUpdateInstanceConfigProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.InstanceConfig,
@@ -1847,13 +1847,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.updateInstanceConfig,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.InstanceConfig,
@@ -1919,7 +1919,7 @@ export class InstanceAdminClient {
    */
   createInstance(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -1940,7 +1940,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstance(
     request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
@@ -1951,7 +1951,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstance(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
@@ -1972,7 +1972,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2011,7 +2011,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkCreateInstanceProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.Instance,
@@ -2020,13 +2020,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.createInstance,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.Instance,
@@ -2098,7 +2098,7 @@ export class InstanceAdminClient {
    */
   updateInstance(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2119,7 +2119,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstance(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
@@ -2130,7 +2130,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstance(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
@@ -2151,7 +2151,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2190,7 +2190,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkUpdateInstanceProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.Instance,
@@ -2199,13 +2199,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.updateInstance,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.Instance,
@@ -2276,7 +2276,7 @@ export class InstanceAdminClient {
    */
   createInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2297,7 +2297,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstancePartition(
     request: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
@@ -2308,7 +2308,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
@@ -2329,7 +2329,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2359,7 +2359,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.createInstancePartition(
       request,
       options,
-      callback
+      callback,
     );
   }
   /**
@@ -2372,7 +2372,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkCreateInstancePartitionProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.InstancePartition,
@@ -2381,13 +2381,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.createInstancePartition,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.InstancePartition,
@@ -2464,7 +2464,7 @@ export class InstanceAdminClient {
    */
   updateInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2485,7 +2485,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstancePartition(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
@@ -2496,7 +2496,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   updateInstancePartition(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
@@ -2517,7 +2517,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2547,7 +2547,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.updateInstancePartition(
       request,
       options,
-      callback
+      callback,
     );
   }
   /**
@@ -2560,7 +2560,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkUpdateInstancePartitionProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.InstancePartition,
@@ -2569,13 +2569,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.updateInstancePartition,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.InstancePartition,
@@ -2664,7 +2664,7 @@ export class InstanceAdminClient {
    */
   moveInstance(
     request?: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       LROperation<
@@ -2685,7 +2685,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   moveInstance(
     request: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
@@ -2696,7 +2696,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   moveInstance(
     request?: protos.google.spanner.admin.instance.v1.IMoveInstanceRequest,
@@ -2717,7 +2717,7 @@ export class InstanceAdminClient {
       >,
       protos.google.longrunning.IOperation | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       LROperation<
@@ -2756,7 +2756,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   async checkMoveInstanceProgress(
-    name: string
+    name: string,
   ): Promise<
     LROperation<
       protos.google.spanner.admin.instance.v1.MoveInstanceResponse,
@@ -2765,13 +2765,13 @@ export class InstanceAdminClient {
   > {
     const request =
       new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
+        {name},
       );
     const [operation] = await this.operationsClient.getOperation(request);
     const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.moveInstance,
-      this._gaxModule.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings(),
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.instance.v1.MoveInstanceResponse,
@@ -2812,7 +2812,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigs(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig[],
@@ -2829,7 +2829,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstanceConfig
-    >
+    >,
   ): void;
   listInstanceConfigs(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -2839,7 +2839,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstanceConfig
-    >
+    >,
   ): void;
   listInstanceConfigs(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -2858,7 +2858,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstanceConfig
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig[],
@@ -2914,7 +2914,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2930,7 +2930,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstanceConfigs.createStream(
       this.innerApiCalls.listInstanceConfigs as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -2964,7 +2964,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig> {
     request = request || {};
     options = options || {};
@@ -2980,7 +2980,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstanceConfigs.asyncIterate(
       this.innerApiCalls['listInstanceConfigs'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
   /**
@@ -3067,7 +3067,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigOperations(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -3084,7 +3084,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listInstanceConfigOperations(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
@@ -3094,7 +3094,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listInstanceConfigOperations(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
@@ -3113,7 +3113,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -3140,7 +3140,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.listInstanceConfigOperations(
       request,
       options,
-      callback
+      callback,
     );
   }
 
@@ -3216,7 +3216,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigOperationsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3232,7 +3232,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstanceConfigOperations.createStream(
       this.innerApiCalls.listInstanceConfigOperations as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -3309,7 +3309,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigOperationsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -3325,7 +3325,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstanceConfigOperations.asyncIterate(
       this.innerApiCalls['listInstanceConfigOperations'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   /**
@@ -3385,7 +3385,7 @@ export class InstanceAdminClient {
    */
   listInstances(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance[],
@@ -3402,7 +3402,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstance
-    >
+    >,
   ): void;
   listInstances(
     request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -3412,7 +3412,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstance
-    >
+    >,
   ): void;
   listInstances(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -3431,7 +3431,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstance
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance[],
@@ -3513,7 +3513,7 @@ export class InstanceAdminClient {
    */
   listInstancesStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3529,7 +3529,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstances.createStream(
       this.innerApiCalls.listInstances as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -3589,7 +3589,7 @@ export class InstanceAdminClient {
    */
   listInstancesAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance> {
     request = request || {};
     options = options || {};
@@ -3605,7 +3605,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstances.asyncIterate(
       this.innerApiCalls['listInstances'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance>;
   }
   /**
@@ -3647,7 +3647,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitions(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstancePartition[],
@@ -3664,7 +3664,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstancePartition
-    >
+    >,
   ): void;
   listInstancePartitions(
     request: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
@@ -3674,7 +3674,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstancePartition
-    >
+    >,
   ): void;
   listInstancePartitions(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
@@ -3693,7 +3693,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.spanner.admin.instance.v1.IInstancePartition
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstancePartition[],
@@ -3720,7 +3720,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.listInstancePartitions(
       request,
       options,
-      callback
+      callback,
     );
   }
 
@@ -3761,7 +3761,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitionsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3777,7 +3777,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstancePartitions.createStream(
       this.innerApiCalls.listInstancePartitions as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -3819,7 +3819,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitionsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstancePartition> {
     request = request || {};
     options = options || {};
@@ -3835,7 +3835,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstancePartitions.asyncIterate(
       this.innerApiCalls['listInstancePartitions'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstancePartition>;
   }
   /**
@@ -3932,7 +3932,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitionOperations(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -3949,7 +3949,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listInstancePartitionOperations(
     request: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
@@ -3959,7 +3959,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): void;
   listInstancePartitionOperations(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
@@ -3978,7 +3978,7 @@ export class InstanceAdminClient {
       | null
       | undefined,
       protos.google.longrunning.IOperation
-    >
+    >,
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -4005,7 +4005,7 @@ export class InstanceAdminClient {
     return this.innerApiCalls.listInstancePartitionOperations(
       request,
       options,
-      callback
+      callback,
     );
   }
 
@@ -4088,7 +4088,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitionOperationsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -4105,7 +4105,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstancePartitionOperations.createStream(
       this.innerApiCalls.listInstancePartitionOperations as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -4189,7 +4189,7 @@ export class InstanceAdminClient {
    */
   listInstancePartitionOperationsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -4206,7 +4206,7 @@ export class InstanceAdminClient {
     return this.descriptors.page.listInstancePartitionOperations.asyncIterate(
       this.innerApiCalls['listInstancePartitionOperations'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   // --------------------
@@ -4272,7 +4272,7 @@ export class InstanceAdminClient {
    */
   matchProjectFromInstanceConfigName(instanceConfigName: string) {
     return this.pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
+      instanceConfigName,
     ).project;
   }
 
@@ -4285,7 +4285,7 @@ export class InstanceAdminClient {
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName: string) {
     return this.pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
+      instanceConfigName,
     ).instance_config;
   }
 
@@ -4300,7 +4300,7 @@ export class InstanceAdminClient {
   instancePartitionPath(
     project: string,
     instance: string,
-    instancePartition: string
+    instancePartition: string,
   ) {
     return this.pathTemplates.instancePartitionPathTemplate.render({
       project: project,
@@ -4318,7 +4318,7 @@ export class InstanceAdminClient {
    */
   matchProjectFromInstancePartitionName(instancePartitionName: string) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).project;
   }
 
@@ -4331,7 +4331,7 @@ export class InstanceAdminClient {
    */
   matchInstanceFromInstancePartitionName(instancePartitionName: string) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).instance;
   }
 
@@ -4343,10 +4343,10 @@ export class InstanceAdminClient {
    * @returns {string} A string representing the instance_partition.
    */
   matchInstancePartitionFromInstancePartitionName(
-    instancePartitionName: string
+    instancePartitionName: string,
   ) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).instance_partition;
   }
 

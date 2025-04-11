@@ -51,7 +51,7 @@ async function main(instanceId, databaseId, projectId) {
       await operation.promise();
 
       console.log(
-        'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
+        'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.',
       );
     } catch (err) {
       console.error('ERROR:', err);
@@ -70,7 +70,7 @@ async function main(instanceId, databaseId, projectId) {
           console.log(
             `Inserted customer record with CustomerId: ${
               row.toJSON({wrapNumbers: true}).CustomerId.value
-            }`
+            }`,
           );
         });
 

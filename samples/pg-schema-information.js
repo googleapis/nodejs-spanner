@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_information_schema]
   /**
@@ -63,7 +63,7 @@ function main(
         const json = row.toJSON();
         console.log(
           `Table: ${json.table_schema}.${json.table_name} ` +
-            `(User defined type: ${json.user_defined_type_catalog}.${json.user_defined_type_schema}.${json.user_defined_type_name})`
+            `(User defined type: ${json.user_defined_type_catalog}.${json.user_defined_type_schema}.${json.user_defined_type_name})`,
         );
       });
     } catch (err) {

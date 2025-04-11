@@ -131,7 +131,7 @@ export {ensureInitialContextManagerSet};
 export function startTrace<T>(
   spanNameSuffix: string,
   config: traceConfig | undefined,
-  cb: (span: Span) => T
+  cb: (span: Span) => T,
 ): T {
   if (!config) {
     config = {} as traceConfig;
@@ -177,7 +177,7 @@ export function startTrace<T>(
         // Finally re-throw the exception.
         throw e;
       }
-    }
+    },
   );
 }
 
@@ -217,7 +217,7 @@ export function setSpanError(span: Span, err: Error | String): boolean {
  */
 export function setSpanErrorAndException(
   span: Span,
-  err: Error | String
+  err: Error | String,
 ): boolean {
   if (setSpanError(span, err)) {
     span.recordException(err as Error);

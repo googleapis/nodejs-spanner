@@ -192,7 +192,7 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
 
@@ -365,7 +365,7 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
   });

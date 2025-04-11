@@ -135,7 +135,7 @@ export interface GetInstanceConfig
 interface InstanceRequest {
   (
     config: RequestConfig,
-    callback: ResourceCallback<GaxOperation, IOperation>
+    callback: ResourceCallback<GaxOperation, IOperation>,
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
@@ -229,7 +229,7 @@ class Instance extends common.GrpcServiceObject {
       createMethod(
         _: {},
         options: CreateInstanceRequest,
-        callback: CreateInstanceCallback
+        callback: CreateInstanceCallback,
       ): void {
         spanner.createInstance(formattedName_, options, callback);
       },
@@ -241,7 +241,7 @@ class Instance extends common.GrpcServiceObject {
     this._observabilityOptions = spanner._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.formattedName_,
-      this._observabilityOptions?.enableEndToEndTracing
+      this._observabilityOptions?.enableEndToEndTracing,
     );
   }
 
@@ -311,11 +311,11 @@ class Instance extends common.GrpcServiceObject {
     sourceBackupId: string,
     backupId: string,
     options: CopyBackupOptions,
-    callback?: CopyBackupCallback
+    callback?: CopyBackupCallback,
   ): Promise<CopyBackupResponse> | void {
     if (!backupId || !sourceBackupId) {
       throw new GoogleError(
-        'A backup ID and source backup ID is required to create a copy of the source backup.'
+        'A backup ID and source backup ID is required to create a copy of the source backup.',
       );
     }
     const copyOfBackup = new Backup(this, backupId, sourceBackupId);
@@ -395,7 +395,7 @@ class Instance extends common.GrpcServiceObject {
   getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
   getBackups(
     optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
-    cb?: GetBackupsCallback
+    cb?: GetBackupsCallback,
   ): void | Promise<GetBackupsResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -418,7 +418,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -449,7 +449,7 @@ class Instance extends common.GrpcServiceObject {
           : null;
 
         callback(err, backupInstances, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -509,7 +509,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -552,12 +552,12 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} apiResponse The full API response.
    */
   getBackupOperations(
-    options?: GetBackupOperationsOptions
+    options?: GetBackupOperationsOptions,
   ): Promise<GetBackupOperationsResponse>;
   getBackupOperations(callback: GetBackupOperationsCallback): void;
   getBackupOperations(
     options: GetBackupOperationsOptions,
-    callback: GetBackupOperationsCallback
+    callback: GetBackupOperationsCallback,
   ): void;
 
   /**
@@ -601,7 +601,7 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?:
       | GetBackupOperationsOptions
       | GetBackupOperationsCallback,
-    cb?: GetBackupOperationsCallback
+    cb?: GetBackupOperationsCallback,
   ): void | Promise<GetBackupOperationsResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -624,7 +624,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -647,7 +647,7 @@ class Instance extends common.GrpcServiceObject {
           : null;
 
         callback!(err, operations, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -679,12 +679,12 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} apiResponse The full API response.
    */
   getDatabaseOperations(
-    options?: GetDatabaseOperationsOptions
+    options?: GetDatabaseOperationsOptions,
   ): Promise<GetDatabaseOperationsResponse>;
   getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
   getDatabaseOperations(
     options: GetDatabaseOperationsOptions,
-    callback: GetDatabaseOperationsCallback
+    callback: GetDatabaseOperationsCallback,
   ): void;
 
   /**
@@ -729,7 +729,7 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?:
       | GetDatabaseOperationsOptions
       | GetDatabaseOperationsCallback,
-    cb?: GetDatabaseOperationsCallback
+    cb?: GetDatabaseOperationsCallback,
   ): void | Promise<GetDatabaseOperationsResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -752,7 +752,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -775,7 +775,7 @@ class Instance extends common.GrpcServiceObject {
           : null;
 
         callback!(err, operations, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -867,18 +867,18 @@ class Instance extends common.GrpcServiceObject {
    */
   createDatabase(
     name: string,
-    options?: CreateDatabaseOptions
+    options?: CreateDatabaseOptions,
   ): Promise<CreateDatabaseResponse>;
   createDatabase(name: string, callback: CreateDatabaseCallback): void;
   createDatabase(
     name: string,
     options: CreateDatabaseOptions,
-    callback: CreateDatabaseCallback
+    callback: CreateDatabaseCallback,
   ): void;
   createDatabase(
     name: string,
     optionsOrCallback?: CreateDatabaseOptions | CreateDatabaseCallback,
-    cb?: CreateDatabaseCallback
+    cb?: CreateDatabaseCallback,
   ): void | Promise<CreateDatabaseResponse> {
     if (!name) {
       throw new GoogleError('A name is required to create a database.');
@@ -904,7 +904,7 @@ class Instance extends common.GrpcServiceObject {
         parent: this.formattedName_,
         createStatement: createStatement,
       },
-      options
+      options,
     );
 
     delete reqOpts.poolOptions;
@@ -931,7 +931,7 @@ class Instance extends common.GrpcServiceObject {
         const database = this.database(name, poolOptions || poolCtor);
         database._observabilityOptions = this._observabilityOptions;
         callback(null, database, operation, resp);
-      }
+      },
     );
   }
 
@@ -961,7 +961,7 @@ class Instance extends common.GrpcServiceObject {
   database(
     name: string,
     poolOptions?: SessionPoolOptions | SessionPoolConstructor,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
   ): Database {
     if (!name) {
       throw new GoogleError('A name is required to access a Database object.');
@@ -1040,7 +1040,7 @@ class Instance extends common.GrpcServiceObject {
   delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DeleteInstanceCallback,
-    cb?: DeleteInstanceCallback
+    cb?: DeleteInstanceCallback,
   ): void | Promise<DeleteInstanceResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1053,7 +1053,7 @@ class Instance extends common.GrpcServiceObject {
     Promise.all(
       Array.from(this.databases_.values()).map(database => {
         return database.close();
-      })
+      }),
     )
       .catch(() => {})
       .then(() => {
@@ -1071,7 +1071,7 @@ class Instance extends common.GrpcServiceObject {
               this.parent.instances_.delete(this.id);
             }
             callback!(err, resp!);
-          }
+          },
         );
       });
   }
@@ -1117,7 +1117,7 @@ class Instance extends common.GrpcServiceObject {
   exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   exists(
     optionsOrCallback?: CallOptions | ExistsInstanceCallback,
-    cb?: ExistsInstanceCallback
+    cb?: ExistsInstanceCallback,
   ): void | Promise<ExistsInstanceResponse> {
     const gaxOptions =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1190,7 +1190,7 @@ class Instance extends common.GrpcServiceObject {
   get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   get(
     optionsOrCallback?: GetInstanceConfig | GetInstanceCallback,
-    cb?: GetInstanceCallback
+    cb?: GetInstanceCallback,
   ): void | Promise<GetInstanceResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -1218,7 +1218,7 @@ class Instance extends common.GrpcServiceObject {
             (
               err: grpc.ServiceError | null,
               instance?: Instance,
-              operation?: GaxOperation | null
+              operation?: GaxOperation | null,
             ) => {
               if (err) {
                 callback(err);
@@ -1230,7 +1230,7 @@ class Instance extends common.GrpcServiceObject {
                   this.metadata = metadata;
                   callback(null, this, metadata);
                 });
-            }
+            },
           );
           return;
         }
@@ -1315,11 +1315,11 @@ class Instance extends common.GrpcServiceObject {
   getDatabases(callback: GetDatabasesCallback): void;
   getDatabases(
     options: GetDatabasesOptions,
-    callback: GetDatabasesCallback
+    callback: GetDatabasesCallback,
   ): void;
   getDatabases(
     optionsOrCallback?: GetDatabasesOptions | GetDatabasesCallback,
-    cb?: GetDatabasesCallback
+    cb?: GetDatabasesCallback,
   ): void | Promise<GetDatabasesResponse> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -1345,7 +1345,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -1377,7 +1377,7 @@ class Instance extends common.GrpcServiceObject {
           : null;
 
         callback(err, databases, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -1437,7 +1437,7 @@ class Instance extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetBackupsOptions).pageSize,
           pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetBackupsOptions).pageSize;
       delete (gaxOpts as GetBackupsOptions).pageToken;
@@ -1514,18 +1514,18 @@ class Instance extends common.GrpcServiceObject {
    * ```
    */
   getMetadata(
-    options?: GetInstanceMetadataOptions
+    options?: GetInstanceMetadataOptions,
   ): Promise<GetInstanceMetadataResponse>;
   getMetadata(callback: GetInstanceMetadataCallback): void;
   getMetadata(
     options: GetInstanceMetadataOptions,
-    callback: GetInstanceMetadataCallback
+    callback: GetInstanceMetadataCallback,
   ): void;
   getMetadata(
     optionsOrCallback?:
       | GetInstanceMetadataOptions
       | GetInstanceMetadataCallback,
-    cb?: GetInstanceMetadataCallback
+    cb?: GetInstanceMetadataCallback,
   ): Promise<GetInstanceMetadataResponse> | void {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -1552,7 +1552,7 @@ class Instance extends common.GrpcServiceObject {
           this.metadata = resp;
         }
         callback!(err, resp);
-      }
+      },
     );
   }
 
@@ -1606,18 +1606,18 @@ class Instance extends common.GrpcServiceObject {
    */
   setMetadata(
     metadata: IInstance,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<SetInstanceMetadataResponse>;
   setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
   setMetadata(
     metadata: IInstance,
     gaxOptions: CallOptions,
-    callback: SetInstanceMetadataCallback
+    callback: SetInstanceMetadataCallback,
   ): void;
   setMetadata(
     metadata: IInstance,
     optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
-    cb?: SetInstanceMetadataCallback
+    cb?: SetInstanceMetadataCallback,
   ): void | Promise<SetInstanceMetadataResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1629,7 +1629,7 @@ class Instance extends common.GrpcServiceObject {
         {
           name: this.formattedName_,
         },
-        metadata
+        metadata,
       ),
       fieldMask: {
         paths: Object.keys(metadata).map(snakeCase),
@@ -1643,7 +1643,7 @@ class Instance extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.commonHeaders_,
       },
-      callback!
+      callback!,
     );
   }
   /**

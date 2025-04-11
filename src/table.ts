@@ -174,18 +174,18 @@ class Table {
    */
   create(
     schema: Schema,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<CreateTableResponse>;
   create(schema: Schema, callback: CreateTableCallback): void;
   create(
     schema: Schema,
     gaxOptions: CallOptions,
-    callback: CreateTableCallback
+    callback: CreateTableCallback,
   ): void;
   create(
     schema: Schema,
     gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
-    cb?: CreateTableCallback
+    cb?: CreateTableCallback,
   ): Promise<CreateTableResponse> | void {
     const gaxOptions =
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
@@ -266,7 +266,7 @@ class Table {
    */
   createReadStream(
     request: ReadRequest,
-    options: TimestampBounds = {}
+    options: TimestampBounds = {},
   ): PartialResultStream {
     const proxyStream = through.obj();
 
@@ -354,7 +354,7 @@ class Table {
   delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   delete(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
-    cb?: DropTableCallback
+    cb?: DropTableCallback,
   ): Promise<DropTableResponse> | void {
     const gaxOptions =
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
@@ -464,18 +464,18 @@ class Table {
    */
   deleteRows(
     keys: Key[],
-    options?: DeleteRowsOptions | CallOptions
+    options?: DeleteRowsOptions | CallOptions,
   ): Promise<DeleteRowsResponse>;
   deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
   deleteRows(
     keys: Key[],
     options: DeleteRowsOptions | CallOptions,
-    callback: DeleteRowsCallback
+    callback: DeleteRowsCallback,
   ): void;
   deleteRows(
     keys: Key[],
     optionsOrCallback?: DeleteRowsOptions | CallOptions | DeleteRowsCallback,
-    cb?: DeleteRowsCallback
+    cb?: DeleteRowsCallback,
   ): Promise<DeleteRowsResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -535,7 +535,7 @@ class Table {
   drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   drop(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
-    cb?: DropTableCallback
+    cb?: DropTableCallback,
   ): Promise<DropTableResponse> | void {
     const gaxOptions =
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
@@ -626,18 +626,18 @@ class Table {
    */
   insert(
     rows: object | object[],
-    options?: InsertRowsOptions | CallOptions
+    options?: InsertRowsOptions | CallOptions,
   ): Promise<InsertRowsResponse>;
   insert(rows: object | object[], callback: InsertRowsCallback): void;
   insert(
     rows: object | object[],
     options: InsertRowsOptions | CallOptions,
-    callback: InsertRowsCallback
+    callback: InsertRowsCallback,
   ): void;
   insert(
     rows: object | object[],
     optionsOrCallback?: InsertRowsOptions | CallOptions | InsertRowsCallback,
-    cb?: InsertRowsCallback
+    cb?: InsertRowsCallback,
   ): Promise<InsertRowsResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -788,12 +788,12 @@ class Table {
   read(
     request: ReadRequest,
     options: TimestampBounds,
-    callback: ReadCallback
+    callback: ReadCallback,
   ): void;
   read(
     request: ReadRequest,
     optionsOrCallback?: TimestampBounds | ReadCallback,
-    cb?: ReadCallback
+    cb?: ReadCallback,
   ): Promise<ReadResponse> | void {
     const rows: Row[] = [];
 
@@ -874,18 +874,18 @@ class Table {
    */
   replace(
     rows: object | object[],
-    options?: ReplaceRowsOptions | CallOptions
+    options?: ReplaceRowsOptions | CallOptions,
   ): Promise<ReplaceRowsResponse>;
   replace(rows: object | object[], callback: ReplaceRowsCallback): void;
   replace(
     rows: object | object[],
     options: ReplaceRowsOptions | CallOptions,
-    callback: ReplaceRowsCallback
+    callback: ReplaceRowsCallback,
   ): void;
   replace(
     rows: object | object[],
     optionsOrCallback?: ReplaceRowsOptions | CallOptions | ReplaceRowsCallback,
-    cb?: ReplaceRowsCallback
+    cb?: ReplaceRowsCallback,
   ): Promise<ReplaceRowsResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -963,18 +963,18 @@ class Table {
    */
   update(
     rows: object | object[],
-    options?: UpdateRowsOptions | CallOptions
+    options?: UpdateRowsOptions | CallOptions,
   ): Promise<UpdateRowsResponse>;
   update(rows: object | object[], callback: UpdateRowsCallback): void;
   update(
     rows: object | object[],
     options: UpdateRowsOptions | CallOptions,
-    callback: UpdateRowsCallback
+    callback: UpdateRowsCallback,
   ): void;
   update(
     rows: object | object[],
     optionsOrCallback?: UpdateRowsOptions | CallOptions | UpdateRowsCallback,
-    cb?: UpdateRowsCallback
+    cb?: UpdateRowsCallback,
   ): Promise<UpdateRowsResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1049,18 +1049,18 @@ class Table {
    */
   upsert(
     rows: object | object[],
-    options?: UpsertRowsOptions | CallOptions
+    options?: UpsertRowsOptions | CallOptions,
   ): Promise<UpsertRowsResponse>;
   upsert(rows: object | object[], callback: UpsertRowsCallback): void;
   upsert(
     rows: object | object[],
     options: UpsertRowsOptions | CallOptions,
-    callback: UpsertRowsCallback
+    callback: UpsertRowsCallback,
   ): void;
   upsert(
     rows: object | object[],
     optionsOrCallback?: UpsertRowsOptions | CallOptions | UpsertRowsCallback,
-    cb?: UpsertRowsCallback
+    cb?: UpsertRowsCallback,
   ): Promise<UpsertRowsResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1086,7 +1086,7 @@ class Table {
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
     options: MutateRowsOptions | CallOptions = {},
-    callback: CommitCallback
+    callback: CommitCallback,
   ): void {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
@@ -1130,7 +1130,7 @@ class Table {
             span.end();
             callback(err, resp);
           });
-        }
+        },
       );
     });
   }

@@ -22,7 +22,7 @@
 function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
-  databaseId = 'my-database-id'
+  databaseId = 'my-database-id',
 ) {
   async function listBackupSchedules() {
     // [START spanner_list_backup_schedules]

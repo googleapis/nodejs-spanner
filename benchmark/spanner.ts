@@ -61,25 +61,26 @@ let dbCounter = 1;
 require('yargs')
   .demand(1)
   .command('burstRead', 'Benchmarks a burst of read operations', {}, () =>
-    runBurstRead().then(() => console.log('Benchmark finished'))
+    runBurstRead().then(() => console.log('Benchmark finished')),
   )
   .example('node $0 burstRead')
   .command('burstWrite', 'Benchmarks a burst of write operations', {}, () =>
-    runBurstWrite().then(() => console.log('Benchmark finished'))
+    runBurstWrite().then(() => console.log('Benchmark finished')),
   )
   .example('node $0 burstWrite')
   .command(
     'burstReadAndWrite',
     'Benchmarks a burst of read and write operations',
     {},
-    () => runBurstReadAndWrite().then(() => console.log('Benchmark finished'))
+    () => runBurstReadAndWrite().then(() => console.log('Benchmark finished')),
   )
   .example('node $0 burstReadAndWrite')
   .command(
     'multipleWriteBursts',
     'Benchmarks a burst of read and then write operations',
     {},
-    () => runMultipleWriteBursts().then(() => console.log('Benchmark finished'))
+    () =>
+      runMultipleWriteBursts().then(() => console.log('Benchmark finished')),
   )
   .example('node $0 multipleWriteBursts')
   .command(
@@ -88,8 +89,8 @@ require('yargs')
     {},
     () =>
       runOneReadTransactionPerSecond().then(() =>
-        console.log('Benchmark finished')
-      )
+        console.log('Benchmark finished'),
+      ),
   )
   .example('node $0 oneReadTransactionPerSecond')
   .command(
@@ -98,8 +99,8 @@ require('yargs')
     {},
     () =>
       runOneWriteTransactionPerSecond().then(() =>
-        console.log('Benchmark finished')
-      )
+        console.log('Benchmark finished'),
+      ),
   )
   .example('node $0 oneWriteTransactionPerSecond')
   .command(
@@ -108,15 +109,15 @@ require('yargs')
     {},
     () =>
       runOneReadAndOneWriteTransactionPerSecond().then(() =>
-        console.log('Benchmark finished')
-      )
+        console.log('Benchmark finished'),
+      ),
   )
   .example('node $0 oneReadAndOneWriteTransactionPerSecond')
   .command(
     'steadyIncrease',
     'Benchmarks getting max sessions sequentially',
     {},
-    () => runSteadyIncrease().then(() => console.log('Benchmark finished'))
+    () => runSteadyIncrease().then(() => console.log('Benchmark finished')),
   )
   .example('node $0 steadyIncrease')
   .wrap(120)
@@ -210,7 +211,7 @@ async function setup() {
         } else {
           resolve(assignedPort);
         }
-      }
+      },
     );
   });
   server.start();
@@ -219,51 +220,51 @@ async function setup() {
     spannerMock.batchCreateSessions,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + BATCH_CREATE_SESSIONS_MIN_TIME,
-      BATCH_CREATE_SESSIONS_RND_TIME
-    )
+      BATCH_CREATE_SESSIONS_RND_TIME,
+    ),
   );
   spannerMock.setExecutionTime(
     spannerMock.beginTransaction,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + BEGIN_TRANSACTION_MIN_TIME,
-      BEGIN_TRANSACTION_RND_TIME
-    )
+      BEGIN_TRANSACTION_RND_TIME,
+    ),
   );
   spannerMock.setExecutionTime(
     spannerMock.commit,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + COMMIT_TRANSACTION_MIN_TIME,
-      COMMIT_TRANSACTION_RND_TIME
-    )
+      COMMIT_TRANSACTION_RND_TIME,
+    ),
   );
   spannerMock.setExecutionTime(
     spannerMock.rollback,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + ROLLBACK_TRANSACTION_MIN_TIME,
-      ROLLBACK_TRANSACTION_RND_TIME
-    )
+      ROLLBACK_TRANSACTION_RND_TIME,
+    ),
   );
   spannerMock.setExecutionTime(
     spannerMock.executeStreamingSql,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + EXECUTE_STREAMING_SQL_MIN_TIME,
-      EXECUTE_STREAMING_SQL_RND_TIME
-    )
+      EXECUTE_STREAMING_SQL_RND_TIME,
+    ),
   );
   spannerMock.setExecutionTime(
     spannerMock.executeSql,
     SimulatedExecutionTime.ofMinAndRandomExecTime(
       NETWORK_LATENCY_TIME + EXECUTE_SQL_MIN_TIME,
-      EXECUTE_SQL_RND_TIME
-    )
+      EXECUTE_SQL_RND_TIME,
+    ),
   );
   spannerMock.putStatementResult(
     selectSql,
-    mock.StatementResult.resultSet(createSelect1ResultSet())
+    mock.StatementResult.resultSet(createSelect1ResultSet()),
   );
   spannerMock.putStatementResult(
     updateSql,
-    mock.StatementResult.updateCount(1)
+    mock.StatementResult.updateCount(1),
   );
 
   spanner = new Spanner({
@@ -309,7 +310,7 @@ async function burstRead() {
         database,
         NUM_BURST_READ,
         RND_WAIT_TIME_BETWEEN_REQUESTS,
-        HOLD_SESSION_TIME
+        HOLD_SESSION_TIME,
       );
       await Promise.all(promises);
       if (incStep) {
@@ -344,7 +345,7 @@ async function burstWrite() {
       const promises = queueWriteOperations(
         database,
         NUM_BURST_WRITE,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
       );
       await Promise.all(promises);
       if (incStep) {
@@ -382,12 +383,12 @@ async function burstReadAndWrite() {
         database,
         NUM_BURST_READ,
         RND_WAIT_TIME_BETWEEN_REQUESTS,
-        HOLD_SESSION_TIME
+        HOLD_SESSION_TIME,
       );
       const writePromises = queueWriteOperations(
         database,
         NUM_BURST_WRITE,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
       );
       await Promise.all(readPromises.concat(writePromises));
       if (incStep) {
@@ -422,7 +423,7 @@ async function multipleWriteBursts() {
         const writePromises = queueWriteOperations(
           database,
           NUM_BURST_WRITE,
-          RND_WAIT_TIME_BETWEEN_REQUESTS
+          RND_WAIT_TIME_BETWEEN_REQUESTS,
         );
         await Promise.all(writePromises);
         await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_BURSTS));
@@ -455,12 +456,12 @@ async function oneReadTransactionPerSecond() {
         database,
         NUM_TRANSACTIONS,
         RND_WAIT_TIME_BETWEEN_REQUESTS,
-        0
+        0,
       );
       readPromises.forEach(p =>
         p.then(t => {
           console.log(`Time taken: ${t}ms`);
-        })
+        }),
       );
       const t = await Promise.all(readPromises);
       const max = Math.max(...t);
@@ -494,12 +495,12 @@ async function oneWriteTransactionPerSecond() {
       const writePromises = queueWriteOperations(
         database,
         NUM_TRANSACTIONS,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
       );
       writePromises.forEach(p =>
         p.then(t => {
           console.log(`Time taken: ${t}ms`);
-        })
+        }),
       );
       const t = await Promise.all(writePromises);
       const max = Math.max(...t);
@@ -533,22 +534,22 @@ async function oneReadAndOneWriteTransactionPerSecond() {
         database,
         NUM_READ_TRANSACTIONS,
         RND_WAIT_TIME_BETWEEN_REQUESTS,
-        0
+        0,
       );
       const writePromises = queueWriteOperations(
         database,
         NUM_WRITE_TRANSACTIONS,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
       );
       readPromises.forEach(p =>
         p.then(t => {
           console.log(`Read tx: ${t}ms`);
-        })
+        }),
       );
       writePromises.forEach(p =>
         p.then(t => {
           console.log(`Write tx: ${t}ms`);
-        })
+        }),
       );
       const t = await Promise.all(readPromises.concat(writePromises));
       const max = Math.max(...t);
@@ -621,7 +622,7 @@ function queueReadOperations(
   database: Database,
   numRequests: number,
   waitBetweenRequests: number,
-  holdSessionTime: number
+  holdSessionTime: number,
 ): Promise<number>[] {
   const promises: Promise<number>[] = [];
   for (let run = 0; run < numRequests; run++) {
@@ -644,7 +645,7 @@ function queueReadOperations(
               resolve(performance.now() - t1);
             });
         }, Math.random() * waitBetweenRequests);
-      })
+      }),
     );
   }
   return promises;
@@ -663,7 +664,7 @@ function queueReadOperations(
 function queueWriteOperations(
   database: Database,
   numRequests: number,
-  waitBetweenRequests: number
+  waitBetweenRequests: number,
 ): Promise<number>[] {
   const promises: Promise<number>[] = [];
   for (let run = 0; run < numRequests; run++) {
@@ -675,11 +676,11 @@ function queueWriteOperations(
             tx!
               .runUpdate(updateSql)
               .then(() =>
-                tx!.commit().then(() => resolve(performance.now() - t1))
+                tx!.commit().then(() => resolve(performance.now() - t1)),
               );
           });
         }, Math.random() * waitBetweenRequests);
-      })
+      }),
     );
   }
   return promises;

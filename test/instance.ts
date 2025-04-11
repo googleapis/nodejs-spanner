@@ -235,7 +235,7 @@ describe('Instance', () => {
             parent: instance.formattedName_,
             createStatement: 'CREATE DATABASE `' + NAME + '`',
           },
-          OPTIONS
+          OPTIONS,
         );
 
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -285,7 +285,7 @@ describe('Instance', () => {
             parent: instance.formattedName_,
             createStatement: 'CREATE DATABASE `' + NAME + '`',
           },
-          OPTIONS
+          OPTIONS,
         );
 
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -440,7 +440,7 @@ describe('Instance', () => {
 
       const database = instance.database(
         NAME,
-        poolOptions
+        poolOptions,
       ) as {} as FakeDatabase;
 
       assert(database instanceof FakeDatabase);
@@ -480,32 +480,32 @@ describe('Instance', () => {
         NAME +
           '/' +
           JSON.stringify(Object.entries(fakeSessionPoolOptions).sort()),
-        fakeDatabaseWithSessionPoolOptions
+        fakeDatabaseWithSessionPoolOptions,
       );
 
       const database = instance.database(NAME);
       const databaseWithEmptyOptions = instance.database(
         NAME,
-        emptySessionPoolOptions
+        emptySessionPoolOptions,
       );
       const databaseWithOptions = instance.database(
         NAME,
-        fakeSessionPoolOptions
+        fakeSessionPoolOptions,
       );
       const databaseWithOptionsInOtherOrder = instance.database(
         NAME,
-        fakeSessionPoolOptionsInOtherOrder
+        fakeSessionPoolOptionsInOtherOrder,
       );
 
       assert.strictEqual(database, fakeDatabase);
       assert.strictEqual(databaseWithEmptyOptions, fakeDatabase);
       assert.strictEqual(
         databaseWithOptions,
-        fakeDatabaseWithSessionPoolOptions
+        fakeDatabaseWithSessionPoolOptions,
       );
       assert.strictEqual(
         databaseWithOptionsInOtherOrder,
-        fakeDatabaseWithSessionPoolOptions
+        fakeDatabaseWithSessionPoolOptions,
       );
     });
   });
@@ -605,11 +605,11 @@ describe('Instance', () => {
             opts_:
               | inst.GetInstanceMetadataOptions
               | inst.GetInstanceMetadataCallback,
-            cb
+            cb,
           ) => {
             cb = typeof opts_ === 'function' ? opts_ : cb;
             cb(error as grpc.ServiceError);
-          }
+          },
         );
 
       instance.exists((err, exists) => {
@@ -627,11 +627,11 @@ describe('Instance', () => {
             opts_:
               | inst.GetInstanceMetadataOptions
               | inst.GetInstanceMetadataCallback,
-            cb
+            cb,
           ) => {
             cb = typeof opts_ === 'function' ? opts_ : cb;
             cb(null);
-          }
+          },
         );
 
       instance.exists((err, exists) => {
@@ -651,12 +651,12 @@ describe('Instance', () => {
             opts_:
               | inst.GetInstanceMetadataOptions
               | inst.GetInstanceMetadataCallback,
-            callback
+            callback,
           ) => {
             callback = typeof opts_ === 'function' ? opts_ : callback;
 
             callback(error as grpc.ServiceError);
-          }
+          },
         );
 
       instance.exists((err, exists) => {
@@ -768,7 +768,7 @@ describe('Instance', () => {
             labels,
             fieldNames: 'labels',
           },
-          assert.ifError
+          assert.ifError,
         );
       });
 
@@ -949,7 +949,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -983,7 +983,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -1086,7 +1086,7 @@ describe('Instance', () => {
         const EXPECTEDNEXTQUERY = extend(
           {},
           GETDATABASESOPTIONS,
-          NEXTPAGEREQUEST
+          NEXTPAGEREQUEST,
         );
         instance.request = (config, callback) => {
           callback(...REQUEST_RESPONSE_ARGS);
@@ -1140,7 +1140,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       instance.requestStream = config => {
@@ -1175,7 +1175,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -1387,7 +1387,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       instance.request = config => {
@@ -1420,7 +1420,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       instance.request = config => {
@@ -1521,7 +1521,7 @@ describe('Instance', () => {
         const EXPECTEDNEXTQUERY = extend(
           {},
           GETBACKUPSOPTIONS,
-          NEXTPAGEREQUEST
+          NEXTPAGEREQUEST,
         );
         instance.request = (config, callback) => {
           callback(...REQUEST_RESPONSE_ARGS);
@@ -1575,7 +1575,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       instance.requestStream = config => {
@@ -1610,7 +1610,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -1703,7 +1703,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       instance.request = config => {
@@ -1737,7 +1737,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       instance.request = config => {
@@ -1784,7 +1784,7 @@ describe('Instance', () => {
       const EXPECTEDNEXTQUERY = extend(
         {},
         GETBACKUPOPSOPTIONS,
-        NEXTPAGEREQUEST
+        NEXTPAGEREQUEST,
       );
       instance.request = (config, callback) => {
         callback(...RESPONSE);
@@ -1841,7 +1841,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken},
       );
 
       instance.request = config => {
@@ -1875,7 +1875,7 @@ describe('Instance', () => {
         {
           parent: instance.formattedName_,
         },
-        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {pageSize: optionsPageSize, pageToken: optionsPageToken},
       );
 
       instance.request = config => {
@@ -1922,7 +1922,7 @@ describe('Instance', () => {
       const EXPECTEDNEXTQUERY = extend(
         {},
         GETDATABASEOPSOPTIONS,
-        NEXTPAGEREQUEST
+        NEXTPAGEREQUEST,
       );
       instance.request = (config, callback) => {
         callback(...RESPONSE);

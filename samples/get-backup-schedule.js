@@ -23,7 +23,7 @@ function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-database-id',
-  scheduleId = 'my-schedule-id'
+  scheduleId = 'my-schedule-id',
 ) {
   async function getBackupSchedule() {
     // [START spanner_get_backup_schedule]
@@ -49,7 +49,7 @@ function main(
           projectId,
           instanceId,
           databaseId,
-          scheduleId
+          scheduleId,
         ),
       });
       console.log('Backup schedule:', response);

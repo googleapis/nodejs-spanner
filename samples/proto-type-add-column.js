@@ -24,7 +24,7 @@ const fs = require('fs');
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_add_proto_type_columns]
   /**
@@ -67,7 +67,7 @@ function main(
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: request,
       protoDescriptors: protoDescriptor,
@@ -76,7 +76,7 @@ function main(
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();
     console.log(
-      `Altered table "Singers" on database ${databaseId} on instance ${instanceId} with proto descriptors.`
+      `Altered table "Singers" on database ${databaseId} on instance ${instanceId} with proto descriptors.`,
     );
   }
   protoTypeAddColumn();

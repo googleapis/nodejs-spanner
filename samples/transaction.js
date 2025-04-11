@@ -51,7 +51,7 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       qOneRows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
         );
       });
 
@@ -67,7 +67,7 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
       qTwoRows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
         );
       });
 
@@ -138,7 +138,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
         // Makes sure the second album's budget is large enough
         if (secondBudget < transferAmount) {
           throw new Error(
-            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`
+            `The second album's budget (${secondBudget}) is less than the transfer amount (${transferAmount}).`,
           );
         }
       }),
@@ -181,7 +181,7 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
       })
       .then(() => {
         console.log(
-          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`
+          `Successfully executed read-write transaction to transfer ${transferAmount} from Album 2 to Album 1.`,
         );
       })
       .catch(err => {
@@ -203,14 +203,18 @@ require('yargs')
     'Execute a read-only transaction on an example Cloud Spanner table.',
     {},
     opts =>
-      readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
+      readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'readWrite <instanceName> <databaseName> <projectId>',
     'Execute a read-write transaction on an example Cloud Spanner table.',
     {},
     opts =>
-      readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
+      readWriteTransaction(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId,
+      ),
   )
   .example('node $0 readOnly "my-instance" "my-database" "my-project-id"')
   .example('node $0 readWrite "my-instance" "my-database" "my-project-id"')

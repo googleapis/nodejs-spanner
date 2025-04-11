@@ -147,7 +147,7 @@ describe('InstanceConfig', () => {
     it('should return the name if already formatted', () => {
       assert.strictEqual(
         InstanceConfig.formatName_(SPANNER.projectId, PATH),
-        PATH
+        PATH,
       );
     });
 
@@ -322,7 +322,7 @@ describe('InstanceConfig', () => {
           {},
           extend({}, METADATA, {
             name: instanceConfig.formattedName_,
-          })
+          }),
         ) as instConfig.IInstanceConfig as instConfig.SetInstanceConfigMetadataRequest;
 
         assert.deepStrictEqual(config.reqOpts.instanceConfig, expectedReqOpts);
@@ -341,7 +341,7 @@ describe('InstanceConfig', () => {
 
       const returnValue = instanceConfig.setMetadata(
         Object.assign({}, {instanceConfig: METADATA}),
-        callback
+        callback,
       );
       assert.strictEqual(returnValue, requestReturnValue);
     });
@@ -354,14 +354,14 @@ describe('InstanceConfig', () => {
       };
       instanceConfig.setMetadata(
         Object.assign({}, {instanceConfig: METADATA}, {gaxOpts: gaxOptions}),
-        assert.ifError
+        assert.ifError,
       );
     });
 
     it('should not require a callback', () => {
       assert.doesNotThrow(() => {
         instanceConfig.setMetadata(
-          Object.assign({}, {instanceConfig: METADATA})
+          Object.assign({}, {instanceConfig: METADATA}),
         );
       });
     });

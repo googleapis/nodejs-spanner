@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_update_database]
   /**
@@ -48,15 +48,15 @@ function main(
         `Updating database ${databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
-        )}.`
+          databaseId,
+        )}.`,
       );
       const [operation] = await databaseAdminClient.updateDatabase({
         database: {
           name: databaseAdminClient.databasePath(
             projectId,
             instanceId,
-            databaseId
+            databaseId,
           ),
           enableDropProtection: true,
         },
@@ -66,7 +66,7 @@ function main(
         }),
       });
       console.log(
-        `Waiting for update operation for ${databaseId} to complete...`
+        `Waiting for update operation for ${databaseId} to complete...`,
       );
       await operation.promise();
       console.log(`Updated database ${databaseId}.`);

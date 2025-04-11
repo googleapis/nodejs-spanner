@@ -45,7 +45,7 @@ import {Duplex, PassThrough} from 'stream';
 const gaxProtoPath = path.join(
   path.dirname(require.resolve('google-gax')),
   '..',
-  'protos'
+  'protos',
 );
 
 export interface ServiceRequestCallback {
@@ -320,7 +320,7 @@ export class ObjectToStructConverter {
             [
               'This object contains a circular reference. To automatically',
               'remove it, set the `removeCircular` option to true.',
-            ].join(' ')
+            ].join(' '),
           );
         }
         convertedValue = {
@@ -407,7 +407,7 @@ export class GrpcService extends Service {
         'gl-node/' + process.versions.node,
         'gccl/' + config.packageJson.version,
         this.grpcVersion,
-      ].join(' ')
+      ].join(' '),
     );
     if (config.grpcMetadata) {
       for (const prop in config.grpcMetadata) {
@@ -459,21 +459,21 @@ export class GrpcService extends Service {
   request(reqOpts: DecorateRequestOptions): Promise<Response>;
   request(
     reqOpts: DecorateRequestOptions,
-    callback: BodyResponseCallback
+    callback: BodyResponseCallback,
   ): void;
   request(
     reqOpts: DecorateRequestOptions,
-    callback?: BodyResponseCallback
+    callback?: BodyResponseCallback,
   ): void | Promise<Response>;
   request(
     protoOpts: ProtoOpts,
     reqOpts: DecorateRequestOptions,
-    callback: ServiceRequestCallback
+    callback: ServiceRequestCallback,
   ): Abortable | void;
   request(
     pOpts: ProtoOpts | DecorateRequestOptions,
     rOpts?: DecorateRequestOptions | BodyResponseCallback,
-    callback?: ServiceRequestCallback
+    callback?: ServiceRequestCallback,
   ): Abortable | void | Promise<Response> {
     /**
      * The function signature above is a little funky.  This is due to the way
@@ -557,11 +557,11 @@ export class GrpcService extends Service {
               }
 
               onResponse(null, resp);
-            }
+            },
           );
         },
       },
-      protoOpts.retryOpts
+      protoOpts.retryOpts,
     );
 
     return retryRequest(null!, retryOpts, (err, resp: object) => {
@@ -587,7 +587,7 @@ export class GrpcService extends Service {
   requestStream(protoOpts: ProtoOpts, reqOpts: DecorateRequestOptions): Duplex;
   requestStream(
     pOpts: ProtoOpts | DecorateRequestOptions,
-    rOpts?: DecorateRequestOptions
+    rOpts?: DecorateRequestOptions,
   ): Duplex | Request {
     /**
      * The function signature above is a little funky.  This is due to the way
@@ -654,7 +654,7 @@ export class GrpcService extends Service {
           const ee: EventEmitter = service[protoOpts.method](
             reqOpts,
             grpcMetadata,
-            grpcOpts
+            grpcOpts,
           ).on('metadata', () => {
             // retry-request requires a server response before it
             // starts emitting data. The closest mechanism grpc
@@ -669,7 +669,7 @@ export class GrpcService extends Service {
           return ee;
         },
       },
-      protoOpts.retryOpts
+      protoOpts.retryOpts,
     );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -739,7 +739,7 @@ export class GrpcService extends Service {
     const grpcStream = service[protoOpts.method](
       reqOpts,
       grpcMetadata,
-      grpcOpts
+      grpcOpts,
     )
       .on('status', status => {
         const grcpStatus = GrpcService.decorateStatus_(status);
@@ -999,7 +999,7 @@ export class GrpcService extends Service {
     this.authClient.getClient().then(client => {
       const credentials = this.grpc!.credentials.combineChannelCredentials(
         this.grpc!.credentials.createSsl(),
-        this.grpc!.credentials.createFromGoogleCredential(client)
+        this.grpc!.credentials.createFromGoogleCredential(client),
       );
       if (!this.projectId || this.projectId === '{{projectId}}') {
         this.projectId = client.projectId!;
@@ -1020,7 +1020,7 @@ export class GrpcService extends Service {
    */
   private loadProtoFile(
     protoPath: string,
-    config: GrpcServiceConfig
+    config: GrpcServiceConfig,
   ): PackageDefinition {
     const protoObjectCacheKey = [config.protosDir, protoPath].join('$');
 
@@ -1060,8 +1060,8 @@ export class GrpcService extends Service {
           {
             'grpc.primary_user_agent': this.userAgent,
           },
-          GRPC_SERVICE_OPTIONS
-        )
+          GRPC_SERVICE_OPTIONS,
+        ),
       );
 
       this.activeServiceMap_.set(protoOpts.service, service);

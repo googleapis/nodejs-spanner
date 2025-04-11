@@ -135,7 +135,7 @@ describe('SessionPool', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
 
       const expectedEventNames = [
@@ -147,19 +147,19 @@ describe('SessionPool', () => {
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
-        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
       );
 
       const firstSpan = spans[0];
       assert.strictEqual(
         SpanStatusCode.ERROR,
         firstSpan.status.code,
-        'Unexpected an span status code'
+        'Unexpected an span status code',
       );
       assert.strictEqual(
         ourException.message,
         firstSpan.status.message,
-        'Unexpected span status message'
+        'Unexpected span status message',
       );
     });
 
@@ -188,7 +188,7 @@ describe('SessionPool', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
 
       const expectedEventNames = [
@@ -199,19 +199,19 @@ describe('SessionPool', () => {
       assert.deepStrictEqual(
         actualEventNames,
         expectedEventNames,
-        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+        `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
       );
 
       const firstSpan = spans[0];
       assert.strictEqual(
         SpanStatusCode.UNSET,
         firstSpan.status.code,
-        'Unexpected an span status code'
+        'Unexpected an span status code',
       );
       assert.strictEqual(
         undefined,
         firstSpan.status.message,
-        'Unexpected span status message'
+        'Unexpected span status message',
       );
     });
   });
