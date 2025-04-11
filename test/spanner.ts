@@ -5908,7 +5908,7 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(
             X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR in span.attributes,
             true,
-            `Missing ${X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR} for ${span.name}`
+            `Missing ${X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR} for ${span.name}`,
           );
         }
       });
