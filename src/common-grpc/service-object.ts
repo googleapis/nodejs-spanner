@@ -47,6 +47,7 @@ export class GrpcServiceObject extends ServiceObject {
    */
   constructor(config: ServiceObjectConfig) {
     super(config);
+    this.parent = config.parent as GrpcServiceObject;
   }
 
   /**

@@ -456,9 +456,11 @@ class Database extends common.GrpcServiceObject {
                 });
             }),
           ];
-          void Promise.race(promises).then(() =>
-            instance.createDatabase(formattedName_, options, callback),
-          );
+          Promise.race(promises)
+            .then(() =>
+              instance.createDatabase(formattedName_, options, callback),
+            )
+            .catch(() => {});
         } else {
           return instance.createDatabase(formattedName_, options, callback);
         }

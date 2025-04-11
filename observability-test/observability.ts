@@ -56,7 +56,7 @@ describe('startTrace', () => {
   const globalProvider = new NodeTracerProvider({
     sampler: sampler,
     exporter: globalExporter,
-    spanProcessors: [new SimpleSpanProcessor(globalExporter)]
+    spanProcessors: [new SimpleSpanProcessor(globalExporter)],
   });
   globalProvider.register();
 
@@ -90,7 +90,7 @@ describe('startTrace', () => {
     const overridingProvider = new NodeTracerProvider({
       sampler: sampler,
       exporter: overridingExporter,
-      spanProcessors: [new SimpleSpanProcessor(overridingExporter)]
+      spanProcessors: [new SimpleSpanProcessor(overridingExporter)],
     });
 
     startTrace(
@@ -256,7 +256,7 @@ describe('startTrace', () => {
     const overridingProvider = new NodeTracerProvider({
       sampler: new AlwaysOffSampler(),
       exporter: overridingExporter,
-      spanProcessors: [new SimpleSpanProcessor(overridingExporter)]
+      spanProcessors: [new SimpleSpanProcessor(overridingExporter)],
     });
     overridingProvider.register();
 
@@ -297,7 +297,7 @@ describe('getActiveOrNoopSpan', () => {
     globalProvider = new NodeTracerProvider({
       sampler: new AlwaysOffSampler(),
       exporter: exporter,
-      spanProcessors: [new SimpleSpanProcessor(exporter)]
+      spanProcessors: [new SimpleSpanProcessor(exporter)],
     });
     globalProvider.register();
   });
@@ -360,7 +360,7 @@ describe('setError', () => {
   const provider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: exporter,
-    spanProcessors: [new SimpleSpanProcessor(exporter)]
+    spanProcessors: [new SimpleSpanProcessor(exporter)],
   });
   provider.register();
 
@@ -416,7 +416,7 @@ describe('setErrorAndException', () => {
   const provider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: exporter,
-    spanProcessors: [new SimpleSpanProcessor(exporter)]
+    spanProcessors: [new SimpleSpanProcessor(exporter)],
   });
   provider.register();
 

@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
 import * as extend from 'extend';
-const PQueue = require('p-queue');
+import PQueue from 'p-queue';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import stackTrace = require('stack-trace');
@@ -95,7 +95,7 @@ describe('SessionPool', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
-    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
   beforeEach(() => {

@@ -432,19 +432,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     sessions.forEach(session => this._destroy(session));
 
-    this._requests.onIdle().then(() => {
-      const leaks = this._getLeaks();
-      let error;
+    this._requests
+      .onIdle()
+      .then(() => {
+        const leaks = this._getLeaks();
+        let error;
 
-      this._inventory.sessions = [];
-      this._inventory.borrowed.clear();
+        this._inventory.sessions = [];
+        this._inventory.borrowed.clear();
 
-      if (leaks.length) {
-        error = new SessionLeakError(leaks);
-      }
+        if (leaks.length) {
+          error = new SessionLeakError(leaks);
+        }
 
-      callback(error);
-    });
+        callback(error);
+      })
+      .catch(err => callback(err));
   }
 
   /**

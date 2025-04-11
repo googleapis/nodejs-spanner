@@ -280,7 +280,7 @@ describe('Database', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
-    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
   afterEach(() => {
@@ -683,7 +683,7 @@ describe('Database', () => {
           'Expected that the second retry span has a defined spanId',
         );
         assert.deepStrictEqual(
-          secondRetrySpan.parentSpanId,
+          secondRetrySpan.parentSpanContext.spanId,
           parentSpan.spanContext().spanId,
           'Expected that secondRetrySpan is the child to parentSpan',
         );

@@ -112,7 +112,6 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
  * ```
  */
 export class Session extends common.GrpcServiceObject {
-  id!: string;
   formattedName_?: string;
   txn?: Transaction;
   lastUsed?: number;

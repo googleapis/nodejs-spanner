@@ -754,14 +754,14 @@ describe('Spanner', () => {
     });
 
     it('should throw if a name is not provided', () => {
-      assert.throws(async () => {
-        await spanner.createInstance(null!, {} as CreateInstanceRequest);
+      assert.throws(() => {
+        void spanner.createInstance(null!, {} as CreateInstanceRequest);
       }, /A name is required to create an instance\./);
     });
 
     it('should throw if a config object is not provided', () => {
-      assert.throws(async () => {
-        await spanner.createInstance(NAME, null!);
+      assert.throws(() => {
+        void spanner.createInstance(NAME, null!);
       }, /A configuration object is required to create an instance\./);
     });
 
@@ -850,8 +850,8 @@ describe('Spanner', () => {
       const processingUnits = 500;
       const config = Object.assign({}, CONFIG, {nodeCount, processingUnits});
 
-      assert.throws(async () => {
-        await spanner.createInstance(NAME, config);
+      assert.throws(() => {
+        void spanner.createInstance(NAME, config);
       }, /Only one of nodeCount or processingUnits can be specified\./);
     });
 
@@ -1266,8 +1266,8 @@ describe('Spanner', () => {
     });
 
     it('should throw if a name is not provided', () => {
-      assert.throws(async () => {
-        await spanner.createInstanceConfig(
+      assert.throws(() => {
+        void spanner.createInstanceConfig(
           null!,
           {} as CreateInstanceConfigRequest,
         );
@@ -1275,16 +1275,16 @@ describe('Spanner', () => {
     });
 
     it('should throw if a config object is not provided', () => {
-      assert.throws(async () => {
-        await spanner.createInstanceConfig(NAME, null!);
+      assert.throws(() => {
+        void spanner.createInstanceConfig(NAME, null!);
       }, /A configuration object is required to create an instance config\./);
     });
 
     it('should throw if the provided config object does not have baseConfig', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
-      assert.throws(async () => {
-        await spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
+      assert.throws(() => {
+        void spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
       }, /Base instance config is required to create an instance config\./);
     });
 

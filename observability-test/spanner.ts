@@ -136,7 +136,7 @@ describe('EndToEnd', async () => {
   const tracerProvider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
-    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
   const setupResult = await setup({
@@ -219,7 +219,7 @@ describe('EndToEnd', async () => {
         assert.ifError(err);
         assert.ok(transaction);
         transaction!.end();
-        await transaction!.commit();
+        void transaction!.commit();
 
         const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
         const expectedEventNames = [...cacheSessionEvents, 'Using Session'];
@@ -402,7 +402,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const tracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
-      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)],
     });
 
     const observabilityOptions: typeof ObservabilityOptions = {
@@ -463,7 +463,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const tracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
-      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)],
     });
 
     const observabilityOptions: typeof ObservabilityOptions = {
@@ -730,7 +730,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const globalTracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: globalTraceExporter,
-      spanProcessors: [new SimpleSpanProcessor(globalTraceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(globalTraceExporter)],
     });
     globalTracerProvider.register();
 
@@ -738,7 +738,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const injectedTracerProvider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: injectedTraceExporter,
-      spanProcessors: [new SimpleSpanProcessor(injectedTraceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(injectedTraceExporter)],
     });
 
     const observabilityOptions: typeof ObservabilityOptions = {
@@ -837,7 +837,7 @@ describe('E2E traces with async/await', async () => {
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
-      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)],
     });
 
     observabilityOptions = {
@@ -899,9 +899,9 @@ describe('E2E traces with async/await', async () => {
       'Expected that runStreamSpan has a defined traceId',
     );
     assert.deepStrictEqual(
-      runStreamSpan.parentSpanId,
+      runStreamSpan.parentSpanContext.spanId,
       runSpan.spanContext().spanId,
-      `Expected that runSpan(spanId=${runSpan.spanContext().spanId}) is the parent to runStreamSpan(parentSpanId=${runStreamSpan.parentSpanId})`,
+      `Expected that runSpan(spanId=${runSpan.spanContext().spanId}) is the parent to runStreamSpan(parentSpanId=${runStreamSpan.parentSpanContext.spanId})`,
     );
     assert.deepStrictEqual(
       runSpan.spanContext().traceId,
@@ -937,7 +937,7 @@ describe('E2E traces with async/await', async () => {
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanId,
+      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
       sessionPoolCreateSessionsSpan.spanContext().spanId,
       'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
     );
@@ -1035,7 +1035,7 @@ SELECT 1p
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: traceExporter,
-      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)],
     });
 
     observabilityOptions = {
@@ -1117,7 +1117,7 @@ SELECT 1p
       'Expected that runStreamSpan has a defined traceId',
     );
     assert.deepStrictEqual(
-      runStreamSpan.parentSpanId,
+      runStreamSpan.parentSpanContext.spanId,
       runSpan.spanContext().spanId,
       `Expected that runSpan(spanId=${runSpan.spanContext().spanId}) is the parent to runStreamSpan(parentSpanId=${runStreamSpan.parentSpanId})`,
     );
@@ -1155,7 +1155,7 @@ SELECT 1p
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanId,
+      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
       sessionPoolCreateSessionsSpan.spanContext().spanId,
       'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
     );
@@ -1290,7 +1290,7 @@ SELECT 1p
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanId,
+      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
       sessionPoolCreateSessionsSpan.spanContext().spanId,
       'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
     );
@@ -1314,13 +1314,13 @@ SELECT 1p
       'CloudSpanner.Transaction.commit',
     );
     assert.deepStrictEqual(
-      spanTransactionCommit0.parentSpanId,
+      spanTransactionCommit0.parentSpanContext.spanId,
       spanDatabaseRunTransactionAsync.spanContext().spanId,
       'Expected that Database.runTransaction is the parent to Transaction.commmit',
     );
 
     assert.deepStrictEqual(
-      spanSnapshotRun.parentSpanId,
+      spanSnapshotRun.parentSpanContext.spanId,
       spanDatabaseRunTransactionAsync.spanContext().spanId,
       'Expected that Database.runTransaction is the parent to Snapshot.run',
     );
@@ -1412,7 +1412,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
   const tracerProvider = new NodeTracerProvider({
     sampler: new AlwaysOnSampler(),
     exporter: traceExporter,
-    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
   function newTestDatabase(): Database {

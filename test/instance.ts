@@ -204,8 +204,8 @@ describe('Instance', () => {
     const ORIGINAL_OPTIONS = extend({}, OPTIONS);
 
     it('should throw if a name is not provided', () => {
-      assert.throws(async () => {
-        await instance.createDatabase(null!);
+      assert.throws(() => {
+        void instance.createDatabase(null!);
       }, /A name is required to create a database\./);
     });
 

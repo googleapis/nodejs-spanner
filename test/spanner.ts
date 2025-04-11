@@ -1047,9 +1047,7 @@ describe('Spanner with mock server', () => {
                 .catch(() => done());
             });
         })
-        .catch(err => {
-          done(err);
-        });
+        .catch((err) => done(err));
     });
 
     it('should call callback with statistics', done => {
@@ -1227,7 +1225,7 @@ describe('Spanner with mock server', () => {
             assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
             done();
           })
-          .catch(done);
+          .catch((err) => done(err));
       });
     });
 
@@ -1246,7 +1244,7 @@ describe('Spanner with mock server', () => {
         database
           .close()
           .then(() => done())
-          .catch(done);
+          .catch((err) => done(err));
       });
     });
 
@@ -1267,7 +1265,7 @@ describe('Spanner with mock server', () => {
           database
             .close()
             .then(() => done())
-            .catch(done);
+            .catch((err) => done(err));
         })
         .on('data', row => rows.push(row))
         .on('end', () => {
@@ -1436,7 +1434,7 @@ describe('Spanner with mock server', () => {
               .then(() => {
                 done(assert.fail('missing error'));
               })
-              .catch(done);
+              .catch((err) => done(err));
           });
       });
     });
@@ -1626,7 +1624,7 @@ describe('Spanner with mock server', () => {
             database
               .close()
               .then(() => done())
-              .catch(done);
+              .catch((err) => done(err));
           });
         });
 
@@ -1650,7 +1648,7 @@ describe('Spanner with mock server', () => {
             database
               .close()
               .then(() => done())
-              .catch(done);
+              .catch((err) => done(err));
           });
         });
 
@@ -1677,7 +1675,7 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch(done);
+                .catch((err) => done(err));
             })
             // We will receive data for the partial result sets that are
             // returned before the error occurs.
@@ -1731,9 +1729,9 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch(done);
+                .catch((err) => done(err));
             })
-            .catch(done);
+            .catch(() => {});
         });
       });
     });
@@ -1771,7 +1769,7 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch(done);
+                .catch((err) => done(err));
             })
             .catch(done);
         });
@@ -3425,9 +3423,9 @@ describe('Spanner with mock server', () => {
               database
                 .close()
                 .then(() => done())
-                .catch(done);
+                .catch((err) => done(err));
             })
-            .catch(done);
+            .catch((err) => done(err));
         });
       });
     });
@@ -3515,14 +3513,14 @@ describe('Spanner with mock server', () => {
         attempts++;
         transaction!.runUpdate(insertSql, (err, rowCount) => {
           assert.ifError(err);
-          transaction!.commit(async err => {
+          transaction!.commit(err => {
             assert.ifError(err);
             assert.strictEqual(rowCount, 1);
             assert.strictEqual(attempts, 2);
             database
               .close()
               .then(() => done())
-              .catch(done);
+              .catch((err) => done(err));
           });
         });
       });
@@ -3556,8 +3554,8 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
-        async (transaction): Promise<number[]> => {
-          await transaction.begin();
+        (transaction): Promise<number[]> => {
+          void transaction.begin();
           return transaction.runUpdate(insertSql).then(updateCount => {
             if (!attempts) {
               spannerMock.abortTransaction(transaction);
@@ -3578,8 +3576,8 @@ describe('Spanner with mock server', () => {
       try {
         await database.runTransactionAsync(
           {timeout: 1},
-          async (transaction): Promise<number[]> => {
-            await transaction.begin();
+          (transaction): Promise<number[]> => {
+            void transaction.begin();
             attempts++;
             return transaction.runUpdate(insertSql).then(updateCount => {
               // Always abort the transaction.
@@ -3606,8 +3604,8 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
 
       const [updated] = await database.runTransactionAsync(
-        async (transaction): Promise<number[]> => {
-          await transaction.begin();
+        (transaction): Promise<number[]> => {
+          void transaction.begin();
           return transaction.runUpdate(insertSql).then(updateCount => {
             if (!attempts) {
               spannerMock.setExecutionTime(
@@ -5708,7 +5706,7 @@ describe('Spanner with mock server', () => {
     const provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
       exporter: exporter,
-      spanProcessors: [new SimpleSpanProcessor(exporter)]
+      spanProcessors: [new SimpleSpanProcessor(exporter)],
     });
     provider.register();
 

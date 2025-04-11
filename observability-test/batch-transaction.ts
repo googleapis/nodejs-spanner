@@ -116,7 +116,7 @@ describe('BatchTransaction', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
-    spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
   afterEach(() => {
@@ -204,7 +204,7 @@ describe('BatchTransaction', () => {
         'Expected that createPartitions_ has a defined spanId',
       );
       assert.deepStrictEqual(
-        spanCreatePartitions_.parentSpanId,
+        spanCreatePartitions_.parentSpanContext.spanId,
         spanCreateQueryPartitions.spanContext().spanId,
         'Expected that createQueryPartitions is the parent to createPartitions_',
       );

@@ -829,7 +829,7 @@ describe('SessionPool', () => {
       assert.strictEqual(stub.callCount, 1);
     });
 
-    it('should emit any errors', async done => {
+    it('should emit any errors', done => {
       const error = new Error('err');
       const fakeSession = createSession();
       const stub = fakeSession.delete as sinon.SinonStub;
@@ -841,7 +841,7 @@ describe('SessionPool', () => {
         done();
       });
 
-      await sessionPool._destroy(fakeSession);
+      void sessionPool._destroy(fakeSession);
     });
   });
 

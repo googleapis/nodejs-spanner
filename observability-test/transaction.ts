@@ -95,7 +95,7 @@ describe('Transaction', () => {
     tracerProvider = new NodeTracerProvider({
       sampler: sampler,
       exporter: traceExporter,
-      spanProcessors: [new SimpleSpanProcessor(traceExporter)]
+      spanProcessors: [new SimpleSpanProcessor(traceExporter)],
     });
 
     const SNAPSHOT_OPTIONS = {a: 'b', c: 'd'};
