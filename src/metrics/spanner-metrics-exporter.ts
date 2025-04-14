@@ -22,8 +22,8 @@ import {ExporterOptions} from './external-types';
 import {GoogleAuth, JWT} from 'google-auth-library';
 import {monitoring_v3} from 'googleapis';
 import {transformResourceMetricToTimeSeriesArray} from './transform';
-import {version} from '../../package.json';
 import {status} from '@grpc/grpc-js';
+const version = require('../../../package.json').version;
 
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
