@@ -20,9 +20,9 @@
 'use strict';
 
 function main(
-  projectId = 'my-project-id',
   instanceId = 'my-instance-id',
-  databaseId = 'my-database-id'
+  databaseId = 'my-database-id',
+  projectId = 'my-project-id'
 ) {
   async function addSplitPoints() {
     // [START spanner_database_add_split_points]
