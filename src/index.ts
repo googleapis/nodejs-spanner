@@ -34,6 +34,7 @@ import {
   PGNumeric,
   PGJsonb,
   SpannerDate,
+  Interval,
   Struct,
   ProtoMessage,
   ProtoEnum,
@@ -89,6 +90,7 @@ import {
   ensureInitialContextManagerSet,
 } from './instrument';
 import {
+  attributeXGoogSpannerRequestIdToActiveSpan,
   injectRequestIDIntoError,
   nextSpannerClientId,
 } from './request_id_header';
@@ -1561,6 +1563,8 @@ class Spanner extends GrpcService {
           carrier[key] = value; // Set the span context (trace and span ID)
         },
       });
+      // Attach the x-goog-spanner-request-id to the currently active span.
+      attributeXGoogSpannerRequestIdToActiveSpan(config);
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
@@ -1875,6 +1879,24 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner Interval object.
+   *
+   * @param {number} months The months part of Interval as number.
+   * @param {number} days The days part of Interval as number.
+   * @param {bigint} nanoseconds The nanoseconds part of Interval as bigint.
+   * @returns {Interval}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const interval = Spanner.Interval(10, 20, BigInt(30));
+   * ```
+   */
+  static interval(months: number, days: number, nanoseconds: bigint): Interval {
+    return new codec.Interval(months, days, nanoseconds);
+  }
+
+  /**
    * @typedef IProtoMessageParams
    * @property {object} value Proto Message value as serialized-buffer or message object.
    * @property {string} fullName Fully-qualified path name of proto message.
@@ -1970,6 +1992,7 @@ promisifyAll(Spanner, {
     'pgJsonb',
     'operation',
     'timestamp',
+    'interval',
     'getInstanceAdminClient',
     'getDatabaseAdminClient',
   ],
@@ -2140,5 +2163,5 @@ import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig
 import {RunTransactionOptions} from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
-export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate, Interval};
 export {ObservabilityOptions};

@@ -61,6 +61,7 @@ import {
   RequestIDError,
   X_GOOG_REQ_ID_REGEX,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR,
   randIdForProcess,
   resetNthClientId,
 } from '../src/request_id_header';
@@ -1824,137 +1825,246 @@ describe('Spanner with mock server', () => {
     });
   });
 
-  describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-    before(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-    });
-
-    after(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-    });
-
-    it('should make a request to CreateSession', async () => {
-      const database = newTestDatabase();
-      await database.run('SELECT 1');
-      const requests = spannerMock.getRequests().find(val => {
-        return (val as v1.CreateSessionRequest).session;
-      }) as v1.CreateSessionRequest;
-      assert.ok(requests, 'CreateSessionRequest should be called');
-      assert.strictEqual(
-        requests.session?.multiplexed,
-        true,
-        'Multiplexed should be true'
-      );
-    });
-
-    it('should execute the transaction(database.run) successfully using multiplexed session', done => {
-      const query = {
-        sql: selectSql,
-      } as ExecuteSqlRequest;
-      const database = newTestDatabase();
-      const pool = (database.sessionFactory_ as SessionFactory)
-        .pool_ as SessionPool;
-      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
-        .multiplexedSession_ as MultiplexedSession;
-      database.run(query, (err, resp) => {
-        assert.strictEqual(pool._inventory.borrowed.size, 0);
-        assert.notEqual(multiplexedSession, null);
-        assert.ifError(err);
-        assert.strictEqual(resp.length, 3);
-        done();
+  describe('read-only transactions', () => {
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       });
-    });
 
-    it('should execute the transaction(database.getSnapshot) successfully using multiplexed session', done => {
-      const database = newTestDatabase();
-      const pool = (database.sessionFactory_ as SessionFactory)
-        .pool_ as SessionPool;
-      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
-        .multiplexedSession_ as MultiplexedSession;
-      database.getSnapshot((err, resp) => {
-        assert.strictEqual(pool._inventory.borrowed.size, 0);
-        assert.notEqual(multiplexedSession, null);
-        assert.ifError(err);
-        assert(resp instanceof Snapshot);
-        resp.end();
-        done();
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
-    });
 
-    it('should execute the transaction(database.writeAtLeastOnce) successfully using multiplexed session', done => {
-      const database = newTestDatabase();
-      const mutations = new MutationSet();
-      mutations.upsert('Singers', {
-        SingerId: 1,
-        FirstName: 'Scarlet',
-        LastName: 'Terry',
-      });
-      mutations.upsert('Singers', {
-        SingerId: 2,
-        FirstName: 'Marc',
-      });
-      const pool = (database.sessionFactory_ as SessionFactory)
-        .pool_ as SessionPool;
-      const multiplexedSession = (database.sessionFactory_ as SessionFactory)
-        .multiplexedSession_ as MultiplexedSession;
-      database.writeAtLeastOnce(mutations, (err, resp) => {
-        assert.strictEqual(pool._inventory.borrowed.size, 0);
-        assert.notEqual(multiplexedSession, null);
-        assert.ifError(err);
-        assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
-        assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
-        assert.strictEqual(resp?.commitStats, null);
-        done();
-      });
-    });
-
-    it('should fail the transaction, if multiplexed session creation is failed', async () => {
-      const query = {
-        sql: selectSql,
-      } as ExecuteSqlRequest;
-      const err = {
-        code: grpc.status.NOT_FOUND,
-        message: 'create session failed',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.createSession,
-        SimulatedExecutionTime.ofError(err)
-      );
-      const database = newTestDatabase().on('error', err => {
-        assert.strictEqual(err.code, Status.NOT_FOUND);
-      });
-      try {
-        await database.run(query);
-      } catch (error) {
-        assert.strictEqual((error as grpc.ServiceError).code, err.code);
+      it('should make a request to CreateSession', async () => {
+        const database = newTestDatabase();
+        await database.run('SELECT 1');
+        const requests = spannerMock.getRequests().find(val => {
+          return (val as v1.CreateSessionRequest).session;
+        }) as v1.CreateSessionRequest;
+        assert.ok(requests, 'CreateSessionRequest should be called');
         assert.strictEqual(
-          (error as grpc.ServiceError).details,
-          'create session failed'
+          requests.session?.multiplexed,
+          true,
+          'Multiplexed should be true'
         );
-        assert.strictEqual(
-          (error as grpc.ServiceError).message,
-          '5 NOT_FOUND: create session failed'
+      });
+
+      it('should execute the transaction(database.run) successfully using multiplexed session', done => {
+        const query = {
+          sql: selectSql,
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase();
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.run(query, (err, resp) => {
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.ifError(err);
+          assert.strictEqual(resp.length, 3);
+          done();
+        });
+      });
+
+      it('should execute the transaction(database.getSnapshot) successfully using multiplexed session', done => {
+        const database = newTestDatabase();
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.getSnapshot((err, resp) => {
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.ifError(err);
+          assert(resp instanceof Snapshot);
+          resp.end();
+          done();
+        });
+      });
+
+      it('should execute the transaction(database.writeAtLeastOnce) successfully using multiplexed session', done => {
+        const database = newTestDatabase();
+        const mutations = new MutationSet();
+        mutations.upsert('Singers', {
+          SingerId: 1,
+          FirstName: 'Scarlet',
+          LastName: 'Terry',
+        });
+        mutations.upsert('Singers', {
+          SingerId: 2,
+          FirstName: 'Marc',
+        });
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.writeAtLeastOnce(mutations, (err, resp) => {
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.ifError(err);
+          assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
+          assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
+          assert.strictEqual(resp?.commitStats, null);
+          done();
+        });
+      });
+
+      it('should fail the transaction, if multiplexed session creation is failed', async () => {
+        const query = {
+          sql: selectSql,
+        } as ExecuteSqlRequest;
+        const err = {
+          code: grpc.status.NOT_FOUND,
+          message: 'create session failed',
+        } as MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.createSession,
+          SimulatedExecutionTime.ofError(err)
         );
-      }
+        const database = newTestDatabase().on('error', err => {
+          assert.strictEqual(err.code, Status.NOT_FOUND);
+        });
+        try {
+          await database.run(query);
+        } catch (error) {
+          assert.strictEqual((error as grpc.ServiceError).code, err.code);
+          assert.strictEqual(
+            (error as grpc.ServiceError).details,
+            'create session failed'
+          );
+          assert.strictEqual(
+            (error as grpc.ServiceError).message,
+            '5 NOT_FOUND: create session failed'
+          );
+        }
+      });
+
+      it('should fail the transaction, if query returns session not found error', done => {
+        const query = {
+          sql: selectSql,
+        } as ExecuteSqlRequest;
+        const error = {
+          code: grpc.status.NOT_FOUND,
+          message: 'Session not found',
+        } as MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofError(error)
+        );
+        const database = newTestDatabase();
+        database.run(query, (err, _) => {
+          assert.strictEqual(err!.code, error.code);
+          assert.strictEqual(err!.details, error.message);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('partitioned ops', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.strictEqual(pool._inventory.sessions.length, 1);
+          assert.strictEqual(
+            pool._inventory.sessions[0].metadata.multiplexed,
+            false
+          );
+          // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp, 2);
+          assert.ifError(err);
+          done();
+        });
+      });
     });
 
-    it('should fail the transaction, if query returns session not found error', done => {
-      const query = {
-        sql: selectSql,
-      } as ExecuteSqlRequest;
-      const error = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(error)
-      );
-      const database = newTestDatabase();
-      database.run(query, (err, _) => {
-        assert.strictEqual(err!.code, error.code);
-        assert.strictEqual(err!.details, error.message);
-        done();
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'true';
+      });
+
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.strictEqual(pool._inventory.sessions.length, 1);
+          assert.strictEqual(
+            pool._inventory.sessions[0].metadata.multiplexed,
+            false
+          );
+          assert.strictEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp, 2);
+          assert.ifError(err);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is enabled for partitioned ops', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'true';
+      });
+
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp, 2);
+          assert.ifError(err);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is not enabled for partitioned ops', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.strictEqual(pool._inventory.sessions.length, 1);
+          assert.strictEqual(
+            pool._inventory.sessions[0].metadata.multiplexed,
+            false
+          );
+          assert.strictEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp, 2);
+          assert.ifError(err);
+          done();
+        });
       });
     });
   });
@@ -5671,6 +5781,23 @@ describe('Spanner with mock server', () => {
   });
 
   describe('XGoogRequestId', () => {
+    const exporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+    provider.register();
+
+    beforeEach(async () => {
+      await exporter.forceFlush();
+      await exporter.reset();
+    });
+
+    after(async () => {
+      await provider.shutdown();
+    });
+
     it('with retry on aborted query', async () => {
       let attempts = 0;
       const database = newTestDatabase();
@@ -5739,6 +5866,34 @@ describe('Spanner with mock server', () => {
       ];
       assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
       await database.close();
+    });
+
+    it('check span attributes for x-goog-spanner-request-id', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async transaction => {
+        await transaction!.run(selectSql);
+        await transaction!.commit();
+      });
+
+      await exporter.forceFlush();
+      const spans = exporter.getFinishedSpans();
+
+      // The RPC invoking spans that we expect to have our value.
+      const rpcMakingSpans = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Transaction.commit',
+      ];
+
+      spans.forEach(span => {
+        if (rpcMakingSpans.includes(span.name)) {
+          assert.strictEqual(
+            X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR in span.attributes,
+            true,
+            `Missing ${X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR} for ${span.name}`
+          );
+        }
+      });
     });
 
     // TODO(@odeke-em): introduce tests for incremented attempts to verify
