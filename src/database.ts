@@ -2282,17 +2282,16 @@ class Database extends common.GrpcServiceObject {
       },
       span => {
         this.pool_.getSession((err, session, transaction) => {
-          if (options.requestOptions) {
-            transaction!.requestOptions = Object.assign(
-              transaction!.requestOptions || {},
-              options.requestOptions
-            );
-          }
-          transaction?.setReadWriteTransactionOptions(
-            options as RunTransactionOptions
-          );
-
           if (!err) {
+            if (options.requestOptions) {
+              transaction!.requestOptions = Object.assign(
+                transaction!.requestOptions || {},
+                options.requestOptions
+              );
+            }
+            transaction?.setReadWriteTransactionOptions(
+              options as RunTransactionOptions
+            );
             span.addEvent('Using Session', {'session.id': session?.id});
             transaction!._observabilityOptions = this._observabilityOptions;
             this._releaseOnEnd(session!, transaction!, span);
@@ -2955,6 +2954,8 @@ class Database extends common.GrpcServiceObject {
       {
         ...(query as RunPartitionedUpdateOptions),
         ...this._traceConfig,
+        requestTag: (query as RunPartitionedUpdateOptions)?.requestOptions
+          ?.requestTag,
       },
       span => {
         this.sessionFactory_.getSessionForPartitionedOps((err, session) => {
@@ -3146,6 +3147,7 @@ class Database extends common.GrpcServiceObject {
       {
         ...(query as ExecuteSqlRequest),
         ...this._traceConfig,
+        requestTag: (query as ExecuteSqlRequest)?.requestOptions?.requestTag,
       },
       span => {
         this.sessionFactory_.getSession((err, session) => {
