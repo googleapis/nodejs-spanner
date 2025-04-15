@@ -88,17 +88,19 @@ function main(
             keys: [
               {
                 keyParts: {
-                  values: [{stringValue: 'John'},{stringValue: 'Doe'}],
-                }
-              }],
+                  values: [{stringValue: 'John'}, {stringValue: 'Doe'}],
+                },
+              },
+            ],
           },
           {
             index: 'SingersByFirstLastName',
             keys: [
-              {keyParts: {
-                values:  [{stringValue: 'Jane'},{stringValue: 'Doe'}],
-              }
-            },
+              {
+                keyParts: {
+                  values: [{stringValue: 'Jane'}, {stringValue: 'Doe'}],
+                },
+              },
               {keyParts: {values: [{stringValue: '38'}]}},
             ],
           },
