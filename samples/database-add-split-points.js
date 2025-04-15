@@ -81,17 +81,17 @@ function main(
         splitPoints: [
           {
             table: 'Singers',
-            keys: [{keyParts: {values: ['42']}}],
+            keys: [{keyParts: {values: [{stringValue: '42'}]}}],
           },
           {
             index: 'SingersByFirstLastName',
-            keys: [{keyParts: {values: ['Jane', 'Doe']}}],
+            keys: [{keyParts: {values: [{stringValue: 'John'},{stringValue: 'Doe'}]}}],
           },
           {
             index: 'SingersByFirstLastName',
             keys: [
-              {keyParts: {values: ['38']}},
-              {keyParts: {values: ['John', 'Doe']}},
+              {keyParts: {values:  [{stringValue: 'Jane'},{stringValue: 'Doe'}]}},
+              {keyParts: {values: [{stringValue: '38'}]}},
             ],
           },
         ],
