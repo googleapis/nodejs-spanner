@@ -23,6 +23,7 @@ import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
+import {EventEmitter} from 'events';
 import * as through from 'through2';
 import {
   codec,
@@ -33,12 +34,14 @@ import {
   PGNumeric,
   PGJsonb,
   SpannerDate,
+  Interval,
   Struct,
   ProtoMessage,
   ProtoEnum,
   IProtoMessageParams,
   IProtoEnumParams,
 } from './codec';
+import {context, propagation} from '@opentelemetry/api';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -59,6 +62,7 @@ import {
   ClientOptions,
 } from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {
   PagedOptions,
   PagedResponse,
@@ -66,6 +70,7 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
   NormalCallback,
+  getCommonHeaders,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -80,7 +85,15 @@ import {
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import {ObservabilityOptions} from './instrument';
+import {
+  ObservabilityOptions,
+  ensureInitialContextManagerSet,
+} from './instrument';
+import {
+  attributeXGoogSpannerRequestIdToActiveSpan,
+  injectRequestIDIntoError,
+  nextSpannerClientId,
+} from './request_id_header';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -140,7 +153,9 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
+  interceptors?: any[];
 }
 export interface RequestConfig {
   client: string;
@@ -239,10 +254,12 @@ class Spanner extends GrpcService {
   instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
-  resourceHeader_: {[k: string]: string};
+  commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
+  readonly _nthClientId: number;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -304,6 +321,7 @@ class Spanner extends GrpcService {
         }
       }
     }
+
     options = Object.assign(
       {
         libName: 'gccl',
@@ -325,6 +343,13 @@ class Spanner extends GrpcService {
       ? options.directedReadOptions
       : null;
     delete options.directedReadOptions;
+
+    const defaultTransactionOptions = options.defaultTransactionOptions
+      ? options.defaultTransactionOptions
+      : {
+          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+        };
+    delete options.defaultTransactionOptions;
 
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
@@ -365,11 +390,15 @@ class Spanner extends GrpcService {
     this.instanceConfigs_ = new Map();
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
-    this.resourceHeader_ = {
-      [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
-    };
     this.directedReadOptions = directedReadOptions;
+    this.defaultTransactionOptions = defaultTransactionOptions;
     this._observabilityOptions = options.observabilityOptions;
+    this.commonHeaders_ = getCommonHeaders(
+      this.projectFormattedName_,
+      this._observabilityOptions?.enableEndToEndTracing
+    );
+    ensureInitialContextManagerSet();
+    this._nthClientId = nextSpannerClientId();
   }
 
   /**
@@ -582,7 +611,7 @@ class Spanner extends GrpcService {
         method: 'createInstance',
         reqOpts,
         gaxOpts: config.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -728,7 +757,7 @@ class Spanner extends GrpcService {
         method: 'listInstances',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instances, nextPageRequest, ...args) => {
         let instanceInstances: Instance[] | null = null;
@@ -812,7 +841,7 @@ class Spanner extends GrpcService {
       method: 'listInstancesStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -978,7 +1007,7 @@ class Spanner extends GrpcService {
         method: 'createInstanceConfig',
         reqOpts,
         gaxOpts: config.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operation, resp) => {
         if (err) {
@@ -1121,7 +1150,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigs',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instanceConfigs, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -1197,7 +1226,7 @@ class Spanner extends GrpcService {
       method: 'listInstanceConfigsStream',
       reqOpts,
       gaxOpts,
-      headers: this.resourceHeader_,
+      headers: this.commonHeaders_,
     });
   }
 
@@ -1292,7 +1321,7 @@ class Spanner extends GrpcService {
         method: 'getInstanceConfig',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, instanceConfig) => {
         callback!(err, instanceConfig);
@@ -1412,7 +1441,7 @@ class Spanner extends GrpcService {
         method: 'listInstanceConfigOperations',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: this.commonHeaders_,
       },
       (err, operations, nextPageRequest, ...args) => {
         const nextQuery = nextPageRequest!
@@ -1528,6 +1557,14 @@ class Spanner extends GrpcService {
         config.headers[CLOUD_RESOURCE_HEADER],
         projectId!
       );
+      // Do context propagation
+      propagation.inject(context.active(), config.headers, {
+        set: (carrier, key, value) => {
+          carrier[key] = value; // Set the span context (trace and span ID)
+        },
+      });
+      // Attach the x-goog-spanner-request-id to the currently active span.
+      attributeXGoogSpannerRequestIdToActiveSpan(config);
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
@@ -1538,7 +1575,56 @@ class Spanner extends GrpcService {
           },
         })
       );
-      callback(null, requestFn);
+
+      // Wrap requestFn to inject the spanner request id into every returned error.
+      const wrappedRequestFn = (...args) => {
+        const hasCallback =
+          args &&
+          args.length > 0 &&
+          typeof args[args.length - 1] === 'function';
+
+        switch (hasCallback) {
+          case true: {
+            const cb = args[args.length - 1];
+            const priorArgs = args.slice(0, args.length - 1);
+            requestFn(...priorArgs, (...results) => {
+              if (results && results.length > 0) {
+                const err = results[0] as Error;
+                injectRequestIDIntoError(config, err);
+              }
+
+              cb(...results);
+            });
+            return;
+          }
+
+          case false: {
+            const res = requestFn(...args);
+            const stream = res as EventEmitter;
+            if (stream) {
+              stream.on('error', err => {
+                injectRequestIDIntoError(config, err as Error);
+              });
+            }
+
+            const originallyPromise = res instanceof Promise;
+            if (!originallyPromise) {
+              return res;
+            }
+
+            return new Promise((resolve, reject) => {
+              requestFn(...args)
+                .then(resolve)
+                .catch(err => {
+                  injectRequestIDIntoError(config, err as Error);
+                  reject(err);
+                });
+            });
+          }
+        }
+      };
+
+      callback(null, wrappedRequestFn);
     });
   }
 
@@ -1793,6 +1879,24 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner Interval object.
+   *
+   * @param {number} months The months part of Interval as number.
+   * @param {number} days The days part of Interval as number.
+   * @param {bigint} nanoseconds The nanoseconds part of Interval as bigint.
+   * @returns {Interval}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const interval = Spanner.Interval(10, 20, BigInt(30));
+   * ```
+   */
+  static interval(months: number, days: number, nanoseconds: bigint): Interval {
+    return new codec.Interval(months, days, nanoseconds);
+  }
+
+  /**
    * @typedef IProtoMessageParams
    * @property {object} value Proto Message value as serialized-buffer or message object.
    * @property {string} fullName Fully-qualified path name of proto message.
@@ -1888,6 +1992,7 @@ promisifyAll(Spanner, {
     'pgJsonb',
     'operation',
     'timestamp',
+    'interval',
     'getInstanceAdminClient',
     'getDatabaseAdminClient',
   ],
@@ -2055,7 +2160,8 @@ export {MutationSet};
  */
 import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
+import {RunTransactionOptions} from './transaction-runner';
 export {v1, protos};
 export default {Spanner};
-export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate, Interval};
 export {ObservabilityOptions};

@@ -342,10 +342,17 @@ export class MockSpanner {
    * Creates a new session for the given database and adds it to the map of sessions of this server.
    * @param database The database to create the session for.
    */
-  private newSession(database: string): protobuf.Session {
+  private newSession(
+    database: string,
+    multiplexed?: boolean
+  ): protobuf.Session {
     const id = this.sessionCounter++;
     const name = `${database}/sessions/${id}`;
-    const session = protobuf.Session.create({name, createTime: now()});
+    const session = protobuf.Session.create({
+      name,
+      multiplexed: multiplexed,
+      createTime: now(),
+    });
     this.sessions.set(name, session);
     return session;
   }
@@ -463,9 +470,19 @@ export class MockSpanner {
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
     this.pushRequest(call.request!, call.metadata);
-    this.simulateExecutionTime(this.createSession.name).then(() => {
-      callback(null, this.newSession(call.request!.database));
-    });
+    this.simulateExecutionTime(this.createSession.name)
+      .then(() => {
+        callback(
+          null,
+          this.newSession(
+            call.request!.database,
+            call.request!.session?.multiplexed ?? false
+          )
+        );
+      })
+      .catch(err => {
+        callback(err);
+      });
   }
 
   getSession(

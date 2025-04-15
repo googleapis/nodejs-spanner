@@ -17,13 +17,16 @@ and automatic, synchronous replication for high availability.
   * [Add and drop new database role](#add-and-drop-new-database-role)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
+  * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
+  * [Backups-create-with-multiple-kms-keys](#backups-create-with-multiple-kms-keys)
   * [Backups-create](#backups-create)
   * [Backups-delete](#backups-delete)
   * [Backups-get-database-operations](#backups-get-database-operations)
   * [Backups-get-operations](#backups-get-operations)
   * [Backups-get](#backups-get)
   * [Backups-restore-with-encryption-key](#backups-restore-with-encryption-key)
+  * [Backups-restore-with-multiple-kms-keys](#backups-restore-with-multiple-kms-keys)
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
@@ -31,9 +34,11 @@ and automatic, synchronous replication for high availability.
   * [Batch](#batch)
   * [Creates a full backup schedule](#creates-a-full-backup-schedule)
   * [Creates an incremental backup schedule](#creates-an-incremental-backup-schedule)
+  * [Create-instance-without-default-backup-schedules](#create-instance-without-default-backup-schedules)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
+  * [Database-create-with-multiple-kms-keys](#database-create-with-multiple-kms-keys)
   * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
@@ -63,6 +68,7 @@ and automatic, synchronous replication for high availability.
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Creates a new instance partition](#creates-a-new-instance-partition)
   * [Updates an instance.](#updates-an-instance.)
+  * [Creates a instance with asymmetric autoscaling config.](#creates-a-instance-with-asymmetric-autoscaling-config.)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
@@ -76,6 +82,8 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Observability (Tracing) with OpenTelemetry using OTLP](#observability-tracing-with-opentelemetry-using-otlp)
+  * [Observability (Tracing) with OpenTelemetry](#observability-tracing-with-opentelemetry)
   * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.](#showcase-the-rules-for-case-sensitivity-and-case-folding-for-a-spanner-postgresql-database.)
   * [Creates a PostgreSQL Database.](#creates-a-postgresql-database.)
@@ -126,6 +134,7 @@ and automatic, synchronous replication for high availability.
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
   * [Updates a backup schedule](#updates-a-backup-schedule)
+  * [Updates an instance.](#updates-an-instance.)
 
 ## Before you begin
 
@@ -178,6 +187,23 @@ __Usage:__
 
 ### Copies a source backup
 
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Copies a source backup
+
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md)
@@ -203,6 +229,23 @@ __Usage:__
 
 
 `node samples/backups-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Backups-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-create-with-multiple-kms-keys.js`
 
 
 -----
@@ -305,6 +348,23 @@ __Usage:__
 
 
 `node samples/backups-restore-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Backups-restore-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-restore-with-multiple-kms-keys.js`
 
 
 -----
@@ -431,6 +491,23 @@ __Usage:__
 
 
 
+### Create-instance-without-default-backup-schedules
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/create-instance-without-default-backup-schedules.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/create-instance-without-default-backup-schedules.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/create-instance-without-default-backup-schedules.js`
+
+
+-----
+
+
+
+
 ### CRUD
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/crud.js).
@@ -475,6 +552,23 @@ __Usage:__
 
 
 `node samples/database-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Database-create-with-multiple-kms-keys
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-multiple-kms-keys.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-multiple-kms-keys.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-multiple-kms-keys.js`
 
 
 -----
@@ -975,6 +1069,23 @@ __Usage:__
 
 
 
+### Creates a instance with asymmetric autoscaling config.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-asymmetric-autoscaling-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-asymmetric-autoscaling-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-with-asymmetric-autoscaling-config.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Creates a instance with autoscaling config.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
@@ -1189,6 +1300,40 @@ __Usage:__
 
 
 `node samples/numeric-update-data.js`
+
+
+-----
+
+
+
+
+### Observability (Tracing) with OpenTelemetry using OTLP
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces-otlp.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces-otlp.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability-traces-otlp.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>`
+
+
+-----
+
+
+
+
+### Observability (Tracing) with OpenTelemetry
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/observability-traces.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/observability-traces.js,samples/README.md)
+
+__Usage:__
+
+
+`node observability-traces.js <PROJECT-ID> <INSTANCE-ID> <DATABASE-ID>`
 
 
 -----
@@ -2039,6 +2184,23 @@ __Usage:__
 
 
 `node update-backup-schedule.js <PROJECT_ID> <INSTANCE_ID> <DATABASE_ID> <SCHEDULE_ID>`
+
+
+-----
+
+
+
+
+### Updates an instance.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/update-instance-default-backup-schedule-type.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/update-instance-default-backup-schedule-type.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-update.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 

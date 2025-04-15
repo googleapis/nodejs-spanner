@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -314,7 +314,7 @@ export class SpannerClient {
           (...args: Array<{}>) => {
             if (this._terminated) {
               if (methodName in this.descriptors.stream) {
-                const stream = new PassThrough();
+                const stream = new PassThrough({objectMode: true});
                 setImmediate(() => {
                   stream.emit(
                     'error',
@@ -895,6 +895,16 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {boolean} [request.lastStatement]
+   *   Optional. If set to true, this statement marks the end of the transaction.
+   *   The transaction should be committed or aborted after this statement
+   *   executes, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   For DML statements, setting this option may cause some error reporting to
+   *   be deferred until commit time (e.g. validation of unique constraints).
+   *   Given this, successful execution of a DML statement should not be assumed
+   *   until a subsequent Commit call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1010,6 +1020,16 @@ export class SpannerClient {
    *   handled requests will yield the same response as the first execution.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} [request.lastStatements]
+   *   Optional. If set to true, this request marks the end of the transaction.
+   *   The transaction should be committed or aborted after these statements
+   *   execute, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   Setting this option may cause some error reporting to be deferred until
+   *   commit time (e.g. validation of unique constraints). Given this, successful
+   *   execution of statements should not be assumed until a subsequent Commit
+   *   call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1264,6 +1284,13 @@ export class SpannerClient {
    *   request_options struct will not do anything. To set the priority for a
    *   transaction, set it on the reads and writes that are part of this
    *   transaction instead.
+   * @param {google.spanner.v1.Mutation} [request.mutationKey]
+   *   Optional. Required for read-write transactions on a multiplexed session
+   *   that commit mutations but do not perform any reads or queries. Clients
+   *   should randomly select one of the mutations from the mutation set and send
+   *   it as a part of this request.
+   *   This feature is not yet supported and will result in an UNIMPLEMENTED
+   *   error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1385,6 +1412,13 @@ export class SpannerClient {
    *   and 500 ms.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.MultiplexedSessionPrecommitToken} [request.precommitToken]
+   *   Optional. If the read-write transaction was executed on a multiplexed
+   *   session, the precommit token with the highest sequence number received in
+   *   this transaction attempt, should be included here. Failing to do so will
+   *   result in a FailedPrecondition error.
+   *   This feature is not yet supported and will result in an UNIMPLEMENTED
+   *   error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1892,6 +1926,16 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {boolean} [request.lastStatement]
+   *   Optional. If set to true, this statement marks the end of the transaction.
+   *   The transaction should be committed or aborted after this statement
+   *   executes, and attempts to execute any other requests against this
+   *   transaction (including reads and queries) will be rejected.
+   *
+   *   For DML statements, setting this option may cause some error reporting to
+   *   be deferred until commit time (e.g. validation of unique constraints).
+   *   Given this, successful execution of a DML statement should not be assumed
+   *   until a subsequent Commit call completes successfully.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2185,7 +2229,7 @@ export class SpannerClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to `listSessions`, but returns a NodeJS Stream object.
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.database

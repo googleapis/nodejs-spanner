@@ -99,7 +99,7 @@ describe('startTrace', () => {
       'aSpan',
       {opts: {tracerProvider: overridingProvider}},
       async span => {
-        await new Promise((resolve, reject) => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 400));
         span.end();
 
         const gotSpansFromGlobal = globalExporter.getFinishedSpans();
@@ -140,6 +140,24 @@ describe('startTrace', () => {
         span.attributes[ATTR_OTEL_SCOPE_VERSION],
         TRACER_VERSION,
         'Missing OTEL_SCOPE_VERSION attribute'
+      );
+
+      assert.equal(
+        span.attributes['gcp.client.service'],
+        'spanner',
+        'Missing gcp.client.service attribute'
+      );
+
+      assert.equal(
+        span.attributes['gcp.client.version'],
+        TRACER_VERSION,
+        'Missing gcp.client.version attribute'
+      );
+
+      assert.equal(
+        span.attributes['gcp.client.repo'],
+        'googleapis/nodejs-spanner',
+        'Missing gcp.client.repo attribute'
       );
 
       assert.equal(
@@ -250,7 +268,7 @@ describe('startTrace', () => {
       'aSpan',
       {opts: {tracerProvider: overridingProvider}},
       async span => {
-        await new Promise((resolve, reject) => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 400));
         span.end();
 
         const gotSpansFromGlobal = globalExporter.getFinishedSpans();
@@ -382,7 +400,6 @@ describe('setError', () => {
 
   it('a non-empty string should set the message', () => {
     startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
-      const status1 = span.status;
       const res = setSpanError(span, 'this one');
       assert.strictEqual(res, true, 'value was set');
       span.end();
@@ -438,7 +455,6 @@ describe('setErrorAndException', () => {
 
   it('a non-empty string should set the message', () => {
     startTrace('aSpan', {opts: {tracerProvider: provider}}, span => {
-      const status1 = span.status;
       const res = setSpanErrorAndException(span, 'this one');
       assert.strictEqual(res, true, 'value was set');
       span.end();

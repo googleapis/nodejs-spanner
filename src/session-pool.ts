@@ -24,7 +24,20 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
-import {getActiveOrNoopSpan} from './instrument';
+import {
+  ObservabilityOptions,
+  getActiveOrNoopSpan,
+  setSpanErrorAndException,
+  startTrace,
+} from './instrument';
+import {GetSessionCallback} from './session-factory';
+import {
+  isDatabaseNotFoundError,
+  isInstanceNotFoundError,
+  isDefaultCredentialsNotSetError,
+  isProjectIdNotSetInEnvironmentError,
+  isCreateSessionPermissionError,
+} from './helper';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -39,20 +52,6 @@ export type GetReadSessionCallback = NormalCallback<Session>;
 
 /** @deprecated. Use GetSessionCallback instead. */
 export interface GetWriteSessionCallback {
-  (
-    err: Error | null,
-    session?: Session | null,
-    transaction?: Transaction | null
-  ): void;
-}
-
-/**
- * @callback GetSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-write session.
- * @param {Transaction} transaction The transaction object.
- */
-export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
@@ -237,81 +236,6 @@ export function isSessionNotFoundError(
 }
 
 /**
- * Checks whether the given error is a 'Database not found' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Database not found' error, and otherwise false.
- */
-export function isDatabaseNotFoundError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.NOT_FOUND &&
-    error.message.includes('Database not found')
-  );
-}
-
-/**
- * Checks whether the given error is an 'Instance not found' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is an 'Instance not found' error, and otherwise false.
- */
-export function isInstanceNotFoundError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.NOT_FOUND &&
-    error.message.includes('Instance not found')
-  );
-}
-
-/**
- * Checks whether the given error is a 'Create session permission' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Create session permission' error, and otherwise false.
- */
-export function isCreateSessionPermissionError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.PERMISSION_DENIED &&
-    error.message.includes('spanner.sessions.create')
-  );
-}
-
-/**
- * Checks whether the given error is a 'Could not load the default credentials' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Could not load the default credentials' error, and otherwise false.
- */
-export function isDefaultCredentialsNotSetError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.message.includes('Could not load the default credentials')
-  );
-}
-
-/**
- * Checks whether the given error is an 'Unable to detect a Project Id in the current environment' error.
- * @param {Error} error The error to check.
- * @return {boolean} True if the error is an 'Unable to detect a Project Id in the current environment' error, and otherwise false.
- */
-export function isProjectIdNotSetInEnvironmentError(
-  error: grpc.ServiceError | undefined
-): boolean {
-  return (
-    error !== undefined &&
-    error.message.includes(
-      'Unable to detect a Project Id in the current environment'
-    )
-  );
-}
-
-/**
  * enum to capture errors that can appear from multiple places
  */
 const enum errors {
@@ -353,6 +277,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
+  _observabilityOptions?: ObservabilityOptions;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -485,6 +410,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
+    this._observabilityOptions = database._observabilityOptions;
   }
 
   /**
@@ -738,9 +664,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#createError
    */
   async _createSessions(amount: number): Promise<void> {
-    const span = getActiveOrNoopSpan();
-    span.addEvent(`Requesting ${amount} sessions`);
-
     const labels = this.options.labels!;
     const databaseRole = this.options.databaseRole!;
 
@@ -752,41 +675,56 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let nReturned = 0;
     const nRequested: number = amount;
 
-    // while we can request as many sessions be created as we want, the backend
-    // will return at most 100 at a time, hence the need for a while loop.
-    while (amount > 0) {
-      let sessions: Session[] | null = null;
+    // TODO: Inlining this code for now and later on shall go
+    // extract _traceConfig to the constructor when we have plenty of time.
+    const traceConfig = {
+      opts: this._observabilityOptions,
+      dbName: this.database.formattedName_,
+    };
+    return startTrace('SessionPool.createSessions', traceConfig, async span => {
+      span.addEvent(`Requesting ${amount} sessions`);
 
-      span.addEvent(`Creating ${amount} sessions`);
+      // while we can request as many sessions be created as we want, the backend
+      // will return at most 100 at a time, hence the need for a while loop.
+      while (amount > 0) {
+        let sessions: Session[] | null = null;
 
-      try {
-        [sessions] = await this.database.batchCreateSessions({
-          count: amount,
-          labels: labels,
-          databaseRole: databaseRole,
+        span.addEvent(`Creating ${amount} sessions`);
+
+        try {
+          [sessions] = await this.database.batchCreateSessions({
+            count: amount,
+            labels: labels,
+            databaseRole: databaseRole,
+          });
+
+          amount -= sessions.length;
+          nReturned += sessions.length;
+        } catch (e) {
+          this._pending -= amount;
+          this.emit('createError', e);
+          span.addEvent(
+            `Requested for ${nRequested} sessions returned ${nReturned}`
+          );
+          setSpanErrorAndException(span, e as Error);
+          span.end();
+          throw e;
+        }
+
+        sessions.forEach((session: Session) => {
+          setImmediate(() => {
+            this._inventory.borrowed.add(session);
+            this._pending -= 1;
+            this.release(session);
+          });
         });
-
-        amount -= sessions.length;
-        nReturned += sessions.length;
-      } catch (e) {
-        this._pending -= amount;
-        this.emit('createError', e);
-        span.addEvent(
-          `Requested for ${nRequested} sessions returned ${nReturned}`
-        );
-        throw e;
       }
 
-      sessions.forEach((session: Session) => {
-        setImmediate(() => {
-          this._inventory.borrowed.add(session);
-          this._pending -= 1;
-          this.release(session);
-        });
-      });
-    }
-
-    span.addEvent(`Requested for ${nRequested} sessions returned ${nReturned}`);
+      span.addEvent(
+        `Requested for ${nRequested} sessions returned ${nReturned}`
+      );
+      span.end();
+    });
   }
 
   /**
@@ -845,11 +783,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
-    try {
-      await this._createSessions(needed);
-    } catch (e) {
-      this.emit('error', e);
-    }
+    await this._createSessions(needed);
   }
 
   /**
@@ -1055,7 +989,24 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const pings = sessions.map(session => this._ping(session));
 
     await Promise.all(pings);
-    return this._fill();
+    try {
+      await this._fill();
+    } catch (error) {
+      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
+      // for a database that does not yet exist with SessionPoolOptions.min > 0.
+      const err = error as ServiceError;
+      if (
+        isDatabaseNotFoundError(err) ||
+        isInstanceNotFoundError(err) ||
+        isCreateSessionPermissionError(err) ||
+        isDefaultCredentialsNotSetError(err) ||
+        isProjectIdNotSetInEnvironmentError(err)
+      ) {
+        return;
+      }
+      this.emit('error', err);
+    }
+    return;
   }
 
   /**

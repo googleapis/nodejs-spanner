@@ -37,6 +37,8 @@ import {
   setSpanError,
   traceConfig,
 } from './instrument';
+import {google} from '../protos/protos';
+import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 
 export type Key = string | string[];
 
@@ -53,6 +55,7 @@ export type DropTableCallback = UpdateSchemaCallback;
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
   excludeTxnFromChangeStreams?: boolean;
+  isolationLevel?: IsolationLevel;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -191,6 +194,11 @@ class Table {
 
     this.database.createTable(schema, gaxOptions, callback!);
   }
+
+  protected getDBName(): string {
+    return this.database.formattedName_;
+  }
+
   /**
    * Create a readable object stream to receive rows from the database using key
    * lookups and scans.
@@ -1082,6 +1090,8 @@ class Table {
   ): void {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
+      tableName: this.name,
+      dbName: this.getDBName(),
     };
 
     startTrace('Table.' + method, traceConfig, span => {
@@ -1093,10 +1103,16 @@ class Table {
           ? options.excludeTxnFromChangeStreams
           : false;
 
+      const isolationLevel =
+        'isolationLevel' in options
+          ? options.isolationLevel
+          : IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
+
       this.database.runTransaction(
         {
           requestOptions: requestOptions,
           excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+          isolationLevel: isolationLevel,
         },
         (err, transaction) => {
           if (err) {

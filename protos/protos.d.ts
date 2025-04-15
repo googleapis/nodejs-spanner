@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -6584,6 +6584,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime */
                         oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions */
+                        instancePartitions?: (google.spanner.admin.database.v1.IBackupInstancePartition[]|null);
                     }
 
                     /** Represents a Backup. */
@@ -6648,6 +6651,9 @@ export namespace google {
 
                         /** Backup oldestVersionTime. */
                         public oldestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Backup instancePartitions. */
+                        public instancePartitions: google.spanner.admin.database.v1.IBackupInstancePartition[];
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -8473,6 +8479,103 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** Properties of a BackupInstancePartition. */
+                    interface IBackupInstancePartition {
+
+                        /** BackupInstancePartition instancePartition */
+                        instancePartition?: (string|null);
+                    }
+
+                    /** Represents a BackupInstancePartition. */
+                    class BackupInstancePartition implements IBackupInstancePartition {
+
+                        /**
+                         * Constructs a new BackupInstancePartition.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IBackupInstancePartition);
+
+                        /** BackupInstancePartition instancePartition. */
+                        public instancePartition: string;
+
+                        /**
+                         * Creates a new BackupInstancePartition instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns BackupInstancePartition instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IBackupInstancePartition): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified BackupInstancePartition message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupInstancePartition.verify|verify} messages.
+                         * @param message BackupInstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IBackupInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Decodes a BackupInstancePartition message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns BackupInstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Verifies a BackupInstancePartition message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a BackupInstancePartition message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns BackupInstancePartition
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.BackupInstancePartition;
+
+                        /**
+                         * Creates a plain object from a BackupInstancePartition message. Also converts values to other types if specified.
+                         * @param message BackupInstancePartition
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.BackupInstancePartition, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this BackupInstancePartition to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for BackupInstancePartition
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -10075,6 +10178,20 @@ export namespace google {
                         public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest): Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>;
 
                         /**
+                         * Calls AddSplitPoints.
+                         * @param request AddSplitPointsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and AddSplitPointsResponse
+                         */
+                        public addSplitPoints(request: google.spanner.admin.database.v1.IAddSplitPointsRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.AddSplitPointsCallback): void;
+
+                        /**
+                         * Calls AddSplitPoints.
+                         * @param request AddSplitPointsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public addSplitPoints(request: google.spanner.admin.database.v1.IAddSplitPointsRequest): Promise<google.spanner.admin.database.v1.AddSplitPointsResponse>;
+
+                        /**
                          * Calls CreateBackupSchedule.
                          * @param request CreateBackupScheduleRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and BackupSchedule
@@ -10286,6 +10403,13 @@ export namespace google {
                          * @param [response] ListDatabaseRolesResponse
                          */
                         type ListDatabaseRolesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseRolesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|addSplitPoints}.
+                         * @param error Error, if any
+                         * @param [response] AddSplitPointsResponse
+                         */
+                        type AddSplitPointsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.AddSplitPointsResponse) => void;
 
                         /**
                          * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackupSchedule}.
@@ -12999,6 +13123,421 @@ export namespace google {
                          */
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
+
+                    /** Properties of an AddSplitPointsRequest. */
+                    interface IAddSplitPointsRequest {
+
+                        /** AddSplitPointsRequest database */
+                        database?: (string|null);
+
+                        /** AddSplitPointsRequest splitPoints */
+                        splitPoints?: (google.spanner.admin.database.v1.ISplitPoints[]|null);
+
+                        /** AddSplitPointsRequest initiator */
+                        initiator?: (string|null);
+                    }
+
+                    /** Represents an AddSplitPointsRequest. */
+                    class AddSplitPointsRequest implements IAddSplitPointsRequest {
+
+                        /**
+                         * Constructs a new AddSplitPointsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IAddSplitPointsRequest);
+
+                        /** AddSplitPointsRequest database. */
+                        public database: string;
+
+                        /** AddSplitPointsRequest splitPoints. */
+                        public splitPoints: google.spanner.admin.database.v1.ISplitPoints[];
+
+                        /** AddSplitPointsRequest initiator. */
+                        public initiator: string;
+
+                        /**
+                         * Creates a new AddSplitPointsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AddSplitPointsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IAddSplitPointsRequest): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Encodes the specified AddSplitPointsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                         * @param message AddSplitPointsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IAddSplitPointsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AddSplitPointsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsRequest.verify|verify} messages.
+                         * @param message AddSplitPointsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IAddSplitPointsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AddSplitPointsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AddSplitPointsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Decodes an AddSplitPointsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AddSplitPointsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Verifies an AddSplitPointsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AddSplitPointsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AddSplitPointsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.AddSplitPointsRequest;
+
+                        /**
+                         * Creates a plain object from an AddSplitPointsRequest message. Also converts values to other types if specified.
+                         * @param message AddSplitPointsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.AddSplitPointsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AddSplitPointsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AddSplitPointsRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an AddSplitPointsResponse. */
+                    interface IAddSplitPointsResponse {
+                    }
+
+                    /** Represents an AddSplitPointsResponse. */
+                    class AddSplitPointsResponse implements IAddSplitPointsResponse {
+
+                        /**
+                         * Constructs a new AddSplitPointsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IAddSplitPointsResponse);
+
+                        /**
+                         * Creates a new AddSplitPointsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AddSplitPointsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IAddSplitPointsResponse): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Encodes the specified AddSplitPointsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                         * @param message AddSplitPointsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IAddSplitPointsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AddSplitPointsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.AddSplitPointsResponse.verify|verify} messages.
+                         * @param message AddSplitPointsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IAddSplitPointsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AddSplitPointsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AddSplitPointsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Decodes an AddSplitPointsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AddSplitPointsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Verifies an AddSplitPointsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AddSplitPointsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AddSplitPointsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.AddSplitPointsResponse;
+
+                        /**
+                         * Creates a plain object from an AddSplitPointsResponse message. Also converts values to other types if specified.
+                         * @param message AddSplitPointsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.AddSplitPointsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AddSplitPointsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AddSplitPointsResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a SplitPoints. */
+                    interface ISplitPoints {
+
+                        /** SplitPoints table */
+                        table?: (string|null);
+
+                        /** SplitPoints index */
+                        index?: (string|null);
+
+                        /** SplitPoints keys */
+                        keys?: (google.spanner.admin.database.v1.SplitPoints.IKey[]|null);
+
+                        /** SplitPoints expireTime */
+                        expireTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a SplitPoints. */
+                    class SplitPoints implements ISplitPoints {
+
+                        /**
+                         * Constructs a new SplitPoints.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ISplitPoints);
+
+                        /** SplitPoints table. */
+                        public table: string;
+
+                        /** SplitPoints index. */
+                        public index: string;
+
+                        /** SplitPoints keys. */
+                        public keys: google.spanner.admin.database.v1.SplitPoints.IKey[];
+
+                        /** SplitPoints expireTime. */
+                        public expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new SplitPoints instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns SplitPoints instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ISplitPoints): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Encodes the specified SplitPoints message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                         * @param message SplitPoints message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ISplitPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified SplitPoints message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.verify|verify} messages.
+                         * @param message SplitPoints message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ISplitPoints, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a SplitPoints message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns SplitPoints
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Decodes a SplitPoints message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns SplitPoints
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Verifies a SplitPoints message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a SplitPoints message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns SplitPoints
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.SplitPoints;
+
+                        /**
+                         * Creates a plain object from a SplitPoints message. Also converts values to other types if specified.
+                         * @param message SplitPoints
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.SplitPoints, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this SplitPoints to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for SplitPoints
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace SplitPoints {
+
+                        /** Properties of a Key. */
+                        interface IKey {
+
+                            /** Key keyParts */
+                            keyParts?: (google.protobuf.IListValue|null);
+                        }
+
+                        /** Represents a Key. */
+                        class Key implements IKey {
+
+                            /**
+                             * Constructs a new Key.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.database.v1.SplitPoints.IKey);
+
+                            /** Key keyParts. */
+                            public keyParts?: (google.protobuf.IListValue|null);
+
+                            /**
+                             * Creates a new Key instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns Key instance
+                             */
+                            public static create(properties?: google.spanner.admin.database.v1.SplitPoints.IKey): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Encodes the specified Key message. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                             * @param message Key message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.database.v1.SplitPoints.IKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified Key message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.SplitPoints.Key.verify|verify} messages.
+                             * @param message Key message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.database.v1.SplitPoints.IKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes a Key message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns Key
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Decodes a Key message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns Key
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Verifies a Key message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates a Key message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns Key
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.SplitPoints.Key;
+
+                            /**
+                             * Creates a plain object from a Key message. Also converts values to other types if specified.
+                             * @param message Key
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.database.v1.SplitPoints.Key, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this Key to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for Key
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+                    }
                 }
             }
 
@@ -13122,6 +13661,103 @@ export namespace google {
                         FULFILLMENT_PERIOD_UNSPECIFIED = 0,
                         FULFILLMENT_PERIOD_NORMAL = 1,
                         FULFILLMENT_PERIOD_EXTENDED = 2
+                    }
+
+                    /** Properties of a ReplicaSelection. */
+                    interface IReplicaSelection {
+
+                        /** ReplicaSelection location */
+                        location?: (string|null);
+                    }
+
+                    /** Represents a ReplicaSelection. */
+                    class ReplicaSelection implements IReplicaSelection {
+
+                        /**
+                         * Constructs a new ReplicaSelection.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IReplicaSelection);
+
+                        /** ReplicaSelection location. */
+                        public location: string;
+
+                        /**
+                         * Creates a new ReplicaSelection instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ReplicaSelection instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IReplicaSelection): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Encodes the specified ReplicaSelection message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaSelection.verify|verify} messages.
+                         * @param message ReplicaSelection message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ReplicaSelection message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaSelection.verify|verify} messages.
+                         * @param message ReplicaSelection message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Verifies a ReplicaSelection message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ReplicaSelection message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ReplicaSelection
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ReplicaSelection;
+
+                        /**
+                         * Creates a plain object from a ReplicaSelection message. Also converts values to other types if specified.
+                         * @param message ReplicaSelection
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ReplicaSelection, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ReplicaSelection to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ReplicaSelection
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
                     /** Represents an InstanceAdmin */
@@ -13744,6 +14380,15 @@ export namespace google {
 
                         /** InstanceConfig state */
                         state?: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State|null);
+
+                        /** InstanceConfig freeInstanceAvailability */
+                        freeInstanceAvailability?: (google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|null);
+
+                        /** InstanceConfig quorumType */
+                        quorumType?: (google.spanner.admin.instance.v1.InstanceConfig.QuorumType|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.QuorumType|null);
+
+                        /** InstanceConfig storageLimitPerProcessingUnit */
+                        storageLimitPerProcessingUnit?: (number|Long|string|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -13787,6 +14432,15 @@ export namespace google {
 
                         /** InstanceConfig state. */
                         public state: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State);
+
+                        /** InstanceConfig freeInstanceAvailability. */
+                        public freeInstanceAvailability: (google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.FreeInstanceAvailability);
+
+                        /** InstanceConfig quorumType. */
+                        public quorumType: (google.spanner.admin.instance.v1.InstanceConfig.QuorumType|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.QuorumType);
+
+                        /** InstanceConfig storageLimitPerProcessingUnit. */
+                        public storageLimitPerProcessingUnit: (number|Long|string);
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
@@ -13881,6 +14535,135 @@ export namespace google {
                             CREATING = 1,
                             READY = 2
                         }
+
+                        /** FreeInstanceAvailability enum. */
+                        enum FreeInstanceAvailability {
+                            FREE_INSTANCE_AVAILABILITY_UNSPECIFIED = 0,
+                            AVAILABLE = 1,
+                            UNSUPPORTED = 2,
+                            DISABLED = 3,
+                            QUOTA_EXCEEDED = 4
+                        }
+
+                        /** QuorumType enum. */
+                        enum QuorumType {
+                            QUORUM_TYPE_UNSPECIFIED = 0,
+                            REGION = 1,
+                            DUAL_REGION = 2,
+                            MULTI_REGION = 3
+                        }
+                    }
+
+                    /** Properties of a ReplicaComputeCapacity. */
+                    interface IReplicaComputeCapacity {
+
+                        /** ReplicaComputeCapacity replicaSelection */
+                        replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                        /** ReplicaComputeCapacity nodeCount */
+                        nodeCount?: (number|null);
+
+                        /** ReplicaComputeCapacity processingUnits */
+                        processingUnits?: (number|null);
+                    }
+
+                    /** Represents a ReplicaComputeCapacity. */
+                    class ReplicaComputeCapacity implements IReplicaComputeCapacity {
+
+                        /**
+                         * Constructs a new ReplicaComputeCapacity.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IReplicaComputeCapacity);
+
+                        /** ReplicaComputeCapacity replicaSelection. */
+                        public replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                        /** ReplicaComputeCapacity nodeCount. */
+                        public nodeCount?: (number|null);
+
+                        /** ReplicaComputeCapacity processingUnits. */
+                        public processingUnits?: (number|null);
+
+                        /** ReplicaComputeCapacity computeCapacity. */
+                        public computeCapacity?: ("nodeCount"|"processingUnits");
+
+                        /**
+                         * Creates a new ReplicaComputeCapacity instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ReplicaComputeCapacity instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IReplicaComputeCapacity): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Encodes the specified ReplicaComputeCapacity message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaComputeCapacity.verify|verify} messages.
+                         * @param message ReplicaComputeCapacity message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IReplicaComputeCapacity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ReplicaComputeCapacity message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaComputeCapacity.verify|verify} messages.
+                         * @param message ReplicaComputeCapacity message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IReplicaComputeCapacity, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ReplicaComputeCapacity message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ReplicaComputeCapacity
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Decodes a ReplicaComputeCapacity message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ReplicaComputeCapacity
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Verifies a ReplicaComputeCapacity message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ReplicaComputeCapacity message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ReplicaComputeCapacity
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ReplicaComputeCapacity;
+
+                        /**
+                         * Creates a plain object from a ReplicaComputeCapacity message. Also converts values to other types if specified.
+                         * @param message ReplicaComputeCapacity
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ReplicaComputeCapacity, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ReplicaComputeCapacity to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ReplicaComputeCapacity
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
                     /** Properties of an AutoscalingConfig. */
@@ -13891,6 +14674,9 @@ export namespace google {
 
                         /** AutoscalingConfig autoscalingTargets */
                         autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /** AutoscalingConfig asymmetricAutoscalingOptions */
+                        asymmetricAutoscalingOptions?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption[]|null);
                     }
 
                     /** Represents an AutoscalingConfig. */
@@ -13907,6 +14693,9 @@ export namespace google {
 
                         /** AutoscalingConfig autoscalingTargets. */
                         public autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /** AutoscalingConfig asymmetricAutoscalingOptions. */
+                        public asymmetricAutoscalingOptions: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption[];
 
                         /**
                          * Creates a new AutoscalingConfig instance using the specified properties.
@@ -14211,6 +15000,215 @@ export namespace google {
                              */
                             public static getTypeUrl(typeUrlPrefix?: string): string;
                         }
+
+                        /** Properties of an AsymmetricAutoscalingOption. */
+                        interface IAsymmetricAutoscalingOption {
+
+                            /** AsymmetricAutoscalingOption replicaSelection */
+                            replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                            /** AsymmetricAutoscalingOption overrides */
+                            overrides?: (google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides|null);
+                        }
+
+                        /** Represents an AsymmetricAutoscalingOption. */
+                        class AsymmetricAutoscalingOption implements IAsymmetricAutoscalingOption {
+
+                            /**
+                             * Constructs a new AsymmetricAutoscalingOption.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption);
+
+                            /** AsymmetricAutoscalingOption replicaSelection. */
+                            public replicaSelection?: (google.spanner.admin.instance.v1.IReplicaSelection|null);
+
+                            /** AsymmetricAutoscalingOption overrides. */
+                            public overrides?: (google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides|null);
+
+                            /**
+                             * Creates a new AsymmetricAutoscalingOption instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AsymmetricAutoscalingOption instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Encodes the specified AsymmetricAutoscalingOption message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.verify|verify} messages.
+                             * @param message AsymmetricAutoscalingOption message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AsymmetricAutoscalingOption message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.verify|verify} messages.
+                             * @param message AsymmetricAutoscalingOption message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAsymmetricAutoscalingOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AsymmetricAutoscalingOption message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AsymmetricAutoscalingOption
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Decodes an AsymmetricAutoscalingOption message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AsymmetricAutoscalingOption
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Verifies an AsymmetricAutoscalingOption message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AsymmetricAutoscalingOption message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AsymmetricAutoscalingOption
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption;
+
+                            /**
+                             * Creates a plain object from an AsymmetricAutoscalingOption message. Also converts values to other types if specified.
+                             * @param message AsymmetricAutoscalingOption
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AsymmetricAutoscalingOption to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AsymmetricAutoscalingOption
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+
+                        namespace AsymmetricAutoscalingOption {
+
+                            /** Properties of an AutoscalingConfigOverrides. */
+                            interface IAutoscalingConfigOverrides {
+
+                                /** AutoscalingConfigOverrides autoscalingLimits */
+                                autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                                /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent */
+                                autoscalingTargetHighPriorityCpuUtilizationPercent?: (number|null);
+                            }
+
+                            /** Represents an AutoscalingConfigOverrides. */
+                            class AutoscalingConfigOverrides implements IAutoscalingConfigOverrides {
+
+                                /**
+                                 * Constructs a new AutoscalingConfigOverrides.
+                                 * @param [properties] Properties to set
+                                 */
+                                constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides);
+
+                                /** AutoscalingConfigOverrides autoscalingLimits. */
+                                public autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                                /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent. */
+                                public autoscalingTargetHighPriorityCpuUtilizationPercent: number;
+
+                                /**
+                                 * Creates a new AutoscalingConfigOverrides instance using the specified properties.
+                                 * @param [properties] Properties to set
+                                 * @returns AutoscalingConfigOverrides instance
+                                 */
+                                public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Encodes the specified AutoscalingConfigOverrides message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.verify|verify} messages.
+                                 * @param message AutoscalingConfigOverrides message or plain object to encode
+                                 * @param [writer] Writer to encode to
+                                 * @returns Writer
+                                 */
+                                public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                                /**
+                                 * Encodes the specified AutoscalingConfigOverrides message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides.verify|verify} messages.
+                                 * @param message AutoscalingConfigOverrides message or plain object to encode
+                                 * @param [writer] Writer to encode to
+                                 * @returns Writer
+                                 */
+                                public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.IAutoscalingConfigOverrides, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                                /**
+                                 * Decodes an AutoscalingConfigOverrides message from the specified reader or buffer.
+                                 * @param reader Reader or buffer to decode from
+                                 * @param [length] Message length if known beforehand
+                                 * @returns AutoscalingConfigOverrides
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Decodes an AutoscalingConfigOverrides message from the specified reader or buffer, length delimited.
+                                 * @param reader Reader or buffer to decode from
+                                 * @returns AutoscalingConfigOverrides
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Verifies an AutoscalingConfigOverrides message.
+                                 * @param message Plain object to verify
+                                 * @returns `null` if valid, otherwise the reason why it is not
+                                 */
+                                public static verify(message: { [k: string]: any }): (string|null);
+
+                                /**
+                                 * Creates an AutoscalingConfigOverrides message from a plain object. Also converts values to their respective internal types.
+                                 * @param object Plain object
+                                 * @returns AutoscalingConfigOverrides
+                                 */
+                                public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides;
+
+                                /**
+                                 * Creates a plain object from an AutoscalingConfigOverrides message. Also converts values to other types if specified.
+                                 * @param message AutoscalingConfigOverrides
+                                 * @param [options] Conversion options
+                                 * @returns Plain object
+                                 */
+                                public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.AutoscalingConfigOverrides, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                                /**
+                                 * Converts this AutoscalingConfigOverrides to JSON.
+                                 * @returns JSON object
+                                 */
+                                public toJSON(): { [k: string]: any };
+
+                                /**
+                                 * Gets the default type url for AutoscalingConfigOverrides
+                                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                                 * @returns The default type url
+                                 */
+                                public static getTypeUrl(typeUrlPrefix?: string): string;
+                            }
+                        }
                     }
 
                     /** Properties of an Instance. */
@@ -14231,6 +15229,9 @@ export namespace google {
                         /** Instance processingUnits */
                         processingUnits?: (number|null);
 
+                        /** Instance replicaComputeCapacity */
+                        replicaComputeCapacity?: (google.spanner.admin.instance.v1.IReplicaComputeCapacity[]|null);
+
                         /** Instance autoscalingConfig */
                         autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
@@ -14239,6 +15240,9 @@ export namespace google {
 
                         /** Instance labels */
                         labels?: ({ [k: string]: string }|null);
+
+                        /** Instance instanceType */
+                        instanceType?: (google.spanner.admin.instance.v1.Instance.InstanceType|keyof typeof google.spanner.admin.instance.v1.Instance.InstanceType|null);
 
                         /** Instance endpointUris */
                         endpointUris?: (string[]|null);
@@ -14249,8 +15253,14 @@ export namespace google {
                         /** Instance updateTime */
                         updateTime?: (google.protobuf.ITimestamp|null);
 
+                        /** Instance freeInstanceMetadata */
+                        freeInstanceMetadata?: (google.spanner.admin.instance.v1.IFreeInstanceMetadata|null);
+
                         /** Instance edition */
                         edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
+
+                        /** Instance defaultBackupScheduleType */
+                        defaultBackupScheduleType?: (google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|keyof typeof google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|null);
                     }
 
                     /** Represents an Instance. */
@@ -14277,6 +15287,9 @@ export namespace google {
                         /** Instance processingUnits. */
                         public processingUnits: number;
 
+                        /** Instance replicaComputeCapacity. */
+                        public replicaComputeCapacity: google.spanner.admin.instance.v1.IReplicaComputeCapacity[];
+
                         /** Instance autoscalingConfig. */
                         public autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
@@ -14285,6 +15298,9 @@ export namespace google {
 
                         /** Instance labels. */
                         public labels: { [k: string]: string };
+
+                        /** Instance instanceType. */
+                        public instanceType: (google.spanner.admin.instance.v1.Instance.InstanceType|keyof typeof google.spanner.admin.instance.v1.Instance.InstanceType);
 
                         /** Instance endpointUris. */
                         public endpointUris: string[];
@@ -14295,8 +15311,14 @@ export namespace google {
                         /** Instance updateTime. */
                         public updateTime?: (google.protobuf.ITimestamp|null);
 
+                        /** Instance freeInstanceMetadata. */
+                        public freeInstanceMetadata?: (google.spanner.admin.instance.v1.IFreeInstanceMetadata|null);
+
                         /** Instance edition. */
                         public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
+
+                        /** Instance defaultBackupScheduleType. */
+                        public defaultBackupScheduleType: (google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType|keyof typeof google.spanner.admin.instance.v1.Instance.DefaultBackupScheduleType);
 
                         /**
                          * Creates a new Instance instance using the specified properties.
@@ -14385,12 +15407,26 @@ export namespace google {
                             READY = 2
                         }
 
+                        /** InstanceType enum. */
+                        enum InstanceType {
+                            INSTANCE_TYPE_UNSPECIFIED = 0,
+                            PROVISIONED = 1,
+                            FREE_INSTANCE = 2
+                        }
+
                         /** Edition enum. */
                         enum Edition {
                             EDITION_UNSPECIFIED = 0,
                             STANDARD = 1,
                             ENTERPRISE = 2,
                             ENTERPRISE_PLUS = 3
+                        }
+
+                        /** DefaultBackupScheduleType enum. */
+                        enum DefaultBackupScheduleType {
+                            DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0,
+                            NONE = 1,
+                            AUTOMATIC = 2
                         }
                     }
 
@@ -16136,6 +17172,125 @@ export namespace google {
                          * @returns The default type url
                          */
                         public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a FreeInstanceMetadata. */
+                    interface IFreeInstanceMetadata {
+
+                        /** FreeInstanceMetadata expireTime */
+                        expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata upgradeTime */
+                        upgradeTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata expireBehavior */
+                        expireBehavior?: (google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|keyof typeof google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|null);
+                    }
+
+                    /** Represents a FreeInstanceMetadata. */
+                    class FreeInstanceMetadata implements IFreeInstanceMetadata {
+
+                        /**
+                         * Constructs a new FreeInstanceMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IFreeInstanceMetadata);
+
+                        /** FreeInstanceMetadata expireTime. */
+                        public expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata upgradeTime. */
+                        public upgradeTime?: (google.protobuf.ITimestamp|null);
+
+                        /** FreeInstanceMetadata expireBehavior. */
+                        public expireBehavior: (google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior|keyof typeof google.spanner.admin.instance.v1.FreeInstanceMetadata.ExpireBehavior);
+
+                        /**
+                         * Creates a new FreeInstanceMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns FreeInstanceMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IFreeInstanceMetadata): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Encodes the specified FreeInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.FreeInstanceMetadata.verify|verify} messages.
+                         * @param message FreeInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IFreeInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified FreeInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.FreeInstanceMetadata.verify|verify} messages.
+                         * @param message FreeInstanceMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IFreeInstanceMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a FreeInstanceMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns FreeInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Decodes a FreeInstanceMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns FreeInstanceMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Verifies a FreeInstanceMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a FreeInstanceMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns FreeInstanceMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.FreeInstanceMetadata;
+
+                        /**
+                         * Creates a plain object from a FreeInstanceMetadata message. Also converts values to other types if specified.
+                         * @param message FreeInstanceMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.FreeInstanceMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this FreeInstanceMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for FreeInstanceMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace FreeInstanceMetadata {
+
+                        /** ExpireBehavior enum. */
+                        enum ExpireBehavior {
+                            EXPIRE_BEHAVIOR_UNSPECIFIED = 0,
+                            FREE_TO_PROVISIONED = 1,
+                            REMOVE_AFTER_GRACE_PERIOD = 2
+                        }
                     }
 
                     /** Properties of a CreateInstanceConfigMetadata. */
@@ -29072,6 +30227,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
+
+                /** ExecuteSqlRequest lastStatement */
+                lastStatement?: (boolean|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -29121,6 +30279,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;
+
+                /** ExecuteSqlRequest lastStatement. */
+                public lastStatement: boolean;
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -29206,7 +30367,9 @@ export namespace google {
                 enum QueryMode {
                     NORMAL = 0,
                     PLAN = 1,
-                    PROFILE = 2
+                    PROFILE = 2,
+                    WITH_STATS = 3,
+                    WITH_PLAN_AND_STATS = 4
                 }
 
                 /** Properties of a QueryOptions. */
@@ -29330,6 +30493,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteBatchDmlRequest lastStatements */
+                lastStatements?: (boolean|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -29355,6 +30521,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteBatchDmlRequest lastStatements. */
+                public lastStatements: boolean;
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
@@ -29554,6 +30723,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlResponse status */
                 status?: (google.rpc.IStatus|null);
+
+                /** ExecuteBatchDmlResponse precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
             }
 
             /** Represents an ExecuteBatchDmlResponse. */
@@ -29570,6 +30742,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlResponse status. */
                 public status?: (google.rpc.IStatus|null);
+
+                /** ExecuteBatchDmlResponse precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
 
                 /**
                  * Creates a new ExecuteBatchDmlResponse instance using the specified properties.
@@ -30415,6 +31590,9 @@ export namespace google {
 
                 /** BeginTransactionRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** BeginTransactionRequest mutationKey */
+                mutationKey?: (google.spanner.v1.IMutation|null);
             }
 
             /** Represents a BeginTransactionRequest. */
@@ -30434,6 +31612,9 @@ export namespace google {
 
                 /** BeginTransactionRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** BeginTransactionRequest mutationKey. */
+                public mutationKey?: (google.spanner.v1.IMutation|null);
 
                 /**
                  * Creates a new BeginTransactionRequest instance using the specified properties.
@@ -30536,6 +31717,9 @@ export namespace google {
 
                 /** CommitRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** CommitRequest precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
             }
 
             /** Represents a CommitRequest. */
@@ -30567,6 +31751,9 @@ export namespace google {
 
                 /** CommitRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** CommitRequest precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
 
                 /** CommitRequest transaction. */
                 public transaction?: ("transactionId"|"singleUseTransaction");
@@ -31084,6 +32271,9 @@ export namespace google {
 
                 /** CommitResponse commitStats */
                 commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
+
+                /** CommitResponse precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
             }
 
             /** Represents a CommitResponse. */
@@ -31100,6 +32290,12 @@ export namespace google {
 
                 /** CommitResponse commitStats. */
                 public commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
+
+                /** CommitResponse precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** CommitResponse MultiplexedSessionRetry. */
+                public MultiplexedSessionRetry?: "precommitToken";
 
                 /**
                  * Creates a new CommitResponse instance using the specified properties.
@@ -31277,6 +32473,798 @@ export namespace google {
                      */
                     public static getTypeUrl(typeUrlPrefix?: string): string;
                 }
+            }
+
+            /** Properties of a TransactionOptions. */
+            interface ITransactionOptions {
+
+                /** TransactionOptions readWrite */
+                readWrite?: (google.spanner.v1.TransactionOptions.IReadWrite|null);
+
+                /** TransactionOptions partitionedDml */
+                partitionedDml?: (google.spanner.v1.TransactionOptions.IPartitionedDml|null);
+
+                /** TransactionOptions readOnly */
+                readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
+
+                /** TransactionOptions excludeTxnFromChangeStreams */
+                excludeTxnFromChangeStreams?: (boolean|null);
+
+                /** TransactionOptions isolationLevel */
+                isolationLevel?: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel|null);
+            }
+
+            /** Represents a TransactionOptions. */
+            class TransactionOptions implements ITransactionOptions {
+
+                /**
+                 * Constructs a new TransactionOptions.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.ITransactionOptions);
+
+                /** TransactionOptions readWrite. */
+                public readWrite?: (google.spanner.v1.TransactionOptions.IReadWrite|null);
+
+                /** TransactionOptions partitionedDml. */
+                public partitionedDml?: (google.spanner.v1.TransactionOptions.IPartitionedDml|null);
+
+                /** TransactionOptions readOnly. */
+                public readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
+
+                /** TransactionOptions excludeTxnFromChangeStreams. */
+                public excludeTxnFromChangeStreams: boolean;
+
+                /** TransactionOptions isolationLevel. */
+                public isolationLevel: (google.spanner.v1.TransactionOptions.IsolationLevel|keyof typeof google.spanner.v1.TransactionOptions.IsolationLevel);
+
+                /** TransactionOptions mode. */
+                public mode?: ("readWrite"|"partitionedDml"|"readOnly");
+
+                /**
+                 * Creates a new TransactionOptions instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns TransactionOptions instance
+                 */
+                public static create(properties?: google.spanner.v1.ITransactionOptions): google.spanner.v1.TransactionOptions;
+
+                /**
+                 * Encodes the specified TransactionOptions message. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
+                 * @param message TransactionOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.ITransactionOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TransactionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
+                 * @param message TransactionOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.ITransactionOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TransactionOptions message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TransactionOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions;
+
+                /**
+                 * Decodes a TransactionOptions message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TransactionOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions;
+
+                /**
+                 * Verifies a TransactionOptions message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TransactionOptions message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TransactionOptions
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions;
+
+                /**
+                 * Creates a plain object from a TransactionOptions message. Also converts values to other types if specified.
+                 * @param message TransactionOptions
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.TransactionOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TransactionOptions to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for TransactionOptions
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace TransactionOptions {
+
+                /** Properties of a ReadWrite. */
+                interface IReadWrite {
+
+                    /** ReadWrite readLockMode */
+                    readLockMode?: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null);
+
+                    /** ReadWrite multiplexedSessionPreviousTransactionId */
+                    multiplexedSessionPreviousTransactionId?: (Uint8Array|string|null);
+                }
+
+                /** Represents a ReadWrite. */
+                class ReadWrite implements IReadWrite {
+
+                    /**
+                     * Constructs a new ReadWrite.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.TransactionOptions.IReadWrite);
+
+                    /** ReadWrite readLockMode. */
+                    public readLockMode: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode);
+
+                    /** ReadWrite multiplexedSessionPreviousTransactionId. */
+                    public multiplexedSessionPreviousTransactionId: (Uint8Array|string);
+
+                    /**
+                     * Creates a new ReadWrite instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ReadWrite instance
+                     */
+                    public static create(properties?: google.spanner.v1.TransactionOptions.IReadWrite): google.spanner.v1.TransactionOptions.ReadWrite;
+
+                    /**
+                     * Encodes the specified ReadWrite message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
+                     * @param message ReadWrite message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.TransactionOptions.IReadWrite, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ReadWrite message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
+                     * @param message ReadWrite message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IReadWrite, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ReadWrite message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ReadWrite
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.ReadWrite;
+
+                    /**
+                     * Decodes a ReadWrite message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ReadWrite
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.ReadWrite;
+
+                    /**
+                     * Verifies a ReadWrite message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ReadWrite message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ReadWrite
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.ReadWrite;
+
+                    /**
+                     * Creates a plain object from a ReadWrite message. Also converts values to other types if specified.
+                     * @param message ReadWrite
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.TransactionOptions.ReadWrite, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ReadWrite to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ReadWrite
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace ReadWrite {
+
+                    /** ReadLockMode enum. */
+                    enum ReadLockMode {
+                        READ_LOCK_MODE_UNSPECIFIED = 0,
+                        PESSIMISTIC = 1,
+                        OPTIMISTIC = 2
+                    }
+                }
+
+                /** Properties of a PartitionedDml. */
+                interface IPartitionedDml {
+                }
+
+                /** Represents a PartitionedDml. */
+                class PartitionedDml implements IPartitionedDml {
+
+                    /**
+                     * Constructs a new PartitionedDml.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.TransactionOptions.IPartitionedDml);
+
+                    /**
+                     * Creates a new PartitionedDml instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns PartitionedDml instance
+                     */
+                    public static create(properties?: google.spanner.v1.TransactionOptions.IPartitionedDml): google.spanner.v1.TransactionOptions.PartitionedDml;
+
+                    /**
+                     * Encodes the specified PartitionedDml message. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
+                     * @param message PartitionedDml message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.TransactionOptions.IPartitionedDml, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PartitionedDml message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
+                     * @param message PartitionedDml message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IPartitionedDml, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PartitionedDml message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PartitionedDml
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.PartitionedDml;
+
+                    /**
+                     * Decodes a PartitionedDml message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PartitionedDml
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.PartitionedDml;
+
+                    /**
+                     * Verifies a PartitionedDml message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PartitionedDml message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PartitionedDml
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.PartitionedDml;
+
+                    /**
+                     * Creates a plain object from a PartitionedDml message. Also converts values to other types if specified.
+                     * @param message PartitionedDml
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.TransactionOptions.PartitionedDml, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PartitionedDml to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for PartitionedDml
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a ReadOnly. */
+                interface IReadOnly {
+
+                    /** ReadOnly strong */
+                    strong?: (boolean|null);
+
+                    /** ReadOnly minReadTimestamp */
+                    minReadTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** ReadOnly maxStaleness */
+                    maxStaleness?: (google.protobuf.IDuration|null);
+
+                    /** ReadOnly readTimestamp */
+                    readTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** ReadOnly exactStaleness */
+                    exactStaleness?: (google.protobuf.IDuration|null);
+
+                    /** ReadOnly returnReadTimestamp */
+                    returnReadTimestamp?: (boolean|null);
+                }
+
+                /** Represents a ReadOnly. */
+                class ReadOnly implements IReadOnly {
+
+                    /**
+                     * Constructs a new ReadOnly.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.TransactionOptions.IReadOnly);
+
+                    /** ReadOnly strong. */
+                    public strong?: (boolean|null);
+
+                    /** ReadOnly minReadTimestamp. */
+                    public minReadTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** ReadOnly maxStaleness. */
+                    public maxStaleness?: (google.protobuf.IDuration|null);
+
+                    /** ReadOnly readTimestamp. */
+                    public readTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** ReadOnly exactStaleness. */
+                    public exactStaleness?: (google.protobuf.IDuration|null);
+
+                    /** ReadOnly returnReadTimestamp. */
+                    public returnReadTimestamp: boolean;
+
+                    /** ReadOnly timestampBound. */
+                    public timestampBound?: ("strong"|"minReadTimestamp"|"maxStaleness"|"readTimestamp"|"exactStaleness");
+
+                    /**
+                     * Creates a new ReadOnly instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ReadOnly instance
+                     */
+                    public static create(properties?: google.spanner.v1.TransactionOptions.IReadOnly): google.spanner.v1.TransactionOptions.ReadOnly;
+
+                    /**
+                     * Encodes the specified ReadOnly message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
+                     * @param message ReadOnly message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.TransactionOptions.IReadOnly, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ReadOnly message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
+                     * @param message ReadOnly message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IReadOnly, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ReadOnly message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ReadOnly
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.ReadOnly;
+
+                    /**
+                     * Decodes a ReadOnly message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ReadOnly
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.ReadOnly;
+
+                    /**
+                     * Verifies a ReadOnly message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ReadOnly message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ReadOnly
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.ReadOnly;
+
+                    /**
+                     * Creates a plain object from a ReadOnly message. Also converts values to other types if specified.
+                     * @param message ReadOnly
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.TransactionOptions.ReadOnly, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ReadOnly to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ReadOnly
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** IsolationLevel enum. */
+                enum IsolationLevel {
+                    ISOLATION_LEVEL_UNSPECIFIED = 0,
+                    SERIALIZABLE = 1,
+                    REPEATABLE_READ = 2
+                }
+            }
+
+            /** Properties of a Transaction. */
+            interface ITransaction {
+
+                /** Transaction id */
+                id?: (Uint8Array|string|null);
+
+                /** Transaction readTimestamp */
+                readTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** Transaction precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+            }
+
+            /** Represents a Transaction. */
+            class Transaction implements ITransaction {
+
+                /**
+                 * Constructs a new Transaction.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.ITransaction);
+
+                /** Transaction id. */
+                public id: (Uint8Array|string);
+
+                /** Transaction readTimestamp. */
+                public readTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** Transaction precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /**
+                 * Creates a new Transaction instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Transaction instance
+                 */
+                public static create(properties?: google.spanner.v1.ITransaction): google.spanner.v1.Transaction;
+
+                /**
+                 * Encodes the specified Transaction message. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
+                 * @param message Transaction message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Transaction message, length delimited. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
+                 * @param message Transaction message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Transaction message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Transaction
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.Transaction;
+
+                /**
+                 * Decodes a Transaction message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Transaction
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.Transaction;
+
+                /**
+                 * Verifies a Transaction message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Transaction
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.Transaction;
+
+                /**
+                 * Creates a plain object from a Transaction message. Also converts values to other types if specified.
+                 * @param message Transaction
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.Transaction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Transaction to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for Transaction
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a TransactionSelector. */
+            interface ITransactionSelector {
+
+                /** TransactionSelector singleUse */
+                singleUse?: (google.spanner.v1.ITransactionOptions|null);
+
+                /** TransactionSelector id */
+                id?: (Uint8Array|string|null);
+
+                /** TransactionSelector begin */
+                begin?: (google.spanner.v1.ITransactionOptions|null);
+            }
+
+            /** Represents a TransactionSelector. */
+            class TransactionSelector implements ITransactionSelector {
+
+                /**
+                 * Constructs a new TransactionSelector.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.ITransactionSelector);
+
+                /** TransactionSelector singleUse. */
+                public singleUse?: (google.spanner.v1.ITransactionOptions|null);
+
+                /** TransactionSelector id. */
+                public id?: (Uint8Array|string|null);
+
+                /** TransactionSelector begin. */
+                public begin?: (google.spanner.v1.ITransactionOptions|null);
+
+                /** TransactionSelector selector. */
+                public selector?: ("singleUse"|"id"|"begin");
+
+                /**
+                 * Creates a new TransactionSelector instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns TransactionSelector instance
+                 */
+                public static create(properties?: google.spanner.v1.ITransactionSelector): google.spanner.v1.TransactionSelector;
+
+                /**
+                 * Encodes the specified TransactionSelector message. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
+                 * @param message TransactionSelector message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.ITransactionSelector, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TransactionSelector message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
+                 * @param message TransactionSelector message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.ITransactionSelector, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TransactionSelector message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TransactionSelector
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionSelector;
+
+                /**
+                 * Decodes a TransactionSelector message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TransactionSelector
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionSelector;
+
+                /**
+                 * Verifies a TransactionSelector message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TransactionSelector message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TransactionSelector
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionSelector;
+
+                /**
+                 * Creates a plain object from a TransactionSelector message. Also converts values to other types if specified.
+                 * @param message TransactionSelector
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.TransactionSelector, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TransactionSelector to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for TransactionSelector
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a MultiplexedSessionPrecommitToken. */
+            interface IMultiplexedSessionPrecommitToken {
+
+                /** MultiplexedSessionPrecommitToken precommitToken */
+                precommitToken?: (Uint8Array|string|null);
+
+                /** MultiplexedSessionPrecommitToken seqNum */
+                seqNum?: (number|null);
+            }
+
+            /** Represents a MultiplexedSessionPrecommitToken. */
+            class MultiplexedSessionPrecommitToken implements IMultiplexedSessionPrecommitToken {
+
+                /**
+                 * Constructs a new MultiplexedSessionPrecommitToken.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IMultiplexedSessionPrecommitToken);
+
+                /** MultiplexedSessionPrecommitToken precommitToken. */
+                public precommitToken: (Uint8Array|string);
+
+                /** MultiplexedSessionPrecommitToken seqNum. */
+                public seqNum: number;
+
+                /**
+                 * Creates a new MultiplexedSessionPrecommitToken instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns MultiplexedSessionPrecommitToken instance
+                 */
+                public static create(properties?: google.spanner.v1.IMultiplexedSessionPrecommitToken): google.spanner.v1.MultiplexedSessionPrecommitToken;
+
+                /**
+                 * Encodes the specified MultiplexedSessionPrecommitToken message. Does not implicitly {@link google.spanner.v1.MultiplexedSessionPrecommitToken.verify|verify} messages.
+                 * @param message MultiplexedSessionPrecommitToken message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IMultiplexedSessionPrecommitToken, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MultiplexedSessionPrecommitToken message, length delimited. Does not implicitly {@link google.spanner.v1.MultiplexedSessionPrecommitToken.verify|verify} messages.
+                 * @param message MultiplexedSessionPrecommitToken message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IMultiplexedSessionPrecommitToken, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MultiplexedSessionPrecommitToken message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MultiplexedSessionPrecommitToken
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.MultiplexedSessionPrecommitToken;
+
+                /**
+                 * Decodes a MultiplexedSessionPrecommitToken message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MultiplexedSessionPrecommitToken
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.MultiplexedSessionPrecommitToken;
+
+                /**
+                 * Verifies a MultiplexedSessionPrecommitToken message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MultiplexedSessionPrecommitToken message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MultiplexedSessionPrecommitToken
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.MultiplexedSessionPrecommitToken;
+
+                /**
+                 * Creates a plain object from a MultiplexedSessionPrecommitToken message. Also converts values to other types if specified.
+                 * @param message MultiplexedSessionPrecommitToken
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.MultiplexedSessionPrecommitToken, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MultiplexedSessionPrecommitToken to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for MultiplexedSessionPrecommitToken
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
             }
 
             /** Properties of a KeyRange. */
@@ -31859,6 +33847,9 @@ export namespace google {
 
                 /** ResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
+
+                /** ResultSet precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
             }
 
             /** Represents a ResultSet. */
@@ -31878,6 +33869,9 @@ export namespace google {
 
                 /** ResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
+
+                /** ResultSet precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
 
                 /**
                  * Creates a new ResultSet instance using the specified properties.
@@ -31974,6 +33968,9 @@ export namespace google {
 
                 /** PartialResultSet stats */
                 stats?: (google.spanner.v1.IResultSetStats|null);
+
+                /** PartialResultSet precommitToken */
+                precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
             }
 
             /** Represents a PartialResultSet. */
@@ -31999,6 +33996,9 @@ export namespace google {
 
                 /** PartialResultSet stats. */
                 public stats?: (google.spanner.v1.IResultSetStats|null);
+
+                /** PartialResultSet precommitToken. */
+                public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
 
                 /**
                  * Creates a new PartialResultSet instance using the specified properties.
@@ -32757,670 +34757,6 @@ export namespace google {
                 public static getTypeUrl(typeUrlPrefix?: string): string;
             }
 
-            /** Properties of a TransactionOptions. */
-            interface ITransactionOptions {
-
-                /** TransactionOptions readWrite */
-                readWrite?: (google.spanner.v1.TransactionOptions.IReadWrite|null);
-
-                /** TransactionOptions partitionedDml */
-                partitionedDml?: (google.spanner.v1.TransactionOptions.IPartitionedDml|null);
-
-                /** TransactionOptions readOnly */
-                readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
-
-                /** TransactionOptions excludeTxnFromChangeStreams */
-                excludeTxnFromChangeStreams?: (boolean|null);
-            }
-
-            /** Represents a TransactionOptions. */
-            class TransactionOptions implements ITransactionOptions {
-
-                /**
-                 * Constructs a new TransactionOptions.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: google.spanner.v1.ITransactionOptions);
-
-                /** TransactionOptions readWrite. */
-                public readWrite?: (google.spanner.v1.TransactionOptions.IReadWrite|null);
-
-                /** TransactionOptions partitionedDml. */
-                public partitionedDml?: (google.spanner.v1.TransactionOptions.IPartitionedDml|null);
-
-                /** TransactionOptions readOnly. */
-                public readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
-
-                /** TransactionOptions excludeTxnFromChangeStreams. */
-                public excludeTxnFromChangeStreams: boolean;
-
-                /** TransactionOptions mode. */
-                public mode?: ("readWrite"|"partitionedDml"|"readOnly");
-
-                /**
-                 * Creates a new TransactionOptions instance using the specified properties.
-                 * @param [properties] Properties to set
-                 * @returns TransactionOptions instance
-                 */
-                public static create(properties?: google.spanner.v1.ITransactionOptions): google.spanner.v1.TransactionOptions;
-
-                /**
-                 * Encodes the specified TransactionOptions message. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
-                 * @param message TransactionOptions message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: google.spanner.v1.ITransactionOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified TransactionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
-                 * @param message TransactionOptions message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: google.spanner.v1.ITransactionOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a TransactionOptions message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns TransactionOptions
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions;
-
-                /**
-                 * Decodes a TransactionOptions message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns TransactionOptions
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions;
-
-                /**
-                 * Verifies a TransactionOptions message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a TransactionOptions message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns TransactionOptions
-                 */
-                public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions;
-
-                /**
-                 * Creates a plain object from a TransactionOptions message. Also converts values to other types if specified.
-                 * @param message TransactionOptions
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: google.spanner.v1.TransactionOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this TransactionOptions to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-
-                /**
-                 * Gets the default type url for TransactionOptions
-                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                 * @returns The default type url
-                 */
-                public static getTypeUrl(typeUrlPrefix?: string): string;
-            }
-
-            namespace TransactionOptions {
-
-                /** Properties of a ReadWrite. */
-                interface IReadWrite {
-
-                    /** ReadWrite readLockMode */
-                    readLockMode?: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null);
-                }
-
-                /** Represents a ReadWrite. */
-                class ReadWrite implements IReadWrite {
-
-                    /**
-                     * Constructs a new ReadWrite.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: google.spanner.v1.TransactionOptions.IReadWrite);
-
-                    /** ReadWrite readLockMode. */
-                    public readLockMode: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode);
-
-                    /**
-                     * Creates a new ReadWrite instance using the specified properties.
-                     * @param [properties] Properties to set
-                     * @returns ReadWrite instance
-                     */
-                    public static create(properties?: google.spanner.v1.TransactionOptions.IReadWrite): google.spanner.v1.TransactionOptions.ReadWrite;
-
-                    /**
-                     * Encodes the specified ReadWrite message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
-                     * @param message ReadWrite message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: google.spanner.v1.TransactionOptions.IReadWrite, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ReadWrite message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
-                     * @param message ReadWrite message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IReadWrite, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ReadWrite message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ReadWrite
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.ReadWrite;
-
-                    /**
-                     * Decodes a ReadWrite message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ReadWrite
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.ReadWrite;
-
-                    /**
-                     * Verifies a ReadWrite message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ReadWrite message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ReadWrite
-                     */
-                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.ReadWrite;
-
-                    /**
-                     * Creates a plain object from a ReadWrite message. Also converts values to other types if specified.
-                     * @param message ReadWrite
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: google.spanner.v1.TransactionOptions.ReadWrite, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ReadWrite to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-
-                    /**
-                     * Gets the default type url for ReadWrite
-                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                     * @returns The default type url
-                     */
-                    public static getTypeUrl(typeUrlPrefix?: string): string;
-                }
-
-                namespace ReadWrite {
-
-                    /** ReadLockMode enum. */
-                    enum ReadLockMode {
-                        READ_LOCK_MODE_UNSPECIFIED = 0,
-                        PESSIMISTIC = 1,
-                        OPTIMISTIC = 2
-                    }
-                }
-
-                /** Properties of a PartitionedDml. */
-                interface IPartitionedDml {
-                }
-
-                /** Represents a PartitionedDml. */
-                class PartitionedDml implements IPartitionedDml {
-
-                    /**
-                     * Constructs a new PartitionedDml.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: google.spanner.v1.TransactionOptions.IPartitionedDml);
-
-                    /**
-                     * Creates a new PartitionedDml instance using the specified properties.
-                     * @param [properties] Properties to set
-                     * @returns PartitionedDml instance
-                     */
-                    public static create(properties?: google.spanner.v1.TransactionOptions.IPartitionedDml): google.spanner.v1.TransactionOptions.PartitionedDml;
-
-                    /**
-                     * Encodes the specified PartitionedDml message. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
-                     * @param message PartitionedDml message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: google.spanner.v1.TransactionOptions.IPartitionedDml, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified PartitionedDml message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
-                     * @param message PartitionedDml message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IPartitionedDml, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a PartitionedDml message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns PartitionedDml
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.PartitionedDml;
-
-                    /**
-                     * Decodes a PartitionedDml message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns PartitionedDml
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.PartitionedDml;
-
-                    /**
-                     * Verifies a PartitionedDml message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a PartitionedDml message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns PartitionedDml
-                     */
-                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.PartitionedDml;
-
-                    /**
-                     * Creates a plain object from a PartitionedDml message. Also converts values to other types if specified.
-                     * @param message PartitionedDml
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: google.spanner.v1.TransactionOptions.PartitionedDml, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this PartitionedDml to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-
-                    /**
-                     * Gets the default type url for PartitionedDml
-                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                     * @returns The default type url
-                     */
-                    public static getTypeUrl(typeUrlPrefix?: string): string;
-                }
-
-                /** Properties of a ReadOnly. */
-                interface IReadOnly {
-
-                    /** ReadOnly strong */
-                    strong?: (boolean|null);
-
-                    /** ReadOnly minReadTimestamp */
-                    minReadTimestamp?: (google.protobuf.ITimestamp|null);
-
-                    /** ReadOnly maxStaleness */
-                    maxStaleness?: (google.protobuf.IDuration|null);
-
-                    /** ReadOnly readTimestamp */
-                    readTimestamp?: (google.protobuf.ITimestamp|null);
-
-                    /** ReadOnly exactStaleness */
-                    exactStaleness?: (google.protobuf.IDuration|null);
-
-                    /** ReadOnly returnReadTimestamp */
-                    returnReadTimestamp?: (boolean|null);
-                }
-
-                /** Represents a ReadOnly. */
-                class ReadOnly implements IReadOnly {
-
-                    /**
-                     * Constructs a new ReadOnly.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: google.spanner.v1.TransactionOptions.IReadOnly);
-
-                    /** ReadOnly strong. */
-                    public strong?: (boolean|null);
-
-                    /** ReadOnly minReadTimestamp. */
-                    public minReadTimestamp?: (google.protobuf.ITimestamp|null);
-
-                    /** ReadOnly maxStaleness. */
-                    public maxStaleness?: (google.protobuf.IDuration|null);
-
-                    /** ReadOnly readTimestamp. */
-                    public readTimestamp?: (google.protobuf.ITimestamp|null);
-
-                    /** ReadOnly exactStaleness. */
-                    public exactStaleness?: (google.protobuf.IDuration|null);
-
-                    /** ReadOnly returnReadTimestamp. */
-                    public returnReadTimestamp: boolean;
-
-                    /** ReadOnly timestampBound. */
-                    public timestampBound?: ("strong"|"minReadTimestamp"|"maxStaleness"|"readTimestamp"|"exactStaleness");
-
-                    /**
-                     * Creates a new ReadOnly instance using the specified properties.
-                     * @param [properties] Properties to set
-                     * @returns ReadOnly instance
-                     */
-                    public static create(properties?: google.spanner.v1.TransactionOptions.IReadOnly): google.spanner.v1.TransactionOptions.ReadOnly;
-
-                    /**
-                     * Encodes the specified ReadOnly message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
-                     * @param message ReadOnly message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: google.spanner.v1.TransactionOptions.IReadOnly, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ReadOnly message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
-                     * @param message ReadOnly message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: google.spanner.v1.TransactionOptions.IReadOnly, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ReadOnly message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ReadOnly
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionOptions.ReadOnly;
-
-                    /**
-                     * Decodes a ReadOnly message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ReadOnly
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionOptions.ReadOnly;
-
-                    /**
-                     * Verifies a ReadOnly message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ReadOnly message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ReadOnly
-                     */
-                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionOptions.ReadOnly;
-
-                    /**
-                     * Creates a plain object from a ReadOnly message. Also converts values to other types if specified.
-                     * @param message ReadOnly
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: google.spanner.v1.TransactionOptions.ReadOnly, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ReadOnly to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-
-                    /**
-                     * Gets the default type url for ReadOnly
-                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                     * @returns The default type url
-                     */
-                    public static getTypeUrl(typeUrlPrefix?: string): string;
-                }
-            }
-
-            /** Properties of a Transaction. */
-            interface ITransaction {
-
-                /** Transaction id */
-                id?: (Uint8Array|string|null);
-
-                /** Transaction readTimestamp */
-                readTimestamp?: (google.protobuf.ITimestamp|null);
-            }
-
-            /** Represents a Transaction. */
-            class Transaction implements ITransaction {
-
-                /**
-                 * Constructs a new Transaction.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: google.spanner.v1.ITransaction);
-
-                /** Transaction id. */
-                public id: (Uint8Array|string);
-
-                /** Transaction readTimestamp. */
-                public readTimestamp?: (google.protobuf.ITimestamp|null);
-
-                /**
-                 * Creates a new Transaction instance using the specified properties.
-                 * @param [properties] Properties to set
-                 * @returns Transaction instance
-                 */
-                public static create(properties?: google.spanner.v1.ITransaction): google.spanner.v1.Transaction;
-
-                /**
-                 * Encodes the specified Transaction message. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
-                 * @param message Transaction message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: google.spanner.v1.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Transaction message, length delimited. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
-                 * @param message Transaction message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: google.spanner.v1.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Transaction message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Transaction
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.Transaction;
-
-                /**
-                 * Decodes a Transaction message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Transaction
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.Transaction;
-
-                /**
-                 * Verifies a Transaction message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Transaction
-                 */
-                public static fromObject(object: { [k: string]: any }): google.spanner.v1.Transaction;
-
-                /**
-                 * Creates a plain object from a Transaction message. Also converts values to other types if specified.
-                 * @param message Transaction
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: google.spanner.v1.Transaction, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Transaction to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-
-                /**
-                 * Gets the default type url for Transaction
-                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                 * @returns The default type url
-                 */
-                public static getTypeUrl(typeUrlPrefix?: string): string;
-            }
-
-            /** Properties of a TransactionSelector. */
-            interface ITransactionSelector {
-
-                /** TransactionSelector singleUse */
-                singleUse?: (google.spanner.v1.ITransactionOptions|null);
-
-                /** TransactionSelector id */
-                id?: (Uint8Array|string|null);
-
-                /** TransactionSelector begin */
-                begin?: (google.spanner.v1.ITransactionOptions|null);
-            }
-
-            /** Represents a TransactionSelector. */
-            class TransactionSelector implements ITransactionSelector {
-
-                /**
-                 * Constructs a new TransactionSelector.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: google.spanner.v1.ITransactionSelector);
-
-                /** TransactionSelector singleUse. */
-                public singleUse?: (google.spanner.v1.ITransactionOptions|null);
-
-                /** TransactionSelector id. */
-                public id?: (Uint8Array|string|null);
-
-                /** TransactionSelector begin. */
-                public begin?: (google.spanner.v1.ITransactionOptions|null);
-
-                /** TransactionSelector selector. */
-                public selector?: ("singleUse"|"id"|"begin");
-
-                /**
-                 * Creates a new TransactionSelector instance using the specified properties.
-                 * @param [properties] Properties to set
-                 * @returns TransactionSelector instance
-                 */
-                public static create(properties?: google.spanner.v1.ITransactionSelector): google.spanner.v1.TransactionSelector;
-
-                /**
-                 * Encodes the specified TransactionSelector message. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
-                 * @param message TransactionSelector message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: google.spanner.v1.ITransactionSelector, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified TransactionSelector message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
-                 * @param message TransactionSelector message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: google.spanner.v1.ITransactionSelector, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a TransactionSelector message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns TransactionSelector
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.TransactionSelector;
-
-                /**
-                 * Decodes a TransactionSelector message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns TransactionSelector
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.TransactionSelector;
-
-                /**
-                 * Verifies a TransactionSelector message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a TransactionSelector message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns TransactionSelector
-                 */
-                public static fromObject(object: { [k: string]: any }): google.spanner.v1.TransactionSelector;
-
-                /**
-                 * Creates a plain object from a TransactionSelector message. Also converts values to other types if specified.
-                 * @param message TransactionSelector
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: google.spanner.v1.TransactionSelector, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this TransactionSelector to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-
-                /**
-                 * Gets the default type url for TransactionSelector
-                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-                 * @returns The default type url
-                 */
-                public static getTypeUrl(typeUrlPrefix?: string): string;
-            }
-
             /** Properties of a Type. */
             interface IType {
 
@@ -33761,7 +35097,9 @@ export namespace google {
                 NUMERIC = 10,
                 JSON = 11,
                 PROTO = 13,
-                ENUM = 14
+                ENUM = 14,
+                INTERVAL = 16,
+                UUID = 17
             }
 
             /** TypeAnnotationCode enum. */

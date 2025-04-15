@@ -26,8 +26,10 @@ import {
 import {
   Span,
   SpanStatusCode,
+  context,
   trace,
   INVALID_SPAN_CONTEXT,
+  ROOT_CONTEXT,
   SpanAttributes,
   TimeInput,
   TracerProvider,
@@ -57,6 +59,7 @@ interface SQLStatement {
 interface ObservabilityOptions {
   tracerProvider: TracerProvider;
   enableExtendedTracing?: boolean;
+  enableEndToEndTracing?: boolean;
 }
 
 export type {ObservabilityOptions};
@@ -87,11 +90,35 @@ interface traceConfig {
   tableName?: string;
   dbName?: string;
   opts?: ObservabilityOptions;
-  that?: Object;
 }
 
 const SPAN_NAMESPACE_PREFIX = 'CloudSpanner'; // TODO: discuss & standardize this prefix.
 export {SPAN_NAMESPACE_PREFIX, traceConfig};
+
+const {
+  AsyncHooksContextManager,
+} = require('@opentelemetry/context-async-hooks');
+
+/*
+ * This function ensures that async/await works correctly by
+ * checking if context.active() returns an invalid/unset context
+ * and if so, sets a global AsyncHooksContextManager otherwise
+ * spans resulting from async/await invocations won't be correctly
+ * associated in their respective hierarchies.
+ */
+function ensureInitialContextManagerSet() {
+  if (context.active() === ROOT_CONTEXT) {
+    // If no active context was set previously, trace context propagation cannot
+    // function correctly with async/await for OpenTelemetry
+    // See {@link https://opentelemetry.io/docs/languages/js/context/#active-context}
+    context.disable(); // Disable any prior contextManager.
+    const contextManager = new AsyncHooksContextManager();
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
+  }
+}
+
+export {ensureInitialContextManagerSet};
 
 /**
  * startTrace begins an active span in the current active context
@@ -106,7 +133,6 @@ export function startTrace<T>(
   config: traceConfig | undefined,
   cb: (span: Span) => T
 ): T {
-  const origConfig = config;
   if (!config) {
     config = {} as traceConfig;
   }
@@ -118,6 +144,9 @@ export function startTrace<T>(
       span.setAttribute(SEMATTRS_DB_SYSTEM, 'spanner');
       span.setAttribute(ATTR_OTEL_SCOPE_NAME, TRACER_NAME);
       span.setAttribute(ATTR_OTEL_SCOPE_VERSION, TRACER_VERSION);
+      span.setAttribute('gcp.client.service', 'spanner');
+      span.setAttribute('gcp.client.version', TRACER_VERSION);
+      span.setAttribute('gcp.client.repo', 'googleapis/nodejs-spanner');
 
       if (config.tableName) {
         span.setAttribute(SEMATTRS_DB_SQL_TABLE, config.tableName);
@@ -138,11 +167,15 @@ export function startTrace<T>(
         }
       }
 
-      if (config.that) {
-        const fn = cb.bind(config.that);
-        return fn(span);
-      } else {
+      // If at all the invoked function throws an exception,
+      // record the exception and then end this span.
+      try {
         return cb(span);
+      } catch (e) {
+        setSpanErrorAndException(span, e as Error);
+        span.end();
+        // Finally re-throw the exception.
+        throw e;
       }
     }
   );

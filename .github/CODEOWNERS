@@ -6,4 +6,4 @@
 
 
 # Unless specified, the jsteam is the default owner for nodejs repositories.
-*     @googleapis/api-spanner-nodejs @googleapis/jsteam
+*     @googleapis/spanner-client-libraries-nodejs @googleapis/jsteam
