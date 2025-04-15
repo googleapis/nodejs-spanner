@@ -354,7 +354,7 @@ describe('Spanner', () => {
       }
 
       it('GOOGLE_STANDARD_SQL should have created the database', async () => {
-        await createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
+        void createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
       });
     });
   });
