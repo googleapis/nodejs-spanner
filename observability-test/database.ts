@@ -961,7 +961,7 @@ describe('Database', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           // In the event of a sessionPool error, we should not have events.
@@ -969,7 +969,7 @@ describe('Database', () => {
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `event names mismatch:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `event names mismatch:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           // Ensure that the span actually produced an error that was recorded.
@@ -977,19 +977,19 @@ describe('Database', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Expected an ERROR span status'
+            'Expected an ERROR span status',
           );
           assert.strictEqual(
             'pool error',
             firstSpan.status.message,
-            'Mismatched span status message'
+            'Mismatched span status message',
           );
           assert.strictEqual(
             spans[0].attributes['transaction.tag'],
-            'transaction-tag'
+            'transaction-tag',
           );
           done();
-        }
+        },
       );
     });
 
@@ -1349,7 +1349,7 @@ describe('Database', () => {
           assert.deepStrictEqual(actualEventNames, expectedEventNames);
           assert.strictEqual(
             spans[0].attributes['transaction.tag'],
-            'batch-write-tag'
+            'batch-write-tag',
           );
           done();
         });
@@ -1505,7 +1505,7 @@ describe('Database', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           // Ensure that the span actually produced an error that was recorded.
@@ -1513,12 +1513,12 @@ describe('Database', () => {
           assert.strictEqual(
             SpanStatusCode.ERROR,
             firstSpan.status.code,
-            'Expected an ERROR span status'
+            'Expected an ERROR span status',
           );
           assert.strictEqual(
             'getting a session',
             firstSpan.status.message,
-            'Mismatched span status message'
+            'Mismatched span status message',
           );
 
           // We don't expect events.
@@ -1526,15 +1526,15 @@ describe('Database', () => {
           assert.deepStrictEqual(
             actualEventNames,
             expectedEventNames,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
           );
 
           assert.strictEqual(
             spans[0].attributes['transaction.tag'],
-            'transaction-tag'
+            'transaction-tag',
           );
           done();
-        }
+        },
       );
     });
 
@@ -1622,7 +1622,7 @@ describe('Database', () => {
           const result = await txn.run('SELECT 1');
           await txn.commit();
           return result;
-        }
+        },
       );
 
       assert.strictEqual(value, fakeValue);
@@ -1669,7 +1669,7 @@ describe('Database', () => {
       );
       assert.strictEqual(
         spans[0].attributes['transaction.tag'],
-        'transaction-tag'
+        'transaction-tag',
       );
     });
 

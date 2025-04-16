@@ -263,7 +263,7 @@ export class Session extends common.GrpcServiceObject {
     this._observabilityOptions = database._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       (this.parent as Database).formattedName_,
-      this._observabilityOptions?.enableEndToEndTracing
+      this._observabilityOptions?.enableEndToEndTracing,
     );
     this.request = database.request;
     this.requestStream = database.requestStream;

@@ -524,7 +524,7 @@ describe('Transaction', () => {
           assert.deepStrictEqual(
             actualSpanNames,
             expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
           );
 
           const attributes = exportResults.spans[0].attributes;

@@ -472,7 +472,7 @@ export class Snapshot extends EventEmitter {
           },
           (
             err: null | grpc.ServiceError,
-            resp: spannerClient.spanner.v1.ITransaction
+            resp: spannerClient.spanner.v1.ITransaction,
           ) => {
             if (err) {
               setSpanError(span, err);
@@ -481,9 +481,9 @@ export class Snapshot extends EventEmitter {
             }
             span.end();
             callback!(err, resp);
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -1028,7 +1028,7 @@ export class Snapshot extends EventEmitter {
             span.end();
             callback!(null, rows);
           });
-      }
+      },
     );
   }
 
@@ -1146,7 +1146,7 @@ export class Snapshot extends EventEmitter {
             span.end();
             callback!(null, rows, stats, metadata);
           });
-      }
+      },
     );
   }
 
@@ -1716,7 +1716,7 @@ export class Dml extends Snapshot {
     if (typeof query === 'string') {
       query = {sql: query} as ExecuteSqlRequest;
     }
-      
+
     return startTrace(
       'Dml.runUpdate',
       {
@@ -1731,7 +1731,7 @@ export class Dml extends Snapshot {
           (
             err: null | grpc.ServiceError,
             rows: Rows,
-            stats: spannerClient.spanner.v1.ResultSetStats
+            stats: spannerClient.spanner.v1.ResultSetStats,
           ) => {
             let rowCount = 0;
 
@@ -1745,9 +1745,9 @@ export class Dml extends Snapshot {
 
             span.end();
             callback!(err, rowCount);
-          }
+          },
         );
-      }
+      },
     );
   }
 }
@@ -1990,7 +1990,7 @@ export class Transaction extends Dml {
     const requestOptionsWithTag = this.configureTagOptions(
       false,
       this.requestOptions?.transactionTag ?? undefined,
-      (options as BatchUpdateOptions).requestOptions
+      (options as BatchUpdateOptions).requestOptions,
     );
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
@@ -2211,7 +2211,7 @@ export class Transaction extends Dml {
               setSpanError(span, err);
               span.end();
               callback(err, null);
-            }
+            },
           );
           return;
         }
@@ -2232,9 +2232,9 @@ export class Transaction extends Dml {
         }
         reqOpts.requestOptions = Object.assign(
           requestOptions || {},
-          this.requestOptions
+          this.requestOptions,
         );
-        
+
         const headers = this.commonHeaders_;
         if (this._getSpanner().routeToLeaderEnabled) {
           addLeaderAwareRoutingHeader(headers);
@@ -2253,12 +2253,12 @@ export class Transaction extends Dml {
               headers,
               this.session,
               nextNthRequest(database),
-              1
+              1,
             ),
           },
           (
             err: null | Error,
-            resp: spannerClient.spanner.v1.ICommitResponse
+            resp: spannerClient.spanner.v1.ICommitResponse,
           ) => {
             this.end();
 
@@ -2268,23 +2268,23 @@ export class Transaction extends Dml {
             } else {
               span.addEvent('Commit Done');
             }
-            
+
             if (resp && resp.commitTimestamp) {
               this.commitTimestampProto = resp.commitTimestamp;
               this.commitTimestamp = new PreciseDate(
-                resp.commitTimestamp as DateStruct
+                resp.commitTimestamp as DateStruct,
               );
             }
             err = Transaction.decorateCommitError(
               err as ServiceError,
-              mutations
+              mutations,
             );
-            
+
             span.end();
             callback!(err as ServiceError | null, resp);
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -3102,7 +3102,7 @@ export class PartitionedDml extends Dml {
           span.end();
           callback!(err, count);
         });
-      }
+      },
     );
   }
 }

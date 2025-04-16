@@ -2288,11 +2288,11 @@ class Database extends common.GrpcServiceObject {
             if (options.requestOptions) {
               transaction!.requestOptions = Object.assign(
                 transaction!.requestOptions || {},
-                options.requestOptions
+                options.requestOptions,
               );
             }
             transaction?.setReadWriteTransactionOptions(
-              options as RunTransactionOptions
+              options as RunTransactionOptions,
             );
             span.addEvent('Using Session', {'session.id': session?.id});
             transaction!._observabilityOptions = this._observabilityOptions;
@@ -2303,7 +2303,7 @@ class Database extends common.GrpcServiceObject {
           span.end();
           cb!(err as grpc.ServiceError | null, transaction);
         });
-      }
+      },
     );
   }
 
@@ -2923,7 +2923,7 @@ class Database extends common.GrpcServiceObject {
             span.end();
             callback!(null, rows, stats, metadata);
           });
-      }
+      },
     );
   }
   /**
@@ -2968,7 +2968,7 @@ class Database extends common.GrpcServiceObject {
             return;
           }
 
-          this._runPartitionedUpdate(session!, query, (err, count) => {
+          void this._runPartitionedUpdate(session!, query, (err, count) => {
             if (err) {
               setSpanError(span, err);
             }
@@ -2976,7 +2976,7 @@ class Database extends common.GrpcServiceObject {
             callback!(err, count);
           });
         });
-      }
+      },
     );
   }
 
@@ -3219,7 +3219,7 @@ class Database extends common.GrpcServiceObject {
         });
 
         return proxyStream as PartialResultStream;
-      }
+      },
     );
   }
 
@@ -3361,11 +3361,11 @@ class Database extends common.GrpcServiceObject {
 
           transaction!.requestOptions = Object.assign(
             transaction!.requestOptions || {},
-            options.requestOptions
+            options.requestOptions,
           );
 
           transaction!.setReadWriteTransactionOptions(
-            options as RunTransactionOptions
+            options as RunTransactionOptions,
           );
 
           const release = () => {
@@ -3377,7 +3377,7 @@ class Database extends common.GrpcServiceObject {
             session!,
             transaction!,
             runFn!,
-            options
+            options,
           );
 
           runner.run().then(release, err => {
@@ -3395,7 +3395,7 @@ class Database extends common.GrpcServiceObject {
             }
           });
         });
-      }
+      },
     );
   }
 
