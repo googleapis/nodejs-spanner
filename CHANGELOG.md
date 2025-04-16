@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.21.0](https://github.com/googleapis/nodejs-spanner/compare/v7.20.0...v7.21.0) (2025-04-15)
+
+
+### Features
+
+* Adding sample for pre-split feature ([#2274](https://github.com/googleapis/nodejs-spanner/issues/2274)) ([3d5f080](https://github.com/googleapis/nodejs-spanner/commit/3d5f08065fdf40a1c441d97a049d7dacf1a5be93))
+
+
+### Bug Fixes
+
+* Adding span attributes for request tag and transaction tag ([#2236](https://github.com/googleapis/nodejs-spanner/issues/2236)) ([3f69dad](https://github.com/googleapis/nodejs-spanner/commit/3f69dad36cfdeb4effd191e0d38079ead1bd6654))
+
 ## [7.20.0](https://github.com/googleapis/nodejs-spanner/compare/v7.19.1...v7.20.0) (2025-04-11)
 
 
