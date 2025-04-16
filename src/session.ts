@@ -41,6 +41,7 @@ import {
   addLeaderAwareRoutingHeader,
   getCommonHeaders,
 } from './common';
+import {ObservabilityOptions} from './instrument';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
@@ -117,6 +118,7 @@ export class Session extends common.GrpcServiceObject {
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   commonHeaders_: {[k: string]: string};
+  _observabilityOptions?: ObservabilityOptions;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -258,9 +260,10 @@ export class Session extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
+    this._observabilityOptions = database._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       (this.parent as Database).formattedName_,
-      database._observabilityOptions?.enableEndToEndTracing,
+      this._observabilityOptions?.enableEndToEndTracing
     );
     this.request = database.request;
     this.requestStream = database.requestStream;
