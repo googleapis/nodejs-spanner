@@ -23301,12 +23301,6 @@ export namespace google {
                     /** CreateCloudDatabaseAction _protoDescriptors. */
                     public _protoDescriptors?: "protoDescriptors";
 
-                    /** CreateCloudDatabaseAction _dialect. */
-                    public _dialect?: "dialect";
-
-                    /** CreateCloudDatabaseAction _protoDescriptors. */
-                    public _protoDescriptors?: "protoDescriptors";
-
                     /**
                      * Creates a new CreateCloudDatabaseAction instance using the specified properties.
                      * @param [properties] Properties to set
@@ -23433,9 +23427,6 @@ export namespace google {
 
                     /** UpdateCloudDatabaseDdlAction protoDescriptors. */
                     public protoDescriptors?: (Uint8Array|Buffer|string|null);
-
-                    /** UpdateCloudDatabaseDdlAction _protoDescriptors. */
-                    public _protoDescriptors?: "protoDescriptors";
 
                     /** UpdateCloudDatabaseDdlAction _protoDescriptors. */
                     public _protoDescriptors?: "protoDescriptors";
