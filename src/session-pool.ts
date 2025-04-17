@@ -771,9 +771,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       const index = this._inventory.sessions.indexOf(session);
 
       this._inventory.sessions.splice(index, 1);
-      this._destroy(session)
-        .then(() => {})
-        .catch(() => {});
+      void this._destroy(session);
     }
   }
 
