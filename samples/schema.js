@@ -100,7 +100,7 @@ async function addColumn(instanceId, databaseId, projectId) {
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: ['ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'],
     });
@@ -162,7 +162,7 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
           json.AlbumId
         }, MarketingBudget: ${
           json.MarketingBudget ? json.MarketingBudget : null
-        }`
+        }`,
       );
     });
   } catch (err) {
@@ -188,14 +188,15 @@ require('yargs')
     'createDatabase <instanceName> <databaseName> <projectId>',
     'Creates an example database with two tables in a Cloud Spanner instance using Database Admin Client.',
     {},
-    opts => createDatabase(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      createDatabase(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .example('node $0 createDatabase "my-instance" "my-database" "my-project-id"')
   .command(
     'addColumn <instanceName> <databaseName> <projectId>',
     'Adds an example MarketingBudget column to an example Cloud Spanner table.',
     {},
-    opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .example('node $0 addColumn "my-instance" "my-database" "my-project-id"')
   .command(
@@ -206,8 +207,8 @@ require('yargs')
       queryDataWithNewColumn(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example('node $0 queryNewColumn "my-instance" "my-database" "my-project-id"')
   .command(
@@ -218,11 +219,11 @@ require('yargs')
       createDatabaseWithVersionRetentionPeriod(
         opts.instanceName,
         opts.databaseId,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 createDatabaseWithVersionRetentionPeriod "my-instance" "my-database-id" "my-project-id"'
+    'node $0 createDatabaseWithVersionRetentionPeriod "my-instance" "my-database-id" "my-project-id"',
   )
   .command(
     'createDatabaseWithEncryptionKey <instanceName> <databaseName> <projectId> <keyName>',
@@ -233,11 +234,11 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .example(
-    'node $0 createDatabaseWithEncryptionKey "my-instance" "my-database" "my-project-id" "key-name"'
+    'node $0 createDatabaseWithEncryptionKey "my-instance" "my-database" "my-project-id" "key-name"',
   )
   .wrap(120)
   .recommendCommands()

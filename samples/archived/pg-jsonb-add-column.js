@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_jsonb_add_column]
   /**
@@ -51,7 +51,7 @@ function main(
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();
     console.log(
-      `Added jsonb column to table venues to database ${databaseId}.`
+      `Added jsonb column to table venues to database ${databaseId}.`,
     );
   }
   pgJsonbAddColumn();

@@ -49,7 +49,7 @@ function main(instanceId, databaseId, projectId) {
     });
     albums.forEach(album => {
       console.log(
-        `SingerId: ${album.SingerId}, AlbumId: ${album.AlbumId}, AlbumTitle: ${album.AlbumTitle}`
+        `SingerId: ${album.SingerId}, AlbumId: ${album.AlbumId}, AlbumTitle: ${album.AlbumTitle}`,
       );
     });
     await database.close();

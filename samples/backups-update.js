@@ -54,13 +54,13 @@ async function updateBackup(instanceId, backupId, projectId) {
     const newExpireTime = new PreciseDate(min(wantExpireTime, maxExpireTime));
     console.log(
       `Backup ${backupId} current expire time: ${Spanner.timestamp(
-        currentExpireTime
-      ).toISOString()}`
+        currentExpireTime,
+      ).toISOString()}`,
     );
     console.log(
       `Updating expire time to ${Spanner.timestamp(
-        newExpireTime
-      ).toISOString()}`
+        newExpireTime,
+      ).toISOString()}`,
     );
 
     await databaseAdminClient.updateBackup({

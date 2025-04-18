@@ -22,7 +22,7 @@
 function main(
   instanceId = 'my-instance-id',
   databaseId = 'my-database-id',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   async function addSplitPoints() {
     // [START spanner_database_add_split_points]
@@ -62,7 +62,7 @@ function main(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         statements: request,
       });
@@ -76,7 +76,7 @@ function main(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         splitPoints: [
           {

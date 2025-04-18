@@ -119,7 +119,7 @@ export abstract class Runner<T> {
   constructor(
     session: Session,
     transaction: Transaction,
-    options?: RunTransactionOptions
+    options?: RunTransactionOptions,
   ) {
     this.attempts = 0;
     this.session = session;
@@ -205,10 +205,10 @@ export abstract class Runner<T> {
     }
 
     const transaction = this.session.transaction(
-      (this.session.parent as Database).queryOptions_
+      (this.session.parent as Database).queryOptions_,
     );
     transaction!.setReadWriteTransactionOptions(
-      this.options as RunTransactionOptions
+      this.options as RunTransactionOptions,
     );
     if (this.attempts > 0) {
       await transaction.begin();
@@ -277,7 +277,7 @@ export class TransactionRunner extends Runner<void> {
     session: Session,
     transaction: Transaction,
     runFn: RunTransactionCallback,
-    options?: RunTransactionOptions
+    options?: RunTransactionOptions,
   ) {
     super(session, transaction, options);
     this.runFn = runFn;
@@ -294,7 +294,7 @@ export class TransactionRunner extends Runner<void> {
    */
   private _interceptErrors(
     transaction: Transaction,
-    reject: ErrorCallback
+    reject: ErrorCallback,
   ): void {
     const request = transaction.request;
 
@@ -364,7 +364,7 @@ export class AsyncTransactionRunner<T> extends Runner<T> {
     session: Session,
     transaction: Transaction,
     runFn: AsyncRunTransactionCallback<T>,
-    options?: RunTransactionOptions
+    options?: RunTransactionOptions,
   ) {
     super(session, transaction, options);
     this.runFn = runFn;
@@ -391,7 +391,7 @@ export function isRetryableInternalError(err: grpc.ServiceError): boolean {
   return (
     err.code === grpc.status.INTERNAL &&
     (err.message.includes(
-      'Received unexpected EOS on DATA frame from server'
+      'Received unexpected EOS on DATA frame from server',
     ) ||
       err.message.includes('RST_STREAM') ||
       err.message.includes('HTTP/2 error code: INTERNAL_ERROR') ||

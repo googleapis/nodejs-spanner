@@ -20,7 +20,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_set_max_commit_delay]
   // Imports the Google Cloud client library.
@@ -58,7 +58,7 @@ function main(
         });
 
         console.log(
-          `Successfully inserted ${rowCount} record into the Singers table.`
+          `Successfully inserted ${rowCount} record into the Singers table.`,
         );
 
         await transaction.commit({

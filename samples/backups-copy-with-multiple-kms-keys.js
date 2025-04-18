@@ -23,7 +23,7 @@ function main(
   backupId = 'my-backup',
   sourceBackupPath = 'projects/my-project-id/instances/my-source-instance/backups/my-source-backup',
   projectId = 'my-project-id',
-  kmsKeyNames = 'key1,key2'
+  kmsKeyNames = 'key1,key2',
 ) {
   // [START spanner_copy_backup_with_MR_CMEK]
   /**
@@ -52,7 +52,7 @@ function main(
   async function spannerCopyBackupWithMultipleKmsKeys() {
     // Expire copy backup 14 days in the future
     const expireTime = Spanner.timestamp(
-      Date.now() + 1000 * 60 * 60 * 24 * 14
+      Date.now() + 1000 * 60 * 60 * 24 * 14,
     ).toStruct();
 
     // Copy the source backup
@@ -70,8 +70,8 @@ function main(
         `Waiting for backup copy ${databaseAdminClient.backupPath(
           projectId,
           instanceId,
-          backupId
-        )} to complete...`
+          backupId,
+        )} to complete...`,
       );
       await operation.promise();
 
@@ -86,7 +86,7 @@ function main(
             `${copyBackup.sizeBytes} bytes was created at ` +
             `${new PreciseDate(copyBackup.createTime).toISOString()} ` +
             'with version time ' +
-            `${new PreciseDate(copyBackup.versionTime).toISOString()}`
+            `${new PreciseDate(copyBackup.versionTime).toISOString()}`,
         );
       } else {
         console.error('ERROR: Copy of backup is not ready.');

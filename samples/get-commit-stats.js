@@ -45,10 +45,10 @@ async function getCommitStats(instanceId, databaseId, projectId) {
         {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
         {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
       ],
-      {returnCommitStats: true}
+      {returnCommitStats: true},
     );
     console.log(
-      `Updated data with ${response.commitStats.mutationCount} mutations.`
+      `Updated data with ${response.commitStats.mutationCount} mutations.`,
     );
   } catch (err) {
     console.error('ERROR:', err);

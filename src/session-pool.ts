@@ -55,7 +55,7 @@ export interface GetWriteSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
-    transaction?: Transaction | null
+    transaction?: Transaction | null,
   ): void;
 }
 
@@ -226,7 +226,7 @@ export class SessionPoolExhaustedError extends GoogleError {
  * @return true if the error is a 'Session not found' error, and otherwise false.
  */
 export function isSessionNotFoundError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
@@ -432,19 +432,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     sessions.forEach(session => this._destroy(session));
 
-    this._requests.onIdle().then(() => {
-      const leaks = this._getLeaks();
-      let error;
+    this._requests
+      .onIdle()
+      .then(() => {
+        const leaks = this._getLeaks();
+        let error;
 
-      this._inventory.sessions = [];
-      this._inventory.borrowed.clear();
+        this._inventory.sessions = [];
+        this._inventory.borrowed.clear();
 
-      if (leaks.length) {
-        error = new SessionLeakError(leaks);
-      }
+        if (leaks.length) {
+          error = new SessionLeakError(leaks);
+        }
 
-      callback(error);
-    });
+        callback(error);
+      })
+      .catch(err => callback(err));
   }
 
   /**
@@ -455,7 +458,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   getReadSession(callback: GetReadSessionCallback): void {
     this.getSession((error, session) =>
-      callback(error as ServiceError, session)
+      callback(error as ServiceError, session),
     );
   }
 
@@ -477,7 +480,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   getSession(callback: GetSessionCallback): void {
     this._acquire().then(
       session => callback(null, session, session.txn!),
-      callback
+      callback,
     );
   }
 
@@ -593,7 +596,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         'Could not acquire session because it was invalid. Retrying',
         {
           'session.id': session.id.toString(),
-        }
+        },
       );
       this._inventory.borrowed.delete(session);
       return getSession();
@@ -704,7 +707,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
           this._pending -= amount;
           this.emit('createError', e);
           span.addEvent(
-            `Requested for ${nRequested} sessions returned ${nReturned}`
+            `Requested for ${nRequested} sessions returned ${nReturned}`,
           );
           setSpanErrorAndException(span, e as Error);
           span.end();
@@ -721,7 +724,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       }
 
       span.addEvent(
-        `Requested for ${nRequested} sessions returned ${nReturned}`
+        `Requested for ${nRequested} sessions returned ${nReturned}`,
       );
       span.end();
     });
@@ -768,7 +771,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       const index = this._inventory.sessions.indexOf(session);
 
       this._inventory.sessions.splice(index, 1);
-      this._destroy(session);
+      void this._destroy(session);
     }
   }
 
@@ -851,7 +854,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         removeOnceCloseListener = this.removeListener.bind(
           this,
           'close',
-          onceCloseListener
+          onceCloseListener,
         );
       }),
       new Promise(resolve => {
@@ -859,7 +862,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         removeListener = this.removeListener.bind(
           this,
           availableEvent,
-          resolve
+          resolve,
         );
       }),
     ];
@@ -876,10 +879,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
           const error = new Error(errors.Timeout);
           const timeoutFunction = setTimeout(
             reject.bind(null, error),
-            remaining
+            remaining,
           );
           removeTimeoutListener = () => clearTimeout(timeoutFunction);
-        })
+        }),
       );
     }
 
@@ -904,7 +907,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
           new Promise((_, reject) => {
             this._pending -= amount;
             this._createSessions(amount).catch(reject);
-          })
+          }),
         );
       }
     }
@@ -916,9 +919,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         removeErrorListener = this.removeListener.bind(
           this,
           'createError',
-          reject
+          reject,
         );
-      })
+      }),
     );
 
     try {
@@ -973,7 +976,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this.release(session);
     } catch (e) {
       this._inventory.borrowed.delete(session);
-      this._destroy(session);
+      await this._destroy(session);
     }
   }
 
@@ -1019,7 +1022,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _prepareTransaction(session: Session): void {
     const transaction = session.transaction(
-      (session.parent as Database).queryOptions_
+      (session.parent as Database).queryOptions_,
     );
     session.txn = transaction;
   }

@@ -127,7 +127,7 @@ export class MultiplexedSession
           });
           this._multiplexedSession = createSessionResponse;
           span.addEvent(
-            `Created multiplexed session ${this._multiplexedSession.id}`
+            `Created multiplexed session ${this._multiplexedSession.id}`,
           );
           this.emit(MUX_SESSION_AVAILABLE);
         } catch (e) {
@@ -137,7 +137,7 @@ export class MultiplexedSession
         } finally {
           span.end();
         }
-      }
+      },
     );
   }
 
@@ -178,7 +178,7 @@ export class MultiplexedSession
   getSession(callback: GetSessionCallback): void {
     this._acquire().then(
       session => callback(null, session, session?.txn),
-      callback
+      callback,
     );
   }
 
@@ -195,7 +195,7 @@ export class MultiplexedSession
     const session = await this._getSession();
     // Prepare a transaction for a session
     session!.txn = session!.transaction(
-      (session!.parent as Database).queryOptions_
+      (session!.parent as Database).queryOptions_,
     );
     return session;
   }
@@ -234,7 +234,7 @@ export class MultiplexedSession
         removeErrorListener = this.removeListener.bind(
           this,
           MUX_SESSION_CREATE_ERROR,
-          reject
+          reject,
         );
       }),
       new Promise(resolve => {
@@ -242,7 +242,7 @@ export class MultiplexedSession
         removeAvailableListener = this.removeListener.bind(
           this,
           MUX_SESSION_AVAILABLE,
-          resolve
+          resolve,
         );
       }),
     ];

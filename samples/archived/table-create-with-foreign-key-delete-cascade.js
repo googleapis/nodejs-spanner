@@ -59,7 +59,7 @@ function main(instanceId, databaseId, projectId) {
     await operation.promise();
 
     console.log(
-      'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
+      'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId',
     );
   }
   createTableWithForeignKeyDeleteCascade();

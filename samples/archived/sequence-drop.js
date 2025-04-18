@@ -53,7 +53,7 @@ async function main(instanceId, databaseId, projectId) {
       await operation.promise();
 
       console.log(
-        'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
+        'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.',
       );
     } catch (err) {
       console.error('ERROR:', err);

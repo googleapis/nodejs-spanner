@@ -31,7 +31,7 @@ const PROTO_DIR =
 const GAX_PROTO_DIR = path.join(
   path.dirname(require.resolve('google-gax')),
   '..',
-  'protos'
+  'protos',
 );
 
 /**
@@ -74,7 +74,7 @@ export class MockDatabaseAdmin {
       value: v1.CreateDatabaseMetadata.encode(
         v1.CreateDatabaseMetadata.create({
           database: MockDatabaseAdmin.TEST_DATABASE.name,
-        })
+        }),
       ).finish(),
     }),
   });
@@ -89,7 +89,7 @@ export class MockDatabaseAdmin {
       value: v1.CreateDatabaseMetadata.encode(
         v1.CreateDatabaseMetadata.create({
           database: MockDatabaseAdmin.PROD_DATABASE.name,
-        })
+        }),
       ).finish(),
     }),
   });
@@ -122,7 +122,7 @@ export class MockDatabaseAdmin {
       v1.ListDatabasesRequest,
       v1.ListDatabasesResponse
     >,
-    callback: v1.DatabaseAdmin.ListDatabasesCallback
+    callback: v1.DatabaseAdmin.ListDatabasesCallback,
   ) {
     callback(
       null,
@@ -131,7 +131,7 @@ export class MockDatabaseAdmin {
           MockDatabaseAdmin.TEST_DATABASE,
           MockDatabaseAdmin.PROD_DATABASE,
         ],
-      })
+      }),
     );
   }
 
@@ -140,7 +140,7 @@ export class MockDatabaseAdmin {
       v1.ListDatabaseOperationsRequest,
       v1.ListDatabaseOperationsResponse
     >,
-    callback: v1.DatabaseAdmin.ListDatabaseOperationsCallback
+    callback: v1.DatabaseAdmin.ListDatabaseOperationsCallback,
   ) {
     callback(
       null,
@@ -149,13 +149,13 @@ export class MockDatabaseAdmin {
           MockDatabaseAdmin.CREATE_TEST_DATABASE_OPERATION,
           MockDatabaseAdmin.CREATE_PROD_DATABASE_OPERATION,
         ],
-      })
+      }),
     );
   }
 
   createDatabase(
     call: grpc.ServerUnaryCall<v1.CreateDatabaseRequest, longrunning.Operation>,
-    callback: v1.DatabaseAdmin.CreateDatabaseCallback
+    callback: v1.DatabaseAdmin.CreateDatabaseCallback,
   ) {
     let name = call.request!.createStatement.replace('CREATE DATABASE ', '');
     name = name.substring(1, name.length - 1);
@@ -166,7 +166,7 @@ export class MockDatabaseAdmin {
     const metadataBuffer = v1.CreateDatabaseMetadata.encode(
       v1.CreateDatabaseMetadata.create({
         database: database.name,
-      })
+      }),
     ).finish();
     const databaseBuffer = v1.Database.encode(database).finish();
     callback(
@@ -180,60 +180,60 @@ export class MockDatabaseAdmin {
         response: Any.create({
           value: databaseBuffer,
         }),
-      })
+      }),
     );
   }
 
   getDatabase(
     call: grpc.ServerUnaryCall<v1.GetDatabaseRequest, {}>,
-    callback: v1.DatabaseAdmin.GetDatabaseCallback
+    callback: v1.DatabaseAdmin.GetDatabaseCallback,
   ) {
     callback(createUnimplementedError('GetDatabase is not yet implemented'));
   }
 
   updateDatabaseDdl(
     call: grpc.ServerUnaryCall<v1.UpdateDatabaseDdlRequest, {}>,
-    callback: v1.DatabaseAdmin.UpdateDatabaseDdlCallback
+    callback: v1.DatabaseAdmin.UpdateDatabaseDdlCallback,
   ) {
     callback(
-      createUnimplementedError('UpdateDatabaseDdl is not yet implemented')
+      createUnimplementedError('UpdateDatabaseDdl is not yet implemented'),
     );
   }
 
   dropDatabase(
     call: grpc.ServerUnaryCall<v1.DropDatabaseRequest, {}>,
-    callback: v1.DatabaseAdmin.DropDatabaseCallback
+    callback: v1.DatabaseAdmin.DropDatabaseCallback,
   ) {
     callback(createUnimplementedError('DropDatabase is not yet implemented'));
   }
 
   getDatabaseDdl(
     call: grpc.ServerUnaryCall<v1.GetDatabaseDdlRequest, {}>,
-    callback: v1.DatabaseAdmin.GetDatabaseDdlCallback
+    callback: v1.DatabaseAdmin.GetDatabaseDdlCallback,
   ) {
     callback(createUnimplementedError('GetDatabaseDdl is not yet implemented'));
   }
 
   setIamPolicy(
     call: grpc.ServerUnaryCall<iam.SetIamPolicyRequest, {}>,
-    callback: iam.IAMPolicy.SetIamPolicyCallback
+    callback: iam.IAMPolicy.SetIamPolicyCallback,
   ) {
     callback(createUnimplementedError('SetIamPolicy is not yet implemented'));
   }
 
   getIamPolicy(
     call: grpc.ServerUnaryCall<iam.GetIamPolicyRequest, {}>,
-    callback: iam.IAMPolicy.GetIamPolicyCallback
+    callback: iam.IAMPolicy.GetIamPolicyCallback,
   ) {
     callback(createUnimplementedError('GetIamPolicy is not yet implemented'));
   }
 
   testIamPermissions(
     call: grpc.ServerUnaryCall<iam.TestIamPermissionsRequest, {}>,
-    callback: iam.IAMPolicy.TestIamPermissionsCallback
+    callback: iam.IAMPolicy.TestIamPermissionsCallback,
   ) {
     callback(
-      createUnimplementedError('TestIamPermissions is not yet implemented')
+      createUnimplementedError('TestIamPermissions is not yet implemented'),
     );
   }
 }
@@ -243,7 +243,7 @@ export class MockDatabaseAdmin {
  * 1. Two Databases: 'projects/mock-project/instances/test/databases/test' and 'projects/mock-project/instances/prod/databases/prod'.
  */
 export function createMockDatabaseAdmin(
-  server: grpc.Server
+  server: grpc.Server,
 ): MockDatabaseAdmin {
   const mock = MockDatabaseAdmin.create();
   server.addService(databaseAdminProtoDescriptor.DatabaseAdmin.service, {

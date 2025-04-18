@@ -22,7 +22,7 @@ function main(
   instanceId = 'my-instance',
   backupId = 'my-backup',
   sourceBackupPath = 'projects/my-project-id/instances/my-source-instance/backups/my-source-backup',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_copy_backup]
   /**
@@ -48,7 +48,7 @@ function main(
 
     // Expire copy backup 14 days in the future
     const expireTime = Spanner.timestamp(
-      Date.now() + 1000 * 60 * 60 * 24 * 14
+      Date.now() + 1000 * 60 * 60 * 24 * 14,
     ).toStruct();
 
     // Copy the source backup
@@ -59,13 +59,13 @@ function main(
         backupId,
         {
           expireTime: expireTime,
-        }
+        },
       );
 
       console.log(
         `Waiting for backup copy ${
           instance.backup(backupId).formattedName_
-        } to complete...`
+        } to complete...`,
       );
       await operation.promise();
 
@@ -78,7 +78,7 @@ function main(
             `${copyBackupInfo.sizeBytes} bytes was created at ` +
             `${new PreciseDate(copyBackupInfo.createTime).toISOString()} ` +
             'with version time ' +
-            `${new PreciseDate(copyBackupInfo.versionTime).toISOString()}`
+            `${new PreciseDate(copyBackupInfo.versionTime).toISOString()}`,
         );
       } else {
         console.error('ERROR: Copy of backup is not ready.');

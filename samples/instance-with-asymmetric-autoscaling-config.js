@@ -47,7 +47,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             {
               minNodes: 1,
               maxNodes: 2,
-            }
+            },
           ),
         // highPriorityCpuUtilizationPercent and storageUtilizationPercent are both
         // percentages and must lie between 0 and 100.
@@ -56,7 +56,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
             {
               highPriorityCpuUtilizationPercent: 65,
               storageUtilizationPercent: 95,
-            }
+            },
           ),
         // The read-only replicas listed in the asymmetric autoscaling options scale independently
         // from other replicas.
@@ -67,9 +67,9 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
                 protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
                   {
                     location: 'europe-west1',
-                  }
+                  },
                 ),
-            }
+            },
           ),
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.create(
             {
@@ -77,9 +77,9 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
                 protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
                   {
                     location: 'europe-west4',
-                  }
+                  },
                 ),
-            }
+            },
           ),
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AsymmetricAutoscalingOption.create(
             {
@@ -87,9 +87,9 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
                 protos.google.spanner.admin.instance.v1.ReplicaSelection.create(
                   {
                     location: 'asia-east1',
-                  }
+                  },
                 ),
-            }
+            },
           ),
         ],
       });
@@ -101,8 +101,8 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
       console.log(
         `Creating instance ${instanceAdminClient.instancePath(
           projectId,
-          instanceId
-        )}.`
+          instanceId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.createInstance({
         instanceId: instanceId,
@@ -110,7 +110,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             projectId,
-            'nam-eur-asia3'
+            'nam-eur-asia3',
           ),
           displayName: 'Display name for the instance.',
           autoscalingConfig: autoscalingConfig,
@@ -153,11 +153,11 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
                   .map(option =>
                     option.replicaSelection && option.replicaSelection.location
                       ? option.replicaSelection.location
-                      : 'N/A'
+                      : 'N/A',
                   )
                   .join(', ')
               : 'None'
-          }`
+          }`,
       );
     } catch (err) {
       console.error('ERROR:', err);

@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_add_and_drop_database_role]
   /**
@@ -54,7 +54,7 @@ function main(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         statements: request,
       });
@@ -75,7 +75,7 @@ function main(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         statements: request,
       });

@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_dml_getting_started_update]
   /**
@@ -58,7 +58,7 @@ function main(
         });
 
         console.log(
-          `Successfully updated ${rowCount} record in the Singers table.`
+          `Successfully updated ${rowCount} record in the Singers table.`,
         );
 
         await transaction.commit();

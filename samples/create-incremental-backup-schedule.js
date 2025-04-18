@@ -23,7 +23,7 @@ function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-database-id',
-  scheduleId = 'my-schedule-id'
+  scheduleId = 'my-schedule-id',
 ) {
   async function createIncrementalBackupSchedule() {
     // [START spanner_create_incremental_backup_schedule]

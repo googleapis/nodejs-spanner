@@ -104,7 +104,7 @@ describe('SessionFactory', () => {
         const sessionFactory = new SessionFactory(
           DATABASE,
           NAME,
-          FakePool as {} as db.SessionPoolConstructor
+          FakePool as {} as db.SessionPoolConstructor,
         );
         assert(sessionFactory.pool_ instanceof FakePool);
       });
@@ -132,7 +132,7 @@ describe('SessionFactory', () => {
 
       it('should create a MultiplexedSession object', () => {
         assert(
-          sessionFactory.multiplexedSession_ instanceof MultiplexedSession
+          sessionFactory.multiplexedSession_ instanceof MultiplexedSession,
         );
       });
 
@@ -193,7 +193,7 @@ describe('SessionFactory', () => {
         (
           sandbox.stub(
             sessionFactory.multiplexedSession_,
-            'getSession'
+            'getSession',
           ) as sinon.SinonStub
         ).callsFake(callback => callback(null, fakeMuxSession));
         sessionFactory.getSession((err, resp) => {
@@ -210,7 +210,7 @@ describe('SessionFactory', () => {
         (
           sandbox.stub(
             sessionFactory.multiplexedSession_,
-            'getSession'
+            'getSession',
           ) as sinon.SinonStub
         ).callsFake(callback => callback(fakeError, null));
         sessionFactory.getSession((err, resp) => {
@@ -264,7 +264,7 @@ describe('SessionFactory', () => {
         } catch (error) {
           assert.strictEqual(
             (error as ReleaseError).message,
-            'Unable to release unknown resource.'
+            'Unable to release unknown resource.',
           );
           assert.strictEqual((error as ReleaseError).resource, fakeSession);
         }

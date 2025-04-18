@@ -48,7 +48,7 @@ function main(instanceId, databaseId, projectId) {
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: request,
     });
@@ -57,7 +57,7 @@ function main(instanceId, databaseId, projectId) {
     await operation.promise();
 
     console.log(
-      'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
+      'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName',
     );
   }
   dropForeignKeyConstraintDeleteCascade();

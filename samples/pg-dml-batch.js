@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_batch_dml]
   /**
@@ -83,7 +83,7 @@ function main(
         const [rowCounts] = await transaction.batchUpdate(dmlStatements);
         await transaction.commit();
         console.log(
-          `Successfully executed ${rowCounts.length} postgreSQL statements using Batch DML.`
+          `Successfully executed ${rowCounts.length} postgreSQL statements using Batch DML.`,
         );
       });
     } catch (err) {

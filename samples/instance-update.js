@@ -44,8 +44,8 @@ function main(instanceId, projectId) {
       console.log(
         `Updating instance ${instanceAdminClient.instancePath(
           projectId,
-          instanceId
-        )}.`
+          instanceId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.updateInstance({
         instance: {
@@ -71,7 +71,7 @@ function main(instanceId, projectId) {
       });
       console.log(
         `Instance ${instanceId} has been updated with the ${metadata.edition} ` +
-          'edition.'
+          'edition.',
       );
     } catch (err) {
       console.error('ERROR:', err);

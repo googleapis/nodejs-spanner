@@ -51,11 +51,11 @@ function main(instanceId, databaseId, projectId) {
     if (rows.length > 0) {
       const option = rows[0];
       console.log(
-        `The ${option.OPTION_NAME} for ${databaseId} is ${option.OPTION_VALUE}`
+        `The ${option.OPTION_NAME} for ${databaseId} is ${option.OPTION_VALUE}`,
       );
     } else {
       console.log(
-        `Database ${databaseId} does not have a value for option 'default_leader'`
+        `Database ${databaseId} does not have a value for option 'default_leader'`,
       );
     }
   }

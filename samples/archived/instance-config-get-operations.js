@@ -38,7 +38,7 @@ function main(projectId = 'my-project-id') {
     // Lists the instance config operations.
     try {
       console.log(
-        `Getting list of instance config operations on project ${projectId}...\n`
+        `Getting list of instance config operations on project ${projectId}...\n`,
       );
       const [instanceConfigOperations] =
         await spanner.getInstanceConfigOperations({
@@ -46,19 +46,19 @@ function main(projectId = 'my-project-id') {
             '(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)',
         });
       console.log(
-        `Available instance config operations for project ${projectId}:`
+        `Available instance config operations for project ${projectId}:`,
       );
       instanceConfigOperations.forEach(instanceConfigOperation => {
         const metadata = instanceConfigOperation.metadata;
         const instanceConfig =
           protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.decode(
-            instanceConfigOperation.metadata.value
+            instanceConfigOperation.metadata.value,
           ).instanceConfig;
         console.log(
           `Instance config operation for ${instanceConfig.name} of type` +
             ` ${metadata.type_url} has status ${
               instanceConfigOperation.done ? 'done' : 'running'
-            }.`
+            }.`,
         );
       });
     } catch (err) {

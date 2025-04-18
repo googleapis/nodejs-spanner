@@ -231,7 +231,7 @@ describe('GrpcServiceObject', () => {
 
       const ret = grpcServiceObject.requestStream.apply(
         grpcServiceObject,
-        args
+        args,
       );
       assert.strictEqual(ret, expectedReturnValue);
     });
@@ -252,7 +252,7 @@ describe('GrpcServiceObject', () => {
 
       const ret = grpcServiceObject.requestWritableStream.apply(
         grpcServiceObject,
-        args
+        args,
       );
       assert.strictEqual(ret, expectedReturnValue);
     });

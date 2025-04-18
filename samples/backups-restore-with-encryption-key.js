@@ -20,7 +20,7 @@ async function restoreBackupWithEncryptionKey(
   databaseId,
   backupId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_restore_backup_with_encryption_key]
 
@@ -50,8 +50,8 @@ async function restoreBackupWithEncryptionKey(
     `Restoring database ${databaseAdminClient.databasePath(
       projectId,
       instanceId,
-      databaseId
-    )} from backup ${backupId}.`
+      databaseId,
+    )} from backup ${backupId}.`,
   );
   const [restoreOperation] = await databaseAdminClient.restoreDatabase({
     parent: databaseAdminClient.instancePath(projectId, instanceId),
@@ -74,7 +74,7 @@ async function restoreBackupWithEncryptionKey(
   console.log(
     `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
       `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
-      `using encryption key ${metadata.encryptionConfig.kmsKeyName}.`
+      `using encryption key ${metadata.encryptionConfig.kmsKeyName}.`,
   );
   // [END spanner_restore_backup_with_encryption_key]
 }

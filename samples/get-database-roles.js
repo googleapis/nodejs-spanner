@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_list_database_roles]
   /**
@@ -47,15 +47,15 @@ function main(
       parent: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
     });
     console.log(
       `Roles for Database: ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}`
+        databaseId,
+      )}`,
     );
     databaseRoles.forEach(role => {
       console.log(`Role: ${role.name}`);

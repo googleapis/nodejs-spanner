@@ -29,7 +29,7 @@ class AtomicCounter {
 
   constructor(initialValue?: number) {
     this.backingBuffer = new Uint32Array(
-      new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT)
+      new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT),
     );
     if (initialValue) {
       this.increment(initialValue);
@@ -63,7 +63,7 @@ function craftRequestId(
   nthClientId: number,
   channelId: number,
   nthRequest: number,
-  attempt: number
+  attempt: number,
 ) {
   return `${REQUEST_HEADER_VERSION}.${randIdForProcess}.${nthClientId}.${channelId}.${nthRequest}.${attempt}`;
 }
@@ -131,7 +131,7 @@ function injectRequestIDIntoHeaders(
   headers: {[k: string]: string},
   session: any,
   nthRequest?: number,
-  attempt?: number
+  attempt?: number,
 ) {
   if (!session) {
     return headers;
@@ -153,7 +153,7 @@ function _metadataWithRequestId(
   session: any,
   nthRequest: number,
   attempt: number,
-  priorMetadata?: {[k: string]: string}
+  priorMetadata?: {[k: string]: string},
 ): {[k: string]: string} {
   if (!priorMetadata) {
     priorMetadata = {};
@@ -172,7 +172,7 @@ function _metadataWithRequestId(
     clientId,
     channelId,
     nthRequest,
-    attempt
+    attempt,
   );
   return withReqId;
 }

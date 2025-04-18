@@ -66,17 +66,18 @@ require('yargs')
     'createInstance <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance.',
     {},
-    opts => createInstance(opts.instanceName, opts.projectId)
+    opts => createInstance(opts.instanceName, opts.projectId),
   )
   .example('node $0 createInstance "my-instance" "my-project-id"')
   .command(
     'createInstanceWithProcessingUnits <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance with processing units.',
     {},
-    opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
+    opts =>
+      createInstanceWithProcessingUnits(opts.instanceName, opts.projectId),
   )
   .example(
-    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

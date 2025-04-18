@@ -17,7 +17,7 @@
 async function createAndExecuteQueryPartitions(
   instanceId,
   databaseId,
-  projectId
+  projectId,
 ) {
   // [START spanner_batch_client]
   // Imports the Google Cloud client library
@@ -58,13 +58,13 @@ async function createAndExecuteQueryPartitions(
       transaction.execute(partition).then(results => {
         const rows = results[0].map(row => row.toJSON());
         row_count += rows.length;
-      })
+      }),
     );
   });
   Promise.all(promises)
     .then(() => {
       console.log(
-        `Successfully received ${row_count} from executed partitions.`
+        `Successfully received ${row_count} from executed partitions.`,
       );
       transaction.close();
     })
@@ -79,7 +79,7 @@ async function executePartition(
   databaseId,
   identifier,
   partition,
-  projectId
+  projectId,
 ) {
   // [START spanner_batch_execute_partitions]
   // Imports the Google Cloud client library
@@ -119,8 +119,8 @@ require('yargs')
       createAndExecuteQueryPartitions(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'execute-partition <instanceName> <databaseName> <identifier> <partition> <projectId>',
@@ -132,14 +132,14 @@ require('yargs')
         opts.databaseName,
         JSON.parse(opts.identifier),
         JSON.parse(opts.partition),
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 create-and-execute-query-partitions "my-instance" "my-database" "my-project-id"'
+    'node $0 create-and-execute-query-partitions "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"'
+    'node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

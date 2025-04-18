@@ -194,7 +194,7 @@ async function queryWithArray(instanceId, databaseId, projectId) {
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${
           json.VenueName
-        }, AvailableDate: ${JSON.stringify(availableDate).substring(1, 11)}`
+        }, AvailableDate: ${JSON.stringify(availableDate).substring(1, 11)}`,
       );
     });
   } catch (err) {
@@ -252,7 +252,7 @@ async function queryWithBool(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` OutdoorVenue: ${json.OutdoorVenue}`
+          ` OutdoorVenue: ${json.OutdoorVenue}`,
       );
     });
   } catch (err) {
@@ -366,7 +366,7 @@ async function queryWithDate(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` LastContactDate: ${JSON.stringify(date).substring(1, 11)}`
+          ` LastContactDate: ${JSON.stringify(date).substring(1, 11)}`,
       );
     });
   } catch (err) {
@@ -424,7 +424,7 @@ async function queryWithFloat(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` PopularityScore: ${json.PopularityScore}`
+          ` PopularityScore: ${json.PopularityScore}`,
       );
     });
   } catch (err) {
@@ -482,7 +482,7 @@ async function queryWithInt(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` Capacity: ${json.Capacity}`
+          ` Capacity: ${json.Capacity}`,
       );
     });
   } catch (err) {
@@ -595,7 +595,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` LastUpdateTime: ${json.LastUpdateTime}`
+          ` LastUpdateTime: ${json.LastUpdateTime}`,
       );
     });
   } catch (err) {
@@ -622,70 +622,73 @@ require('yargs')
     'Creates sample "Venues" table containing example datatype columns in a Cloud Spanner database.',
     {},
     opts =>
-      createVenuesTable(opts.instanceName, opts.databaseName, opts.projectId)
+      createVenuesTable(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'insertData <instanceName> <databaseName> <projectId>',
     'Inserts new rows of data into an sample "Venues" Cloud Spanner table.',
     {},
-    opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => insertData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithArray <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with an ARRAY datatype.",
     {},
-    opts => queryWithArray(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      queryWithArray(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithBool <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a BOOL datatype.",
     {},
-    opts => queryWithBool(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => queryWithBool(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithBytes <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a BYTES datatype.",
     {},
-    opts => queryWithBytes(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      queryWithBytes(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithDate <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a DATE datatype.",
     {},
-    opts => queryWithDate(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => queryWithDate(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithFloat <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a FLOAT64 datatype.",
     {},
-    opts => queryWithFloat(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      queryWithFloat(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithInt <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a INT64 datatype.",
     {},
-    opts => queryWithInt(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => queryWithInt(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithString <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a STRING datatype.",
     {},
     opts =>
-      queryWithString(opts.instanceName, opts.databaseName, opts.projectId)
+      queryWithString(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithTimestamp <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a TIMESTAMP datatype.",
     {},
     opts =>
-      queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
+      queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'addNumericColumn <instanceName> <databaseName> <projectId>',
     'Adds a "Revenue" column to sample "Venues" table in a Cloud Spanner database.',
     {},
     opts =>
-      addNumericColumn(opts.instanceName, opts.databaseName, opts.projectId)
+      addNumericColumn(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'updateWithNumericData <instanceName> <databaseName> <projectId>',
@@ -695,8 +698,8 @@ require('yargs')
       updateWithNumericData(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'queryWithNumericParameter <instanceName> <databaseName> <projectId>',
@@ -706,21 +709,21 @@ require('yargs')
       queryWithNumericParameter(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'addJsonColumn <instanceName> <databaseName> <projectId>',
     'Adds a "VenueDetails" column to sample "Venues" table in a Cloud Spanner database.',
     {},
-    opts => addJsonColumn(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => addJsonColumn(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'updateWithJsonData <instanceName> <databaseName> <projectId>',
     'Updates rows to include "VenueDetails" in sample "Venues" Cloud Spanner table.',
     {},
     opts =>
-      updateWithJsonData(opts.instanceName, opts.databaseName, opts.projectId)
+      updateWithJsonData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithJsonParameter <instanceName> <databaseName> <projectId>',
@@ -730,11 +733,11 @@ require('yargs')
       queryWithJsonParameter(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 createVenuesTable "my-instance" "my-database" "my-project-id"'
+    'node $0 createVenuesTable "my-instance" "my-database" "my-project-id"',
   )
   .example('node $0 insertData "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithArray "my-instance" "my-database" "my-project-id"')
@@ -744,19 +747,19 @@ require('yargs')
   .example('node $0 queryWithFloat "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithInt "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 queryWithString "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithString "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 addNumericColumn "my-instance" "my-database" "my-project-id"'
+    'node $0 addNumericColumn "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 updateWithNumericData "my-instance" "my-database" "my-project-id"'
+    'node $0 updateWithNumericData "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 queryWithNumericParameter "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithNumericParameter "my-instance" "my-database" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

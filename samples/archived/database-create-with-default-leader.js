@@ -75,7 +75,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     console.log(`Waiting for creation of ${database.id} to complete...`);
     await operation.promise();
     console.log(
-      `Created database ${databaseId} with default leader ${defaultLeader}.`
+      `Created database ${databaseId} with default leader ${defaultLeader}.`,
     );
   }
   createDatabaseWithDefaultLeader();

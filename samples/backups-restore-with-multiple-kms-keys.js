@@ -20,7 +20,7 @@ function main(
   databaseId = 'my-database',
   backupId = 'my-backup',
   projectId = 'my-project',
-  kmsKeyNames = 'key1,key2'
+  kmsKeyNames = 'key1,key2',
 ) {
   // [START spanner_restore_backup_with_MR_CMEK]
   /**
@@ -51,8 +51,8 @@ function main(
       `Restoring database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )} from backup ${backupId}.`
+        databaseId,
+      )} from backup ${backupId}.`,
     );
     const [restoreOperation] = await databaseAdminClient.restoreDatabase({
       parent: databaseAdminClient.instancePath(projectId, instanceId),
@@ -75,7 +75,7 @@ function main(
     console.log(
       `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
         `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
-        `using encryption key ${metadata.encryptionConfig.kmsKeyNames}.`
+        `using encryption key ${metadata.encryptionConfig.kmsKeyNames}.`,
     );
   }
   restoreBackupWithMultipleKmsKeys();

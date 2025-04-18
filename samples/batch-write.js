@@ -22,7 +22,7 @@
 async function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_batch_write_at_least_once]
 
@@ -95,14 +95,14 @@ async function main(
             `Mutation group indexes ${
               response.indexes
             }, have been applied with commit timestamp ${Spanner.timestamp(
-              response.commitTimestamp
-            ).toJSON()}`
+              response.commitTimestamp,
+            ).toJSON()}`,
           );
         }
         // Mutation groups that fail to commit trigger a response with a non-zero status code.
         else {
           console.log(
-            `Mutation group indexes ${response.indexes}, could not be applied with error code ${response.status.code}, and error message ${response.status.message}`
+            `Mutation group indexes ${response.indexes}, could not be applied with error code ${response.status.code}, and error message ${response.status.message}`,
           );
         }
       })

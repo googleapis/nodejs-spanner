@@ -42,8 +42,8 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
     `Restoring database ${databaseAdminClient.databasePath(
       projectId,
       instanceId,
-      databaseId
-    )} from backup ${backupId}.`
+      databaseId,
+    )} from backup ${backupId}.`,
   );
   const [restoreOperation] = await databaseAdminClient.restoreDatabase({
     parent: databaseAdminClient.instancePath(projectId, instanceId),
@@ -64,8 +64,8 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
       `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
       'with version time ' +
       `${new PreciseDate(
-        metadata.restoreInfo.backupInfo.versionTime
-      ).toISOString()}.`
+        metadata.restoreInfo.backupInfo.versionTime,
+      ).toISOString()}.`,
   );
   // [END spanner_restore_backup]
 }

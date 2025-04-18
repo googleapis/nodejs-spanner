@@ -50,7 +50,7 @@ require('yargs')
         describe: 'The number of buckets in output',
       },
     },
-    runWorkloads
+    runWorkloads,
   ).argv;
 
 function formatOptions(argv) {
@@ -80,7 +80,7 @@ function printMetrics(workload) {
 
   console.log(
     dedent`[OVERALL], RunTime(ms), ${workload.duration}
-    [OVERALL], Throughput(ops/sec), ${totalOps / (workload.duration / 1000)}`
+    [OVERALL], Throughput(ops/sec), ${totalOps / (workload.duration / 1000)}`,
   );
 
   workload.operations.forEach(operation => {
@@ -97,7 +97,7 @@ function printMetrics(workload) {
       ${opName}, 95thPercentileLatency(us), ${stats.percentile(lats, 0.95)}
       ${opName}, 99thPercentileLatency(us), ${stats.percentile(lats, 0.99)}
       ${opName}, 99.9thPercentileLatency(us), ${stats.percentile(lats, 0.999)}
-      ${opName}, Return=OK, ${ops}`
+      ${opName}, Return=OK, ${ops}`,
     );
 
     for (let i = 0; i < numBucket; i++) {
@@ -135,6 +135,6 @@ function runWorkloads(argv) {
   return Promise.all(
     Array(options.get('num_worker') || 1)
       .fill(0)
-      .map(() => runWorkload(database, options))
+      .map(() => runWorkload(database, options)),
   );
 }

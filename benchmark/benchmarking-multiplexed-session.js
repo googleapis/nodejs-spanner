@@ -25,7 +25,7 @@ async function main(
   method,
   multiplexedEnabled,
   numThreads,
-  numQueries
+  numQueries,
 ) {
   // enable the env variable
   multiplexedEnabled === 'true'
@@ -70,7 +70,7 @@ async function main(
 
     // push the time taken by thread to the array
     thread_execution_times.push(
-      (performance.now() - startThreadTime).toFixed(2)
+      (performance.now() - startThreadTime).toFixed(2),
     );
   }
 
@@ -94,7 +94,7 @@ async function main(
 
     // push the time taken by thread to the array
     thread_execution_times.push(
-      (performance.now() - startThreadTime).toFixed(2)
+      (performance.now() - startThreadTime).toFixed(2),
     );
   }
 

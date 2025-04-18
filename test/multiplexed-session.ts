@@ -161,7 +161,7 @@ describe('MultiplexedSession', () => {
       multiplexedSession.on(MUX_SESSION_AVAILABLE, () => {
         assert.strictEqual(
           multiplexedSession._multiplexedSession,
-          fakeMuxSession
+          fakeMuxSession,
         );
         done();
       });
@@ -260,14 +260,14 @@ describe('MultiplexedSession', () => {
       setTimeout(() => multiplexedSession.emit(MUX_SESSION_AVAILABLE), 100);
       assert.strictEqual(
         multiplexedSession.listenerCount(MUX_SESSION_AVAILABLE),
-        1
+        1,
       );
       try {
         await promise;
       } finally {
         assert.strictEqual(
           multiplexedSession.listenerCount(MUX_SESSION_AVAILABLE),
-          0
+          0,
         );
       }
     });
@@ -277,11 +277,11 @@ describe('MultiplexedSession', () => {
       const promise = multiplexedSession._getSession();
       setTimeout(
         () => multiplexedSession.emit(MUX_SESSION_CREATE_ERROR, error),
-        100
+        100,
       );
       assert.strictEqual(
         multiplexedSession.listenerCount(MUX_SESSION_CREATE_ERROR),
-        1
+        1,
       );
       try {
         await promise;
@@ -289,7 +289,7 @@ describe('MultiplexedSession', () => {
         assert.strictEqual(e, error);
         assert.strictEqual(
           multiplexedSession.listenerCount(MUX_SESSION_CREATE_ERROR),
-          0
+          0,
         );
       }
     });

@@ -39,15 +39,15 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
     console.log(
       `Creating instance ${instanceAdminClient.instancePath(
         projectId,
-        instanceId
-      )}.`
+        instanceId,
+      )}.`,
     );
     const [operation] = await instanceAdminClient.createInstance({
       instanceId: instanceId,
       instance: {
         config: instanceAdminClient.instanceConfigPath(
           projectId,
-          'regional-us-central1'
+          'regional-us-central1',
         ),
         displayName: 'Display name for the instance.',
         processingUnits: 500,
@@ -67,7 +67,7 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
     });
     console.log(
       `Instance ${instanceId} has ${metadata.processingUnits} ` +
-        'processing units.'
+        'processing units.',
     );
   } catch (err) {
     console.error('ERROR:', err);

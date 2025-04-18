@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id',
   startTitle = 'Ardvark',
-  endTitle = 'Goo'
+  endTitle = 'Goo',
 ) {
   // [START spanner_query_data_with_index]
   /**
@@ -68,7 +68,7 @@ function main(
           ? json.MarketingBudget
           : null; // This value is nullable
         console.log(
-          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`,
         );
       });
     } catch (err) {

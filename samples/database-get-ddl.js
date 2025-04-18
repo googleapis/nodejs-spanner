@@ -44,7 +44,7 @@ function main(instanceId, databaseId, projectId) {
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
     });
 
@@ -52,8 +52,8 @@ function main(instanceId, databaseId, projectId) {
       `Retrieved database DDL for ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}:`
+        databaseId,
+      )}:`,
     );
     ddlStatements.statements.forEach(element => {
       console.log(element);

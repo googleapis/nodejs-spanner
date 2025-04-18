@@ -18,7 +18,7 @@
 async function createDatabaseWithVersionRetentionPeriod(
   instanceId,
   databaseId,
-  projectId
+  projectId,
 ) {
   // [START spanner_create_database_with_version_retention_period]
 
@@ -45,8 +45,8 @@ async function createDatabaseWithVersionRetentionPeriod(
     console.log(
       `Creating database ${databaseAdminClient.instancePath(
         projectId,
-        instanceId
-      )}.`
+        instanceId,
+      )}.`,
     );
     const versionRetentionStatement = `
       ALTER DATABASE \`${databaseId}\`

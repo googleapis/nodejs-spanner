@@ -481,7 +481,7 @@ describe('Table', () => {
       const gaxOptions = {};
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, gaxOptions);
@@ -495,7 +495,7 @@ describe('Table', () => {
       const insertRowsOptions = {returnCommitStats: true};
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, insertRowsOptions);
@@ -512,7 +512,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, insertRowsOptions);
@@ -528,7 +528,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, insertRowsOptions);
@@ -544,7 +544,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, insertRowsOptions);
@@ -567,10 +567,13 @@ describe('Table', () => {
 
         const stream = through.obj();
 
-        setImmediate(() => {
-          split(rows, stream).then(() => {
+        setImmediate(async () => {
+          try {
+            await split(rows, stream);
             stream.end();
-          });
+          } catch (err) {
+            stream.destroy(err as Error);
+          }
         });
 
         return stream;
@@ -651,7 +654,7 @@ describe('Table', () => {
       const gaxOptions = {};
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, gaxOptions);
@@ -665,7 +668,7 @@ describe('Table', () => {
       const replaceRowsOptions = {returnCommitStats: true};
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, replaceRowsOptions);
@@ -682,7 +685,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, replaceRowsOptions);
@@ -698,7 +701,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, replaceRowsOptions);
@@ -714,7 +717,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, replaceRowsOptions);
@@ -757,7 +760,7 @@ describe('Table', () => {
       const gaxOptions = {};
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, gaxOptions);
@@ -771,7 +774,7 @@ describe('Table', () => {
       const updateRowsOptions = {returnCommitStats: true};
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, updateRowsOptions);
@@ -788,7 +791,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, updateRowsOptions);
@@ -804,7 +807,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, updateRowsOptions);
@@ -820,7 +823,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, updateRowsOptions);
@@ -863,7 +866,7 @@ describe('Table', () => {
       const gaxOptions = {};
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, gaxOptions);
@@ -877,7 +880,7 @@ describe('Table', () => {
       const upsertRowsOptions = {returnCommitStats: true};
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, upsertRowsOptions);
@@ -894,7 +897,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, upsertRowsOptions);
@@ -910,7 +913,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, upsertRowsOptions);
@@ -926,7 +929,7 @@ describe('Table', () => {
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
-        ROW
+        ROW,
       );
       transaction.commit = options => {
         assert.strictEqual(options, upsertRowsOptions);

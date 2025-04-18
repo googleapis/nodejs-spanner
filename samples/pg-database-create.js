@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_create_database]
   /**
@@ -57,7 +57,7 @@ function main(
       name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
     });
     console.log(
-      `Created database ${databaseId} on instance ${instanceId} with dialect ${metadata.databaseDialect}.`
+      `Created database ${databaseId} on instance ${instanceId} with dialect ${metadata.databaseDialect}.`,
     );
 
     // Create a couple of tables using a separate request. We must use PostgreSQL style DDL as the
@@ -82,7 +82,7 @@ function main(
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: [statements],
     });

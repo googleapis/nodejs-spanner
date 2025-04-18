@@ -156,7 +156,7 @@ async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${json.EventDate}, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`
+        `SingerId: ${json.SingerId}, VenueId: ${json.VenueId}, EventDate: ${json.EventDate}, Revenue: ${json.Revenue}, LastUpdateTime: ${json.LastUpdateTime}`,
       );
     });
   } catch (err) {
@@ -203,7 +203,7 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
     await operation.promise();
 
     console.log(
-      'Added LastUpdateTime as a commit timestamp column in Albums table.'
+      'Added LastUpdateTime as a commit timestamp column in Albums table.',
     );
   } catch (err) {
     console.error('ERROR:', err);
@@ -331,7 +331,7 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
           json.AlbumId
         }, MarketingBudget: ${
           json.MarketingBudget ? json.MarketingBudget : null
-        }, LastUpdateTime: ${json.LastUpdateTime}`
+        }, LastUpdateTime: ${json.LastUpdateTime}`,
       );
     });
   } catch (err) {
@@ -353,15 +353,15 @@ require('yargs')
       createTableWithTimestamp(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'insertWithTimestamp <instanceName> <databaseName> <projectId>',
     'Inserts new rows of data including commit timestamps into an example Cloud Spanner table.',
     {},
     opts =>
-      insertWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
+      insertWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryTableWithTimestamp <instanceName> <databaseName> <projectId>',
@@ -371,22 +371,22 @@ require('yargs')
       queryTableWithTimestamp(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'addTimestampColumn <instanceName> <databaseName> <projectId>',
     'Adds a example commit timestamp column to an existing example Cloud Spanner table.',
     {},
     opts =>
-      addTimestampColumn(opts.instanceName, opts.databaseName, opts.projectId)
+      addTimestampColumn(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'updateWithTimestamp <instanceName> <databaseName> <projectId>',
     'Modifies existing rows of data in an example Cloud Spanner table with a commit timestamp column..',
     {},
     opts =>
-      updateWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
+      updateWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithTimestamp <instanceName> <databaseName> <projectId>',
@@ -394,25 +394,25 @@ require('yargs')
     column (LastUpdateTime) added by addTimestampColumn.`,
     {},
     opts =>
-      queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId)
+      queryWithTimestamp(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .example(
-    'node $0 createTableWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 createTableWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 insertWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 insertWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 queryTableWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 queryTableWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 addTimestampColumn "my-instance" "my-database" "my-project-id"'
+    'node $0 addTimestampColumn "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 updateWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 updateWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithTimestamp "my-instance" "my-database" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

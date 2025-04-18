@@ -32,7 +32,7 @@ const PROTO_DIR =
 const GAX_PROTO_DIR = path.join(
   path.dirname(require.resolve('google-gax')),
   '..',
-  'protos'
+  'protos',
 );
 
 /**
@@ -113,27 +113,27 @@ export class MockInstanceAdmin {
       v1.ListInstanceConfigsRequest,
       v1.ListInstanceConfigsResponse
     >,
-    callback: v1.InstanceAdmin.ListInstanceConfigsCallback
+    callback: v1.InstanceAdmin.ListInstanceConfigsCallback,
   ) {
     callback(
       null,
       v1.ListInstanceConfigsResponse.create({
         instanceConfigs: [MockInstanceAdmin.TEST_INSTANCE_CONFIG],
-      })
+      }),
     );
   }
 
   getInstanceConfig(
     call: grpc.ServerUnaryCall<v1.GetInstanceConfigRequest, v1.Instance>,
-    callback: v1.InstanceAdmin.GetInstanceConfigCallback
+    callback: v1.InstanceAdmin.GetInstanceConfigCallback,
   ) {
     if (call.request!.name === TEST_INSTANCE_CONFIG_NAME) {
       callback(null, MockInstanceAdmin.TEST_INSTANCE_CONFIG);
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `InstanceConfig not found: ${call.request!.name}`
-        )
+          `InstanceConfig not found: ${call.request!.name}`,
+        ),
       );
     }
   }
@@ -143,13 +143,13 @@ export class MockInstanceAdmin {
       v1.ListInstancesRequest,
       v1.ListInstancesResponse
     >,
-    callback: v1.InstanceAdmin.ListInstancesCallback
+    callback: v1.InstanceAdmin.ListInstancesCallback,
   ) {
     let instances: google.spanner.admin.instance.v1.IInstance[] = [];
     if (
       !call.request!.filter ||
       call.request!.filter.includes(
-        `name:${MockInstanceAdmin.TEST_INSTANCE.name}`
+        `name:${MockInstanceAdmin.TEST_INSTANCE.name}`,
       )
     ) {
       instances.push(MockInstanceAdmin.TEST_INSTANCE);
@@ -157,7 +157,7 @@ export class MockInstanceAdmin {
     if (
       !call.request!.filter ||
       call.request!.filter.includes(
-        `name:${MockInstanceAdmin.PROD_INSTANCE.name}`
+        `name:${MockInstanceAdmin.PROD_INSTANCE.name}`,
       )
     ) {
       instances.push(MockInstanceAdmin.PROD_INSTANCE);
@@ -173,13 +173,13 @@ export class MockInstanceAdmin {
       null,
       v1.ListInstancesResponse.create({
         instances,
-      })
+      }),
     );
   }
 
   getInstance(
     call: grpc.ServerUnaryCall<v1.GetInstanceRequest, v1.Instance>,
-    callback: v1.InstanceAdmin.GetInstanceCallback
+    callback: v1.InstanceAdmin.GetInstanceCallback,
   ) {
     if (call.request!.name === TEST_INSTANCE_NAME) {
       callback(null, MockInstanceAdmin.TEST_INSTANCE);
@@ -188,15 +188,15 @@ export class MockInstanceAdmin {
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `Instance not found: ${call.request!.name}`
-        )
+          `Instance not found: ${call.request!.name}`,
+        ),
       );
     }
   }
 
   createInstance(
     call: grpc.ServerUnaryCall<v1.CreateInstanceRequest, longrunning.Operation>,
-    callback: v1.InstanceAdmin.CreateInstanceCallback
+    callback: v1.InstanceAdmin.CreateInstanceCallback,
   ) {
     const instance = v1.Instance.create({
       name: `${call.request!.parent}/instances/${call.request!.instanceId}`,
@@ -222,7 +222,7 @@ export class MockInstanceAdmin {
         instance,
         startTime: now(),
         endTime: now(),
-      })
+      }),
     ).finish();
     const instanceBuffer = v1.Instance.encode(instance).finish();
     callback(
@@ -236,13 +236,13 @@ export class MockInstanceAdmin {
         response: Any.create({
           value: instanceBuffer,
         }),
-      })
+      }),
     );
   }
 
   updateInstance(
     call: grpc.ServerUnaryCall<v1.UpdateInstanceRequest, longrunning.Operation>,
-    callback: v1.InstanceAdmin.UpdateInstanceCallback
+    callback: v1.InstanceAdmin.UpdateInstanceCallback,
   ) {
     if (call.request!.instance) {
       if (
@@ -254,7 +254,7 @@ export class MockInstanceAdmin {
             instance: call.request!.instance,
             startTime: now(),
             endTime: now(),
-          })
+          }),
         ).finish();
         callback(
           null,
@@ -267,28 +267,28 @@ export class MockInstanceAdmin {
             response: Any.create({
               value: v1.Instance.encode(call.request!.instance).finish(),
             }),
-          })
+          }),
         );
       } else {
         callback(
           MockInstanceAdmin.createNotFoundError(
-            `Instance not found: ${call.request!.instance.name}`
-          )
+            `Instance not found: ${call.request!.instance.name}`,
+          ),
         );
       }
     } else {
       callback(
         MockInstanceAdmin.createServiceError(
           'Missing instance in UpdateInstance request',
-          grpc.status.INVALID_ARGUMENT
-        )
+          grpc.status.INVALID_ARGUMENT,
+        ),
       );
     }
   }
 
   deleteInstance(
     call: grpc.ServerUnaryCall<v1.DeleteInstanceRequest, Empty>,
-    callback: v1.InstanceAdmin.DeleteInstanceCallback
+    callback: v1.InstanceAdmin.DeleteInstanceCallback,
   ) {
     if (
       call.request!.name === PROD_INSTANCE_NAME ||
@@ -298,32 +298,32 @@ export class MockInstanceAdmin {
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `Instance not found: ${call.request!.name}`
-        )
+          `Instance not found: ${call.request!.name}`,
+        ),
       );
     }
   }
 
   setIamPolicy(
     call: grpc.ServerUnaryCall<iam.SetIamPolicyRequest, {}>,
-    callback: iam.IAMPolicy.SetIamPolicyCallback
+    callback: iam.IAMPolicy.SetIamPolicyCallback,
   ) {
     callback(createUnimplementedError('SetIamPolicy is not yet implemented'));
   }
 
   getIamPolicy(
     call: grpc.ServerUnaryCall<iam.GetIamPolicyRequest, {}>,
-    callback: iam.IAMPolicy.GetIamPolicyCallback
+    callback: iam.IAMPolicy.GetIamPolicyCallback,
   ) {
     callback(createUnimplementedError('GetIamPolicy is not yet implemented'));
   }
 
   testIamPermissions(
     call: grpc.ServerUnaryCall<iam.TestIamPermissionsRequest, {}>,
-    callback: iam.IAMPolicy.TestIamPermissionsCallback
+    callback: iam.IAMPolicy.TestIamPermissionsCallback,
   ) {
     callback(
-      createUnimplementedError('TestIamPermissions is not yet implemented')
+      createUnimplementedError('TestIamPermissions is not yet implemented'),
     );
   }
 }
@@ -334,7 +334,7 @@ export class MockInstanceAdmin {
  * 2. Two Instances: 'projects/mock-project/instances/test' and 'projects/mock-project/instances/prod'.
  */
 export function createMockInstanceAdmin(
-  server: grpc.Server
+  server: grpc.Server,
 ): MockInstanceAdmin {
   const mock = MockInstanceAdmin.create();
   server.addService(instanceAdminProtoDescriptor.InstanceAdmin.service, {

@@ -75,7 +75,7 @@ function main(instanceId, databaseId, projectId) {
           console.log('Inserted new outdoor venue');
 
           await tx.commit();
-        }
+        },
       );
     } catch (err) {
       console.error('ERROR:', err);

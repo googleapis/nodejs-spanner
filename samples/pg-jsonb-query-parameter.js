@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_jsonb_query_parameter]
   /**
@@ -63,8 +63,8 @@ function main(
       rows.forEach(row => {
         console.log(
           `VenueId: ${row.venueid}, Details: ${JSON.stringify(
-            row.venuedetails
-          )}`
+            row.venuedetails,
+          )}`,
         );
       });
     } finally {

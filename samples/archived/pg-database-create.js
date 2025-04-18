@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_create_database]
   /**
@@ -52,14 +52,14 @@ function main(
     // DDL statements. We need to execute these separately after the database has been created.
     const [database, operationCreate] = await instance.createDatabase(
       databaseId,
-      request
+      request,
     );
 
     console.log(`Waiting for operation on ${database.id} to complete...`);
     await operationCreate.promise();
     await database.getMetadata();
     console.log(
-      `Created database ${databaseId} on instance ${instanceId} with dialect ${database.metadata.databaseDialect}.`
+      `Created database ${databaseId} on instance ${instanceId} with dialect ${database.metadata.databaseDialect}.`,
     );
 
     // Create a couple of tables using a separate request. We must use PostgreSQL style DDL as the

@@ -58,12 +58,12 @@ async function main(instanceId, databaseId, projectId) {
       });
 
       console.log(
-        `Successfully fetched ${rows.length} rows using low RPC priority.`
+        `Successfully fetched ${rows.length} rows using low RPC priority.`,
       );
 
       rows.forEach(row => {
         console.log(
-          `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`
+          `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`,
         );
       });
     } catch (err) {

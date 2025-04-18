@@ -55,7 +55,7 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
     });
     console.log(
       `Instance ${instanceId} has ${metadata.processingUnits} ` +
-        'processing units.'
+        'processing units.',
     );
   } catch (err) {
     console.error('ERROR:', err);

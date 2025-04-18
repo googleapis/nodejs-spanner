@@ -73,7 +73,7 @@ export namespace examples {
          * @returns SingerInfo instance
          */
         public static create(
-          properties?: examples.spanner.music.ISingerInfo
+          properties?: examples.spanner.music.ISingerInfo,
         ): examples.spanner.music.SingerInfo;
 
         /**
@@ -84,7 +84,7 @@ export namespace examples {
          */
         public static encode(
           message: examples.spanner.music.ISingerInfo,
-          writer?: $protobuf.Writer
+          writer?: $protobuf.Writer,
         ): $protobuf.Writer;
 
         /**
@@ -95,7 +95,7 @@ export namespace examples {
          */
         public static encodeDelimited(
           message: examples.spanner.music.ISingerInfo,
-          writer?: $protobuf.Writer
+          writer?: $protobuf.Writer,
         ): $protobuf.Writer;
 
         /**
@@ -108,7 +108,7 @@ export namespace examples {
          */
         public static decode(
           reader: $protobuf.Reader | Uint8Array,
-          length?: number
+          length?: number,
         ): examples.spanner.music.SingerInfo;
 
         /**
@@ -119,7 +119,7 @@ export namespace examples {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decodeDelimited(
-          reader: $protobuf.Reader | Uint8Array
+          reader: $protobuf.Reader | Uint8Array,
         ): examples.spanner.music.SingerInfo;
 
         /**
@@ -146,7 +146,7 @@ export namespace examples {
          */
         public static toObject(
           message: examples.spanner.music.SingerInfo,
-          options?: $protobuf.IConversionOptions
+          options?: $protobuf.IConversionOptions,
         ): {[k: string]: any};
 
         /**

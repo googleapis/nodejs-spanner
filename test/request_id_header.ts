@@ -35,12 +35,12 @@ describe('RequestId', () => {
       assert.deepStrictEqual(
         ac0.increment(2),
         2,
-        'increment should return the added value'
+        'increment should return the added value',
       );
       assert.deepStrictEqual(
         ac0.value(),
         2,
-        'increment should have modified the value'
+        'increment should have modified the value',
       );
 
       const ac1 = newAtomicCounter(1);
@@ -48,12 +48,12 @@ describe('RequestId', () => {
       assert.deepStrictEqual(
         ac1.increment(1 << 27),
         (1 << 27) + 1,
-        'increment should return the added value'
+        'increment should return the added value',
       );
       assert.deepStrictEqual(
         ac1.value(),
         (1 << 27) + 1,
-        'increment should have modified the value'
+        'increment should have modified the value',
       );
       done();
     });
@@ -82,7 +82,7 @@ describe('RequestId', () => {
       assert.match(
         randIdForProcess,
         /^[0-9A-Fa-f]{8}$/,
-        `process-id should be a 32-bit hexadecimal number, but was ${randIdForProcess}`
+        `process-id should be a 32-bit hexadecimal number, but was ${randIdForProcess}`,
       );
       done();
     });
@@ -90,7 +90,7 @@ describe('RequestId', () => {
     it('with attempts', done => {
       assert.strictEqual(
         craftRequestId(1, 2, 3, 4),
-        `1.${randIdForProcess}.1.2.3.4`
+        `1.${randIdForProcess}.1.2.3.4`,
       );
       done();
     });
@@ -154,7 +154,7 @@ describe('RequestId', () => {
     assert.deepStrictEqual(
       nextNthRequest(fauxDatabase),
       1,
-      'Without override, should default to 1'
+      'Without override, should default to 1',
     );
 
     Object.assign(fauxDatabase, {
@@ -165,7 +165,7 @@ describe('RequestId', () => {
     assert.deepStrictEqual(
       nextNthRequest(fauxDatabase),
       4,
-      'With override should infer value'
+      'With override should infer value',
     );
   });
 });

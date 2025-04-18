@@ -57,7 +57,7 @@ async function createDatabase(instanceId, databaseId, projectId) {
   // Creates a database
   const [database, operation] = await instance.createDatabase(
     databaseId,
-    request
+    request,
   );
 
   console.log(`Waiting for operation on ${database.id} to complete...`);
@@ -149,7 +149,7 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
           json.AlbumId
         }, MarketingBudget: ${
           json.MarketingBudget ? json.MarketingBudget : null
-        }`
+        }`,
       );
     });
   } catch (err) {
@@ -174,7 +174,8 @@ require('yargs')
     'createDatabase <instanceName> <databaseName> <projectId>',
     'Creates an example database with two tables in a Cloud Spanner instance.',
     {},
-    opts => createDatabase(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      createDatabase(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'createDatabaseWithEncryptionKey <instanceName> <databaseName> <projectId> <keyName>',
@@ -185,14 +186,14 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .command(
     'addColumn <instanceName> <databaseName> <projectId>',
     'Adds an example MarketingBudget column to an example Cloud Spanner table.',
     {},
-    opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryNewColumn <instanceName> <databaseName> <projectId>',
@@ -202,8 +203,8 @@ require('yargs')
       queryDataWithNewColumn(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'createDatabaseWithVersionRetentionPeriod <instanceName> <databaseId> <projectId>',
@@ -213,17 +214,17 @@ require('yargs')
       createDatabaseWithVersionRetentionPeriod(
         opts.instanceName,
         opts.databaseId,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example('node $0 createDatabase "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 createDatabaseWithEncryptionKey "my-instance" "my-database" "my-project-id" "key-name"'
+    'node $0 createDatabaseWithEncryptionKey "my-instance" "my-database" "my-project-id" "key-name"',
   )
   .example('node $0 addColumn "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryNewColumn "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 createDatabaseWithVersionRetentionPeriod "my-instance" "my-database-id" "my-project-id"'
+    'node $0 createDatabaseWithVersionRetentionPeriod "my-instance" "my-database-id" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

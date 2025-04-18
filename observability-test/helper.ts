@@ -61,7 +61,7 @@ export function generateWithAllSpansHaveDBName(dbName: String): Function {
       assert.deepStrictEqual(
         span.attributes[SEMATTRS_DB_NAME],
         dbName,
-        `Span ${span.name} has mismatched DB_NAME`
+        `Span ${span.name} has mismatched DB_NAME`,
       );
     });
   };
@@ -70,7 +70,7 @@ export function generateWithAllSpansHaveDBName(dbName: String): Function {
 export async function verifySpansAndEvents(
   traceExporter,
   expectedSpans,
-  expectedEvents
+  expectedEvents,
 ) {
   await traceExporter.forceFlush();
   const spans = traceExporter.getFinishedSpans();
@@ -85,11 +85,11 @@ export async function verifySpansAndEvents(
   assert.deepStrictEqual(
     actualSpanNames,
     expectedSpans,
-    `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpans}`
+    `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpans}`,
   );
   assert.deepStrictEqual(
     actualEventNames,
     expectedEvents,
-    `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEvents}`
+    `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEvents}`,
   );
 }

@@ -60,8 +60,8 @@ async function queryWithJsonParameter(instanceId, databaseId, projectId) {
       const json = row.toJSON();
       console.log(
         `VenueId: ${json.VenueId}, Details: ${JSON.stringify(
-          json.VenueDetails
-        )}`
+          json.VenueDetails,
+        )}`,
       );
     });
   } catch (err) {

@@ -39,7 +39,7 @@ const spannerBenchWrapper = protoDescriptor.spanner_bench;
 console.log(`connecting to localhost:${argv.port}`);
 const client = new spannerBenchWrapper.SpannerBenchWrapper(
   `localhost:${argv.port}`,
-  grpc.credentials.createInsecure()
+  grpc.credentials.createInsecure(),
 );
 const readReq = {
   Query: 'SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1',

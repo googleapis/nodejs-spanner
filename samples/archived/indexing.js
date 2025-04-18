@@ -106,7 +106,7 @@ async function queryDataWithIndex(
   databaseId,
   startTitle,
   endTitle,
-  projectId
+  projectId,
 ) {
   // [START spanner_query_data_with_index]
   // Imports the Google Cloud client library
@@ -150,7 +150,7 @@ async function queryDataWithIndex(
         ? json.MarketingBudget
         : null; // This value is nullable
       console.log(
-        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`,
       );
     });
   } catch (err) {
@@ -274,14 +274,14 @@ require('yargs')
     'createIndex <instanceName> <databaseName> <projectId>',
     'Creates a new index in an example Cloud Spanner table.',
     {},
-    opts => createIndex(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => createIndex(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'createStoringIndex <instanceName> <databaseName> <projectId>',
     'Creates a new value-storing index in an example Cloud Spanner table.',
     {},
     opts =>
-      createStoringIndex(opts.instanceName, opts.databaseName, opts.projectId)
+      createStoringIndex(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryIndex <instanceName> <databaseName> <projectId>',
@@ -305,15 +305,15 @@ require('yargs')
         opts.databaseName,
         opts.startTitle,
         opts.endTitle,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'readIndex <instanceName> <databaseName> <projectId>',
     'Reads data from an example Cloud Spanner table using an existing index.',
     {},
     opts =>
-      readDataWithIndex(opts.instanceName, opts.databaseName, opts.projectId)
+      readDataWithIndex(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'readStoringIndex <instanceName> <databaseName> <projectId>',
@@ -323,17 +323,17 @@ require('yargs')
       readDataWithStoringIndex(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example('node $0 createIndex "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 createStoringIndex "my-instance" "my-database" "my-project-id"'
+    'node $0 createStoringIndex "my-instance" "my-database" "my-project-id"',
   )
   .example('node $0 queryIndex "my-instance" "my-database" "my-project-id"')
   .example('node $0 readIndex "my-instance" "my-database" "my-project-id"')
   .example(
-    'node $0 readStoringIndex "my-instance" "my-database" "my-project-id"'
+    'node $0 readStoringIndex "my-instance" "my-database" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

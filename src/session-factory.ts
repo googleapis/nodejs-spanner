@@ -38,7 +38,7 @@ export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
-    transaction?: Transaction | null
+    transaction?: Transaction | null,
   ): void;
 }
 
@@ -109,7 +109,7 @@ export class SessionFactory
   constructor(
     database: Database,
     name: String,
-    poolOptions?: SessionPoolConstructor | SessionPoolOptions
+    poolOptions?: SessionPoolConstructor | SessionPoolOptions,
   ) {
     super({
       parent: database,
@@ -153,7 +153,7 @@ export class SessionFactory
       : this.pool_;
 
     sessionHandler!.getSession((err, session, transaction) =>
-      callback(err, session, transaction)
+      callback(err, session, transaction),
     );
   }
 

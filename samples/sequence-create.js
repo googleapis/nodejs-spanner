@@ -50,7 +50,7 @@ async function main(instanceId, databaseId, projectId) {
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         statements: request,
       });
@@ -59,7 +59,7 @@ async function main(instanceId, databaseId, projectId) {
       await operation.promise();
 
       console.log(
-        'Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value.'
+        'Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value.',
       );
     } catch (err) {
       console.error('ERROR:', err);
@@ -83,7 +83,7 @@ async function main(instanceId, databaseId, projectId) {
           console.log(
             `Inserted customer record with CustomerId: ${
               row.toJSON({wrapNumbers: true}).CustomerId.value
-            }`
+            }`,
           );
         });
 

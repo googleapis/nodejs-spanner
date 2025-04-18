@@ -337,7 +337,7 @@ describe('TransactionRunner', () => {
           SESSION,
           fakeTransaction,
           runFn,
-          options
+          options,
         );
 
         assert.deepStrictEqual(r.options, options);
@@ -445,7 +445,7 @@ describe('TransactionRunner', () => {
               concat(data => {
                 assert.deepStrictEqual(data, fakeData);
                 done();
-              })
+              }),
             );
           });
 
@@ -497,7 +497,7 @@ describe('TransactionRunner', () => {
                   assert.deepStrictEqual(data, fakeData);
                   assert.strictEqual(runFn.callCount, 2);
                   done();
-                })
+                }),
               );
           });
 
@@ -536,7 +536,7 @@ describe('TransactionRunner', () => {
           SESSION,
           fakeTransaction,
           runFn,
-          options
+          options,
         );
 
         assert.deepStrictEqual(r.options, options);

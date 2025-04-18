@@ -42,8 +42,8 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        Date.parse(opts.versionTime)
-      )
+        Date.parse(opts.versionTime),
+      ),
   )
   .command(
     'createBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
@@ -55,8 +55,8 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .command(
     'cancelBackup <instanceName> <databaseName> <backupName> <projectId>',
@@ -67,8 +67,8 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'getBackups <instanceName> <databaseName> <backupName> <projectId>',
@@ -79,8 +79,8 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'getBackupOperations <instanceName> <databaseName> <backupName> <projectId>',
@@ -91,20 +91,20 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'getDatabaseOperations <instanceName> <projectId>',
     'Lists all database operations in the instance.',
     {},
-    opts => getDatabaseOperations(opts.instanceName, opts.projectId)
+    opts => getDatabaseOperations(opts.instanceName, opts.projectId),
   )
   .command(
     'updateBackup <instanceName> <backupName> <projectId>',
     'Updates the expire time of a backup.',
     {},
-    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
+    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId),
   )
   .command(
     'restoreBackup <instanceName> <databaseName> <backupName> <projectId>',
@@ -115,8 +115,8 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'restoreBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
@@ -128,8 +128,8 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .command(
     'deleteBackup <instanceName> <databaseName> <backupName> <projectId>',
@@ -140,11 +140,11 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

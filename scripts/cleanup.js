@@ -37,9 +37,9 @@ async function deleteStaleInstances(labelFilter) {
       limit(() =>
         setTimeout(() => {
           instance.delete();
-        }, 500)
-      )
-    )
+        }, 500),
+      ),
+    ),
   );
 }
 

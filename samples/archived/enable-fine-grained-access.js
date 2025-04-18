@@ -24,7 +24,7 @@ function main(
   projectId = 'my-project-id',
   iamMember = 'user:alice@example.com',
   databaseRole = 'parent',
-  title = 'condition title'
+  title = 'condition title',
 ) {
   // [START spanner_enable_fine_grained_access]
   /**

@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_numeric_data_type]
   /**
@@ -63,7 +63,7 @@ function main(
     const revenues1 = Spanner.pgNumeric('97372.3863');
     const revenues2 = Spanner.pgNumeric(7629);
     const revenues3 = Spanner.pgNumeric(
-      '1234567890.000012387293137871837817783828271273962412698378219372373072321997201370913293722379069869126846496978479842178917827474178248943891738912692839263826722738362982366832623281'
+      '1234567890.000012387293137871837817783828271273962412698378219372373072321997201370913293722379069869126846496978479842178917827474178248943891738912692839263826722738362982366832623281',
     );
     const revenues4 = Spanner.pgNumeric('1.23e-7');
     const revenues5 = Spanner.pgNumeric('NaN');

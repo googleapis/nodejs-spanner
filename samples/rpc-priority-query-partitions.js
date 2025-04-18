@@ -38,7 +38,7 @@ async function main(instanceId, databaseId, projectId) {
 
   async function createAndExecuteQueryPartitionsWithRpcPriority(
     instanceId,
-    databaseId
+    databaseId,
   ) {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
@@ -52,7 +52,7 @@ async function main(instanceId, databaseId, projectId) {
       },
     });
     console.log(
-      `Successfully created ${partitions.length} query partitions using low RPC priority.`
+      `Successfully created ${partitions.length} query partitions using low RPC priority.`,
     );
 
     let row_count = 0;
@@ -68,13 +68,13 @@ async function main(instanceId, databaseId, projectId) {
         transaction.execute(partition).then(results => {
           const rows = results[0].map(row => row.toJSON());
           row_count += rows.length;
-        })
+        }),
       );
     });
     Promise.all(promises)
       .then(() => {
         console.log(
-          `Successfully received ${row_count} from executed partitions.`
+          `Successfully received ${row_count} from executed partitions.`,
         );
         transaction.close();
       })

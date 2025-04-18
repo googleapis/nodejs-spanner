@@ -287,7 +287,7 @@ class Spanner extends GrpcService {
         endpointWithPort.startsWith('https:')
       ) {
         throw new GoogleError(
-          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
+          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)',
         );
       }
       const index = endpointWithPort.indexOf(':');
@@ -336,7 +336,7 @@ class Spanner extends GrpcService {
         'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
         grpc,
       },
-      options || {}
+      options || {},
     ) as {} as SpannerOptions;
 
     const directedReadOptions = options.directedReadOptions
@@ -395,7 +395,7 @@ class Spanner extends GrpcService {
     this._observabilityOptions = options.observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.projectFormattedName_,
-      this._observabilityOptions?.enableEndToEndTracing
+      this._observabilityOptions?.enableEndToEndTracing,
     );
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
@@ -419,7 +419,7 @@ class Spanner extends GrpcService {
     if (!this.clients_.has(clientName)) {
       this.clients_.set(
         clientName,
-        new v1[clientName](this.options as ClientOptions)
+        new v1[clientName](this.options as ClientOptions),
       );
     }
     return this.clients_.get(clientName)! as v1.InstanceAdminClient;
@@ -443,7 +443,7 @@ class Spanner extends GrpcService {
     if (!this.clients_.has(clientName)) {
       this.clients_.set(
         clientName,
-        new v1[clientName](this.options as ClientOptions)
+        new v1[clientName](this.options as ClientOptions),
       );
     }
     return this.clients_.get(clientName)! as v1.DatabaseAdminClient;
@@ -552,24 +552,24 @@ class Spanner extends GrpcService {
    */
   createInstance(
     name: string,
-    config: CreateInstanceRequest
+    config: CreateInstanceRequest,
   ): Promise<CreateInstanceResponse>;
   createInstance(
     name: string,
     config: CreateInstanceRequest,
-    callback: CreateInstanceCallback
+    callback: CreateInstanceCallback,
   ): void;
   createInstance(
     name: string,
     config: CreateInstanceRequest,
-    callback?: CreateInstanceCallback
+    callback?: CreateInstanceCallback,
   ): void | Promise<CreateInstanceResponse> {
     if (!name) {
       throw new GoogleError('A name is required to create an instance.');
     }
     if (!config) {
       throw new GoogleError(
-        ['A configuration object is required to create an instance.'].join('')
+        ['A configuration object is required to create an instance.'].join(''),
       );
     }
     const formattedName = Instance.formatName_(this.projectId, name);
@@ -584,13 +584,13 @@ class Spanner extends GrpcService {
           nodeCount: config.nodes,
           processingUnits: config.processingUnits,
         },
-        config
+        config,
       ),
     };
 
     if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
       throw new GoogleError(
-        ['Only one of nodeCount or processingUnits can be specified.'].join('')
+        ['Only one of nodeCount or processingUnits can be specified.'].join(''),
       );
     }
     if (!reqOpts.instance.nodeCount && !reqOpts.instance.processingUnits) {
@@ -621,7 +621,7 @@ class Spanner extends GrpcService {
         const instance = this.instance(formattedName);
         instance._observabilityOptions = this._observabilityOptions;
         callback!(null, instance, operation, resp);
-      }
+      },
     );
   }
 
@@ -713,11 +713,11 @@ class Spanner extends GrpcService {
   getInstances(callback: GetInstancesCallback): void;
   getInstances(
     query: GetInstancesOptions,
-    callback: GetInstancesCallback
+    callback: GetInstancesCallback,
   ): void;
   getInstances(
     optionsOrCallback?: GetInstancesOptions | GetInstancesCallback,
-    cb?: GetInstancesCallback
+    cb?: GetInstancesCallback,
   ): Promise<GetInstancesResponse> | void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -745,7 +745,7 @@ class Spanner extends GrpcService {
           pageSize: (gaxOpts as GetInstancesOptions).pageSize,
           pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetInstancesOptions).pageToken;
       delete (gaxOpts as GetInstancesOptions).pageSize;
@@ -772,7 +772,7 @@ class Spanner extends GrpcService {
           ? extend({}, options, nextPageRequest!)
           : null;
         callback!(err, instanceInstances, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -830,7 +830,7 @@ class Spanner extends GrpcService {
           pageSize: (gaxOpts as GetInstancesOptions).pageSize,
           pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetInstancesOptions).pageSize;
       delete (gaxOpts as GetInstancesOptions).pageToken;
@@ -945,17 +945,17 @@ class Spanner extends GrpcService {
    */
   createInstanceConfig(
     name: string,
-    config: CreateInstanceConfigRequest
+    config: CreateInstanceConfigRequest,
   ): Promise<CreateInstanceConfigResponse>;
   createInstanceConfig(
     name: string,
     config: CreateInstanceConfigRequest,
-    callback: CreateInstanceConfigCallback
+    callback: CreateInstanceConfigCallback,
   ): void;
   createInstanceConfig(
     name: string,
     config: CreateInstanceConfigRequest,
-    callback?: CreateInstanceConfigCallback
+    callback?: CreateInstanceConfigCallback,
   ): void | Promise<CreateInstanceConfigResponse> {
     if (!name) {
       throw new GoogleError('A name is required to create an instance config.');
@@ -964,14 +964,14 @@ class Spanner extends GrpcService {
       throw new GoogleError(
         [
           'A configuration object is required to create an instance config.',
-        ].join('')
+        ].join(''),
       );
     }
     if (!config.baseConfig) {
       throw new GoogleError(
         ['Base instance config is required to create an instance config.'].join(
-          ''
-        )
+          '',
+        ),
       );
     }
     const formattedName = InstanceConfig.formatName_(this.projectId, name);
@@ -984,7 +984,7 @@ class Spanner extends GrpcService {
           name: formattedName,
           displayName,
         },
-        config
+        config,
       ),
       validateOnly: config.validateOnly,
     };
@@ -1016,7 +1016,7 @@ class Spanner extends GrpcService {
         }
         const instanceConfig = this.instanceConfig(formattedName);
         callback!(null, instanceConfig, operation, resp);
-      }
+      },
     );
   }
 
@@ -1105,16 +1105,16 @@ class Spanner extends GrpcService {
    * ```
    */
   getInstanceConfigs(
-    query?: GetInstanceConfigsOptions
+    query?: GetInstanceConfigsOptions,
   ): Promise<GetInstanceConfigsResponse>;
   getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
   getInstanceConfigs(
     query: GetInstanceConfigsOptions,
-    callback: GetInstanceConfigsCallback
+    callback: GetInstanceConfigsCallback,
   ): void;
   getInstanceConfigs(
     optionsOrCallback?: GetInstanceConfigsOptions | GetInstanceConfigsCallback,
-    cb?: GetInstanceConfigsCallback
+    cb?: GetInstanceConfigsCallback,
   ): Promise<GetInstanceConfigsResponse> | void {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
@@ -1138,7 +1138,7 @@ class Spanner extends GrpcService {
           pageSize: (gaxOpts as GetInstanceConfigsOptions).pageSize,
           pageToken: (gaxOpts as GetInstanceConfigsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetInstanceConfigsOptions).pageSize;
       delete (gaxOpts as GetInstanceConfigsOptions).pageToken;
@@ -1157,7 +1157,7 @@ class Spanner extends GrpcService {
           ? extend({}, options, nextPageRequest!)
           : null;
         callback!(err, instanceConfigs, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -1197,7 +1197,7 @@ class Spanner extends GrpcService {
    * ```
    */
   getInstanceConfigsStream(
-    options: GetInstanceConfigsOptions = {}
+    options: GetInstanceConfigsOptions = {},
   ): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
@@ -1214,7 +1214,7 @@ class Spanner extends GrpcService {
           pageSize: (gaxOpts as GetInstancesOptions).pageSize,
           pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetInstancesOptions).pageSize;
       delete (gaxOpts as GetInstancesOptions).pageToken;
@@ -1287,18 +1287,18 @@ class Spanner extends GrpcService {
   getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
   getInstanceConfig(
     name: string,
-    options: GetInstanceConfigOptions
+    options: GetInstanceConfigOptions,
   ): Promise<GetInstanceConfigResponse>;
   getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
   getInstanceConfig(
     name: string,
     options: GetInstanceConfigOptions,
-    callback: GetInstanceConfigCallback
+    callback: GetInstanceConfigCallback,
   ): void;
   getInstanceConfig(
     name: string,
     optionsOrCallback?: GetInstanceConfigOptions | GetInstanceConfigCallback,
-    cb?: GetInstanceConfigCallback
+    cb?: GetInstanceConfigCallback,
   ): Promise<GetInstanceConfigResponse> | void {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
@@ -1311,7 +1311,7 @@ class Spanner extends GrpcService {
       {},
       {
         name: 'projects/' + this.projectId + '/instanceConfigs/' + name,
-      }
+      },
     );
     const gaxOpts = extend({}, options.gaxOptions);
 
@@ -1325,7 +1325,7 @@ class Spanner extends GrpcService {
       },
       (err, instanceConfig) => {
         callback!(err, instanceConfig);
-      }
+      },
     );
   }
 
@@ -1393,20 +1393,20 @@ class Spanner extends GrpcService {
    * ```
    */
   getInstanceConfigOperations(
-    options?: GetInstanceConfigOperationsOptions
+    options?: GetInstanceConfigOperationsOptions,
   ): Promise<GetInstanceConfigOperationsResponse>;
   getInstanceConfigOperations(
-    callback: GetInstanceConfigOperationsCallback
+    callback: GetInstanceConfigOperationsCallback,
   ): void;
   getInstanceConfigOperations(
     options: GetInstanceConfigOperationsOptions,
-    callback: GetInstanceConfigOperationsCallback
+    callback: GetInstanceConfigOperationsCallback,
   ): void;
   getInstanceConfigOperations(
     optionsOrCallback?:
       | GetInstanceConfigOperationsOptions
       | GetInstanceConfigOperationsCallback,
-    cb?: GetInstanceConfigOperationsCallback
+    cb?: GetInstanceConfigOperationsCallback,
   ): void | Promise<GetInstanceConfigOperationsResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -1429,7 +1429,7 @@ class Spanner extends GrpcService {
           pageSize: (gaxOpts as GetInstanceConfigOperationsOptions).pageSize,
           pageToken: (gaxOpts as GetInstanceConfigOperationsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetInstanceConfigOperationsOptions).pageSize;
       delete (gaxOpts as GetInstanceConfigOperationsOptions).pageToken;
@@ -1449,7 +1449,7 @@ class Spanner extends GrpcService {
           : null;
 
         callback!(err, operations, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -1497,7 +1497,7 @@ class Spanner extends GrpcService {
   instanceConfig(name: string): InstanceConfig {
     if (!name) {
       throw new GoogleError(
-        'A name is required to access an InstanceConfig object.'
+        'A name is required to access an InstanceConfig object.',
       );
     }
     const key = name.split('/').pop()!;
@@ -1537,17 +1537,17 @@ class Spanner extends GrpcService {
         this.projectId = replaceProjectIdToken(this.projectId, projectId!);
         this.projectFormattedName_ = replaceProjectIdToken(
           this.projectFormattedName_,
-          projectId!
+          projectId!,
         );
         this.instances_.forEach(instance => {
           instance.formattedName_ = replaceProjectIdToken(
             instance.formattedName_,
-            projectId!
+            projectId!,
           );
           instance.databases_.forEach(database => {
             database.formattedName_ = replaceProjectIdToken(
               database.formattedName_,
-              projectId!
+              projectId!,
             );
           });
         });
@@ -1555,7 +1555,7 @@ class Spanner extends GrpcService {
       }
       config.headers[CLOUD_RESOURCE_HEADER] = replaceProjectIdToken(
         config.headers[CLOUD_RESOURCE_HEADER],
-        projectId!
+        projectId!,
       );
       // Do context propagation
       propagation.inject(context.active(), config.headers, {
@@ -1573,7 +1573,7 @@ class Spanner extends GrpcService {
           otherArgs: {
             headers: config.headers,
           },
-        })
+        }),
       );
 
       // Wrap requestFn to inject the spanner request id into every returned error.
@@ -1720,7 +1720,7 @@ class Spanner extends GrpcService {
   static date(
     dateStringOrYear?: string | number,
     month?: number,
-    date?: number
+    date?: number,
   ): SpannerDate {
     if (typeof dateStringOrYear === 'number') {
       return new codec.SpannerDate(dateStringOrYear, month!, date!);
@@ -1768,7 +1768,7 @@ class Spanner extends GrpcService {
    * ```
    */
   static timestamp(
-    value?: string | number | p.ITimestamp | PreciseDate
+    value?: string | number | p.ITimestamp | PreciseDate,
   ): PreciseDate {
     value = value || Date.now();
     if (value instanceof PreciseDate) {

@@ -49,8 +49,10 @@ const {
 const exporter = new TraceExporter();
 
 // Create the tracerProvider that the exporter shall be attached to.
-const provider = new NodeTracerProvider({resource: resource});
-provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+const provider = new NodeTracerProvider({
+  resource: resource,
+  spanProcessors: [new BatchSpanProcessor(exporter)]
+});
 
 // Create the Cloud Spanner Client.
 const {Spanner} = require('@google-cloud/spanner');

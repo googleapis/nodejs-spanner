@@ -23,7 +23,7 @@ function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-database-id',
-  scheduleId = 'my-schedule-id'
+  scheduleId = 'my-schedule-id',
 ) {
   async function createFullBackupSchedule() {
     // [START spanner_create_full_backup_schedule]

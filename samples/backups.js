@@ -42,11 +42,11 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        Date.parse(opts.versionTime)
-      )
+        Date.parse(opts.versionTime),
+      ),
   )
   .example(
-    'node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id" "my-version-time"'
+    'node $0 createBackup "my-instance" "my-database" "my-backup" "my-project-id" "my-version-time"',
   )
   .command(
     'createBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
@@ -58,11 +58,11 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .example(
-    'node $0 createBackupWithEncryptionKey "my-instance" "my-database" "my-backup" "my-project-id" "my-key-name"'
+    'node $0 createBackupWithEncryptionKey "my-instance" "my-database" "my-backup" "my-project-id" "my-key-name"',
   )
   .command(
     'cancelBackup <instanceName> <databaseName> <backupName> <projectId>',
@@ -73,11 +73,11 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 cancelBackup "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 cancelBackup "my-instance" "my-database" "my-backup" "my-project-id"',
   )
   .command(
     'getBackups <instanceName> <databaseName> <backupName> <projectId>',
@@ -88,11 +88,11 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 getBackups "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 getBackups "my-instance" "my-database" "my-backup" "my-project-id"',
   )
   .command(
     'getBackupOperations <instanceName> <databaseName> <backupName> <projectId>',
@@ -103,24 +103,24 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 getBackupOperations "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 getBackupOperations "my-instance" "my-database" "my-backup" "my-project-id"',
   )
   .command(
     'getDatabaseOperations <instanceName> <projectId>',
     'Lists all database operations in the instance.',
     {},
-    opts => getDatabaseOperations(opts.instanceName, opts.projectId)
+    opts => getDatabaseOperations(opts.instanceName, opts.projectId),
   )
   .example('node $0 getDatabaseOperations "my-instance" "my-project-id"')
   .command(
     'updateBackup <instanceName> <backupName> <projectId>',
     'Updates the expire time of a backup.',
     {},
-    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
+    opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId),
   )
   .example('node $0 updateBackup "my-instance" "my-backup" "my-project-id"')
   .command(
@@ -132,11 +132,11 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 restoreBackup "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 restoreBackup "my-instance" "my-database" "my-backup" "my-project-id"',
   )
   .command(
     'restoreBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
@@ -148,17 +148,17 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId,
-        opts.keyName
-      )
+        opts.keyName,
+      ),
   )
   .example(
-    'node $0 restoreBackupWithEncryptionKey "my-instance" "my-database" "my-backup" "my-project-id" "my-key-name"'
+    'node $0 restoreBackupWithEncryptionKey "my-instance" "my-database" "my-backup" "my-project-id" "my-key-name"',
   )
   .command(
     'deleteBackup <instanceName> <backupName> <projectId>',
     'Deletes a backup.',
     {},
-    opts => deleteBackup(opts.instanceName, opts.backupName, opts.projectId)
+    opts => deleteBackup(opts.instanceName, opts.backupName, opts.projectId),
   )
   .example('node $0 deleteBackup "my-instance" "my-backup" "my-project-id"')
   .wrap(120)

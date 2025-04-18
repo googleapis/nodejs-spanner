@@ -42,8 +42,8 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
       `Creating backup of database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}.`
+        databaseId,
+      )}.`,
     );
 
     // Expire backup one day in the future
@@ -55,7 +55,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         expireTime: Spanner.timestamp(expireTime).toStruct(),
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),

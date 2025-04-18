@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_add_column]
   /**
@@ -49,7 +49,7 @@ function main(
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       statements: request,
     });
@@ -59,7 +59,7 @@ function main(
     await operation.promise();
 
     console.log(
-      `Added MarketingBudget column to Albums table in database ${databaseId}.`
+      `Added MarketingBudget column to Albums table in database ${databaseId}.`,
     );
   }
   pgAddColumn();

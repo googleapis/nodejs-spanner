@@ -126,8 +126,8 @@ async function deleteStaleInstances() {
   const limit = pLimit(5);
   await Promise.all(
     instances.map(instance =>
-      limit(() => setTimeout(deleteInstance, delay, instance))
-    )
+      limit(() => setTimeout(deleteInstance, delay, instance)),
+    ),
   );
 }
 
@@ -147,7 +147,7 @@ async function getCryptoKey() {
   const keyRingName = client.keyRingPath(
     PROJECT_ID,
     KEY_LOCATION_ID,
-    KEY_RING_ID
+    KEY_RING_ID,
   );
 
   // Get key ring.
@@ -174,7 +174,7 @@ async function getCryptoKey() {
       PROJECT_ID,
       KEY_LOCATION_ID,
       KEY_RING_ID,
-      KEY_ID
+      KEY_ID,
     );
     const [key] = await client.getCryptoKey({
       name: keyName,
@@ -219,7 +219,7 @@ describe('Spanner', () => {
       return operation.promise();
     } else {
       console.log(
-        `Not creating temp instance, using + ${instance.formattedName_}...`
+        `Not creating temp instance, using + ${instance.formattedName_}...`,
       );
     }
   });
@@ -260,38 +260,38 @@ describe('Spanner', () => {
     // create_instance
     it('should create an example instance', async () => {
       const output = execSync(
-        `${instanceCmd} createInstance "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+        `${instanceCmd} createInstance "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
-        )
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
-        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`),
       );
     });
 
     // create_instance_with_processing_units
     it('should create an example instance with processing units', async () => {
       const output = execSync(
-        `${instanceCmd} createInstanceWithProcessingUnits "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+        `${instanceCmd} createInstanceWithProcessingUnits "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
-        )
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
-        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`),
       );
       assert.match(
         output,
-        new RegExp(`Instance ${SAMPLE_INSTANCE_ID} has 500 processing units.`)
+        new RegExp(`Instance ${SAMPLE_INSTANCE_ID} has 500 processing units.`),
       );
     });
   });
@@ -302,35 +302,35 @@ describe('Spanner', () => {
     assert.strictEqual(
       exists,
       true,
-      'The main instance was not created successfully!'
+      'The main instance was not created successfully!',
     );
   });
 
   // create_database
   it('should create an example database', async () => {
     const output = execSync(
-      `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
-      new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
+      new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`),
     );
   });
 
   // update_database
   it('should set database metadata', async () => {
     const output = execSync(
-      `node database-update.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node database-update.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
       new RegExp(
-        `Waiting for update operation for ${DATABASE_ID} to complete...`
-      )
+        `Waiting for update operation for ${DATABASE_ID} to complete...`,
+      ),
     );
     assert.match(output, new RegExp(`Updated database ${DATABASE_ID}.`));
     // cleanup
@@ -352,23 +352,23 @@ describe('Spanner', () => {
       const key = await getCryptoKey();
 
       const output = execSync(
-        `${schemaCmd} createDatabaseWithEncryptionKey "${INSTANCE_ID}" "${ENCRYPTED_DATABASE_ID}" ${PROJECT_ID} "${key.name}"`
+        `${schemaCmd} createDatabaseWithEncryptionKey "${INSTANCE_ID}" "${ENCRYPTED_DATABASE_ID}" ${PROJECT_ID} "${key.name}"`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for operation on ${ENCRYPTED_DATABASE_ID} to complete...`
-        )
+          `Waiting for operation on ${ENCRYPTED_DATABASE_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
         new RegExp(
-          `Created database ${ENCRYPTED_DATABASE_ID} on instance ${INSTANCE_ID}.`
-        )
+          `Created database ${ENCRYPTED_DATABASE_ID} on instance ${INSTANCE_ID}.`,
+        ),
       );
       assert.match(
         output,
-        new RegExp(`Database encrypted with key ${key.name}.`)
+        new RegExp(`Database encrypted with key ${key.name}.`),
       );
     });
   });
@@ -378,7 +378,7 @@ describe('Spanner', () => {
     // instance and database set up at this point.
     it('should query a table', async () => {
       const output = execSync(
-        `node quickstart ${PROJECT_ID} ${INSTANCE_ID} ${DATABASE_ID}`
+        `node quickstart ${PROJECT_ID} ${INSTANCE_ID} ${DATABASE_ID}`,
       );
       assert.match(output, /Query: \d+ found./);
     });
@@ -387,7 +387,7 @@ describe('Spanner', () => {
   // insert_data
   it('should insert rows into an example table', async () => {
     const output = execSync(
-      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Inserted data\./);
   });
@@ -395,13 +395,13 @@ describe('Spanner', () => {
   // delete_data
   it('should delete and then insert rows in the example tables', async () => {
     let output = execSync(
-      `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.include(output, 'Deleted individual rows in Albums.');
     assert.include(output, '2 records deleted from Singers.');
     assert.include(output, '3 records deleted from Singers.');
     output = execSync(
-      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Inserted data\./);
   });
@@ -409,7 +409,7 @@ describe('Spanner', () => {
   // query_data
   it('should query an example table and return matching rows', async () => {
     const output = execSync(
-      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} query ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -417,7 +417,7 @@ describe('Spanner', () => {
   // read_data
   it('should read an example table', async () => {
     const output = execSync(
-      `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} read ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -425,7 +425,7 @@ describe('Spanner', () => {
   // add_column
   it('should add a column to a table', async () => {
     const output = execSync(
-      `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the MarketingBudget column\./);
@@ -434,7 +434,7 @@ describe('Spanner', () => {
   // update_data
   it('should update existing rows in an example table', async () => {
     const output = execSync(
-      `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Updated data\./);
   });
@@ -445,22 +445,22 @@ describe('Spanner', () => {
     // 15 seconds have elapsed since the update_data test.
     await new Promise(r => setTimeout(r, 16000));
     const output = execSync(
-      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} read-stale ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/
+      /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget: 100000/,
     );
     assert.match(
       output,
-      /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/
+      /SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget: 500000/,
     );
   });
 
   // query_data_with_new_column
   it('should query an example table with an additional column and return matching rows', async () => {
     const output = execSync(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 100000/);
     assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 500000/);
@@ -469,7 +469,7 @@ describe('Spanner', () => {
   // create_index
   it('should create an index in an example table', async () => {
     const output = execSync(
-      `node archived/index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node archived/index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the AlbumsByAlbumTitle index\./);
@@ -482,7 +482,7 @@ describe('Spanner', () => {
     await delay(this.test);
 
     const output = execSync(
-      `node archived/index-create-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node archived/index-create-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the AlbumsByAlbumTitle2 index\./);
@@ -491,36 +491,36 @@ describe('Spanner', () => {
   // query_data_with_index
   it('should query an example table with an index and return matching rows', async () => {
     const output = execSync(
-      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/,
     );
     assert.notMatch(
       output,
-      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/,
     );
   });
 
   it('should respect query boundaries when querying an example table with an index', async () => {
     const output = execSync(
-      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} "Ardvark" "Zoo"`
+      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} "Ardvark" "Zoo"`,
     );
     assert.match(
       output,
-      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/,
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Go, Go, Go, MarketingBudget:/,
     );
   });
 
   // read_data_with_index
   it('should read an example table with an index', async () => {
     const output = execSync(
-      `node index-read-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-read-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -528,7 +528,7 @@ describe('Spanner', () => {
   // read_data_with_storing_index
   it('should read an example table with a storing index', async () => {
     const output = execSync(
-      `node index-read-data-with-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-read-data-with-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -536,48 +536,48 @@ describe('Spanner', () => {
   // spanner_create_client_with_query_options
   it('should use query options from a database reference', async () => {
     const output = execSync(
-      `${queryOptionsCmd} databaseWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${queryOptionsCmd} databaseWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/,
     );
   });
 
   // spanner_query_with_query_options
   it('should use query options on request', async () => {
     const output = execSync(
-      `${queryOptionsCmd} queryWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${queryOptionsCmd} queryWithQueryOptions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/,
     );
   });
 
   // query with RPC priority for run command
   it('should use RPC priority from request options for run command', async () => {
     const output = execSync(
-      `${rpcPriorityRunCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityRunCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully fetched \d rows using low RPC priority\./
+      /Successfully fetched \d rows using low RPC priority\./,
     );
     assert.match(
       output,
-      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/,
     );
   });
 
   // query with RPC priority for Read command
   it('should use RPC priority from request options for read command', async () => {
     const output = execSync(
-      `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully fetched \d rows using low RPC priority\./
+      /Successfully fetched \d rows using low RPC priority\./,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -585,44 +585,44 @@ describe('Spanner', () => {
   // query with RPC priority for transaction command
   it('should use RPC priority from request options for transaction command', async () => {
     const output = execSync(
-      `${rpcPriorityTransactionCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityTransactionCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully inserted 1 record into the Singers table using low RPC priority\./
+      /Successfully inserted 1 record into the Singers table using low RPC priority\./,
     );
   });
 
   // query with RPC priority for batch DML command
   it('should use RPC priority from request options for batch DML command', async () => {
     const output = execSync(
-      `${rpcPriorityBatchDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityBatchDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully executed 2 SQL statements using Batch DML using low RPC priority\./
+      /Successfully executed 2 SQL statements using Batch DML using low RPC priority\./,
     );
   });
 
   // query with RPC priority for partitioned DML command
   it('should use RPC priority from request options for partitioned DML command', async () => {
     const output = execSync(
-      `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp('Successfully updated (\\d+) records using low RPC priority.')
+      new RegExp('Successfully updated (\\d+) records using low RPC priority.'),
     );
   });
 
   // query with RPC priority for Query partitions command
   it('should use RPC priority from request options for Query partition command', async () => {
     const output = execSync(
-      `${rpcPriorityQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully created \d query partitions using low RPC priority\./
+      /Successfully created \d query partitions using low RPC priority\./,
     );
     assert.match(output, /Successfully received \d from executed partitions\./);
   });
@@ -630,7 +630,7 @@ describe('Spanner', () => {
   // read_only_transactioni
   it('should read an example table using transactions', async () => {
     const output = execSync(
-      `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
     assert.match(output, /Successfully executed read-only transaction\./);
@@ -639,16 +639,16 @@ describe('Spanner', () => {
   // read_write_transaction
   it('should read from and write to an example table using transactions', async () => {
     let output = execSync(
-      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${transactionCmd} readWrite ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /The first album's marketing budget: 100000/);
     assert.match(output, /The second album's marketing budget: 500000/);
     assert.match(
       output,
-      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./
+      /Successfully executed read-write transaction to transfer 200000 from Album 2 to Album 1./,
     );
     output = execSync(
-      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${schemaCmd} queryNewColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, MarketingBudget: 300000/);
     assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
@@ -657,7 +657,7 @@ describe('Spanner', () => {
   // batch_client
   it('should create and execute query partitions', async () => {
     const output = execSync(
-      `${batchCmd} create-and-execute-query-partitions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${batchCmd} create-and-execute-query-partitions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully created \d query partitions\./);
     assert.match(output, /Successfully received \d from executed partitions\./);
@@ -675,7 +675,7 @@ describe('Spanner', () => {
     const partition = JSON.stringify(partitions[0]);
 
     const output = execSync(
-      `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`
+      `${batchCmd} execute-partition ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' '${partition}' ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully received \d from executed partition\./);
     await transaction.close();
@@ -684,19 +684,19 @@ describe('Spanner', () => {
   // add_timestamp_column
   it('should add a timestamp column to a table', async () => {
     const output = execSync(
-      `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${timestampCmd} addTimestampColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(
       output,
-      /Added LastUpdateTime as a commit timestamp column in Albums table\./
+      /Added LastUpdateTime as a commit timestamp column in Albums table\./,
     );
   });
 
   // update_data_with_timestamp_column
   it('should update existing rows in an example table with commit timestamp column', async () => {
     const output = execSync(
-      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${timestampCmd} updateWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Updated data\./);
   });
@@ -704,38 +704,38 @@ describe('Spanner', () => {
   // query_data_with_timestamp_column
   it('should query an example table with an additional timestamp column and return matching rows', async () => {
     const output = execSync(
-      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${timestampCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/
+      /SingerId: 1, AlbumId: 1, MarketingBudget: 1000000, LastUpdateTime:/,
     );
     assert.match(
       output,
-      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/
+      /SingerId: 2, AlbumId: 2, MarketingBudget: 750000, LastUpdateTime:/,
     );
   });
 
   // create_table_with_timestamp_column
   it('should create an example table with a timestamp column', async () => {
     const output = execSync(
-      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${timestampCmd} createTableWithTimestamp "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
 
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
-      new RegExp(`Created table Performances in database ${DATABASE_ID}.`)
+      new RegExp(`Created table Performances in database ${DATABASE_ID}.`),
     );
   });
 
   // insert_data_with_timestamp
   it('should insert rows into an example table with timestamp column', async () => {
     const output = execSync(
-      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${timestampCmd} insertWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Inserted data\./);
   });
@@ -743,7 +743,7 @@ describe('Spanner', () => {
   // query_new_table_with_timestamp
   it('should query an example table with a non-null timestamp column and return matching rows', async () => {
     const output = execSync(
-      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${timestampCmd} queryTableWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, VenueId: 4, EventDate:/);
     assert.match(output, /Revenue: 15000, LastUpdateTime:/);
@@ -752,7 +752,7 @@ describe('Spanner', () => {
   // write_data_for_struct_queries
   it('should insert rows into an example table for use with struct query examples', async () => {
     const output = execSync(
-      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${structCmd} writeDataForStructQueries ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Inserted data\./);
   });
@@ -760,7 +760,7 @@ describe('Spanner', () => {
   // query_with_struct_param
   it('should query an example table with a STRUCT param', async () => {
     const output = execSync(
-      `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${structCmd} queryDataWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 6/);
   });
@@ -768,7 +768,7 @@ describe('Spanner', () => {
   // query_with_array_of_struct_param
   it('should query an example table with an array of STRUCT param', async () => {
     const output = execSync(
-      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${structCmd} queryWithArrayOfStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 6\nSingerId: 7\nSingerId: 8/);
   });
@@ -776,7 +776,7 @@ describe('Spanner', () => {
   // query_with_struct_field_param
   it('should query an example table with a STRUCT field param', async () => {
     const output = execSync(
-      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${structCmd} queryStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 6/);
   });
@@ -784,29 +784,29 @@ describe('Spanner', () => {
   // query_with_nested_struct_param
   it('should query an example table with a nested STRUCT param', async () => {
     const output = execSync(
-      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${structCmd} queryNestedStructField ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/
+      /SingerId: 6, SongName: Imagination\nSingerId: 9, SongName: Imagination/,
     );
   });
 
   // dml_standard_insert
   it('should insert rows into an example table using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} insertUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully inserted 1 record into the Singers table/
+      /Successfully inserted 1 record into the Singers table/,
     );
   });
 
   // dml_standard_update
   it('should update a row in an example table using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} updateUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully updated 1 record/);
   });
@@ -814,7 +814,7 @@ describe('Spanner', () => {
   // dml_standard_delete
   it('should delete a row from an example table using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} deleteUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully deleted 1 record\./);
   });
@@ -822,7 +822,7 @@ describe('Spanner', () => {
   // dml_standard_update_with_timestamp
   it('should update the timestamp of multiple records in an example table using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully updated 3 records/);
   });
@@ -830,7 +830,7 @@ describe('Spanner', () => {
   // dml_write_then_read
   it('should insert a record in an example table using a DML statement and then query the record', async () => {
     const output = execSync(
-      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} writeAndReadUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Timothy Campbell/);
   });
@@ -838,7 +838,7 @@ describe('Spanner', () => {
   // dml_structs
   it('should update a record in an example table using a DML statement along with a struct value', async () => {
     const output = execSync(
-      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} updateUsingDmlWithStruct ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully updated 1 record/);
   });
@@ -846,7 +846,7 @@ describe('Spanner', () => {
   // dml_getting_started_insert
   it('should insert multiple records into an example table using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} writeUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /4 records inserted/);
   });
@@ -854,7 +854,7 @@ describe('Spanner', () => {
   // dml_query_with_parameter
   it('should use a parameter query to query record that was inserted using a DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} queryWithParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} queryWithParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 12, FirstName: Melissa, LastName: Garcia/);
   });
@@ -862,18 +862,18 @@ describe('Spanner', () => {
   // dml_getting_started_update
   it('should transfer value from one record to another using DML statements within a transaction', async () => {
     const output = execSync(
-      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} writeWithTransactionUsingDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully executed read-write transaction using DML to transfer 200000 from Album 2 to Album 1/
+      /Successfully executed read-write transaction using DML to transfer 200000 from Album 2 to Album 1/,
     );
   });
 
   //  dml_partitioned_update
   it('should update multiple records using a partitioned DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} updateUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully updated 3 records/);
   });
@@ -881,7 +881,7 @@ describe('Spanner', () => {
   //  dml_partitioned_delete
   it('should delete multiple records using a partitioned DML statement', async () => {
     const output = execSync(
-      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Successfully deleted 6 records/);
   });
@@ -889,22 +889,22 @@ describe('Spanner', () => {
   //  dml_batch_update
   it('should insert and update records using Batch DML', async () => {
     const output = execSync(
-      `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} updateUsingBatchDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /Successfully executed 2 SQL statements using Batch DML/
+      /Successfully executed 2 SQL statements using Batch DML/,
     );
   });
 
   // dml_returning_insert
   it('should insert records using DML Returning', async () => {
     const output = execSync(
-      `node dml-returning-insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node dml-returning-insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp('Successfully inserted 1 record into the Singers table')
+      new RegExp('Successfully inserted 1 record into the Singers table'),
     );
     assert.match(output, new RegExp('Virginia Watson'));
   });
@@ -912,11 +912,11 @@ describe('Spanner', () => {
   // dml_returning_update
   it('should update records using DML Returning', async () => {
     const output = execSync(
-      `node dml-returning-update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node dml-returning-update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp('Successfully updated 1 record into the Albums table')
+      new RegExp('Successfully updated 1 record into the Albums table'),
     );
     assert.match(output, new RegExp('2000000'));
   });
@@ -924,11 +924,11 @@ describe('Spanner', () => {
   // dml_returning_delete
   it('should delete records using DML Returning', async () => {
     const output = execSync(
-      `node dml-returning-delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node dml-returning-delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp('Successfully deleted 1 record from the Singers table')
+      new RegExp('Successfully deleted 1 record from the Singers table'),
     );
     assert.match(output, new RegExp('Virginia Watson'));
   });
@@ -936,23 +936,23 @@ describe('Spanner', () => {
   // create_table_with_datatypes
   it('should create Venues example table with supported datatype columns', async () => {
     const output = execSync(
-      `${datatypesCmd} createVenuesTable "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${datatypesCmd} createVenuesTable "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
 
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
-      new RegExp(`Created table Venues in database ${DATABASE_ID}.`)
+      new RegExp(`Created table Venues in database ${DATABASE_ID}.`),
     );
   });
 
   // insert_datatypes_data
   it('should insert multiple records into Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} insertData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} insertData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Inserted data./);
   });
@@ -960,33 +960,33 @@ describe('Spanner', () => {
   // query_with_array_parameter
   it('should use an ARRAY query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithArray ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithArray ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /VenueId: 19, VenueName: Venue 19, AvailableDate: 2020-11-01/
+      /VenueId: 19, VenueName: Venue 19, AvailableDate: 2020-11-01/,
     );
     assert.match(
       output,
-      /VenueId: 42, VenueName: Venue 42, AvailableDate: 2020-10-01/
+      /VenueId: 42, VenueName: Venue 42, AvailableDate: 2020-10-01/,
     );
   });
 
   // query_with_bool_parameter
   it('should use a BOOL query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithBool ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithBool ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /VenueId: 19, VenueName: Venue 19, OutdoorVenue: true/
+      /VenueId: 19, VenueName: Venue 19, OutdoorVenue: true/,
     );
   });
 
   // query_with_bytes_parameter
   it('should use a BYTES query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithBytes ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithBytes ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 4, VenueName: Venue 4/);
   });
@@ -994,37 +994,37 @@ describe('Spanner', () => {
   // query_with_date_parameter
   it('should use a DATE query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithDate ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithDate ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /VenueId: 4, VenueName: Venue 4, LastContactDate: 2018-09-02/
+      /VenueId: 4, VenueName: Venue 4, LastContactDate: 2018-09-02/,
     );
     assert.match(
       output,
-      /VenueId: 42, VenueName: Venue 42, LastContactDate: 2018-10-01/
+      /VenueId: 42, VenueName: Venue 42, LastContactDate: 2018-10-01/,
     );
   });
 
   // query_with_float_parameter
   it('should use a FLOAT64 query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithFloat ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithFloat ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      /VenueId: 4, VenueName: Venue 4, PopularityScore: 0.8/
+      /VenueId: 4, VenueName: Venue 4, PopularityScore: 0.8/,
     );
     assert.match(
       output,
-      /VenueId: 19, VenueName: Venue 19, PopularityScore: 0.9/
+      /VenueId: 19, VenueName: Venue 19, PopularityScore: 0.9/,
     );
   });
 
   // query_with_int_parameter
   it('should use a INT64 query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithInt ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithInt ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 19, VenueName: Venue 19, Capacity: 6300/);
     assert.match(output, /VenueId: 42, VenueName: Venue 42, Capacity: 3000/);
@@ -1033,7 +1033,7 @@ describe('Spanner', () => {
   // query_with_string_parameter
   it('should use a STRING query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithString ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithString ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 42, VenueName: Venue 42/);
   });
@@ -1041,7 +1041,7 @@ describe('Spanner', () => {
   // query_with_timestamp_parameter
   it('should use a TIMESTAMP query parameter to query record from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 4, VenueName: Venue 4, LastUpdateTime:/);
     assert.match(output, /VenueId: 19, VenueName: Venue 19, LastUpdateTime:/);
@@ -1051,23 +1051,23 @@ describe('Spanner', () => {
   // add_numeric_column
   it('should add a Revenue column to Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} addNumericColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${datatypesCmd} addNumericColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
 
     assert.include(
       output,
-      `Waiting for operation on ${DATABASE_ID} to complete...`
+      `Waiting for operation on ${DATABASE_ID} to complete...`,
     );
     assert.include(
       output,
-      `Added Revenue column to Venues table in database ${DATABASE_ID}.`
+      `Added Revenue column to Venues table in database ${DATABASE_ID}.`,
     );
   });
 
   // update_data_with_numeric
   it('should update rows in Venues example table to add data in Revenue column', async () => {
     const output = execSync(
-      `${datatypesCmd} updateWithNumericData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} updateWithNumericData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Updated data./);
   });
@@ -1075,7 +1075,7 @@ describe('Spanner', () => {
   // query_with_numeric_parameter
   it('should use a NUMERIC query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithNumericParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithNumericParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 4, Revenue: 35000/);
   });
@@ -1083,7 +1083,7 @@ describe('Spanner', () => {
   // query with request tag
   it('should execute a query with a request tag', async () => {
     const output = execSync(
-      `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -1091,7 +1091,7 @@ describe('Spanner', () => {
   // read_write_transaction with transaction tag
   it('should execute a read/write transaction with a transaction tag', async () => {
     const output = execSync(
-      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.include(output, 'Inserted new outdoor venue');
   });
@@ -1099,23 +1099,23 @@ describe('Spanner', () => {
   // add_json_column
   it('should add a VenueDetails column to Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} addJsonColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${datatypesCmd} addJsonColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
 
     assert.include(
       output,
-      `Waiting for operation on ${DATABASE_ID} to complete...`
+      `Waiting for operation on ${DATABASE_ID} to complete...`,
     );
     assert.include(
       output,
-      `Added VenueDetails column to Venues table in database ${DATABASE_ID}.`
+      `Added VenueDetails column to Venues table in database ${DATABASE_ID}.`,
     );
   });
 
   // update_data_with_json
   it('should update rows in Venues example table to add data in VenueDetails column', async () => {
     const output = execSync(
-      `${datatypesCmd} updateWithJsonData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} updateWithJsonData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Updated data./);
   });
@@ -1123,7 +1123,7 @@ describe('Spanner', () => {
   // query_with_json_parameter
   it('should use a JSON query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /VenueId: 19, Details: {"open":true,"rating":9}/);
   });
@@ -1131,40 +1131,40 @@ describe('Spanner', () => {
   // add_and_drop_new_database_role
   it('should add and drop new database roles', async () => {
     const output = execSync(
-      `node archived/add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node archived/add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, new RegExp('Waiting for operation to complete...'));
     assert.match(
       output,
-      new RegExp('Created roles child and parent and granted privileges')
+      new RegExp('Created roles child and parent and granted privileges'),
     );
     assert.match(
       output,
-      new RegExp('Revoked privileges and dropped role child')
+      new RegExp('Revoked privileges and dropped role child'),
     );
   });
 
   // read_data_with_database_role
   it('should read data with database role', async () => {
     const output = execSync(
-      `node read-data-with-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node read-data-with-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp('SingerId: 1, FirstName: Marc, LastName: Richards')
+      new RegExp('SingerId: 1, FirstName: Marc, LastName: Richards'),
     );
   });
 
   // get_database_roles
   it('should list database roles', async () => {
     const output = execSync(
-      `node archived/get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node archived/get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(
       output,
       new RegExp(
-        `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`
-      )
+        `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`,
+      ),
     );
   });
 
@@ -1179,7 +1179,7 @@ describe('Spanner', () => {
     const versionTime = rows[0].toJSON().Timestamp.toISOString();
 
     const output = execSync(
-      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`,
     );
     assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
   });
@@ -1189,11 +1189,11 @@ describe('Spanner', () => {
     const key = await getCryptoKey();
 
     const output = execSync(
-      `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
+      `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`,
     );
     assert.match(
       output,
-      new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`)
+      new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`),
     );
     assert.include(output, `using encryption key ${key.name}`);
   });
@@ -1202,18 +1202,18 @@ describe('Spanner', () => {
   it('should create a copy of a backup', async () => {
     const sourceBackupPath = `projects/${PROJECT_ID}/instances/${INSTANCE_ID}/backups/${BACKUP_ID}`;
     const output = execSync(
-      `node archived/backups-copy.js ${INSTANCE_ID} ${COPY_BACKUP_ID} ${sourceBackupPath} ${PROJECT_ID}`
+      `node archived/backups-copy.js ${INSTANCE_ID} ${COPY_BACKUP_ID} ${sourceBackupPath} ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`)
+      new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`),
     );
   });
 
   // cancel_backup
   it('should cancel a backup of the database', async () => {
     const output = execSync(
-      `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} cancelBackup ${INSTANCE_ID} ${DATABASE_ID} ${CANCELLED_BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Backup cancelled./);
   });
@@ -1221,7 +1221,7 @@ describe('Spanner', () => {
   // get_backups
   it('should list backups in the instance', async () => {
     const output = execSync(
-      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.include(output, 'All backups:');
     assert.include(output, 'Backups matching backup name:');
@@ -1237,24 +1237,24 @@ describe('Spanner', () => {
   // list_backup_operations
   it('should list backup operations in the instance', async () => {
     const output = execSync(
-      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Create Backup Operations:/);
     assert.match(
       output,
-      new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`)
+      new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`),
     );
     assert.match(output, /Copy Backup Operations:/);
     assert.match(
       output,
-      new RegExp(`Backup (.+)${COPY_BACKUP_ID} (.+) is 100% complete`)
+      new RegExp(`Backup (.+)${COPY_BACKUP_ID} (.+) is 100% complete`),
     );
   });
 
   // update_backup_expire_time
   it('should update the expire time of a backup', async () => {
     const output = execSync(
-      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Expire time updated./);
   });
@@ -1268,15 +1268,15 @@ describe('Spanner', () => {
     await delay(this.test);
 
     const output = execSync(
-      `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Database restored from backup./);
     assert.match(
       output,
       new RegExp(
         `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
-          `(.+)${BACKUP_ID} with version time (.+)`
-      )
+          `(.+)${BACKUP_ID} with version time (.+)`,
+      ),
     );
   });
 
@@ -1291,30 +1291,30 @@ describe('Spanner', () => {
     const key = await getCryptoKey();
 
     const output = execSync(
-      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
+      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`,
     );
     assert.match(output, /Database restored from backup./);
     assert.match(
       output,
       new RegExp(
         `Database (.+) was restored to ${ENCRYPTED_RESTORE_DATABASE_ID} from backup ` +
-          `(.+)${ENCRYPTED_BACKUP_ID} using encryption key ${key.name}`
-      )
+          `(.+)${ENCRYPTED_BACKUP_ID} using encryption key ${key.name}`,
+      ),
     );
   });
 
   // list_database_operations
   it('should list database operations in the instance', async () => {
     const output = execSync(
-      `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
+      `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Optimize Database Operations:/);
     assert.match(
       output,
       new RegExp(
         `Database (.+)${RESTORE_DATABASE_ID} restored from backup is (\\d+)% ` +
-          'optimized'
-      )
+          'optimized',
+      ),
     );
   });
 
@@ -1332,7 +1332,7 @@ describe('Spanner', () => {
     }
 
     const output = execSync(
-      `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} deleteBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /Backup deleted./);
   });
@@ -1340,7 +1340,7 @@ describe('Spanner', () => {
   // custom_timeout_and_retry
   it('should insert with custom timeout and retry settings', async () => {
     const output = execSync(
-      `${dmlCmd} insertWithCustomTimeoutAndRetrySettings ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${dmlCmd} insertWithCustomTimeoutAndRetrySettings ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, /record inserted./);
   });
@@ -1348,7 +1348,7 @@ describe('Spanner', () => {
   // get_commit_stats
   it('should update rows in Albums example table and return CommitStats', async () => {
     const output = execSync(
-      `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
     );
     assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
   });
@@ -1356,19 +1356,19 @@ describe('Spanner', () => {
   // create_database_with_version_retention_period
   it('should create a database with a version retention period', async () => {
     const output = execSync(
-      `${schemaCmd} createDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
+      `${schemaCmd} createDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`,
     );
     assert.match(
       output,
       new RegExp(
-        `Waiting for operation on ${VERSION_RETENTION_DATABASE_ID} to complete...`
-      )
+        `Waiting for operation on ${VERSION_RETENTION_DATABASE_ID} to complete...`,
+      ),
     );
     assert.match(
       output,
       new RegExp(
-        `Created database ${VERSION_RETENTION_DATABASE_ID} with version retention period.`
-      )
+        `Created database ${VERSION_RETENTION_DATABASE_ID} with version retention period.`,
+      ),
     );
     assert.include(output, 'Version retention period: 1d');
     assert.include(output, 'Earliest version time:');
@@ -1376,47 +1376,49 @@ describe('Spanner', () => {
 
   it('should create a table with foreign key delete cascade', async () => {
     const output = execSync(
-      `${createTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${createTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
       new RegExp(
-        'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
-      )
+        'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId',
+      ),
     );
   });
 
   it('should alter a table with foreign key delete cascade', async () => {
     const output = execSync(
-      `${alterTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${alterTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
-      new RegExp('Altered ShoppingCarts table with FKShoppingCartsCustomerName')
+      new RegExp(
+        'Altered ShoppingCarts table with FKShoppingCartsCustomerName',
+      ),
     );
   });
 
   it('should drop a foreign key constraint delete cascade', async () => {
     const output = execSync(
-      `${dropForeignKeyConstraintDeleteCascaseCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      `${dropForeignKeyConstraintDeleteCascaseCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`,
     );
     assert.match(
       output,
-      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`),
     );
     assert.match(
       output,
       new RegExp(
-        'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
-      )
+        'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName',
+      ),
     );
   });
 
@@ -1438,45 +1440,45 @@ describe('Spanner', () => {
     // create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node archived/sequence-create.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-create.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Created Seq sequence and Customers table')
+        new RegExp('Created Seq sequence and Customers table'),
       );
       assert.match(
         output,
-        new RegExp('Number of customer records inserted is: 3')
+        new RegExp('Number of customer records inserted is: 3'),
       );
     });
 
     // alter_sequence
     it('should alter a sequence', async () => {
       const output = execSync(
-        `node archived/sequence-alter.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-alter.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
-        )
+          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.',
+        ),
       );
       assert.match(
         output,
-        new RegExp('Number of customer records inserted is: 3')
+        new RegExp('Number of customer records inserted is: 3'),
       );
     });
 
     // drop_sequence
     it('should drop a sequence', async () => {
       const output = execSync(
-        `node archived/sequence-drop.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-drop.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
-        )
+          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.',
+        ),
       );
     });
   });
@@ -1504,78 +1506,78 @@ describe('Spanner', () => {
     // create_instance_config
     it('should create an example custom instance config', async () => {
       const output = execSync(
-        `node archived/instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node archived/instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for create operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-        )
+          `Waiting for create operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
-        new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`),
       );
     });
 
     // update_instance_config
     it('should update an example custom instance config', async () => {
       const output = execSync(
-        `node archived/instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node archived/instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for update operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-        )
+          `Waiting for update operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
-        new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`),
       );
     });
 
     // delete_instance_config
     it('should delete an example custom instance config', async () => {
       const output = execSync(
-        `node archived/instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node archived/instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Deleting ${SAMPLE_INSTANCE_CONFIG_ID}...`)
+        new RegExp(`Deleting ${SAMPLE_INSTANCE_CONFIG_ID}...`),
       );
       assert.match(
         output,
-        new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`),
       );
     });
 
     // list_instance_config_operations
     it('should list all instance config operations', async () => {
       const output = execSync(
-        `node archived/instance-config-get-operations.js ${PROJECT_ID}`
+        `node archived/instance-config-get-operations.js ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Available instance config operations for project ${PROJECT_ID}:`
-        )
+          `Available instance config operations for project ${PROJECT_ID}:`,
+        ),
       );
       assert.include(output, 'Instance config operation for');
       assert.include(
         output,
-        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata',
       );
     });
 
     // list_instance_configs
     it('should list available instance configs', async () => {
       const output = execSync(
-        `node archived/list-instance-configs.js ${PROJECT_ID}`
+        `node archived/list-instance-configs.js ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Available instance configs for project ${PROJECT_ID}:`)
+        new RegExp(`Available instance configs for project ${PROJECT_ID}:`),
       );
       assert.include(output, 'Available leader options for instance config');
     });
@@ -1584,7 +1586,7 @@ describe('Spanner', () => {
     // TODO: Enable when the feature has been released.
     it.skip('should get a specific instance config', async () => {
       const output = execSync(
-        `node archived/get-instance-config.js ${PROJECT_ID}`
+        `node archived/get-instance-config.js ${PROJECT_ID}`,
       );
       assert.include(output, 'Available leader options for instance config');
     });
@@ -1592,51 +1594,51 @@ describe('Spanner', () => {
     // create_database_with_default_leader
     it('should create a database with a default leader', async () => {
       const output = execSync(
-        `node archived/database-create-with-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`
+        `node archived/database-create-with-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
-        )
+          `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
         new RegExp(
-          `Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`
-        )
+          `Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`,
+        ),
       );
     });
 
     // update_database_with_default_leader
     it('should update a database with a default leader', async () => {
       const output = execSync(
-        `node archived/database-update-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`
+        `node archived/database-update-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
-        )
+          `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`,
+        ),
       );
       assert.match(
         output,
         new RegExp(
-          `Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`
-        )
+          `Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`,
+        ),
       );
     });
 
     // list_databases
     it('should list databases on the instance', async () => {
       const output = execSync(
-        `node archived/list-databases.js "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+        `node archived/list-databases.js "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Databases for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}:`
-        )
+          `Databases for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}:`,
+        ),
       );
       assert.include(output, `(default leader = ${DEFAULT_LEADER_2}`);
     });
@@ -1644,13 +1646,13 @@ describe('Spanner', () => {
     // get_database_ddl
     it('should get the ddl of a database', async () => {
       const output = execSync(
-        `node archived/database-get-ddl.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/database-get-ddl.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Retrieved database DDL for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`
-        )
+          `Retrieved database DDL for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`,
+        ),
       );
       assert.include(output, 'CREATE TABLE Singers');
     });
@@ -1679,65 +1681,65 @@ describe('Spanner', () => {
     // create_pg_database
     it('should create an example PostgreSQL database', async () => {
       const output = execSync(
-        `node archived/pg-database-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-database-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`),
       );
       assert.match(
         output,
         new RegExp(
-          `Created database ${PG_DATABASE_ID} on instance ${SAMPLE_INSTANCE_ID} with dialect POSTGRESQL.`
-        )
+          `Created database ${PG_DATABASE_ID} on instance ${SAMPLE_INSTANCE_ID} with dialect POSTGRESQL.`,
+        ),
       );
     });
 
     // pg_interleaving
     it('should create an interleaved table hierarchy using PostgreSQL dialect', async () => {
       const output = execSync(
-        `node archived/pg-interleaving.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-interleaving.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`),
       );
       assert.match(
         output,
         new RegExp(
-          `Created an interleaved table hierarchy in database ${PG_DATABASE_ID} using PostgreSQL dialect.`
-        )
+          `Created an interleaved table hierarchy in database ${PG_DATABASE_ID} using PostgreSQL dialect.`,
+        ),
       );
     });
 
     // pg_dml_with_parameter
     it('should execute a DML statement with parameters on a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-with-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-with-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Successfully executed 1 postgreSQL statements using DML')
+        new RegExp('Successfully executed 1 postgreSQL statements using DML'),
       );
     });
 
     // pg_dml_batch
     it('should execute a batch of DML statements on a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-batch.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-batch.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          'Successfully executed 3 postgreSQL statements using Batch DML.'
-        )
+          'Successfully executed 3 postgreSQL statements using Batch DML.',
+        ),
       );
     });
 
     // pg_dml_partitioned
     it('should execute a partitioned DML on a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-partitioned.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-partitioned.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Successfully deleted 1 record.'));
     });
@@ -1745,42 +1747,42 @@ describe('Spanner', () => {
     // pg_query_with_parameters
     it('should execute a query with parameters on a Spanner PostgreSQL database.', async () => {
       const output = execSync(
-        `node pg-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson')
+        new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson'),
       );
     });
 
     // pg_dml_update
     it('should update a table using parameterized queries on a Spanner PostgreSQL database.', async () => {
       const output = execSync(
-        `node pg-dml-getting-started-update.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-getting-started-update.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Successfully updated 1 record in the Singers table.')
+        new RegExp('Successfully updated 1 record in the Singers table.'),
       );
     });
 
     // pg_add_column
     it('should add a column to a table in the Spanner PostgreSQL database.', async () => {
       const output = execSync(
-        `node archived/pg-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Added MarketingBudget column to Albums table in database ${PG_DATABASE_ID}`
-        )
+          `Added MarketingBudget column to Albums table in database ${PG_DATABASE_ID}`,
+        ),
       );
     });
 
     //pg_create_index
     it('should create an index in the Spanner PostgreSQL database.', async () => {
       const output = execSync(
-        `node archived/pg-index-create-storing.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-index-create-storing.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Added the AlbumsByAlbumTitle index.'));
     });
@@ -1788,7 +1790,7 @@ describe('Spanner', () => {
     // pg_schema_information
     it('should query the information schema metadata in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-schema-information.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-schema-information.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Table: public.albums'));
       assert.match(output, new RegExp('Table: public.author'));
@@ -1799,29 +1801,29 @@ describe('Spanner', () => {
     // pg_ordering_nulls
     it('should order nulls as per clause in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-ordering-nulls.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-ordering-nulls.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Author ORDER BY FirstName'));
       assert.match(output, new RegExp('Author ORDER BY FirstName DESC'));
       assert.match(output, new RegExp('Author ORDER BY FirstName NULLS FIRST'));
       assert.match(
         output,
-        new RegExp('Author ORDER BY FirstName DESC NULLS LAST')
+        new RegExp('Author ORDER BY FirstName DESC NULLS LAST'),
       );
     });
 
     // pg_numeric_data_type
     it('should create a table, insert and query pg numeric data', async () => {
       const output = execSync(
-        `node pg-numeric-data-type.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-numeric-data-type.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`),
       );
       assert.match(
         output,
-        new RegExp(`Added table venues to database ${PG_DATABASE_ID}.`)
+        new RegExp(`Added table venues to database ${PG_DATABASE_ID}.`),
       );
       assert.match(output, new RegExp('Inserted data.'));
       assert.match(output, new RegExp('VenueId: 4, Revenue: 97372.3863'));
@@ -1832,24 +1834,24 @@ describe('Spanner', () => {
     // pg_jsonb_add_column
     it('should add a jsonb column to a table', async () => {
       const output = execSync(
-        `node archived/pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`),
       );
       assert.match(
         output,
         new RegExp(
-          `Added jsonb column to table venues to database ${PG_DATABASE_ID}.`
-        )
+          `Added jsonb column to table venues to database ${PG_DATABASE_ID}.`,
+        ),
       );
     });
 
     // pg_jsonb_insert_data
     it('should insert pg jsonb data', async () => {
       const output = execSync(
-        `node pg-jsonb-update-data.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-jsonb-update-data.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Updated data.'));
     });
@@ -1857,24 +1859,24 @@ describe('Spanner', () => {
     // pg_jsonb_query_data
     it('should query pg jsonb data', async () => {
       const output = execSync(
-        `node pg-jsonb-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-jsonb-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('VenueId: 19, Details: {"value":{"open":true,"rating":9}}')
+        new RegExp('VenueId: 19, Details: {"value":{"open":true,"rating":9}}'),
       );
     });
 
     // pg_case_sensitivity
     it('should create case sensitive table and query the information in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-case-sensitivity.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-case-sensitivity.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          `Created table with case sensitive names in database ${PG_DATABASE_ID} using PostgreSQL dialect.`
-        )
+          `Created table with case sensitive names in database ${PG_DATABASE_ID} using PostgreSQL dialect.`,
+        ),
       );
       assert.match(output, new RegExp('Inserted data using mutations.'));
       assert.match(output, new RegExp('Concerts Table Data using Mutations:'));
@@ -1885,7 +1887,7 @@ describe('Spanner', () => {
     // pg_datatypes_casting
     it('should use cast operator to cast from one data type to another in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-datatypes-casting.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-datatypes-casting.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('Data types after casting'));
     });
@@ -1893,7 +1895,7 @@ describe('Spanner', () => {
     // pg_functions
     it('should call a server side function on a Spanner PostgreSQL database.', async () => {
       const output = execSync(
-        `node pg-functions.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-functions.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(output, new RegExp('1284352323 seconds after epoch is'));
     });
@@ -1901,11 +1903,11 @@ describe('Spanner', () => {
     // pg_dml_returning_insert
     it('should insert records using DML Returning in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-returning-insert ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-returning-insert ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Successfully inserted 1 record into the Singers table')
+        new RegExp('Successfully inserted 1 record into the Singers table'),
       );
       assert.match(output, new RegExp('Virginia Watson'));
     });
@@ -1913,11 +1915,11 @@ describe('Spanner', () => {
     // pg_dml_returning_update
     it('should update records using DML Returning in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-returning-update ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-returning-update ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Successfully updated 1 record into the Singers table')
+        new RegExp('Successfully updated 1 record into the Singers table'),
       );
       assert.match(output, new RegExp('Virginia1 Watson1'));
     });
@@ -1925,11 +1927,11 @@ describe('Spanner', () => {
     // pg_dml_returning_delete
     it('should delete records using DML Returning in a Spanner PostgreSQL database', async () => {
       const output = execSync(
-        `node pg-dml-returning-delete ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-dml-returning-delete ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Successfully deleted 1 record from the Singers table')
+        new RegExp('Successfully deleted 1 record from the Singers table'),
       );
       assert.match(output, new RegExp('Virginia1 Watson1'));
     });
@@ -1937,65 +1939,65 @@ describe('Spanner', () => {
     // pg_create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node archived/pg-sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
-        new RegExp('Created Seq sequence and Customers table')
+        new RegExp('Created Seq sequence and Customers table'),
       );
       assert.match(
         output,
-        new RegExp('Number of customer records inserted is: 3')
+        new RegExp('Number of customer records inserted is: 3'),
       );
     });
 
     // pg_alter_sequence
     it('should alter a sequence', async () => {
       const output = execSync(
-        `node archived/pg-sequence-alter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-alter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
-        )
+          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.',
+        ),
       );
       assert.match(
         output,
-        new RegExp('Number of customer records inserted is: 3')
+        new RegExp('Number of customer records inserted is: 3'),
       );
     });
 
     // pg_drop_sequence
     it('should drop a sequence', async () => {
       const output = execSync(
-        `node archived/pg-sequence-drop.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-drop.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`,
       );
       assert.match(
         output,
         new RegExp(
-          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
-        )
+          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.',
+        ),
       );
     });
 
     // directed_read_options
     it('should run read-only transaction with directed read options set', async () => {
       const output = execSync(
-        `node directed-reads.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+        `node directed-reads.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`,
       );
       console.log(output);
       assert.match(
         output,
         new RegExp(
-          'SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace'
-        )
+          'SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace',
+        ),
       );
       assert.match(
         output,
         new RegExp(
-          'Successfully executed read-only transaction with directedReadOptions'
-        )
+          'Successfully executed read-only transaction with directedReadOptions',
+        ),
       );
     });
   });

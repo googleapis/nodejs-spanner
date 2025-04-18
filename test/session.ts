@@ -191,7 +191,7 @@ describe('Session', () => {
             assert.strictEqual(resp, apiResponse);
 
             done();
-          }
+          },
         );
       });
 
@@ -243,7 +243,7 @@ describe('Session', () => {
     it('should return the name if already formatted', () => {
       assert.strictEqual(
         Session.formatName_(DATABASE.formattedName_, PATH),
-        PATH
+        PATH,
       );
     });
 
@@ -305,8 +305,8 @@ describe('Session', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            session.commonHeaders_
-          )
+            session.commonHeaders_,
+          ),
         );
         callback(null, requestReturnValue);
       };
@@ -332,8 +332,8 @@ describe('Session', () => {
           config.headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            session.commonHeaders_
-          )
+            session.commonHeaders_,
+          ),
         );
         return new Promise(resolve => resolve(requestReturnValue));
       };

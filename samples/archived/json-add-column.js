@@ -45,7 +45,7 @@ async function addJsonColumn(instanceId, databaseId, projectId) {
   await operation.promise();
 
   console.log(
-    `Added VenueDetails column to Venues table in database ${databaseId}.`
+    `Added VenueDetails column to Venues table in database ${databaseId}.`,
   );
   // [END spanner_add_json_column]
 }

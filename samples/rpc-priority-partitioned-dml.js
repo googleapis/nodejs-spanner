@@ -38,7 +38,7 @@ async function main(instanceId, databaseId, projectId) {
 
   async function updateUsingPartitionedDmlWithRpcPriority(
     instanceId,
-    databaseId
+    databaseId,
   ) {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
@@ -52,7 +52,7 @@ async function main(instanceId, databaseId, projectId) {
         },
       });
       console.log(
-        `Successfully updated ${rowCount} records using low RPC priority.`
+        `Successfully updated ${rowCount} records using low RPC priority.`,
       );
     } catch (err) {
       console.error('ERROR:', err);

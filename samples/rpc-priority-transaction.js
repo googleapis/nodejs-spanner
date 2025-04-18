@@ -60,7 +60,7 @@ async function main(instanceId, databaseId, projectId) {
         });
 
         console.log(
-          `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`
+          `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`,
         );
       } catch (err) {
         console.error('ERROR:', err);
