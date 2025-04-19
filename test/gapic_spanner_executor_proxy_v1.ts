@@ -210,7 +210,9 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      client.initialize().catch(err => {
+        throw err;
+      });
       assert(client.spannerExecutorProxyStub);
       client.close().then(() => {
         done();
@@ -273,7 +275,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.executor.v1.SpannerAsyncActionRequest()
       );
@@ -319,7 +321,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.spanner.executor.v1.SpannerAsyncActionRequest()
       );
@@ -359,7 +361,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
   });
 
   describe('Path templates', () => {
-    describe('backup', () => {
+    describe('backup', async () => {
       const fakePath = '/rendered/path/backup';
       const expectedParameters = {
         project: 'projectValue',
@@ -371,7 +373,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -424,7 +426,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('backupSchedule', () => {
+    describe('backupSchedule', async () => {
       const fakePath = '/rendered/path/backupSchedule';
       const expectedParameters = {
         project: 'projectValue',
@@ -437,7 +439,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupSchedulePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -501,7 +503,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('database', () => {
+    describe('database', async () => {
       const fakePath = '/rendered/path/database';
       const expectedParameters = {
         project: 'projectValue',
@@ -513,7 +515,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databasePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -566,7 +568,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('databaseRole', () => {
+    describe('databaseRole', async () => {
       const fakePath = '/rendered/path/databaseRole';
       const expectedParameters = {
         project: 'projectValue',
@@ -579,7 +581,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databaseRolePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -643,7 +645,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('instance', () => {
+    describe('instance', async () => {
       const fakePath = '/rendered/path/instance';
       const expectedParameters = {
         project: 'projectValue',
@@ -654,7 +656,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instancePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -693,7 +695,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('instanceConfig', () => {
+    describe('instanceConfig', async () => {
       const fakePath = '/rendered/path/instanceConfig';
       const expectedParameters = {
         project: 'projectValue',
@@ -704,7 +706,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instanceConfigPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -747,7 +749,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('instancePartition', () => {
+    describe('instancePartition', async () => {
       const fakePath = '/rendered/path/instancePartition';
       const expectedParameters = {
         project: 'projectValue',
@@ -759,7 +761,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instancePartitionPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -825,7 +827,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
       });
     });
 
-    describe('session', () => {
+    describe('session', async () => {
       const fakePath = '/rendered/path/session';
       const expectedParameters = {
         project: 'projectValue',
@@ -838,7 +840,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.sessionPathTemplate.render = sinon
         .stub()
         .returns(fakePath);

@@ -7673,8 +7673,7 @@
                 "php_namespace": "Google\\Cloud\\Spanner\\V1",
                 "ruby_package": "Google::Cloud::Spanner::V1",
                 "(google.api.resource_definition).type": "spanner.googleapis.com/Database",
-                "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}",
-                "cc_enable_arenas": true
+                "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}"
               },
               "nested": {
                 "Spanner": {
@@ -9152,6 +9151,13 @@
                     "precommitToken": {
                       "type": "MultiplexedSessionPrecommitToken",
                       "id": 8,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    },
+                    "last": {
+                      "type": "bool",
+                      "id": 9,
                       "options": {
                         "(google.api.field_behavior)": "OPTIONAL"
                       }
