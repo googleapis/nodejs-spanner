@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function getDatabaseOperations(instanceId, projectId) {
+function main(instanceId, projectId) {
   // [START spanner_list_database_operations]
 
   // Imports the Google Cloud client library
@@ -36,28 +36,35 @@ async function getDatabaseOperations(instanceId, projectId) {
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List database operations
-  try {
-    const [databaseOperations] =
-      await databaseAdminClient.listDatabaseOperations({
-        parent: databaseAdminClient.instancePath(projectId, instanceId),
-        filter:
-          '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
-      });
-    console.log('Optimize Database Operations:');
-    databaseOperations.forEach(databaseOperation => {
-      const metadata =
-        protos.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
-          databaseOperation.metadata.value
+  async function getDatabaseOperations() {
+    try {
+      const [databaseOperations] =
+        await databaseAdminClient.listDatabaseOperations({
+          parent: databaseAdminClient.instancePath(projectId, instanceId),
+          filter:
+            '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
+        });
+      console.log('Optimize Database Operations:');
+      databaseOperations.forEach(databaseOperation => {
+        const metadata =
+          protos.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
+            databaseOperation.metadata.value
+          );
+        console.log(
+          `Database ${metadata.name} restored from backup is ` +
+            `${metadata.progress.progressPercent}% optimized.`
         );
-      console.log(
-        `Database ${metadata.name} restored from backup is ` +
-          `${metadata.progress.progressPercent}% optimized.`
-      );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
   }
+  getDatabaseOperations();
   // [END spanner_list_database_operations]
 }
 
-module.exports.getDatabaseOperations = getDatabaseOperations;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

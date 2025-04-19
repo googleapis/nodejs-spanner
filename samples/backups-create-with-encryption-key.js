@@ -15,13 +15,7 @@
 
 'use strict';
 
-async function createBackupWithEncryptionKey(
-  instanceId,
-  databaseId,
-  backupId,
-  projectId,
-  keyName
-) {
+function main(instanceId, databaseId, backupId, projectId, keyName) {
   // [START spanner_create_backup_with_encryption_key]
 
   // Imports the Google Cloud client library
@@ -47,68 +41,75 @@ async function createBackupWithEncryptionKey(
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database
-  try {
-    console.log(
-      `Creating backup of database ${databaseAdminClient.databasePath(
-        projectId,
-        instanceId,
-        databaseId
-      )}.`
-    );
-
-    // Expire backup 14 days in the future
-    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
-
-    // Create a backup of the state of the database at the current time.
-    const [operation] = await databaseAdminClient.createBackup({
-      parent: databaseAdminClient.instancePath(projectId, instanceId),
-      backupId: backupId,
-      backup: (protos.google.spanner.admin.database.v1.Backup = {
-        database: databaseAdminClient.databasePath(
+  async function createBackupWithEncryptionKey() {
+    try {
+      console.log(
+        `Creating backup of database ${databaseAdminClient.databasePath(
           projectId,
           instanceId,
           databaseId
-        ),
-        expireTime: Spanner.timestamp(expireTime).toStruct(),
-        name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-      }),
-      encryptionConfig: {
-        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-        kmsKeyName: keyName,
-      },
-    });
-
-    console.log(
-      `Waiting for backup ${databaseAdminClient.backupPath(
-        projectId,
-        instanceId,
-        backupId
-      )} to complete...`
-    );
-    await operation.promise();
-
-    // Verify backup is ready
-    const [backupInfo] = await databaseAdminClient.getBackup({
-      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    });
-    if (backupInfo.state === 'READY') {
-      console.log(
-        `Backup ${backupInfo.name} of size ` +
-          `${backupInfo.sizeBytes} bytes was created at ` +
-          `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
-          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`
+        )}.`
       );
-    } else {
-      console.error('ERROR: Backup is not ready.');
+
+      // Expire backup 14 days in the future
+      const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+
+      // Create a backup of the state of the database at the current time.
+      const [operation] = await databaseAdminClient.createBackup({
+        parent: databaseAdminClient.instancePath(projectId, instanceId),
+        backupId: backupId,
+        backup: (protos.google.spanner.admin.database.v1.Backup = {
+          database: databaseAdminClient.databasePath(
+            projectId,
+            instanceId,
+            databaseId
+          ),
+          expireTime: Spanner.timestamp(expireTime).toStruct(),
+          name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+        }),
+        encryptionConfig: {
+          encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+          kmsKeyName: keyName,
+        },
+      });
+
+      console.log(
+        `Waiting for backup ${databaseAdminClient.backupPath(
+          projectId,
+          instanceId,
+          backupId
+        )} to complete...`
+      );
+      await operation.promise();
+
+      // Verify backup is ready
+      const [backupInfo] = await databaseAdminClient.getBackup({
+        name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      });
+      if (backupInfo.state === 'READY') {
+        console.log(
+          `Backup ${backupInfo.name} of size ` +
+            `${backupInfo.sizeBytes} bytes was created at ` +
+            `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
+            `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`
+        );
+      } else {
+        console.error('ERROR: Backup is not ready.');
+      }
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the spanner client when finished.
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+      spanner.close();
     }
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the spanner client when finished.
-    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
-    spanner.close();
   }
+  createBackupWithEncryptionKey();
   // [END spanner_create_backup_with_encryption_key]
 }
 
-module.exports.createBackupWithEncryptionKey = createBackupWithEncryptionKey;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

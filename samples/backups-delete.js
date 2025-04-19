@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function deleteBackup(instanceId, backupId, projectId) {
+function main(instanceId, backupId, projectId) {
   // [START spanner_delete_backup]
 
   // Imports the Google Cloud client library
@@ -38,22 +38,28 @@ async function deleteBackup(instanceId, backupId, projectId) {
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Delete the backup
-  console.log(`Deleting backup ${backupId}.`);
-  await databaseAdminClient.deleteBackup({
-    name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-  });
-  console.log('Backup deleted.');
-
-  // Verify backup no longer exists
-  try {
-    await databaseAdminClient.getBackup({
+  async function deleteBackup() {
+    console.log(`Deleting backup ${backupId}.`);
+    await databaseAdminClient.deleteBackup({
       name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
     });
-    console.error('Error: backup still exists.');
-  } catch (err) {
     console.log('Backup deleted.');
+    // Verify backup no longer exists
+    try {
+      await databaseAdminClient.getBackup({
+        name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      });
+      console.error('Error: backup still exists.');
+    } catch (err) {
+      console.log('Backup deleted.');
+    }
   }
+  deleteBackup();
   // [END spanner_delete_backup]
 }
 
-module.exports.deleteBackup = deleteBackup;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
