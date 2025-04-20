@@ -4,6 +4,28 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.21.0](https://github.com/googleapis/nodejs-spanner/compare/v7.20.0...v7.21.0) (2025-04-15)
+
+
+### Features
+
+* Adding sample for pre-split feature ([#2274](https://github.com/googleapis/nodejs-spanner/issues/2274)) ([3d5f080](https://github.com/googleapis/nodejs-spanner/commit/3d5f08065fdf40a1c441d97a049d7dacf1a5be93))
+
+
+### Bug Fixes
+
+* Adding span attributes for request tag and transaction tag ([#2236](https://github.com/googleapis/nodejs-spanner/issues/2236)) ([3f69dad](https://github.com/googleapis/nodejs-spanner/commit/3f69dad36cfdeb4effd191e0d38079ead1bd6654))
+
+## [7.20.0](https://github.com/googleapis/nodejs-spanner/compare/v7.19.1...v7.20.0) (2025-04-11)
+
+
+### Features
+
+* Add support for Interval ([#2192](https://github.com/googleapis/nodejs-spanner/issues/2192)) ([8c886cb](https://github.com/googleapis/nodejs-spanner/commit/8c886cbc0d7523fb99e65cfc5d8f565b630e26f0))
+* **debugging:** Implement x-goog-spanner-request-id propagation per request ([#2205](https://github.com/googleapis/nodejs-spanner/issues/2205)) ([e42caea](https://github.com/googleapis/nodejs-spanner/commit/e42caeaaa656c395d240f4af412ddb947f29c59b))
+* **spanner:** Add support for snapshot isolation ([#2245](https://github.com/googleapis/nodejs-spanner/issues/2245)) ([b60a683](https://github.com/googleapis/nodejs-spanner/commit/b60a683c0e1ddbf704766eb99f102fed925a348c))
+* **spanner:** Support for Multiplexed Session Partitioned Ops ([#2252](https://github.com/googleapis/nodejs-spanner/issues/2252)) ([e7ce471](https://github.com/googleapis/nodejs-spanner/commit/e7ce471332f6e73614638b96ed54c87095d785a2))
+
 ## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
 
 

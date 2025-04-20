@@ -938,54 +938,60 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError));
 
-      database.getTransaction(async err => {
-        assert.strictEqual(err, fakeError);
+      database.getTransaction(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async err => {
+          assert.strictEqual(err, fakeError);
 
-        await provider.forceFlush();
-        traceExporter.forceFlush();
-        const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-        withAllSpansHaveDBName(spans);
+          await provider.forceFlush();
+          traceExporter.forceFlush();
+          const spans = traceExporter.getFinishedSpans();
+          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+          withAllSpansHaveDBName(spans);
 
-        const actualEventNames: string[] = [];
-        const actualSpanNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
+          const actualEventNames: string[] = [];
+          const actualSpanNames: string[] = [];
+          spans.forEach(span => {
+            actualSpanNames.push(span.name);
+            span.events.forEach(event => {
+              actualEventNames.push(event.name);
+            });
           });
-        });
 
-        const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+          const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
+          assert.deepStrictEqual(
+            actualSpanNames,
+            expectedSpanNames,
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          );
 
-        // In the event of a sessionPool error, we should not have events.
-        const expectedEventNames = [];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `event names mismatch:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-        );
+          // In the event of a sessionPool error, we should not have events.
+          const expectedEventNames = [];
+          assert.deepStrictEqual(
+            actualEventNames,
+            expectedEventNames,
+            `event names mismatch:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          );
 
-        // Ensure that the span actually produced an error that was recorded.
-        const firstSpan = spans[0];
-        assert.strictEqual(
-          SpanStatusCode.ERROR,
-          firstSpan.status.code,
-          'Expected an ERROR span status'
-        );
-        assert.strictEqual(
-          'pool error',
-          firstSpan.status.message,
-          'Mismatched span status message'
-        );
-
-        done();
-      });
+          // Ensure that the span actually produced an error that was recorded.
+          const firstSpan = spans[0];
+          assert.strictEqual(
+            SpanStatusCode.ERROR,
+            firstSpan.status.code,
+            'Expected an ERROR span status'
+          );
+          assert.strictEqual(
+            'pool error',
+            firstSpan.status.message,
+            'Mismatched span status message'
+          );
+          assert.strictEqual(
+            spans[0].attributes['transaction.tag'],
+            'transaction-tag'
+          );
+          done();
+        }
+      );
     });
 
     it('with no errors', done => {
@@ -1342,7 +1348,10 @@ describe('Database', () => {
             'Using Session',
           ];
           assert.deepStrictEqual(actualEventNames, expectedEventNames);
-
+          assert.strictEqual(
+            spans[0].attributes['transaction.tag'],
+            'batch-write-tag'
+          );
           done();
         });
 
@@ -1475,52 +1484,59 @@ describe('Database', () => {
         callback(fakeErr)
       );
 
-      database.runTransaction(err => {
-        assert.strictEqual(err, fakeErr);
+      database.runTransaction(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        err => {
+          assert.strictEqual(err, fakeErr);
 
-        const spans = traceExporter.getFinishedSpans();
-        assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
-        withAllSpansHaveDBName(spans);
+          const spans = traceExporter.getFinishedSpans();
+          assert.strictEqual(spans.length, 1, 'Exactly 1 span expected');
+          withAllSpansHaveDBName(spans);
 
-        const actualSpanNames: string[] = [];
-        const actualEventNames: string[] = [];
-        spans.forEach(span => {
-          actualSpanNames.push(span.name);
-          span.events.forEach(event => {
-            actualEventNames.push(event.name);
+          const actualSpanNames: string[] = [];
+          const actualEventNames: string[] = [];
+          spans.forEach(span => {
+            actualSpanNames.push(span.name);
+            span.events.forEach(event => {
+              actualEventNames.push(event.name);
+            });
           });
-        });
 
-        const expectedSpanNames = ['CloudSpanner.Database.runTransaction'];
-        assert.deepStrictEqual(
-          actualSpanNames,
-          expectedSpanNames,
-          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
-        );
+          const expectedSpanNames = ['CloudSpanner.Database.runTransaction'];
+          assert.deepStrictEqual(
+            actualSpanNames,
+            expectedSpanNames,
+            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+          );
 
-        // Ensure that the span actually produced an error that was recorded.
-        const firstSpan = spans[0];
-        assert.strictEqual(
-          SpanStatusCode.ERROR,
-          firstSpan.status.code,
-          'Expected an ERROR span status'
-        );
-        assert.strictEqual(
-          'getting a session',
-          firstSpan.status.message,
-          'Mismatched span status message'
-        );
+          // Ensure that the span actually produced an error that was recorded.
+          const firstSpan = spans[0];
+          assert.strictEqual(
+            SpanStatusCode.ERROR,
+            firstSpan.status.code,
+            'Expected an ERROR span status'
+          );
+          assert.strictEqual(
+            'getting a session',
+            firstSpan.status.message,
+            'Mismatched span status message'
+          );
 
-        // We don't expect events.
-        const expectedEventNames = [];
-        assert.deepStrictEqual(
-          actualEventNames,
-          expectedEventNames,
-          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
-        );
+          // We don't expect events.
+          const expectedEventNames = [];
+          assert.deepStrictEqual(
+            actualEventNames,
+            expectedEventNames,
+            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+          );
 
-        done();
-      });
+          assert.strictEqual(
+            spans[0].attributes['transaction.tag'],
+            'transaction-tag'
+          );
+          done();
+        }
+      );
     });
 
     it('with other errors when running the transaction', done => {
@@ -1601,11 +1617,14 @@ describe('Database', () => {
         .stub(FakeAsyncTransactionRunner.prototype, 'run')
         .resolves(fakeValue);
 
-      const value = await database.runTransactionAsync(async txn => {
-        const result = await txn.run('SELECT 1');
-        await txn.commit();
-        return result;
-      });
+      const value = await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async txn => {
+          const result = await txn.run('SELECT 1');
+          await txn.commit();
+          return result;
+        }
+      );
 
       assert.strictEqual(value, fakeValue);
 
@@ -1648,6 +1667,10 @@ describe('Database', () => {
         actualEventNames,
         expectedEventNames,
         `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
+      );
+      assert.strictEqual(
+        spans[0].attributes['transaction.tag'],
+        'transaction-tag'
       );
     });
 
@@ -1713,6 +1736,7 @@ describe('Database', () => {
       sql: 'SELECT * FROM table',
       a: 'b',
       c: 'd',
+      requestOptions: {requestTag: 'request-tag'},
     };
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
@@ -1805,6 +1829,7 @@ describe('Database', () => {
           `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
         );
 
+        assert.strictEqual(spans[0].attributes['request.tag'], 'request-tag');
         done();
       });
     });
@@ -1962,6 +1987,7 @@ describe('Database', () => {
         key: 'k999',
         thing: 'abc',
       },
+      requestOptions: {requestTag: 'request-tag'},
     };
 
     let fakeSessionFactory: FakeSessionFactory;
@@ -2070,6 +2096,7 @@ describe('Database', () => {
           `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`
         );
 
+        assert.strictEqual(spans[0].attributes['request.tag'], 'request-tag');
         done();
       });
     });

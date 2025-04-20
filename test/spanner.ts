@@ -61,6 +61,7 @@ import {
   RequestIDError,
   X_GOOG_REQ_ID_REGEX,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR,
   randIdForProcess,
   resetNthClientId,
 } from '../src/request_id_header';
@@ -5795,6 +5796,23 @@ describe('Spanner with mock server', () => {
   });
 
   describe('XGoogRequestId', () => {
+    const exporter = new InMemorySpanExporter();
+    const provider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+    });
+    provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+    provider.register();
+
+    beforeEach(async () => {
+      await exporter.forceFlush();
+      await exporter.reset();
+    });
+
+    after(async () => {
+      await provider.shutdown();
+    });
+
     it('with retry on aborted query', async () => {
       let attempts = 0;
       const database = newTestDatabase();
@@ -5863,6 +5881,34 @@ describe('Spanner with mock server', () => {
       ];
       assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
       await database.close();
+    });
+
+    it('check span attributes for x-goog-spanner-request-id', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async transaction => {
+        await transaction!.run(selectSql);
+        await transaction!.commit();
+      });
+
+      await exporter.forceFlush();
+      const spans = exporter.getFinishedSpans();
+
+      // The RPC invoking spans that we expect to have our value.
+      const rpcMakingSpans = [
+        'CloudSpanner.Database.batchCreateSessions',
+        'CloudSpanner.Snapshot.run',
+        'CloudSpanner.Transaction.commit',
+      ];
+
+      spans.forEach(span => {
+        if (rpcMakingSpans.includes(span.name)) {
+          assert.strictEqual(
+            X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR in span.attributes,
+            true,
+            `Missing ${X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR} for ${span.name}`
+          );
+        }
+      });
     });
 
     // TODO(@odeke-em): introduce tests for incremented attempts to verify

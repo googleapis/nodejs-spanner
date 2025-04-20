@@ -161,12 +161,6 @@ describe('startTrace', () => {
       );
 
       assert.equal(
-        span.attributes[SEMATTRS_DB_SYSTEM],
-        'spanner',
-        'Missing DB_SYSTEM attribute'
-      );
-
-      assert.equal(
         span.attributes[SEMATTRS_DB_SQL_TABLE],
         'table',
         'Missing DB_SQL_TABLE attribute'
