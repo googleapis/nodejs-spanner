@@ -3632,6 +3632,21 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    describe('createQueryPartitions', () => {
+      it('should create set of query partitions', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const query = {
+          sql: select1,
+        };
+        const [transaction] = await database.createBatchTransaction();
+        const [partitions] = await transaction.createQueryPartitions(query);
+        assert.strictEqual(Object.keys(partitions).length, 1);
+        assert.strictEqual(partitions[0].sql, select1);
+        transaction.close();
+        await database.close();
+      });
+    });
+
     describe('pdml', () => {
       it('should retry on aborted error', async () => {
         const database = newTestDatabase();

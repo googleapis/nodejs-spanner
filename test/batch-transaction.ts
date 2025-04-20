@@ -32,6 +32,7 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {ExecuteSqlRequest} from '../src/transaction';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -168,7 +169,7 @@ describe('BatchTransaction', () => {
       directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
-    it('should make the correct request', () => {
+    it('should make the correct request using callback', () => {
       const fakeParams = {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
@@ -183,7 +184,10 @@ describe('BatchTransaction', () => {
         .withArgs(QUERY)
         .returns(fakeParams);
 
-      batchTransaction.createQueryPartitions(QUERY, assert.ifError);
+      batchTransaction.createQueryPartitions(
+        QUERY as ExecuteSqlRequest,
+        assert.ifError
+      );
 
       const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
@@ -196,7 +200,7 @@ describe('BatchTransaction', () => {
       );
     });
 
-    it('should accept query as string', () => {
+    it('should accept query as string in a callback based request to createQueryPartitions', () => {
       const query = 'SELECT * FROM Singers';
 
       const expectedQuery = Object.assign({}, {sql: query});
@@ -213,6 +217,34 @@ describe('BatchTransaction', () => {
       assert.strictEqual(method, 'partitionQuery');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, undefined);
+    });
+
+    it('should make the correct request using await', async () => {
+      const fakeParams = {
+        params: {a: 'b'},
+        paramTypes: {a: 'string'},
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
+      };
+
+      const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
+
+      (sandbox.stub(FakeTransaction, 'encodeParams') as sinon.SinonStub)
+        .withArgs(QUERY)
+        .returns(fakeParams);
+
+      await batchTransaction.createQueryPartitions(QUERY as ExecuteSqlRequest);
+
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionQuery');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+      );
     });
   });
 
