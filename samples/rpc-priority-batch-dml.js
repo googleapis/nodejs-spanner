@@ -62,7 +62,7 @@ async function main(instanceId, databaseId, projectId) {
         });
         await transaction.commit();
         console.log(
-          `Successfully executed ${rowCounts.length} SQL statements using Batch DML using low RPC priority.`
+          `Successfully executed ${rowCounts.length} SQL statements using Batch DML using low RPC priority.`,
         );
       });
     } catch (err) {

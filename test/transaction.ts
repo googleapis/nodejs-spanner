@@ -850,7 +850,7 @@ describe('Transaction', () => {
         stream.on('error', error => {
           assert.strictEqual(
             error.message,
-            'Value of type undefined not recognized.'
+            'Value of type undefined not recognized.',
           );
           done();
         });
@@ -1406,7 +1406,7 @@ describe('Transaction', () => {
         transaction.batchUpdate(null, err => {
           assert.strictEqual(
             err.message,
-            'batchUpdate requires at least 1 DML statement.'
+            'batchUpdate requires at least 1 DML statement.',
           );
           assert.strictEqual(err.code, 3);
           assert.deepStrictEqual(err.rowCounts, []);
@@ -1418,7 +1418,7 @@ describe('Transaction', () => {
         transaction.batchUpdate([], err => {
           assert.strictEqual(
             err.message,
-            'batchUpdate requires at least 1 DML statement.'
+            'batchUpdate requires at least 1 DML statement.',
           );
           assert.strictEqual(err.code, 3);
           assert.deepStrictEqual(err.rowCounts, []);
@@ -1447,8 +1447,8 @@ describe('Transaction', () => {
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
               [LEADER_AWARE_ROUTING_HEADER]: 'true',
             },
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -1484,7 +1484,7 @@ describe('Transaction', () => {
             assert.deepStrictEqual(rowCounts, []);
             assert.strictEqual(apiResponse, fakeResponse);
             done();
-          }
+          },
         );
 
         const requestCallback = stub.lastCall.args[1];
@@ -1508,7 +1508,7 @@ describe('Transaction', () => {
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.strictEqual(apiResponse, fakeResponse);
             done();
-          }
+          },
         );
 
         const requestCallback = stub.lastCall.args[1];
@@ -1529,7 +1529,7 @@ describe('Transaction', () => {
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.strictEqual(apiResponse, fakeResponse);
             done();
-          }
+          },
         );
 
         const requestCallback = stub.lastCall.args[1];
@@ -1559,7 +1559,7 @@ describe('Transaction', () => {
             assert.deepStrictEqual(rowCounts, expectedRowCounts);
             assert.deepStrictEqual(apiResponse, fakeResponse);
             done();
-          }
+          },
         );
 
         const requestCallback = stub.lastCall.args[1];
@@ -1583,8 +1583,8 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -1628,8 +1628,8 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -1654,8 +1654,8 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
     });
@@ -1681,8 +1681,8 @@ describe('Transaction', () => {
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
               [LEADER_AWARE_ROUTING_HEADER]: true,
             },
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -1749,7 +1749,7 @@ describe('Transaction', () => {
         transaction.request = config => {
           assert.strictEqual(
             config.reqOpts.requestOptions,
-            options.requestOptions
+            options.requestOptions,
           );
           done();
         };
@@ -1777,7 +1777,7 @@ describe('Transaction', () => {
         transaction.request = config => {
           assert.strictEqual(
             config.reqOpts.requestOptions.transactionTag,
-            transactionTag
+            transactionTag,
           );
           done();
         };
@@ -1848,11 +1848,11 @@ describe('Transaction', () => {
           new Error('Table TestTable not found'),
           {
             code: grpc.status.NOT_FOUND,
-          }
+          },
         );
         const decoratedError = Transaction.decorateCommitError(
           tableNotFoundErr,
-          []
+          [],
         );
         assert.strictEqual(decoratedError, tableNotFoundErr);
       });
@@ -1862,11 +1862,11 @@ describe('Transaction', () => {
           new Error('Invalid value for column TestColumn'),
           {
             code: grpc.status.FAILED_PRECONDITION,
-          }
+          },
         );
         const decoratedError = Transaction.decorateCommitError(
           failedPreconditionErr,
-          []
+          [],
         );
         assert.strictEqual(decoratedError, failedPreconditionErr);
       });
@@ -1874,15 +1874,15 @@ describe('Transaction', () => {
       it('should not decorate FAILED_PRECONDITION error with specific JSON error if mutations are empty', () => {
         const failedPreconditionErr = Object.assign(
           new Error(
-            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.',
           ),
           {
             code: grpc.status.FAILED_PRECONDITION,
-          }
+          },
         );
         const decoratedError = Transaction.decorateCommitError(
           failedPreconditionErr,
-          []
+          [],
         );
         assert.strictEqual(decoratedError, failedPreconditionErr);
       });
@@ -1896,15 +1896,15 @@ describe('Transaction', () => {
 
         const failedPreconditionErr = Object.assign(
           new Error(
-            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.',
           ),
           {
             code: grpc.status.FAILED_PRECONDITION,
-          }
+          },
         );
         const decoratedError = Transaction.decorateCommitError(
           failedPreconditionErr,
-          mutations
+          mutations,
         );
         assert.strictEqual(decoratedError, failedPreconditionErr);
       });
@@ -1918,21 +1918,21 @@ describe('Transaction', () => {
 
         const failedPreconditionErr = Object.assign(
           new Error(
-            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.',
           ),
           {
             code: grpc.status.FAILED_PRECONDITION,
-          }
+          },
         );
         const decoratedError = Transaction.decorateCommitError(
           failedPreconditionErr,
-          mutations
+          mutations,
         );
         assert.notStrictEqual(decoratedError, failedPreconditionErr);
         assert.ok(
           decoratedError.message.includes(
-            'The value is an array. Convert the value to a JSON string containing an array instead in order to insert it into a JSON column. Example: `[{"key": "value 1"}, {"key": "value 2"}]` instead of [{key: "value 1"}, {key: "value 2"}]'
-          )
+            'The value is an array. Convert the value to a JSON string containing an array instead in order to insert it into a JSON column. Example: `[{"key": "value 1"}, {"key": "value 2"}]` instead of [{key: "value 1"}, {key: "value 2"}]',
+          ),
         );
       });
     });
@@ -2058,8 +2058,8 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -2235,8 +2235,8 @@ describe('Transaction', () => {
                 [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
                 [LEADER_AWARE_ROUTING_HEADER]: true,
               },
-              transaction.commonHeaders_
-            )
+              transaction.commonHeaders_,
+            ),
           );
           done();
         };
@@ -2286,8 +2286,8 @@ describe('Transaction', () => {
               [X_GOOG_SPANNER_REQUEST_ID_HEADER]: craftRequestId(1, 1, 1, 1),
               [LEADER_AWARE_ROUTING_HEADER]: true,
             },
-            transaction.commonHeaders_
-          )
+            transaction.commonHeaders_,
+          ),
         );
       });
 
@@ -2355,8 +2355,8 @@ describe('Transaction', () => {
           headers,
           Object.assign(
             {[LEADER_AWARE_ROUTING_HEADER]: true},
-            pdml.commonHeaders_
-          )
+            pdml.commonHeaders_,
+          ),
         );
       });
     });

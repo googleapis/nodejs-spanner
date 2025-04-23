@@ -27,6 +27,7 @@ import type {
 import {PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -51,6 +52,8 @@ export class SpannerExecutorProxyClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('executor');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -85,7 +88,7 @@ export class SpannerExecutorProxyClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -104,7 +107,7 @@ export class SpannerExecutorProxyClient {
    */
   constructor(
     opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
+    gaxInstance?: typeof gax | typeof gax.fallback,
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SpannerExecutorProxyClient;
@@ -114,7 +117,7 @@ export class SpannerExecutorProxyClient {
       opts?.universe_domain !== opts?.universeDomain
     ) {
       throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
+        'Please set either universe_domain or universeDomain, but not both.',
       );
     }
     const universeDomainEnvVar =
@@ -195,28 +198,28 @@ export class SpannerExecutorProxyClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       backupPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/backups/{backup}'
+        'projects/{project}/instances/{instance}/backups/{backup}',
       ),
       backupSchedulePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}'
+        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}',
       ),
       databasePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}'
+        'projects/{project}/instances/{instance}/databases/{database}',
       ),
       databaseRolePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}'
+        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}',
       ),
       instancePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}'
+        'projects/{project}/instances/{instance}',
       ),
       instanceConfigPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instanceConfigs/{instance_config}'
+        'projects/{project}/instanceConfigs/{instance_config}',
       ),
       instancePartitionPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}'
+        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}',
       ),
       sessionPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
+        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}',
       ),
     };
 
@@ -226,7 +229,7 @@ export class SpannerExecutorProxyClient {
       executeActionAsync: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.BIDI_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
     };
 
@@ -235,7 +238,7 @@ export class SpannerExecutorProxyClient {
       'google.spanner.executor.v1.SpannerExecutorProxy',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -269,12 +272,12 @@ export class SpannerExecutorProxyClient {
     this.spannerExecutorProxyStub = this._gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.spanner.executor.v1.SpannerExecutorProxy'
+            'google.spanner.executor.v1.SpannerExecutorProxy',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.executor.v1.SpannerExecutorProxy,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -291,8 +294,8 @@ export class SpannerExecutorProxyClient {
                   stream.emit(
                     'error',
                     new this._gaxModule.GoogleError(
-                      'The client has already been closed.'
-                    )
+                      'The client has already been closed.',
+                    ),
                   );
                 });
                 return stream;
@@ -304,7 +307,7 @@ export class SpannerExecutorProxyClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor = this.descriptors.stream[methodName] || undefined;
@@ -312,7 +315,7 @@ export class SpannerExecutorProxyClient {
         callPromise,
         this._defaults[methodName],
         descriptor,
-        this._opts.fallback
+        this._opts.fallback,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -333,7 +336,7 @@ export class SpannerExecutorProxyClient {
     ) {
       process.emitWarning(
         'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner-cloud-executor.googleapis.com';
@@ -351,7 +354,7 @@ export class SpannerExecutorProxyClient {
     ) {
       process.emitWarning(
         'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner-cloud-executor.googleapis.com';
@@ -393,7 +396,7 @@ export class SpannerExecutorProxyClient {
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -429,7 +432,10 @@ export class SpannerExecutorProxyClient {
    * region_tag:spanner-cloud-executor_v1_generated_SpannerExecutorProxy_ExecuteActionAsync_async
    */
   executeActionAsync(options?: CallOptions): gax.CancellableStream {
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('executeActionAsync stream %j', options);
     return this.innerApiCalls.executeActionAsync(null, options);
   }
 
@@ -499,7 +505,7 @@ export class SpannerExecutorProxyClient {
     project: string,
     instance: string,
     database: string,
-    schedule: string
+    schedule: string,
   ) {
     return this.pathTemplates.backupSchedulePathTemplate.render({
       project: project,
@@ -518,7 +524,7 @@ export class SpannerExecutorProxyClient {
    */
   matchProjectFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).project;
   }
 
@@ -531,7 +537,7 @@ export class SpannerExecutorProxyClient {
    */
   matchInstanceFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).instance;
   }
 
@@ -544,7 +550,7 @@ export class SpannerExecutorProxyClient {
    */
   matchDatabaseFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).database;
   }
 
@@ -557,7 +563,7 @@ export class SpannerExecutorProxyClient {
    */
   matchScheduleFromBackupScheduleName(backupScheduleName: string) {
     return this.pathTemplates.backupSchedulePathTemplate.match(
-      backupScheduleName
+      backupScheduleName,
     ).schedule;
   }
 
@@ -623,7 +629,7 @@ export class SpannerExecutorProxyClient {
     project: string,
     instance: string,
     database: string,
-    role: string
+    role: string,
   ) {
     return this.pathTemplates.databaseRolePathTemplate.render({
       project: project,
@@ -740,7 +746,7 @@ export class SpannerExecutorProxyClient {
    */
   matchProjectFromInstanceConfigName(instanceConfigName: string) {
     return this.pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
+      instanceConfigName,
     ).project;
   }
 
@@ -753,7 +759,7 @@ export class SpannerExecutorProxyClient {
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName: string) {
     return this.pathTemplates.instanceConfigPathTemplate.match(
-      instanceConfigName
+      instanceConfigName,
     ).instance_config;
   }
 
@@ -768,7 +774,7 @@ export class SpannerExecutorProxyClient {
   instancePartitionPath(
     project: string,
     instance: string,
-    instancePartition: string
+    instancePartition: string,
   ) {
     return this.pathTemplates.instancePartitionPathTemplate.render({
       project: project,
@@ -786,7 +792,7 @@ export class SpannerExecutorProxyClient {
    */
   matchProjectFromInstancePartitionName(instancePartitionName: string) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).project;
   }
 
@@ -799,7 +805,7 @@ export class SpannerExecutorProxyClient {
    */
   matchInstanceFromInstancePartitionName(instancePartitionName: string) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).instance;
   }
 
@@ -811,10 +817,10 @@ export class SpannerExecutorProxyClient {
    * @returns {string} A string representing the instance_partition.
    */
   matchInstancePartitionFromInstancePartitionName(
-    instancePartitionName: string
+    instancePartitionName: string,
   ) {
     return this.pathTemplates.instancePartitionPathTemplate.match(
-      instancePartitionName
+      instancePartitionName,
     ).instance_partition;
   }
 
@@ -831,7 +837,7 @@ export class SpannerExecutorProxyClient {
     project: string,
     instance: string,
     database: string,
-    session: string
+    session: string,
   ) {
     return this.pathTemplates.sessionPathTemplate.render({
       project: project,
@@ -894,6 +900,7 @@ export class SpannerExecutorProxyClient {
   close(): Promise<void> {
     if (this.spannerExecutorProxyStub && !this._terminated) {
       return this.spannerExecutorProxyStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
       });

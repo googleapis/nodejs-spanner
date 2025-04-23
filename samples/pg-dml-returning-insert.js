@@ -57,7 +57,7 @@ async function main(instanceId, databaseId, projectId) {
 
         const rowCount = Math.floor(stats[stats.rowCount]);
         console.log(
-          `Successfully inserted ${rowCount} record into the Singers table.`
+          `Successfully inserted ${rowCount} record into the Singers table.`,
         );
         rows.forEach(row => {
           console.log(row.toJSON().fullname);

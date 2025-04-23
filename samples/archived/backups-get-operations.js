@@ -19,7 +19,7 @@ async function getBackupOperations(
   instanceId,
   databaseId,
   backupId,
-  projectId
+  projectId,
 ) {
   // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
@@ -52,11 +52,11 @@ async function getBackupOperations(
     backupOperations.forEach(backupOperation => {
       const metadata =
         protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
-          backupOperation.metadata.value
+          backupOperation.metadata.value,
         );
       console.log(
         `Backup ${metadata.name} on database ${metadata.database} is ` +
-          `${metadata.progress.progressPercent}% complete.`
+          `${metadata.progress.progressPercent}% complete.`,
       );
     });
   } catch (err) {
@@ -67,7 +67,7 @@ async function getBackupOperations(
   try {
     console.log(
       '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
-        `AND (metadata.source_backup:${backupId})`
+        `AND (metadata.source_backup:${backupId})`,
     );
     const [backupOperations] = await instance.getBackupOperations({
       filter:
@@ -78,11 +78,11 @@ async function getBackupOperations(
     backupOperations.forEach(backupOperation => {
       const metadata =
         protos.google.spanner.admin.database.v1.CopyBackupMetadata.decode(
-          backupOperation.metadata.value
+          backupOperation.metadata.value,
         );
       console.log(
         `Backup ${metadata.name} copied from source backup ${metadata.sourceBackup} is ` +
-          `${metadata.progress.progressPercent}% complete.`
+          `${metadata.progress.progressPercent}% complete.`,
       );
     });
   } catch (err) {

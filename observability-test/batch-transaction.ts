@@ -116,8 +116,8 @@ describe('BatchTransaction', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   afterEach(() => {
     traceExporter.reset();
@@ -176,7 +176,7 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
 
       // Ensure that createPartitions_ is a child span of createQueryPartitions.
@@ -184,29 +184,29 @@ describe('BatchTransaction', () => {
       const spanCreateQueryPartitions = spans[1];
       assert.ok(
         spanCreateQueryPartitions.spanContext().traceId,
-        'Expected that createQueryPartitions has a defined traceId'
+        'Expected that createQueryPartitions has a defined traceId',
       );
       assert.ok(
         spanCreatePartitions_.spanContext().traceId,
-        'Expected that createPartitions_ has a defined traceId'
+        'Expected that createPartitions_ has a defined traceId',
       );
       assert.deepStrictEqual(
         spanCreatePartitions_.spanContext().traceId,
         spanCreateQueryPartitions.spanContext().traceId,
-        'Expected that both spans share a traceId'
+        'Expected that both spans share a traceId',
       );
       assert.ok(
         spanCreateQueryPartitions.spanContext().spanId,
-        'Expected that createQueryPartitions has a defined spanId'
+        'Expected that createQueryPartitions has a defined spanId',
       );
       assert.ok(
         spanCreatePartitions_.spanContext().spanId,
-        'Expected that createPartitions_ has a defined spanId'
+        'Expected that createPartitions_ has a defined spanId',
       );
       assert.deepStrictEqual(
-        spanCreatePartitions_.parentSpanId,
+        spanCreatePartitions_.parentSpanContext.spanId,
         spanCreateQueryPartitions.spanContext().spanId,
-        'Expected that createQueryPartitions is the parent to createPartitions_'
+        'Expected that createQueryPartitions is the parent to createPartitions_',
       );
       done();
     });
@@ -239,7 +239,7 @@ describe('BatchTransaction', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       done();
     });

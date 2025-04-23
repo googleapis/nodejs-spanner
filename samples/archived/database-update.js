@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_update_database]
   /**
@@ -50,7 +50,7 @@ function main(
         enableDropProtection: true,
       });
       console.log(
-        `Waiting for update operation for ${database.id} to complete...`
+        `Waiting for update operation for ${database.id} to complete...`,
       );
       await operation.promise();
       console.log(`Updated database ${database.id}.`);

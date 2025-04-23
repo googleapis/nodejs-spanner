@@ -29,7 +29,7 @@ export interface ResourceCallback<Resource, Response> {
   (
     err: grpc.ServiceError | null,
     resource?: Resource | null,
-    response?: Response
+    response?: Response,
   ): void;
 }
 export type PagedResponse<Item, Response> = [Item[], {} | null, Response];
@@ -47,7 +47,7 @@ export interface PagedCallback<Item, Response> {
     err: grpc.ServiceError | null,
     results?: Item[] | null,
     nextQuery?: {} | null,
-    response?: Response | null
+    response?: Response | null,
   ): void;
 }
 
@@ -56,7 +56,7 @@ export interface LongRunningCallback<Resource> {
     err: grpc.ServiceError | null,
     resource?: Resource | null,
     operation?: GaxOperation | null,
-    apiResponse?: IOperation
+    apiResponse?: IOperation,
   ): void;
 }
 
@@ -100,7 +100,7 @@ export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
  */
 export function getCommonHeaders(
   resourceName: string,
-  enableTracing?: boolean
+  enableTracing?: boolean,
 ) {
   const headers: {[k: string]: string} = {};
 

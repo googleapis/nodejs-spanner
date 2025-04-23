@@ -24,7 +24,7 @@ function main(
   projectId = 'my-project-id',
   iamMember = 'user:alice@example.com',
   databaseRole = 'parent',
-  title = 'condition title'
+  title = 'condition title',
 ) {
   // [START spanner_enable_fine_grained_access]
   /**
@@ -52,7 +52,7 @@ function main(
       resource: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       options: (protos.google.iam.v1.GetPolicyOptions = {
         requestedPolicyVersion: 3,
@@ -75,7 +75,7 @@ function main(
       resource: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       policy: policy,
     });
@@ -85,7 +85,7 @@ function main(
       resource: databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
+        databaseId,
       ),
       options: (protos.google.iam.v1.GetPolicyOptions = {
         requestedPolicyVersion: 3,

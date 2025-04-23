@@ -21,7 +21,7 @@
 
 function main(
   instanceConfigId = 'custom-my-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_delete_instance_config]
   /**
@@ -49,7 +49,7 @@ function main(
       await instanceAdminClient.deleteInstanceConfig({
         name: instanceAdminClient.instanceConfigPath(
           projectId,
-          instanceConfigId
+          instanceConfigId,
         ),
       });
       console.log(`Deleted instance config ${instanceConfigId}.\n`);
@@ -58,7 +58,7 @@ function main(
         'ERROR: Deleting instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

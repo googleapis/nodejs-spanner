@@ -77,8 +77,8 @@ describe('Table', () => {
   const provider = new NodeTracerProvider({
     sampler: sampler,
     exporter: traceExporter,
+    spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(traceExporter));
 
   const NAME = 'table-name';
 
@@ -113,7 +113,7 @@ describe('Table', () => {
     assert.strictEqual(
       spans.length >= minCount,
       true,
-      `at least ${minCount} spans expected`
+      `at least ${minCount} spans expected`,
     );
 
     // Sort the spans by duration.
@@ -158,7 +158,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       verifySpanAttributes(spans[0]);
       done();
@@ -179,7 +179,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       verifySpanAttributes(spans[0]);
       done();
@@ -204,7 +204,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         gotSpanStatus,
         wantSpanStatus,
-        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`,
       );
 
       const actualSpanNames = spanNames(gotSpans);
@@ -213,7 +213,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       verifySpanAttributes(gotSpans[0]);
       done();
@@ -237,7 +237,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       verifySpanAttributes(gotSpans[0]);
       done();
@@ -263,7 +263,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         gotSpanStatus,
         wantSpanStatus,
-        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`,
       );
 
       const actualSpanNames = spanNames(gotSpans);
@@ -271,7 +271,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
 
       verifySpanAttributes[gotSpans[0]];
@@ -295,7 +295,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
 
       verifySpanAttributes(gotSpans[0]);
@@ -320,7 +320,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         gotSpanStatus,
         wantSpanStatus,
-        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`
+        `mismatch in span status:\n\tGot:  ${JSON.stringify(gotSpanStatus)}\n\tWant: ${JSON.stringify(wantSpanStatus)}`,
       );
 
       const actualSpanNames = spanNames(gotSpans);
@@ -328,7 +328,7 @@ describe('Table', () => {
       assert.deepStrictEqual(
         actualSpanNames,
         expectedSpanNames,
-        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`
+        `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
       verifySpanAttributes(gotSpans[0]);
 

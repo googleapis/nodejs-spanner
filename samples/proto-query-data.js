@@ -21,7 +21,7 @@ const music = singer.examples.spanner.music;
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_query_with_proto_types_parameter]
   /**
@@ -78,7 +78,7 @@ function main(
         const json = row.toJSON();
         console.log(
           `SingerId: ${json.SingerId}, SingerInfo: ${json.SingerInfo}, SingerGenre: ${json.SingerGenre}, 
-          SingerInfoArray: ${json.SingerInfoArray}, SingerGenreArray: ${json.SingerGenreArray}`
+          SingerInfoArray: ${json.SingerInfoArray}, SingerGenreArray: ${json.SingerGenreArray}`,
         );
       });
     } catch (err) {

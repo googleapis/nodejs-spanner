@@ -58,7 +58,7 @@ function main(instanceId, projectId) {
       });
       console.log(
         `Instance ${instanceId} has been updated with the ${metadata.defaultBackupScheduleType}` +
-          ' default backup schedule type.'
+          ' default backup schedule type.',
       );
     } catch (err) {
       console.error('ERROR:', err);

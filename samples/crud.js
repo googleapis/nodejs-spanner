@@ -216,7 +216,7 @@ async function queryData(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
       );
     });
   } catch (err) {
@@ -265,7 +265,7 @@ async function readData(instanceId, databaseId, projectId) {
     rows.forEach(row => {
       const json = row.toJSON();
       console.log(
-        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+        `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
       );
     });
   } catch (err) {
@@ -323,7 +323,7 @@ async function readStaleData(instanceId, databaseId, projectId) {
       const title = json.AlbumTitle;
       const budget = json.MarketingBudget ? json.MarketingBudget : '';
       console.log(
-        `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`
+        `SingerId: ${id}, AlbumId: ${album}, AlbumTitle: ${title}, MarketingBudget: ${budget}`,
       );
     });
   } catch (err) {
@@ -343,43 +343,44 @@ require('yargs')
     'update <instanceName> <databaseName> <projectId>',
     'Modifies existing rows of data in an example Cloud Spanner table.',
     {},
-    opts => updateData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => updateData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'query <instanceName> <databaseName> <projectId>',
     'Executes a read-only SQL query against an example Cloud Spanner table.',
     {},
-    opts => queryData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => queryData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'insert <instanceName> <databaseName> <projectId>',
     'Inserts new rows of data into an example Cloud Spanner table.',
     {},
-    opts => insertData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => insertData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'delete <instanceName> <databaseName> <projectId>',
     'Deletes rows from an example Cloud Spanner table.',
     {},
-    opts => deleteData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => deleteData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'read <instanceName> <databaseName> <projectId>',
     'Reads data in an example Cloud Spanner table.',
     {},
-    opts => readData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => readData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'read-stale <instanceName> <databaseName> <projectId>',
     'Reads stale data in an example Cloud Spanner table.',
     {},
-    opts => readStaleData(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => readStaleData(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'getCommitStats <instanceName> <databaseName> <projectId>',
     'Updates rows in example Cloud Spanner table and reads CommitStats.',
     {},
-    opts => getCommitStats(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      getCommitStats(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .example('node $0 update "my-instance" "my-database" "my-project-id"')
   .example('node $0 query "my-instance" "my-database" "my-project-id"')

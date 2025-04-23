@@ -29,6 +29,7 @@ import type {
 import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -56,6 +57,8 @@ export class SpannerClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('spanner');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -90,7 +93,7 @@ export class SpannerClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -109,7 +112,7 @@ export class SpannerClient {
    */
   constructor(
     opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
+    gaxInstance?: typeof gax | typeof gax.fallback,
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SpannerClient;
@@ -119,7 +122,7 @@ export class SpannerClient {
       opts?.universe_domain !== opts?.universeDomain
     ) {
       throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
+        'Please set either universe_domain or universeDomain, but not both.',
       );
     }
     const universeDomainEnvVar =
@@ -203,10 +206,10 @@ export class SpannerClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       databasePathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}'
+        'projects/{project}/instances/{instance}/databases/{database}',
       ),
       sessionPathTemplate: new this._gaxModule.PathTemplate(
-        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
+        'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}',
       ),
     };
 
@@ -217,7 +220,7 @@ export class SpannerClient {
       listSessions: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'sessions'
+        'sessions',
       ),
     };
 
@@ -227,17 +230,17 @@ export class SpannerClient {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
       batchWrite: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries,
       ),
     };
 
@@ -246,7 +249,7 @@ export class SpannerClient {
       'google.spanner.v1.Spanner',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -280,12 +283,12 @@ export class SpannerClient {
     this.spannerStub = this._gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.spanner.v1.Spanner'
+            'google.spanner.v1.Spanner',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.spanner.v1.Spanner,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -319,8 +322,8 @@ export class SpannerClient {
                   stream.emit(
                     'error',
                     new this._gaxModule.GoogleError(
-                      'The client has already been closed.'
-                    )
+                      'The client has already been closed.',
+                    ),
                   );
                 });
                 return stream;
@@ -332,7 +335,7 @@ export class SpannerClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor =
@@ -343,7 +346,7 @@ export class SpannerClient {
         callPromise,
         this._defaults[methodName],
         descriptor,
-        this._opts.fallback
+        this._opts.fallback,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -364,7 +367,7 @@ export class SpannerClient {
     ) {
       process.emitWarning(
         'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -382,7 +385,7 @@ export class SpannerClient {
     ) {
       process.emitWarning(
         'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
+        'DeprecationWarning',
       );
     }
     return 'spanner.googleapis.com';
@@ -427,7 +430,7 @@ export class SpannerClient {
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -475,7 +478,7 @@ export class SpannerClient {
    */
   createSession(
     request?: protos.google.spanner.v1.ICreateSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -490,7 +493,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
@@ -498,7 +501,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   createSession(
     request?: protos.google.spanner.v1.ICreateSessionRequest,
@@ -513,7 +516,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -536,8 +539,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.createSession(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('createSession request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.ISession,
+          protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('createSession response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .createSession(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.ISession,
+          protos.google.spanner.v1.ICreateSessionRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('createSession response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Creates multiple new sessions.
@@ -567,7 +596,7 @@ export class SpannerClient {
    */
   batchCreateSessions(
     request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -582,7 +611,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
@@ -590,7 +619,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   batchCreateSessions(
     request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
@@ -607,7 +636,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -630,8 +659,36 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.batchCreateSessions(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('batchCreateSessions request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IBatchCreateSessionsResponse,
+          | protos.google.spanner.v1.IBatchCreateSessionsRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('batchCreateSessions response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .batchCreateSessions(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IBatchCreateSessionsResponse,
+          protos.google.spanner.v1.IBatchCreateSessionsRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('batchCreateSessions response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Gets a session. Returns `NOT_FOUND` if the session does not exist.
@@ -651,7 +708,7 @@ export class SpannerClient {
    */
   getSession(
     request?: protos.google.spanner.v1.IGetSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -666,7 +723,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
@@ -674,7 +731,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getSession(
     request?: protos.google.spanner.v1.IGetSessionRequest,
@@ -689,7 +746,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -712,8 +769,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.getSession(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('getSession request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.ISession,
+          protos.google.spanner.v1.IGetSessionRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getSession response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .getSession(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.ISession,
+          protos.google.spanner.v1.IGetSessionRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('getSession response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Ends a session, releasing server resources associated with it. This will
@@ -733,7 +816,7 @@ export class SpannerClient {
    */
   deleteSession(
     request?: protos.google.spanner.v1.IDeleteSessionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -748,7 +831,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
@@ -756,7 +839,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   deleteSession(
     request?: protos.google.spanner.v1.IDeleteSessionRequest,
@@ -771,7 +854,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -794,8 +877,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         name: request.name ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.deleteSession(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('deleteSession request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('deleteSession response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .deleteSession(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          protos.google.spanner.v1.IDeleteSessionRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('deleteSession response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Executes an SQL statement, returning all results in a single reply. This
@@ -914,7 +1023,7 @@ export class SpannerClient {
    */
   executeSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -929,7 +1038,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -937,7 +1046,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -952,7 +1061,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -975,8 +1084,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.executeSql(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('executeSql request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IResultSet,
+          protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('executeSql response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .executeSql(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IResultSet,
+          protos.google.spanner.v1.IExecuteSqlRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('executeSql response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Executes a batch of SQL DML statements. This method allows many statements
@@ -1039,7 +1174,7 @@ export class SpannerClient {
    */
   executeBatchDml(
     request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -1054,7 +1189,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
@@ -1062,7 +1197,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   executeBatchDml(
     request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
@@ -1077,7 +1212,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -1100,8 +1235,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.executeBatchDml(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('executeBatchDml request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IExecuteBatchDmlResponse,
+          protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('executeBatchDml response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .executeBatchDml(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IExecuteBatchDmlResponse,
+          protos.google.spanner.v1.IExecuteBatchDmlRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('executeBatchDml response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Reads rows from the database using key lookups and scans, as a
@@ -1201,7 +1362,7 @@ export class SpannerClient {
    */
   read(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1216,7 +1377,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   read(
     request: protos.google.spanner.v1.IReadRequest,
@@ -1224,7 +1385,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   read(
     request?: protos.google.spanner.v1.IReadRequest,
@@ -1239,7 +1400,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1262,8 +1423,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.read(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('read request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IResultSet,
+          protos.google.spanner.v1.IReadRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('read response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .read(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IResultSet,
+          protos.google.spanner.v1.IReadRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('read response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Begins a new transaction. This step can often be skipped:
@@ -1300,7 +1487,7 @@ export class SpannerClient {
    */
   beginTransaction(
     request?: protos.google.spanner.v1.IBeginTransactionRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1315,7 +1502,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
@@ -1323,7 +1510,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   beginTransaction(
     request?: protos.google.spanner.v1.IBeginTransactionRequest,
@@ -1338,7 +1525,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1361,8 +1548,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.beginTransaction(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('beginTransaction request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.ITransaction,
+          protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('beginTransaction response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .beginTransaction(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.ITransaction,
+          protos.google.spanner.v1.IBeginTransactionRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('beginTransaction response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Commits a transaction. The request includes the mutations to be
@@ -1428,7 +1641,7 @@ export class SpannerClient {
    */
   commit(
     request?: protos.google.spanner.v1.ICommitRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1443,7 +1656,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
@@ -1451,7 +1664,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   commit(
     request?: protos.google.spanner.v1.ICommitRequest,
@@ -1466,7 +1679,7 @@ export class SpannerClient {
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1489,8 +1702,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.commit(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('commit request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.ICommitResponse,
+          protos.google.spanner.v1.ICommitRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('commit response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .commit(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.ICommitResponse,
+          protos.google.spanner.v1.ICommitRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('commit response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Rolls back a transaction, releasing any locks it holds. It is a good
@@ -1518,7 +1757,7 @@ export class SpannerClient {
    */
   rollback(
     request?: protos.google.spanner.v1.IRollbackRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1533,7 +1772,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
@@ -1541,7 +1780,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   rollback(
     request?: protos.google.spanner.v1.IRollbackRequest,
@@ -1556,7 +1795,7 @@ export class SpannerClient {
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1579,8 +1818,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.rollback(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('rollback request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.spanner.v1.IRollbackRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('rollback response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .rollback(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.protobuf.IEmpty,
+          protos.google.spanner.v1.IRollbackRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('rollback response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Creates a set of partition tokens that can be used to execute a query
@@ -1650,7 +1915,7 @@ export class SpannerClient {
    */
   partitionQuery(
     request?: protos.google.spanner.v1.IPartitionQueryRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1665,7 +1930,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
@@ -1673,7 +1938,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionQuery(
     request?: protos.google.spanner.v1.IPartitionQueryRequest,
@@ -1688,7 +1953,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1711,8 +1976,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.partitionQuery(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('partitionQuery request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IPartitionResponse,
+          protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('partitionQuery response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .partitionQuery(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IPartitionResponse,
+          protos.google.spanner.v1.IPartitionQueryRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('partitionQuery response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
   /**
    * Creates a set of partition tokens that can be used to execute a read
@@ -1771,7 +2062,7 @@ export class SpannerClient {
    */
   partitionRead(
     request?: protos.google.spanner.v1.IPartitionReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1786,7 +2077,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
@@ -1794,7 +2085,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   partitionRead(
     request?: protos.google.spanner.v1.IPartitionReadRequest,
@@ -1809,7 +2100,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1832,8 +2123,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.partitionRead(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('partitionRead request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.v1.IPartitionResponse,
+          protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('partitionRead response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .partitionRead(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.v1.IPartitionResponse,
+          protos.google.spanner.v1.IPartitionReadRequest | undefined,
+          {} | undefined,
+        ]) => {
+          this._log.info('partitionRead response %j', response);
+          return [response, options, rawResponse];
+        },
+      );
   }
 
   /**
@@ -1945,7 +2262,7 @@ export class SpannerClient {
    */
   executeStreamingSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -1955,7 +2272,10 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('executeStreamingSql stream %j', options);
     return this.innerApiCalls.executeStreamingSql(request, options);
   }
 
@@ -2048,7 +2368,7 @@ export class SpannerClient {
    */
   streamingRead(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -2058,7 +2378,10 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('streamingRead stream %j', options);
     return this.innerApiCalls.streamingRead(request, options);
   }
 
@@ -2109,7 +2432,7 @@ export class SpannerClient {
    */
   batchWrite(
     request?: protos.google.spanner.v1.IBatchWriteRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -2119,7 +2442,10 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         session: request.session ?? '',
       });
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('batchWrite stream %j', options);
     return this.innerApiCalls.batchWrite(request, options);
   }
 
@@ -2163,7 +2489,7 @@ export class SpannerClient {
    */
   listSessions(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -2178,7 +2504,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): void;
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
@@ -2186,7 +2512,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): void;
   listSessions(
     request?: protos.google.spanner.v1.IListSessionsRequest,
@@ -2201,7 +2527,7 @@ export class SpannerClient {
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
       protos.google.spanner.v1.ISession
-    >
+    >,
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -2224,8 +2550,34 @@ export class SpannerClient {
       this._gaxModule.routingHeader.fromParams({
         database: request.database ?? '',
       });
-    this.initialize();
-    return this.innerApiCalls.listSessions(request, options, callback);
+    this.initialize().catch(err => {
+      throw err;
+    });
+    const wrappedCallback:
+      | PaginationCallback<
+          protos.google.spanner.v1.IListSessionsRequest,
+          protos.google.spanner.v1.IListSessionsResponse | null | undefined,
+          protos.google.spanner.v1.ISession
+        >
+      | undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('listSessions values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('listSessions request %j', request);
+    return this.innerApiCalls
+      .listSessions(request, options, wrappedCallback)
+      ?.then(
+        ([response, input, output]: [
+          protos.google.spanner.v1.ISession[],
+          protos.google.spanner.v1.IListSessionsRequest | null,
+          protos.google.spanner.v1.IListSessionsResponse,
+        ]) => {
+          this._log.info('listSessions values %j', response);
+          return [response, input, output];
+        },
+      );
   }
 
   /**
@@ -2266,7 +2618,7 @@ export class SpannerClient {
    */
   listSessionsStream(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2278,11 +2630,14 @@ export class SpannerClient {
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listSessions stream %j', request);
     return this.descriptors.page.listSessions.createStream(
       this.innerApiCalls.listSessions as GaxCall,
       request,
-      callSettings
+      callSettings,
     );
   }
 
@@ -2325,7 +2680,7 @@ export class SpannerClient {
    */
   listSessionsAsync(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): AsyncIterable<protos.google.spanner.v1.ISession> {
     request = request || {};
     options = options || {};
@@ -2337,11 +2692,14 @@ export class SpannerClient {
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('listSessions iterate %j', request);
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
       request as {},
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.spanner.v1.ISession>;
   }
   // --------------------
@@ -2410,7 +2768,7 @@ export class SpannerClient {
     project: string,
     instance: string,
     database: string,
-    session: string
+    session: string,
   ) {
     return this.pathTemplates.sessionPathTemplate.render({
       project: project,
@@ -2473,6 +2831,7 @@ export class SpannerClient {
   close(): Promise<void> {
     if (this.spannerStub && !this._terminated) {
       return this.spannerStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
       });

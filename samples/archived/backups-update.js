@@ -48,7 +48,7 @@ async function updateBackup(instanceId, backupId, projectId) {
       currentExpireTime < maxExpireTime ? currentExpireTime : maxExpireTime;
     const newExpireTime = new PreciseDate(min(wantExpireTime, maxExpireTime));
     console.log(
-      `Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`
+      `Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`,
     );
     console.log(`Updating expire time to ${newExpireTime.toISOString()}`);
     await backup.updateExpireTime(newExpireTime);
