@@ -186,7 +186,7 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createQueryPartitions(
         QUERY as ExecuteSqlRequest,
-        assert.ifError
+        assert.ifError,
       );
 
       const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
@@ -243,7 +243,7 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
   });

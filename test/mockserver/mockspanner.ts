@@ -979,7 +979,7 @@ export class MockSpanner {
       protobuf.PartitionQueryRequest,
       protobuf.PartitionResponse
     >,
-    callback: protobuf.Spanner.PartitionQueryCallback
+    callback: protobuf.Spanner.PartitionQueryCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.partitionQuery.name)

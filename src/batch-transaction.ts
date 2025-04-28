@@ -138,15 +138,15 @@ class BatchTransaction extends Snapshot {
    * region_tag:spanner_batch_client
    */
   createQueryPartitions(
-    query: string | ExecuteSqlRequest
+    query: string | ExecuteSqlRequest,
   ): Promise<CreateQueryPartitionsResponse>;
   createQueryPartitions(
     query: string | ExecuteSqlRequest,
-    callback: CreateQueryPartitionsCallback
+    callback: CreateQueryPartitionsCallback,
   ): void;
   createQueryPartitions(
     query: string | ExecuteSqlRequest,
-    cb?: CreateQueryPartitionsCallback
+    cb?: CreateQueryPartitionsCallback,
   ): void | Promise<CreateQueryPartitionsResponse> {
     if (is.string(query)) {
       query = {
@@ -157,7 +157,7 @@ class BatchTransaction extends Snapshot {
     const reqOpts = Object.assign(
       {},
       query,
-      Snapshot.encodeParams(query as ExecuteSqlRequest)
+      Snapshot.encodeParams(query as ExecuteSqlRequest),
     );
 
     delete (reqOpts as any).gaxOptions;
@@ -192,7 +192,7 @@ class BatchTransaction extends Snapshot {
 
             span.end();
             cb!(err, partitions, resp);
-          }
+          },
         );
       },
     );
