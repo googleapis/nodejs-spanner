@@ -368,15 +368,15 @@ require('yargs')
       writeDataForStructQueries(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'queryDataWithStruct <instanceName> <databaseName> <projectId>',
     'Queries Singers table using STRUCT parameters.',
     {},
     opts =>
-      queryDataWithStruct(opts.instanceName, opts.databaseName, opts.projectId)
+      queryDataWithStruct(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryWithArrayOfStruct <instanceName> <databaseName> <projectId>',
@@ -386,15 +386,15 @@ require('yargs')
       queryWithArrayofStruct(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'queryStructField <instanceName> <databaseName> <projectId>',
     'Queries Singers table using a STRUCT parameter field.',
     {},
     opts =>
-      queryStructField(opts.instanceName, opts.databaseName, opts.projectId)
+      queryStructField(opts.instanceName, opts.databaseName, opts.projectId),
   )
   .command(
     'queryNestedStructField <instanceName> <databaseName> <projectId>',
@@ -404,8 +404,8 @@ require('yargs')
       queryNestedStructField(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .wrap(120)
   .recommendCommands()

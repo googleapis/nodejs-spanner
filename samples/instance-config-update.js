@@ -21,7 +21,7 @@
 
 function main(
   instanceConfigId = 'custom-my-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_update_instance_config]
 
@@ -47,14 +47,14 @@ function main(
       console.log(
         `Updating instance config ${instanceAdminClient.instanceConfigPath(
           projectId,
-          instanceConfigId
-        )}.`
+          instanceConfigId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.updateInstanceConfig({
         instanceConfig: {
           name: instanceAdminClient.instanceConfigPath(
             projectId,
-            instanceConfigId
+            instanceConfigId,
           ),
           displayName: 'updated custom instance config',
           labels: {
@@ -69,7 +69,7 @@ function main(
         }),
       });
       console.log(
-        `Waiting for update operation for ${instanceConfigId} to complete...`
+        `Waiting for update operation for ${instanceConfigId} to complete...`,
       );
       await operation.promise();
       console.log(`Updated instance config ${instanceConfigId}.`);
@@ -78,7 +78,7 @@ function main(
         'ERROR: Updating instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

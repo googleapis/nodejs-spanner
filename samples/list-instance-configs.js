@@ -49,7 +49,7 @@ function main(projectId) {
         `Available leader options for instance config ${
           instanceConfig.name
         } ('${instanceConfig.displayName}'): 
-           ${instanceConfig.leaderOptions.join()}`
+           ${instanceConfig.leaderOptions.join()}`,
       );
     });
   }

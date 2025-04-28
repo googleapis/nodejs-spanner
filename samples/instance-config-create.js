@@ -22,7 +22,7 @@
 function main(
   instanceConfigId = 'custom-my-instance-config',
   baseInstanceConfigId = 'my-base-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_create_instance_config]
 
@@ -48,15 +48,15 @@ function main(
     const [baseInstanceConfig] = await instanceAdminClient.getInstanceConfig({
       name: instanceAdminClient.instanceConfigPath(
         projectId,
-        baseInstanceConfigId
+        baseInstanceConfigId,
       ),
     });
     try {
       console.log(
         `Creating instance config ${instanceAdminClient.instanceConfigPath(
           projectId,
-          instanceConfigId
-        )}.`
+          instanceConfigId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.createInstanceConfig({
         instanceConfigId: instanceConfigId,
@@ -64,20 +64,20 @@ function main(
         instanceConfig: {
           name: instanceAdminClient.instanceConfigPath(
             projectId,
-            instanceConfigId
+            instanceConfigId,
           ),
           baseConfig: instanceAdminClient.instanceConfigPath(
             projectId,
-            baseInstanceConfigId
+            baseInstanceConfigId,
           ),
           displayName: instanceConfigId,
           replicas: baseInstanceConfig.replicas.concat(
-            baseInstanceConfig.optionalReplicas[0]
+            baseInstanceConfig.optionalReplicas[0],
           ),
         },
       });
       console.log(
-        `Waiting for create operation for ${instanceConfigId} to complete...`
+        `Waiting for create operation for ${instanceConfigId} to complete...`,
       );
       await operation.promise();
       console.log(`Created instance config ${instanceConfigId}.`);
@@ -86,7 +86,7 @@ function main(
         'ERROR: Creating instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

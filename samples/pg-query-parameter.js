@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_query_parameter]
   /**
@@ -67,7 +67,7 @@ function main(
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.singerid}, FirstName: ${json.firstname}, LastName: ${json.lastname}`
+          `SingerId: ${json.singerid}, FirstName: ${json.firstname}, LastName: ${json.lastname}`,
         );
       });
     } catch (err) {

@@ -20,7 +20,7 @@ async function createBackup(
   databaseId,
   backupId,
   projectId,
-  versionTime
+  versionTime,
 ) {
   // [START spanner_create_backup]
 
@@ -51,8 +51,8 @@ async function createBackup(
       `Creating backup of database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}.`
+        databaseId,
+      )}.`,
     );
 
     // Expire backup 14 days in the future
@@ -66,7 +66,7 @@ async function createBackup(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         expireTime: Spanner.timestamp(expireTime).toStruct(),
         versionTime: Spanner.timestamp(versionTime).toStruct(),
@@ -78,8 +78,8 @@ async function createBackup(
       `Waiting for backup ${databaseAdminClient.backupPath(
         projectId,
         instanceId,
-        backupId
-      )} to complete...`
+        backupId,
+      )} to complete...`,
     );
     await operation.promise();
 
@@ -93,7 +93,7 @@ async function createBackup(
           `${backupInfo.sizeBytes} bytes was created at ` +
           `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
           'for version of database at ' +
-          `${new PreciseDate(backupInfo.versionTime).toISOString()}`
+          `${new PreciseDate(backupInfo.versionTime).toISOString()}`,
       );
     } else {
       console.error('ERROR: Backup is not ready.');

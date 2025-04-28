@@ -194,7 +194,7 @@ class BatchTransaction extends Snapshot {
             cb!(err, partitions, resp);
           }
         );
-      }
+      },
     );
   }
 
@@ -259,7 +259,7 @@ class BatchTransaction extends Snapshot {
           span.end();
           callback(null, partitions, resp);
         });
-      }
+      },
     );
   }
   /**
@@ -329,9 +329,9 @@ class BatchTransaction extends Snapshot {
 
             span.end();
             callback(err, partitions, resp);
-          }
+          },
         );
-      }
+      },
     );
   }
   /**

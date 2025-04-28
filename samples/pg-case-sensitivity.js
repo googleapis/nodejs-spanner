@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_case_sensitivity]
   /**
@@ -65,7 +65,7 @@ function main(
     const [operation] = await database.updateSchema(statements);
     await operation.promise();
     console.log(
-      `Created table with case sensitive names in database ${databaseId} using PostgreSQL dialect.`
+      `Created table with case sensitive names in database ${databaseId} using PostgreSQL dialect.`,
     );
 
     // Mutations: Column names in mutations are always case-insensitive, regardless whether the
@@ -97,7 +97,7 @@ function main(
         // a result set must therefore use all lower-case letters. Location and Time were double-quoted
         // during creation, and retain their mixed case when returned in a result set.
         console.log(
-          `concertid: ${json.concertid}, Location: ${json.Location}, Time: ${json.Time}`
+          `concertid: ${json.concertid}, Location: ${json.Location}, Time: ${json.Time}`,
         );
       });
     } catch (err) {
@@ -118,7 +118,7 @@ function main(
         const json = row.toJSON();
         // The aliases are double-quoted and therefore retains their mixed case.
         console.log(
-          `concertid: ${json.ConcertId}, Location: ${json.venue}, Time: ${json.Time}`
+          `concertid: ${json.ConcertId}, Location: ${json.venue}, Time: ${json.Time}`,
         );
       });
     } catch (err) {

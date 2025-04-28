@@ -196,7 +196,7 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
 
@@ -397,7 +397,7 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
   });
@@ -504,7 +504,7 @@ describe('BatchTransaction', () => {
 
     beforeEach(() => {
       batchTransaction.id = ID;
-      batchTransaction.session = SESSION as Session;
+      batchTransaction.session = SESSION as unknown as Session;
       batchTransaction.readTimestampProto = TIMESTAMP;
     });
 

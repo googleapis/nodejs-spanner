@@ -41,7 +41,7 @@ function main(instanceId, projectId) {
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             projectId,
-            'regional-me-central2'
+            'regional-me-central2',
           ),
           nodeCount: 1,
           displayName: 'Display name for the instance.',
@@ -57,7 +57,7 @@ function main(instanceId, projectId) {
       await operation.promise();
 
       console.log(
-        `Created instance ${instanceId} without default backup schedules.`
+        `Created instance ${instanceId} without default backup schedules.`,
       );
     } catch (err) {
       console.error('ERROR:', err);

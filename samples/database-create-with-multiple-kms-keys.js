@@ -18,7 +18,7 @@ function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
   projectId = 'my-project',
-  kmsKeyNames = 'key1,key2,key3'
+  kmsKeyNames = 'key1,key2,key3',
 ) {
   // [START spanner_create_database_with_MR_CMEK]
   /**
@@ -63,7 +63,7 @@ function main(
     });
 
     console.log(
-      `Database encrypted with keys ${metadata.encryptionConfig.kmsKeyNames}.`
+      `Database encrypted with keys ${metadata.encryptionConfig.kmsKeyNames}.`,
     );
   }
   createDatabaseWithMultipleKmsKeys();

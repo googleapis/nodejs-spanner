@@ -251,7 +251,7 @@ describe('PartialResultStream', () => {
         concat(rows => {
           assert.strictEqual(rows.length, 11);
           done();
-        })
+        }),
       );
     });
 
@@ -286,7 +286,7 @@ describe('PartialResultStream', () => {
       requestFnStub.onCall(1).callsFake(resumeToken => {
         assert.ok(
           !resumeToken,
-          'Retry should be called with empty resume token'
+          'Retry should be called with empty resume token',
         );
 
         setTimeout(() => {
@@ -307,7 +307,7 @@ describe('PartialResultStream', () => {
           concat(rows => {
             assert.strictEqual(rows.length, 2);
             done();
-          })
+          }),
         );
     });
 
@@ -399,7 +399,7 @@ describe('PartialResultStream', () => {
           concat(rows => {
             assert.strictEqual(rows.length, 4);
             done();
-          })
+          }),
         );
     });
 

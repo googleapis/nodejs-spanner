@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_directed_read]
   // Imports the Google Cloud Spanner client library
@@ -92,11 +92,11 @@ function main(
         rows.forEach(row => {
           const json = row.toJSON();
           console.log(
-            `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+            `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
           );
         });
         console.log(
-          'Successfully executed read-only transaction with directedReadOptions'
+          'Successfully executed read-only transaction with directedReadOptions',
         );
       } catch (err) {
         console.error('ERROR:', err);

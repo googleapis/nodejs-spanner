@@ -21,7 +21,7 @@
 
 function main(
   instanceConfigId = 'custom-my-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_update_instance_config]
 
@@ -52,7 +52,7 @@ function main(
         },
       });
       console.log(
-        `Waiting for update operation for ${instanceConfig.id} to complete...`
+        `Waiting for update operation for ${instanceConfig.id} to complete...`,
       );
       await operation.promise();
       console.log(`Updated instance config ${instanceConfigId}.`);
@@ -61,7 +61,7 @@ function main(
         'ERROR: Updating instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

@@ -32,7 +32,7 @@ import * as extend from 'extend';
 import {CoreOptions, RequestCallback, Response} from 'teeny-request';
 
 export class GrpcServiceObject extends ServiceObject {
-  parent!: GrpcServiceObject;
+  declare parent: GrpcServiceObject;
 
   /**
    * GrpcServiceObject is a base class, meant to be inherited from by a service
@@ -47,6 +47,7 @@ export class GrpcServiceObject extends ServiceObject {
    */
   constructor(config: ServiceObjectConfig) {
     super(config);
+    this.parent = config.parent as GrpcServiceObject;
   }
 
   /**
@@ -98,7 +99,7 @@ export class GrpcServiceObject extends ServiceObject {
   setMetadata(metadata: Metadata, callback: ResponseCallback): void;
   setMetadata(
     metadata: Metadata,
-    callback?: ResponseCallback
+    callback?: ResponseCallback,
   ): void | Promise<SetMetadataResponse> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const protoOpts = (this.methods.setMetadata as any).protoOpts;
@@ -106,7 +107,7 @@ export class GrpcServiceObject extends ServiceObject {
       true,
       {},
       this.getOpts(this.methods.setMetadata),
-      metadata
+      metadata,
     );
     this.request(protoOpts, reqOpts, callback || util.noop);
   }

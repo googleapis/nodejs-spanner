@@ -50,7 +50,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     console.log(`Waiting for updating of ${database.id} to complete...`);
     await operation.promise();
     console.log(
-      `Updated database ${databaseId} with default leader ${defaultLeader}.`
+      `Updated database ${databaseId} with default leader ${defaultLeader}.`,
     );
   }
   updateDatabaseWithDefaultLeader();

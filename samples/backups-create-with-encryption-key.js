@@ -20,7 +20,7 @@ async function createBackupWithEncryptionKey(
   databaseId,
   backupId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_create_backup_with_encryption_key]
 
@@ -52,8 +52,8 @@ async function createBackupWithEncryptionKey(
       `Creating backup of database ${databaseAdminClient.databasePath(
         projectId,
         instanceId,
-        databaseId
-      )}.`
+        databaseId,
+      )}.`,
     );
 
     // Expire backup 14 days in the future
@@ -67,7 +67,7 @@ async function createBackupWithEncryptionKey(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         expireTime: Spanner.timestamp(expireTime).toStruct(),
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
@@ -82,8 +82,8 @@ async function createBackupWithEncryptionKey(
       `Waiting for backup ${databaseAdminClient.backupPath(
         projectId,
         instanceId,
-        backupId
-      )} to complete...`
+        backupId,
+      )} to complete...`,
     );
     await operation.promise();
 
@@ -96,7 +96,7 @@ async function createBackupWithEncryptionKey(
         `Backup ${backupInfo.name} of size ` +
           `${backupInfo.sizeBytes} bytes was created at ` +
           `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
-          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`
+          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`,
       );
     } else {
       console.error('ERROR: Backup is not ready.');

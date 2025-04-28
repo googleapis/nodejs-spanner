@@ -346,7 +346,7 @@ $root.examples = (function () {
           if (object.singerId !== null)
             if ($util.Long)
               (message.singerId = $util.Long.fromValue(
-                object.singerId
+                object.singerId,
               )).unsigned = false;
             else if (typeof object.singerId === 'string')
               message.singerId = parseInt(object.singerId, 10);
@@ -355,7 +355,7 @@ $root.examples = (function () {
             else if (typeof object.singerId === 'object')
               message.singerId = new $util.LongBits(
                 object.singerId.low >>> 0,
-                object.singerId.high >>> 0
+                object.singerId.high >>> 0,
               ).toNumber();
           if (object.birthDate !== null)
             message.birthDate = String(object.birthDate);
@@ -413,7 +413,7 @@ $root.examples = (function () {
                   : options.longs === Number
                     ? new $util.LongBits(
                         message.singerId.low >>> 0,
-                        message.singerId.high >>> 0
+                        message.singerId.high >>> 0,
                       ).toNumber()
                     : message.singerId;
             if (options.oneofs) object._singerId = 'singerId';
