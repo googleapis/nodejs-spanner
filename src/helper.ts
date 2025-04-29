@@ -91,11 +91,9 @@ export function isCreateSessionPermissionError(
 
 /**
  * Converts any value into an array. Acts as a replacement for `arrify`.
- * 
- * - If the value is null or undefined, returns an empty array.
- * - If the value is already an array, returns is unchanges.
- * - Otherwise, wraps the value in a new array.
- * 
+ * If the value is null or undefined, returns an empty array.
+ * If the value is already an array, returns is unchanges.
+ * Otherwise, wraps the value in a new array.
  * @param value The value to convert into an array.
  * @returns An array containing the value, or an empty array.
  */

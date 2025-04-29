@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { toArray } from './helper';
+import {toArray} from './helper';
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
