@@ -985,7 +985,7 @@ export class MockSpanner {
     this.simulateExecutionTime(this.partitionQuery.name)
       .then(() => {
         const response = protobuf.PartitionResponse.create({
-          partitions: [{partitionToken: Buffer.from('mock-token-1')}],
+          partitions: [{partitionToken: Buffer.from('mock-token')}],
         });
         callback(null, response);
       })
