@@ -15,7 +15,7 @@
  */
 import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
-import arrify = require('arrify');
+import { toArray } from './helper';
 import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
@@ -1203,7 +1203,7 @@ function getType(value: Value): Type {
  * @returns {object}
  */
 function convertToListValue<T>(value: T): p.IListValue {
-  const values = (arrify(value) as T[]).map(codec.encode);
+  const values = (toArray(value) as T[]).map(codec.encode);
   return {values};
 }
 
@@ -1277,7 +1277,7 @@ function createTypeObject(
 
   if (code === 'STRUCT') {
     type.structType = {
-      fields: arrify(config.fields!).map(field => {
+      fields: toArray(config.fields!).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};
       }),
     };
