@@ -429,7 +429,6 @@ export class SpannerExecutorProxyClient {
    *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1/spanner_executor_proxy.execute_action_async.js</caption>
-   * region_tag:spanner-cloud-executor_v1_generated_SpannerExecutorProxy_ExecuteActionAsync_async
    */
   executeActionAsync(options?: CallOptions): gax.CancellableStream {
     this.initialize().catch(err => {
