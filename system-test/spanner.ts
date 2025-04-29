@@ -22,7 +22,7 @@ import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
-import * as uuid from 'uuid';
+const {randomUUID} = require('crypto');
 import {
   Backup,
   Database,
@@ -9762,7 +9762,7 @@ describe('Spanner', () => {
 });
 
 function shortUUID() {
-  return uuid.v4().split('-').shift();
+  return randomUUID().split('-').shift();
 }
 
 function generateName(resourceType) {
