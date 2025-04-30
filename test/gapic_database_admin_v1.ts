@@ -293,7 +293,9 @@ describe('v1.DatabaseAdminClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has close method for the non-initialized client', done => {
@@ -307,7 +309,9 @@ describe('v1.DatabaseAdminClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -470,7 +474,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getDatabase(request), expectedError);
     });
   });
@@ -600,7 +606,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.dropDatabase(request), expectedError);
     });
   });
@@ -730,7 +738,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getDatabaseDdl(request), expectedError);
     });
   });
@@ -860,7 +870,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.setIamPolicy(request), expectedError);
     });
   });
@@ -990,7 +1002,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getIamPolicy(request), expectedError);
     });
   });
@@ -1121,7 +1135,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.testIamPermissions(request), expectedError);
     });
   });
@@ -1248,7 +1264,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getBackup(request), expectedError);
     });
   });
@@ -1382,7 +1400,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.backup.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.updateBackup(request), expectedError);
     });
   });
@@ -1512,7 +1532,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.deleteBackup(request), expectedError);
     });
   });
@@ -1642,7 +1664,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.addSplitPoints(request), expectedError);
     });
   });
@@ -1773,7 +1797,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.parent = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.createBackupSchedule(request), expectedError);
     });
   });
@@ -1903,7 +1929,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getBackupSchedule(request), expectedError);
     });
   });
@@ -2038,7 +2066,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.backupSchedule.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.updateBackupSchedule(request), expectedError);
     });
   });
@@ -2169,7 +2199,9 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.deleteBackupSchedule(request), expectedError);
     });
   });
@@ -5309,20 +5341,24 @@ describe('v1.DatabaseAdminClient', () => {
         .stub()
         .callsArgWith(2, null, expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        void client.operationsClient.getOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: operationsProtos.google.longrunning.Operation | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client.operationsClient
+          .getOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: operationsProtos.google.longrunning.Operation | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(err => {
+            throw err;
+          });
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -5389,20 +5425,24 @@ describe('v1.DatabaseAdminClient', () => {
         .stub()
         .callsArgWith(2, null, expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        void client.operationsClient.cancelOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.Empty | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client.operationsClient
+          .cancelOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.protobuf.Empty | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(err => {
+            throw err;
+          });
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -5469,20 +5509,24 @@ describe('v1.DatabaseAdminClient', () => {
         .stub()
         .callsArgWith(2, null, expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        void client.operationsClient.deleteOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.Empty | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client.operationsClient
+          .deleteOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.protobuf.Empty | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(err => {
+            throw err;
+          });
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
