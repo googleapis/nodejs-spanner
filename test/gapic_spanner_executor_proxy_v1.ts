@@ -219,7 +219,9 @@ describe('v1.SpannerExecutorProxyClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has close method for the non-initialized client', done => {
@@ -234,7 +236,9 @@ describe('v1.SpannerExecutorProxyClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has getProjectId method', async () => {

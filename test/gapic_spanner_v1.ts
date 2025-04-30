@@ -280,7 +280,9 @@ describe('v1.SpannerClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has close method for the non-initialized client', done => {
@@ -294,7 +296,9 @@ describe('v1.SpannerClient', () => {
         .then(() => {
           done();
         })
-        .catch(err => done(err));
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -457,7 +461,9 @@ describe('v1.SpannerClient', () => {
       );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.createSession(request), expectedError);
     });
   });
@@ -588,7 +594,9 @@ describe('v1.SpannerClient', () => {
       );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.batchCreateSessions(request), expectedError);
     });
   });
@@ -718,7 +726,9 @@ describe('v1.SpannerClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.getSession(request), expectedError);
     });
   });
@@ -848,7 +858,9 @@ describe('v1.SpannerClient', () => {
       );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.deleteSession(request), expectedError);
     });
   });
@@ -978,7 +990,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.executeSql(request), expectedError);
     });
   });
@@ -1108,7 +1122,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.executeBatchDml(request), expectedError);
     });
   });
@@ -1231,7 +1247,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.read(request), expectedError);
     });
   });
@@ -1361,7 +1379,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.beginTransaction(request), expectedError);
     });
   });
@@ -1488,7 +1508,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.commit(request), expectedError);
     });
   });
@@ -1615,7 +1637,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.rollback(request), expectedError);
     });
   });
@@ -1745,7 +1769,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.partitionQuery(request), expectedError);
     });
   });
@@ -1875,7 +1901,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       await assert.rejects(client.partitionRead(request), expectedError);
     });
   });
@@ -2028,7 +2056,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       const stream = client.executeStreamingSql(request, {
         retryRequestOptions: {noResponseRetries: 0},
       });
@@ -2201,7 +2231,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       const stream = client.streamingRead(request, {
         retryRequestOptions: {noResponseRetries: 0},
       });
@@ -2374,7 +2406,9 @@ describe('v1.SpannerClient', () => {
       );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
-      await client.close();
+      client.close().catch(err => {
+        throw err;
+      });
       const stream = client.batchWrite(request, {
         retryRequestOptions: {noResponseRetries: 0},
       });
