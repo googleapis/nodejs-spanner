@@ -15,8 +15,8 @@
     "test": "mocha system-test/spanner.test.js --timeout 1600000"
   },
   "dependencies": {
-    "@google-cloud/kms": "^4.0.0",
-    "@google-cloud/precise-date": "^4.0.0",
+    "@google-cloud/kms": "^5.0.0",
+    "@google-cloud/precise-date": "^5.0.0",
     "@google-cloud/spanner": "^7.21.0",
     "protobufjs": "^7.0.0",
     "yargs": "^17.0.0"
