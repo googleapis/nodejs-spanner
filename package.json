@@ -45,7 +45,7 @@
     "presystem-test": "npm run compile",
     "preobservability-test": "npm run compile",
     "proto": "compileProtos src",
-    "docs-test": "linkinator docs --rate-limit 100 --retry --recurse",
+    "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "benchwrapper": "node bin/benchwrapper.js",
     "prelint": "cd samples; npm link ../; npm install",
