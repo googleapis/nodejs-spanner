@@ -64,7 +64,7 @@ if staging.is_dir():
 
 common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library(source_location='build/src')
-s.copy(templates, excludes=[".kokoro/samples-test.sh", ".kokoro/trampoline_v2.sh", ".github/release-trigger.yml", ".github/sync-repo-settings.yaml", ".kokoro/presubmit/system-test.cfg"])
+s.copy(templates, excludes=[".kokoro/samples-test.sh", ".kokoro/trampoline_v2.sh", ".github/release-trigger.yml", ".github/sync-repo-settings.yaml", ".kokoro/presubmit/node18/system-test.cfg"])
 
 node.postprocess_gapic_library_hermetic()
 
