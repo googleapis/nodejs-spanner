@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import arrify = require('arrify');
+import {toArray} from './helper';
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
@@ -912,7 +912,7 @@ class Instance extends common.GrpcServiceObject {
     delete reqOpts.gaxOptions;
 
     if (reqOpts.schema) {
-      reqOpts.extraStatements = arrify(reqOpts.schema);
+      reqOpts.extraStatements = toArray(reqOpts.schema);
       delete reqOpts.schema;
     }
     this.request(
@@ -1536,7 +1536,7 @@ class Instance extends common.GrpcServiceObject {
     };
     if (options.fieldNames) {
       reqOpts['fieldMask'] = {
-        paths: arrify(options['fieldNames']!).map(snakeCase),
+        paths: toArray(options['fieldNames']!).map(snakeCase),
       };
     }
     return this.request<IInstance>(
