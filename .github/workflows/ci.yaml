@@ -68,7 +68,4 @@ jobs:
         with:
           node-version: 18
       - run: npm install
-      - run: npm run docs
-      - uses: JustinBeckwith/linkinator-action@v1
-        with:
-          paths: docs/
+      - run: npm run docs-test
