@@ -8,7 +8,7 @@
     "https://support.google.com"
   ],
   "silent": true,
-  "concurrency": 5,
+  "concurrency": 1,
   "retry": true,
   "retryErrors": true,
   "retryErrorsCount": 5,
