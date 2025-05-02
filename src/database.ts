@@ -97,7 +97,7 @@ import {
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
-import arrify = require('arrify');
+import {toArray} from './helper';
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
@@ -4033,7 +4033,7 @@ class Database extends common.GrpcServiceObject {
 
     if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {
-        statements: arrify(statements) as string[],
+        statements: toArray(statements) as string[],
       };
     }
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest =

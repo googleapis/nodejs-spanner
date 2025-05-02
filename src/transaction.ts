@@ -16,7 +16,7 @@
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
-import arrify = require('arrify');
+import {toArray} from './helper';
 import Long = require('long');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError, Status, GoogleError} from 'google-gax';
@@ -1450,13 +1450,13 @@ export class Snapshot extends EventEmitter {
     const keySet: spannerClient.spanner.v1.IKeySet = request.keySet || {};
 
     if (request.keys) {
-      keySet.keys = arrify(request.keys as string[]).map(
+      keySet.keys = toArray(request.keys as string[]).map(
         codec.convertToListValue,
       );
     }
 
     if (request.ranges) {
-      keySet.ranges = arrify(request.ranges).map(range => {
+      keySet.ranges = toArray(request.ranges).map(range => {
         const encodedRange: spannerClient.spanner.v1.IKeyRange = {};
 
         Object.keys(range).forEach(bound => {
@@ -2805,7 +2805,7 @@ function buildMutation(
   table: string,
   keyVals: object | object[],
 ): spannerClient.spanner.v1.Mutation {
-  const rows: object[] = arrify(keyVals);
+  const rows: object[] = toArray(keyVals);
   const columns = Transaction.getUniqueKeys(rows);
 
   const values = rows.map((row, index) => {
@@ -2843,7 +2843,7 @@ function buildDeleteMutation(
   keys: Key[],
 ): spannerClient.spanner.v1.Mutation {
   const keySet: spannerClient.spanner.v1.IKeySet = {
-    keys: arrify(keys).map(codec.convertToListValue),
+    keys: toArray(keys).map(codec.convertToListValue),
   };
   const mutation: spannerClient.spanner.v1.IMutation = {
     delete: {table, keySet},

@@ -88,3 +88,31 @@ export function isCreateSessionPermissionError(
     error.message.includes('spanner.sessions.create')
   );
 }
+
+/**
+ * Converts any value into an array. Acts as a replacement for `arrify`.
+ * If the value is null or undefined, returns an empty array.
+ * If the value is already an array, returns is unchanges.
+ * Otherwise, wraps the value in a new array.
+ * @param value The value to convert into an array.
+ * @returns An array containing the value, or an empty array.
+ */
+export function toArray(value: any) {
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (typeof value[Symbol.iterator] === 'function') {
+    return [...value];
+  }
+
+  return [value];
+}
