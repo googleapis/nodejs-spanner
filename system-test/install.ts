@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as execa from 'execa';
 import * as mv from 'mv';
 import {ncp} from 'ncp';
 import * as tmp from 'tmp';
 import {promisify} from 'util';
 import {describe, it, after} from 'mocha';
+const { spawn } = require('child_process');
 
 const keep = false;
 const mvp = promisify(mv) as {} as (...args: string[]) => Promise<void>;
@@ -33,15 +33,15 @@ describe('📦 pack and install', () => {
    * application.
    */
   it('should be able to use the d.ts', async () => {
-    await execa('npm', ['pack', '--unsafe-perm']);
+    spawn('npm', ['pack', '--unsafe-perm']);
     const tarball = `google-cloud-spanner-${pkg.version}.tgz`;
     await mvp(tarball, `${stagingPath}/spanner.tgz`);
     await ncpp('system-test/fixtures/sample', `${stagingPath}/`);
-    await execa('npm', ['install', '--unsafe-perm'], {
+    spawn('npm', ['install', '--unsafe-perm'], {
       cwd: `${stagingPath}/`,
       stdio: 'inherit',
     });
-    await execa('node', ['--throw-deprecation', 'build/src/index.js'], {
+    spawn('node', ['--throw-deprecation', 'build/src/index.js'], {
       cwd: `${stagingPath}/`,
       stdio: 'inherit',
     });
