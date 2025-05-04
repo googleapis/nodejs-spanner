@@ -17,7 +17,7 @@ import {ncp} from 'ncp';
 import * as tmp from 'tmp';
 import {promisify} from 'util';
 import {describe, it, after} from 'mocha';
-const { spawn } = require('child_process');
+const {spawn} = require('child_process');
 
 const keep = false;
 const mvp = promisify(mv) as {} as (...args: string[]) => Promise<void>;
