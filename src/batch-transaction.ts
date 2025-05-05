@@ -148,23 +148,16 @@ class BatchTransaction extends Snapshot {
     query: string | ExecuteSqlRequest,
     cb?: CreateQueryPartitionsCallback,
   ): void | Promise<CreateQueryPartitionsResponse> {
-    if (is.string(query)) {
-      query = {
-        sql: query as string,
-      };
-    }
+    const request: ExecuteSqlRequest =
+      typeof query === 'string' ? {sql: query} : query;
 
-    const reqOpts = Object.assign(
-      {},
-      query,
-      Snapshot.encodeParams(query as ExecuteSqlRequest),
-    );
+    const reqOpts = Object.assign({}, request, Snapshot.encodeParams(request));
 
     delete (reqOpts as any).gaxOptions;
     delete (reqOpts as any).types;
 
     const traceConfig: traceConfig = {
-      sql: (query as ExecuteSqlRequest).sql,
+      sql: request.sql,
       opts: this._observabilityOptions,
       dbName: this.getDBName(),
     };
@@ -182,7 +175,7 @@ class BatchTransaction extends Snapshot {
             client: 'SpannerClient',
             method: 'partitionQuery',
             reqOpts,
-            gaxOpts: (query as ExecuteSqlRequest).gaxOptions,
+            gaxOpts: request.gaxOptions,
             headers: injectRequestIDIntoHeaders(headers, this.session),
           },
           (err, partitions, resp) => {

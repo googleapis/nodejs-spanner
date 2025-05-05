@@ -33,6 +33,7 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {ExecuteSqlRequest} from '../src/transaction';
+import {CallOptions} from 'google-gax';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -160,9 +161,9 @@ describe('BatchTransaction', () => {
       },
     };
 
-    const QUERY = {
+    const QUERY: ExecuteSqlRequest = {
       sql: 'SELECT * FROM Singers',
-      gaxOptions: GAX_OPTS,
+      gaxOptions: GAX_OPTS as CallOptions,
       params: {},
       types: {},
       dataBoostEnabled: true,
@@ -184,10 +185,7 @@ describe('BatchTransaction', () => {
         .withArgs(QUERY)
         .returns(fakeParams);
 
-      batchTransaction.createQueryPartitions(
-        QUERY as ExecuteSqlRequest,
-        assert.ifError,
-      );
+      batchTransaction.createQueryPartitions(QUERY, assert.ifError);
 
       const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
@@ -234,7 +232,7 @@ describe('BatchTransaction', () => {
         .withArgs(QUERY)
         .returns(fakeParams);
 
-      await batchTransaction.createQueryPartitions(QUERY as ExecuteSqlRequest);
+      await batchTransaction.createQueryPartitions(QUERY);
 
       const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
