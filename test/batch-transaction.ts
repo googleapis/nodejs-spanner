@@ -341,7 +341,7 @@ describe('BatchTransaction', () => {
       directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
-    it('should make the correct request', () => {
+    it('should make the correct request using callback', () => {
       const fakeKeySet = {};
       const expectedQuery = {
         table: QUERY.table,
@@ -357,6 +357,34 @@ describe('BatchTransaction', () => {
         .returns(fakeKeySet);
 
       batchTransaction.createReadPartitions(QUERY, assert.ifError);
+
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionRead');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
+      );
+    });
+
+    it('should make the correct request using await', async () => {
+      const fakeKeySet = {};
+      const expectedQuery = {
+        table: QUERY.table,
+        keySet: fakeKeySet,
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
+      };
+
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
+
+      (sandbox.stub(FakeTransaction, 'encodeKeySet') as sinon.SinonStub)
+        .withArgs(QUERY)
+        .returns(fakeKeySet);
+
+      await batchTransaction.createReadPartitions(QUERY);
 
       const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');

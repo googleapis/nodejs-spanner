@@ -18,11 +18,12 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {Snapshot} from './transaction';
+import {ReadRequest, Snapshot} from './transaction';
 import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
+  ResourceCallback,
   addLeaderAwareRoutingHeader,
 } from '../src/common';
 import {startTrace, setSpanError, traceConfig} from './instrument';
@@ -33,6 +34,16 @@ export interface TransactionIdentifier {
   transaction?: string;
   timestamp?: google.protobuf.ITimestamp;
 }
+
+export type CreateReadPartitionsResponse = [
+  google.spanner.v1.IPartitionReadRequest,
+  google.spanner.v1.IPartitionResponse,
+];
+
+export type CreateReadPartitionsCallback = ResourceCallback<
+  google.spanner.v1.IPartitionReadRequest,
+  google.spanner.v1.IPartitionResponse
+>;
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -266,7 +277,17 @@ class BatchTransaction extends Snapshot {
    * @param {CreateReadPartitionsCallback} [callback] Callback function.
    * @returns {Promise<CreateReadPartitionsResponse>}
    */
-  createReadPartitions(options, callback) {
+  createReadPartitions(
+    options: ReadRequest,
+  ): Promise<CreateReadPartitionsResponse>;
+  createReadPartitions(
+    options: ReadRequest,
+    callback: CreateReadPartitionsCallback,
+  ): void;
+  createReadPartitions(
+    options: ReadRequest,
+    cb?: CreateReadPartitionsCallback,
+  ): void | Promise<CreateReadPartitionsResponse> {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
       dbName: this.getDBName(),
@@ -276,7 +297,7 @@ class BatchTransaction extends Snapshot {
       'BatchTransaction.createReadPartitions',
       traceConfig,
       span => {
-        const reqOpts = Object.assign({}, options, {
+        const reqOpts: ReadRequest = Object.assign({}, options, {
           keySet: Snapshot.encodeKeySet(options),
         });
 
@@ -303,7 +324,7 @@ class BatchTransaction extends Snapshot {
             }
 
             span.end();
-            callback(err, partitions, resp);
+            cb!(err, partitions, resp);
           },
         );
       },
