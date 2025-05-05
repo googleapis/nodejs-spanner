@@ -297,7 +297,7 @@ class BatchTransaction extends Snapshot {
       'BatchTransaction.createReadPartitions',
       traceConfig,
       span => {
-        const reqOpts: ReadRequest = Object.assign({}, options, {
+        const reqOpts = Object.assign({}, options, {
           keySet: Snapshot.encodeKeySet(options),
         });
 
