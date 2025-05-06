@@ -3651,6 +3651,38 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    describe('createReadPartitions', () => {
+      it('should create set of read partitions', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const query = {
+          table: 'abc',
+          keys: ['a', 'b'],
+          ranges: [{}, {}],
+          gaxOptions: {},
+          dataBoostEnabled: true,
+        };
+        const [transaction] = await database.createBatchTransaction();
+        const [readPartitions] = await transaction.createReadPartitions(query);
+        assert.strictEqual(Object.keys(readPartitions).length, 1);
+        assert.strictEqual(readPartitions[0].table, 'abc');
+      });
+    });
+
+    describe('createQueryPartitions', () => {
+      it('should create set of query partitions', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const query = {
+          sql: select1,
+        };
+        const [transaction] = await database.createBatchTransaction();
+        const [partitions] = await transaction.createQueryPartitions(query);
+        assert.strictEqual(Object.keys(partitions).length, 1);
+        assert.strictEqual(partitions[0].sql, select1);
+        transaction.close();
+        await database.close();
+      });
+    });
+
     describe('pdml', () => {
       it('should retry on aborted error', async () => {
         const database = newTestDatabase();
