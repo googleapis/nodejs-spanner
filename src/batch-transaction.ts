@@ -18,7 +18,14 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {ReadRequest, ExecuteSqlRequest, Snapshot} from './transaction';
+import {
+  ExecuteSqlRequest,
+  ReadCallback,
+  ReadRequest,
+  Rows,
+  RunCallback,
+  Snapshot,
+} from './transaction';
 import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
@@ -54,6 +61,12 @@ export type CreateQueryPartitionsCallback = ResourceCallback<
   google.spanner.v1.IPartitionQueryRequest,
   google.spanner.v1.IPartitionResponse
 >;
+
+type executeResponse = [
+  Rows,
+  google.spanner.v1.ResultSetStats?,
+  google.spanner.v1.ResultSetMetadata?,
+];
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -364,12 +377,27 @@ class BatchTransaction extends Snapshot {
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_execute_partitions
    */
-  execute(partition, callback) {
-    if (is.string(partition.table)) {
-      this.read(partition.table, partition, callback);
+  execute(partition: ReadRequest | ExecuteSqlRequest): Promise<executeResponse>;
+  execute(
+    partition: ReadRequest | ExecuteSqlRequest,
+    callback: ReadCallback | RunCallback,
+  ): void;
+  execute(
+    partition: ReadRequest | ExecuteSqlRequest,
+    cb?: ReadCallback | RunCallback,
+  ): void | Promise<executeResponse> {
+    const isRead = typeof (partition as ReadRequest).table === 'string';
+
+    if (isRead) {
+      this.read(
+        (partition as ReadRequest).table!,
+        partition as ReadRequest,
+        cb as ReadCallback,
+      );
       return;
     }
-    this.run(partition, callback);
+
+    this.run(partition as ExecuteSqlRequest, cb as RunCallback);
   }
   /**
    * Executes partition in streaming mode.

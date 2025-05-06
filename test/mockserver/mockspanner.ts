@@ -863,11 +863,102 @@ export class MockSpanner {
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
     this.pushRequest(call.request!, call.metadata);
-    call.emit(
-      'error',
-      createUnimplementedError('StreamingRead is not yet implemented'),
-    );
-    call.end();
+
+    this.simulateExecutionTime(this.streamingRead.name)
+      .then(() => {
+        if (call.request!.transaction) {
+          const fullTransactionId = `${call.request!.session}/transactions/${
+            call.request!.transaction.id
+          }`;
+          if (this.abortedTransactions.has(fullTransactionId)) {
+            call.sendMetadata(new Metadata());
+            call.emit(
+              'error',
+              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`),
+            );
+            call.end();
+            return;
+          }
+        }
+        const key = `${call.request!.table}|${JSON.stringify(call.request!.keySet)}`;
+        const res = this.statementResults.get(key);
+        if (res) {
+          if (call.request!.transaction?.begin) {
+            const txn = this._updateTransaction(
+              call.request!.session,
+              call.request!.transaction.begin,
+            );
+            if (txn instanceof Error) {
+              call.sendMetadata(new Metadata());
+              call.emit('error', txn);
+              call.end();
+              return;
+            }
+            if (res.type === StatementResultType.RESULT_SET) {
+              (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
+            }
+          }
+          let partialResultSets;
+          let resumeIndex;
+          let streamErr;
+          switch (res.type) {
+            case StatementResultType.RESULT_SET:
+              if (Array.isArray(res.resultSet)) {
+                partialResultSets = res.resultSet;
+              } else {
+                partialResultSets = MockSpanner.toPartialResultSets(
+                  res.resultSet,
+                  'NORMAL',
+                );
+              }
+              // Resume on the next index after the last one seen by the client.
+              resumeIndex =
+                call.request!.resumeToken.length === 0
+                  ? 0
+                  : Number.parseInt(call.request!.resumeToken.toString(), 10) +
+                    1;
+              for (
+                let index = resumeIndex;
+                index < partialResultSets.length;
+                index++
+              ) {
+                const streamErr = this.shiftStreamError(
+                  this.executeStreamingSql.name,
+                  index,
+                );
+                if (streamErr) {
+                  call.sendMetadata(new Metadata());
+                  call.emit('error', streamErr);
+                  break;
+                }
+                call.write(partialResultSets[index]);
+              }
+              break;
+            case StatementResultType.ERROR:
+              call.sendMetadata(new Metadata());
+              call.emit('error', res.error);
+              break;
+            default:
+              call.emit(
+                'error',
+                new Error(`Unknown StatementResult type: ${res.type}`),
+              );
+          }
+        } else {
+          call.emit(
+            'error',
+            new Error(
+              `There is no result registered for ${call.request!.table}`,
+            ),
+          );
+        }
+        call.end();
+      })
+      .catch(err => {
+        call.sendMetadata(new Metadata());
+        call.emit('error', err);
+        call.end();
+      });
   }
 
   beginTransaction(

@@ -40,7 +40,7 @@ import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
-import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
+import {ExecuteSqlRequest, ReadRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseOperationsOptions} from '../src/instance';
 import {
@@ -420,9 +420,7 @@ describe('Spanner with mock server', () => {
           },
         });
       } catch (e) {
-        // Ignore the fact that streaming read is unimplemented on the mock
-        // server. We just want to verify that the correct request is sent.
-        assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+        assert.strictEqual((e as ServiceError).code, Status.UNKNOWN);
         assert.deepStrictEqual(
           (e as RequestIDError).requestID,
           `1.${randIdForProcess}.1.1.3.1`,
@@ -583,9 +581,7 @@ describe('Spanner with mock server', () => {
               },
             });
           } catch (e) {
-            // Ignore the fact that streaming read is unimplemented on the mock
-            // server. We just want to verify that the correct request is sent.
-            assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
+            assert.strictEqual((e as ServiceError).code, Status.UNKNOWN);
             assert.deepStrictEqual(
               (e as RequestIDError).requestID,
               `1.${randIdForProcess}.1.1.2.1`,
@@ -3680,6 +3676,16 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(partitions[0].sql, select1);
         transaction.close();
         await database.close();
+      });
+    });
+
+    describe('execute', () => {
+      it('should create set of read partitions', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const [transaction] = await database.createBatchTransaction();
+        const [partitions] = await transaction.createQueryPartitions(selectSql);
+        const [resp] = await transaction.execute(partitions[0]);
+        assert.strictEqual(resp.length, 3);
       });
     });
 
