@@ -3651,6 +3651,23 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    describe('createReadPartitions', () => {
+      it('should create set of read partitions', async () => {
+        const database = newTestDatabase({min: 0, incStep: 1});
+        const query = {
+          table: 'abc',
+          keys: ['a', 'b'],
+          ranges: [{}, {}],
+          gaxOptions: {},
+          dataBoostEnabled: true,
+        };
+        const [transaction] = await database.createBatchTransaction();
+        const [readPartitions] = await transaction.createReadPartitions(query);
+        assert.strictEqual(Object.keys(readPartitions).length, 1);
+        assert.strictEqual(readPartitions[0].table, 'abc');
+      });
+    });
+
     describe('createQueryPartitions', () => {
       it('should create set of query partitions', async () => {
         const database = newTestDatabase({min: 0, incStep: 1});

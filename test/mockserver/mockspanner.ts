@@ -268,6 +268,7 @@ export class MockSpanner {
 
     this.read = this.read.bind(this);
     this.streamingRead = this.streamingRead.bind(this);
+    this.partitionRead = this.partitionRead.bind(this);
   }
 
   /**
@@ -993,11 +994,21 @@ export class MockSpanner {
   }
 
   partitionRead(
-    call: grpc.ServerUnaryCall<protobuf.PartitionReadRequest, {}>,
+    call: grpc.ServerUnaryCall<
+      protobuf.PartitionReadRequest,
+      protobuf.PartitionResponse
+    >,
     callback: protobuf.Spanner.PartitionReadCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
-    callback(createUnimplementedError('PartitionQuery is not yet implemented'));
+    this.simulateExecutionTime(this.partitionRead.name)
+      .then(() => {
+        const response = protobuf.PartitionResponse.create({
+          partitions: [{partitionToken: Buffer.from('mock-token')}],
+        });
+        callback(null, response);
+      })
+      .catch(err => callback(err));
   }
 
   private _updateTransaction(

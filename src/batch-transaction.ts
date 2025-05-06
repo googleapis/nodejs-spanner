@@ -18,7 +18,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {ExecuteSqlRequest, Snapshot} from './transaction';
+import {ReadRequest, ExecuteSqlRequest, Snapshot} from './transaction';
 import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
@@ -34,6 +34,16 @@ export interface TransactionIdentifier {
   transaction?: string;
   timestamp?: google.protobuf.ITimestamp;
 }
+
+export type CreateReadPartitionsResponse = [
+  google.spanner.v1.IPartitionReadRequest,
+  google.spanner.v1.IPartitionResponse,
+];
+
+export type CreateReadPartitionsCallback = ResourceCallback<
+  google.spanner.v1.IPartitionReadRequest,
+  google.spanner.v1.IPartitionResponse
+>;
 
 export type CreateQueryPartitionsResponse = [
   google.spanner.v1.IPartitionQueryRequest,
@@ -284,7 +294,17 @@ class BatchTransaction extends Snapshot {
    * @param {CreateReadPartitionsCallback} [callback] Callback function.
    * @returns {Promise<CreateReadPartitionsResponse>}
    */
-  createReadPartitions(options, callback) {
+  createReadPartitions(
+    options: ReadRequest,
+  ): Promise<CreateReadPartitionsResponse>;
+  createReadPartitions(
+    options: ReadRequest,
+    callback: CreateReadPartitionsCallback,
+  ): void;
+  createReadPartitions(
+    options: ReadRequest,
+    cb?: CreateReadPartitionsCallback,
+  ): void | Promise<CreateReadPartitionsResponse> {
     const traceConfig: traceConfig = {
       opts: this._observabilityOptions,
       dbName: this.getDBName(),
@@ -321,7 +341,7 @@ class BatchTransaction extends Snapshot {
             }
 
             span.end();
-            callback(err, partitions, resp);
+            cb!(err, partitions, resp);
           },
         );
       },
