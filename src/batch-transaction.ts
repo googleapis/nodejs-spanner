@@ -18,11 +18,12 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {Snapshot} from './transaction';
+import {ExecuteSqlRequest, Snapshot} from './transaction';
 import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
+  ResourceCallback,
   addLeaderAwareRoutingHeader,
 } from '../src/common';
 import {startTrace, setSpanError, traceConfig} from './instrument';
@@ -33,6 +34,16 @@ export interface TransactionIdentifier {
   transaction?: string;
   timestamp?: google.protobuf.ITimestamp;
 }
+
+export type CreateQueryPartitionsResponse = [
+  google.spanner.v1.IPartitionQueryRequest,
+  google.spanner.v1.IPartitionResponse,
+];
+
+export type CreateQueryPartitionsCallback = ResourceCallback<
+  google.spanner.v1.IPartitionQueryRequest,
+  google.spanner.v1.IPartitionResponse
+>;
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
@@ -126,20 +137,27 @@ class BatchTransaction extends Snapshot {
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_client
    */
-  createQueryPartitions(query, callback) {
-    if (is.string(query)) {
-      query = {
-        sql: query,
-      };
-    }
+  createQueryPartitions(
+    query: string | ExecuteSqlRequest,
+  ): Promise<CreateQueryPartitionsResponse>;
+  createQueryPartitions(
+    query: string | ExecuteSqlRequest,
+    callback: CreateQueryPartitionsCallback,
+  ): void;
+  createQueryPartitions(
+    query: string | ExecuteSqlRequest,
+    cb?: CreateQueryPartitionsCallback,
+  ): void | Promise<CreateQueryPartitionsResponse> {
+    const request: ExecuteSqlRequest =
+      typeof query === 'string' ? {sql: query} : query;
 
-    const reqOpts = Object.assign({}, query, Snapshot.encodeParams(query));
+    const reqOpts = Object.assign({}, request, Snapshot.encodeParams(request));
 
-    delete reqOpts.gaxOptions;
-    delete reqOpts.types;
+    delete (reqOpts as any).gaxOptions;
+    delete (reqOpts as any).types;
 
     const traceConfig: traceConfig = {
-      sql: query,
+      sql: request.sql,
       opts: this._observabilityOptions,
       dbName: this.getDBName(),
     };
@@ -157,7 +175,7 @@ class BatchTransaction extends Snapshot {
             client: 'SpannerClient',
             method: 'partitionQuery',
             reqOpts,
-            gaxOpts: query.gaxOptions,
+            gaxOpts: request.gaxOptions,
             headers: injectRequestIDIntoHeaders(headers, this.session),
           },
           (err, partitions, resp) => {
@@ -166,7 +184,7 @@ class BatchTransaction extends Snapshot {
             }
 
             span.end();
-            callback(err, partitions, resp);
+            cb!(err, partitions, resp);
           },
         );
       },
