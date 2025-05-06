@@ -55,7 +55,7 @@ import Long = util.Long;
 const fs = require('fs');
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
-const KOKORO_JOB = process.env.KOKORO_JOB_NAME;
+const KOKORO_JOB_NAME = process.env.KOKORO_JOB_NAME;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
 
 const IAM_MEMBER = process.env.IAM_MEMBER;
@@ -3358,7 +3358,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      if (SKIP_BACKUPS === 'true' || KOKORO_JOB?.includes('presubmit')) {
+      if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
         this.skip();
       }
       googleSqlDatabase1 = DATABASE;
