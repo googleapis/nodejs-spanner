@@ -42,6 +42,8 @@ export type CreateReadPartitionsResponse = [
 
 export type CreateReadPartitionsCallback = ResourceCallback<
   google.spanner.v1.IPartitionReadRequest,
+  google.spanner.v1.IPartitionResponse
+>;
 
 export type CreateQueryPartitionsResponse = [
   google.spanner.v1.IPartitionQueryRequest,
