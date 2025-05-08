@@ -36,22 +36,22 @@ export interface TransactionIdentifier {
 }
 
 export type CreateReadPartitionsResponse = [
-  google.spanner.v1.IPartitionReadRequest,
+  ReadRequest[],
   google.spanner.v1.IPartitionResponse,
 ];
 
 export type CreateReadPartitionsCallback = ResourceCallback<
-  google.spanner.v1.IPartitionReadRequest,
+  ReadRequest[],
   google.spanner.v1.IPartitionResponse
 >;
 
 export type CreateQueryPartitionsResponse = [
-  google.spanner.v1.IPartitionQueryRequest,
+  ExecuteSqlRequest[],
   google.spanner.v1.IPartitionResponse,
 ];
 
 export type CreateQueryPartitionsCallback = ResourceCallback<
-  google.spanner.v1.IPartitionQueryRequest,
+  ExecuteSqlRequest[],
   google.spanner.v1.IPartitionResponse
 >;
 
