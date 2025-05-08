@@ -13,11 +13,7 @@
 // limitations under the License.
 
 import {PushMetricExporter, ResourceMetrics} from '@opentelemetry/sdk-metrics';
-import {
-  ExportResult,
-  ExportResultCode,
-  SDK_INFO
-} from '@opentelemetry/core';
+import {ExportResult, ExportResultCode, SDK_INFO} from '@opentelemetry/core';
 import {ExporterOptions} from './external-types';
 import {GoogleAuth, JWT} from 'google-auth-library';
 import {monitoring_v3} from 'googleapis';
@@ -80,7 +76,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
    */
   export(
     metrics: ResourceMetrics,
-    resultCallback: (result: ExportResult) => void
+    resultCallback: (result: ExportResult) => void,
   ): void {
     this._exportAsync(metrics).then(resultCallback, err => {
       console.error(err.message);
@@ -99,7 +95,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
    * @param resourceMetrics Metrics to be sent to the Google Cloud Monitoring backend
    */
   private async _exportAsync(
-    resourceMetrics: ResourceMetrics
+    resourceMetrics: ResourceMetrics,
   ): Promise<ExportResult> {
     if (this._projectId instanceof Promise) {
       this._projectId = await this._projectId;
@@ -119,13 +115,13 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
     };
     await Promise.all(
       this._partitionList(timeSeriesList, MAX_BATCH_EXPORT_SIZE).map(
-        async batchedTimeSeries => this._sendTimeSeries(batchedTimeSeries)
-      )
+        async batchedTimeSeries => this._sendTimeSeries(batchedTimeSeries),
+      ),
     ).catch(e => {
       const error = e as {code: number};
       if (error.code === status.PERMISSION_DENIED) {
         console.warn(
-          `Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`
+          `Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`,
         );
       }
       const err = asError(e);
@@ -158,10 +154,10 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
   /** Returns the minimum number of arrays of max size chunkSize, partitioned from the given array. */
   private _partitionList(
     list: monitoring_v3.Schema$TimeSeries[],
-    chunkSize: number
+    chunkSize: number,
   ) {
     return Array.from({length: Math.ceil(list.length / chunkSize)}, (_, i) =>
-      list.slice(i * chunkSize, (i + 1) * chunkSize)
+      list.slice(i * chunkSize, (i + 1) * chunkSize),
     );
   }
 

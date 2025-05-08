@@ -124,7 +124,7 @@ describe('Export', () => {
       {
         description: 'Count of missing headers',
         unit: '1',
-      }
+      },
     );
 
     attempt_latency = meter.createHistogram(METRIC_NAME_ATTEMPT_LATENCIES, {
@@ -219,7 +219,7 @@ describe('Export', () => {
     assert.strictEqual(callbackResult.code, ExportResultCode.FAILED);
     assert.strictEqual(
       callbackResult.error.message,
-      'Send TimeSeries failed: Network error'
+      'Send TimeSeries failed: Network error',
     );
 
     assert(sendTimeSeriesStub.calledOnce);
