@@ -195,24 +195,24 @@ describe('transform', () => {
 
     assert.strictEqual(
       _transformMetricKind(nonMonotonicMetricSum),
-      MetricKind.GAUGE
+      MetricKind.GAUGE,
     );
 
     assert.strictEqual(_transformMetricKind(metricGauge), MetricKind.GAUGE);
 
     assert.strictEqual(
       _transformMetricKind(metricHistogram),
-      MetricKind.CUMULATIVE
+      MetricKind.CUMULATIVE,
     );
 
     assert.strictEqual(
       _transformMetricKind(metricExponentialHistogram),
-      MetricKind.CUMULATIVE
+      MetricKind.CUMULATIVE,
     );
 
     assert.strictEqual(
       _transformMetricKind(metricUnknown),
-      MetricKind.UNSPECIFIED
+      MetricKind.UNSPECIFIED,
     );
   });
 
@@ -232,7 +232,7 @@ describe('transform', () => {
     assert.strictEqual(monitoredResourceLabels['instance_id'], 'instance_id');
     assert.strictEqual(
       monitoredResourceLabels['instance_config'],
-      'test_config'
+      'test_config',
     );
     assert.strictEqual(monitoredResourceLabels['location'], 'test_location');
     assert.strictEqual(monitoredResourceLabels['client_hash'], 'test_hash');
@@ -249,17 +249,17 @@ describe('transform', () => {
 
     assert.strictEqual(
       _transformValueType(metricHistogram),
-      ValueType.DISTRIBUTION
+      ValueType.DISTRIBUTION,
     );
 
     assert.strictEqual(
       _transformValueType(metricExponentialHistogram),
-      ValueType.DISTRIBUTION
+      ValueType.DISTRIBUTION,
     );
 
     assert.strictEqual(
       _transformValueType(metricUnknown),
-      ValueType.VALUE_TYPE_UNSPECIFIED
+      ValueType.VALUE_TYPE_UNSPECIFIED,
     );
   });
 
@@ -275,7 +275,7 @@ describe('transform', () => {
     };
     assert.deepStrictEqual(
       _transformPoint(metricSum, sumDataPoint),
-      sumExpectation
+      sumExpectation,
     );
 
     const gaugeExpectation = {
@@ -289,7 +289,7 @@ describe('transform', () => {
 
     assert.deepStrictEqual(
       _transformPoint(metricGauge, sumDataPoint),
-      gaugeExpectation
+      gaugeExpectation,
     );
 
     const histogramExpectation = {
@@ -316,16 +316,16 @@ describe('transform', () => {
 
     assert.deepStrictEqual(
       _transformPoint(metricHistogram, histogramDataPoint),
-      histogramExpectation
+      histogramExpectation,
     );
 
     const exponentialHistogramExpectation = {
       interval: {
         startTime: new PreciseDate(
-          exponentialHistogramDataPoint.startTime
+          exponentialHistogramDataPoint.startTime,
         ).toISOString(),
         endTime: new PreciseDate(
-          exponentialHistogramDataPoint.endTime
+          exponentialHistogramDataPoint.endTime,
         ).toISOString(),
       },
       value: {
@@ -347,9 +347,9 @@ describe('transform', () => {
     assert.deepStrictEqual(
       _transformPoint(
         metricExponentialHistogram,
-        exponentialHistogramDataPoint
+        exponentialHistogramDataPoint,
       ),
-      exponentialHistogramExpectation
+      exponentialHistogramExpectation,
     );
   });
 
@@ -368,7 +368,7 @@ describe('transform', () => {
       {
         description: 'Count of attempts',
         unit: 'count',
-      }
+      },
     );
 
     attemptCounter.add(1, {});
@@ -405,7 +405,7 @@ describe('transform', () => {
       {
         description: 'Count of attempts',
         unit: 'count',
-      }
+      },
     );
 
     attemptCounter.add(1, {});

@@ -95,13 +95,13 @@ export function transformResourceMetricToTimeSeriesArray({
       // Takes each metric array and flattens it into one array
       .flatMap(({metrics}) =>
         // Only keeps metrics that match our spanner metric names
-        metrics.filter(metric => METRIC_NAMES.has(metric.descriptor.name))
+        metrics.filter(metric => METRIC_NAMES.has(metric.descriptor.name)),
       )
       // Flatmap the data points in each metric to create a TimeSeries for each point
       .flatMap(metric =>
         metric.dataPoints.flatMap(dataPoint =>
-          _createTimeSeries(metric, dataPoint)
-        )
+          _createTimeSeries(metric, dataPoint),
+        ),
       )
   );
 }
@@ -110,7 +110,7 @@ export function transformResourceMetricToTimeSeriesArray({
  */
 function _createTimeSeries<T>(
   metric: MetricData,
-  dataPoint: DataPoint<T>
+  dataPoint: DataPoint<T>,
 ): monitoring_v3.Schema$TimeSeries {
   const type = path.posix.join(CLIENT_METRICS_PREFIX, metric.descriptor.name);
   const {metricLabels: labels, monitoredResourceLabels} =
@@ -135,7 +135,7 @@ function _createTimeSeries<T>(
  */
 function _transformPoint<T>(
   metric: MetricData,
-  dataPoint: DataPoint<T>
+  dataPoint: DataPoint<T>,
 ): monitoring_v3.Schema$Point {
   switch (metric.dataPointType) {
     case DataPointType.SUM:
@@ -143,7 +143,7 @@ function _transformPoint<T>(
       return {
         value: _transformNumberValue(
           _transformValueType(metric),
-          dataPoint.value as number
+          dataPoint.value as number,
         ),
         interval: {
           // Add start time for non-gauge points
@@ -166,7 +166,7 @@ function _transformPoint<T>(
     case DataPointType.EXPONENTIAL_HISTOGRAM:
       return {
         value: _transformExponentialHistogramValue(
-          dataPoint.value as ExponentialHistogram
+          dataPoint.value as ExponentialHistogram,
         ),
         interval: {
           startTime: new PreciseDate(dataPoint.startTime).toISOString(),
@@ -198,7 +198,7 @@ function _extractLabels<T>({attributes = {}}: DataPoint<T>) {
 
       return result;
     },
-    {metricLabels: {}, monitoredResourceLabels: {}}
+    {metricLabels: {}, monitoredResourceLabels: {}},
   );
 }
 
@@ -219,7 +219,7 @@ function _normalizeLabelKey(key: string): string {
 /** Transforms a OpenTelemetry Point's value to a GCM Point value. */
 function _transformNumberValue(
   valueType: ValueType,
-  value: number
+  value: number,
 ): monitoring_v3.Schema$TypedValue {
   if (valueType === ValueType.INT64) {
     return {int64Value: value.toString()};
@@ -230,7 +230,7 @@ function _transformNumberValue(
 }
 
 function _transformHistogramValue(
-  value: Histogram
+  value: Histogram,
 ): monitoring_v3.Schema$TypedValue {
   return {
     distributionValue: {
@@ -246,7 +246,7 @@ function _transformHistogramValue(
 }
 
 function _transformExponentialHistogramValue(
-  value: ExponentialHistogram
+  value: ExponentialHistogram,
 ): monitoring_v3.Schema$TypedValue {
   // Adapated from reference impl in Go which has more explanatory comments
   // https://github.com/GoogleCloudPlatform/opentelemetry-operations-go/blob/v1.8.0/exporter/collector/metrics.go#L582
