@@ -30,6 +30,7 @@ import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import NullValue = google.protobuf.NullValue;
+import {ExecuteSqlRequest, ReadRequest} from '../../src/transaction';
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -1067,10 +1068,7 @@ export class MockSpanner {
   }
 
   partitionQuery(
-    call: grpc.ServerUnaryCall<
-      protobuf.PartitionQueryRequest,
-      protobuf.PartitionResponse
-    >,
+    call: grpc.ServerUnaryCall<ExecuteSqlRequest[], protobuf.PartitionResponse>,
     callback: protobuf.Spanner.PartitionQueryCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
@@ -1085,10 +1083,7 @@ export class MockSpanner {
   }
 
   partitionRead(
-    call: grpc.ServerUnaryCall<
-      protobuf.PartitionReadRequest,
-      protobuf.PartitionResponse
-    >,
+    call: grpc.ServerUnaryCall<ReadRequest[], protobuf.PartitionResponse>,
     callback: protobuf.Spanner.PartitionReadCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
