@@ -40,7 +40,7 @@ import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
-import {ExecuteSqlRequest, ReadRequest, RunResponse} from '../src/transaction';
+import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseOperationsOptions} from '../src/instance';
 import {
@@ -239,6 +239,16 @@ describe('Spanner with mock server', () => {
   const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP) 
                                 VALUES (@bool, @int64, @float64, @numeric, @string, @bytes, @json, @date, @timestamp)`;
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
+  const readPartitionsQuery = {
+    table: 'abc',
+    keySet: {
+      keys: [],
+      all: true,
+      ranges: [{}, {}],
+    },
+    gaxOptions: {},
+    dataBoostEnabled: true,
+  };
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
   });
@@ -280,6 +290,10 @@ describe('Spanner with mock server', () => {
         },
       );
     });
+    spannerMock.putReadRequestResult(
+      readPartitionsQuery,
+      mock.ReadRequestResult.resultSet(mock.createReadRequestResultSet()),
+    );
     spannerMock.putStatementResult(
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet()),
@@ -3647,45 +3661,61 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    describe('createReadPartitions', () => {
-      it('should create set of read partitions', async () => {
-        const database = newTestDatabase({min: 0, incStep: 1});
-        const query = {
-          table: 'abc',
-          keys: ['a', 'b'],
-          ranges: [{}, {}],
-          gaxOptions: {},
-          dataBoostEnabled: true,
-        };
-        const [transaction] = await database.createBatchTransaction();
-        const [readPartitions] = await transaction.createReadPartitions(query);
-        assert.strictEqual(Object.keys(readPartitions).length, 1);
-        assert.strictEqual(readPartitions[0].table, 'abc');
+    describe('batch-transactions', () => {
+      describe('createReadPartitions', () => {
+        it('should create set of read partitions', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const query = {
+            table: 'abc',
+            keys: ['a', 'b'],
+            ranges: [{}, {}],
+            gaxOptions: {},
+            dataBoostEnabled: true,
+          };
+          const [transaction] = await database.createBatchTransaction();
+          const [readPartitions] =
+            await transaction.createReadPartitions(query);
+          assert.strictEqual(readPartitions.length, 1);
+          assert.strictEqual(readPartitions[0].table, 'abc');
+        });
       });
-    });
 
-    describe('createQueryPartitions', () => {
-      it('should create set of query partitions', async () => {
-        const database = newTestDatabase({min: 0, incStep: 1});
-        const query = {
-          sql: select1,
-        };
-        const [transaction] = await database.createBatchTransaction();
-        const [partitions] = await transaction.createQueryPartitions(query);
-        assert.strictEqual(Object.keys(partitions).length, 1);
-        assert.strictEqual(partitions[0].sql, select1);
-        transaction.close();
-        await database.close();
+      describe('createQueryPartitions', () => {
+        it('should create set of query partitions', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const query = {
+            sql: select1,
+          };
+          const [transaction] = await database.createBatchTransaction();
+          const [queryPartitions] =
+            await transaction.createQueryPartitions(query);
+          assert.strictEqual(Object.keys(queryPartitions).length, 1);
+          assert.strictEqual(queryPartitions[0].sql, select1);
+          transaction.close();
+          await database.close();
+        });
       });
-    });
 
-    describe('execute', () => {
-      it('should create set of read partitions', async () => {
-        const database = newTestDatabase({min: 0, incStep: 1});
-        const [transaction] = await database.createBatchTransaction();
-        const [partitions] = await transaction.createQueryPartitions(selectSql);
-        const [resp] = await transaction.execute(partitions[0]);
-        assert.strictEqual(resp.length, 3);
+      describe('execute', () => {
+        it('should create and execute query partitions', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const [transaction] = await database.createBatchTransaction();
+          const [queryPartitions] =
+            await transaction.createQueryPartitions(selectSql);
+          assert.strictEqual(queryPartitions.length, 1);
+          const [resp] = await transaction.execute(queryPartitions[0]);
+          assert.strictEqual(resp.length, 3);
+        });
+
+        it('should create and execute read partitions', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const [transaction] = await database.createBatchTransaction();
+          const [readPartitions] =
+            await transaction.createReadPartitions(readPartitionsQuery);
+          assert.strictEqual(readPartitions.length, 1);
+          const [resp] = await transaction.execute(readPartitions[0]);
+          assert.strictEqual(resp.length, 3);
+        });
       });
     });
 

@@ -9697,7 +9697,7 @@ describe('Spanner', () => {
         }
       });
 
-      it('should create and execute a query partition', function (done) {
+      it('should create and execute a query partition using callback', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9727,7 +9727,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('should create and execute a read partition', function (done) {
+      it('should create and execute a read partition using callback', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9757,6 +9757,66 @@ describe('Spanner', () => {
             });
           });
         });
+      });
+
+      it('should create and execute a query partition using await', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = @id',
+          params: {
+            id: 'k998',
+          },
+        };
+
+        const row_count = 0;
+        try {
+          const [partitions] =
+            await transaction.createQueryPartitions(selectQuery);
+          assert.deepStrictEqual(partitions.length, 1);
+
+          const promises = partitions.map(async partition => {
+            const [resp] = await transaction.execute(partition);
+            assert.strictEqual(resp.length, 1);
+          });
+
+          await Promise.all(promises);
+        } catch (err) {
+          assert.ifError(err);
+        }
+      });
+
+      it('should create and execute a read partition using await', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: true,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        const read_row_count = 0;
+        try {
+          const [partitions] = await transaction.createReadPartitions(QUERY);
+          assert.deepStrictEqual(partitions.length, 1);
+
+          const promises = partitions.map(async partition => {
+            const [resp] = await transaction.execute(partition);
+            assert.strictEqual(resp.length, 1);
+          });
+
+          await Promise.all(promises);
+        } catch (err) {
+          assert.ifError(err);
+        }
       });
     });
   });
