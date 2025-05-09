@@ -9772,7 +9772,7 @@ describe('Spanner', () => {
           },
         };
 
-        const row_count = 0;
+        let row_count = 0;
         try {
           const [partitions] =
             await transaction.createQueryPartitions(selectQuery);
@@ -9780,7 +9780,8 @@ describe('Spanner', () => {
 
           const promises = partitions.map(async partition => {
             const [resp] = await transaction.execute(partition);
-            assert.strictEqual(resp.length, 1);
+            row_count += resp.map(row => row.toJSON()).length;
+            assert.strictEqual(row_count, 1);
           });
 
           await Promise.all(promises);
@@ -9803,14 +9804,15 @@ describe('Spanner', () => {
           columns: ['Key'],
         };
 
-        const read_row_count = 0;
+        let read_row_count = 0;
         try {
           const [partitions] = await transaction.createReadPartitions(QUERY);
           assert.deepStrictEqual(partitions.length, 1);
 
           const promises = partitions.map(async partition => {
             const [resp] = await transaction.execute(partition);
-            assert.strictEqual(resp.length, 1);
+            read_row_count += resp.map(row => row.toJSON()).length;
+            assert.strictEqual(read_row_count, 1);
           });
 
           await Promise.all(promises);
