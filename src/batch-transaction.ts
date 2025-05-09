@@ -62,11 +62,13 @@ export type CreateQueryPartitionsCallback = ResourceCallback<
   google.spanner.v1.IPartitionResponse
 >;
 
-type executeResponse = [
-  Rows,
-  google.spanner.v1.ResultSetStats?,
-  google.spanner.v1.ResultSetMetadata?,
-];
+type executeResponse =
+  | [Rows] // For read
+  | [
+      Rows,
+      google.spanner.v1.ResultSetStats,
+      google.spanner.v1.ResultSetMetadata,
+    ]; // For run
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
