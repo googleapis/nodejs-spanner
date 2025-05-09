@@ -1012,6 +1012,7 @@ export class MockSpanner {
               return;
             }
             if (res.type === ReadRequestResultType.RESULT_SET) {
+              call.sendMetadata(new Metadata());
               (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
             }
           }
@@ -1031,8 +1032,10 @@ export class MockSpanner {
               resumeIndex =
                 call.request!.resumeToken.length === 0
                   ? 0
-                  : Number.parseInt(call.request!.resumeToken.toString(), 10) +
-                    1;
+                  : parseInt(
+                      Buffer.from(call.request!.resumeToken).toString(),
+                      10,
+                    ) + 1;
               for (
                 let index = resumeIndex;
                 index < partialResultSets.length;
