@@ -30,6 +30,7 @@ import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import NullValue = google.protobuf.NullValue;
+import {ExecuteSqlRequest, ReadRequest} from '../../src/transaction';
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -57,12 +58,104 @@ const RETRY_INFO_BIN = 'google.rpc.retryinfo-bin';
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
 
 /**
+ * Specifies the type of result that a mock server should return for a `ReadRequest`.
+ *
+ * `ERROR`: Simulates an error response from the server.
+ * `RESULT_SET`: Simulates a successful response with a result set.
+ */
+enum ReadRequestResultType {
+  ERROR,
+  RESULT_SET,
+}
+
+/**
  * The type of result for an SQL statement that the mock server should return.
  */
 enum StatementResultType {
   ERROR,
   RESULT_SET,
   UPDATE_COUNT,
+}
+
+/**
+ * Represents the result of executing a `ReadRequest` on a mock Spanner server.
+ */
+export class ReadRequestResult {
+  private readonly _type: ReadRequestResultType;
+
+  /**
+   * The type of result this instance represents.
+   */
+  get type(): ReadRequestResultType {
+    return this._type;
+  }
+
+  private readonly _error: Error | null;
+
+  /**
+   * The error associated with the result, if any.
+   *
+   * @throws If the result type is not `ERROR`.
+   */
+  get error(): Error {
+    if (this._error) {
+      return this._error;
+    }
+    throw new Error('The ReadRequestResult does not contain an Error');
+  }
+
+  private readonly _resultSet:
+    | protobuf.ResultSet
+    | protobuf.PartialResultSet[]
+    | null;
+
+  /**
+   * The result set associated with the result, if any.
+   *
+   * Can be a full `ResultSet` or a stream of `PartialResultSet`s.
+   *
+   * @throws If the result type is not `RESULT_SET`.
+   */
+  get resultSet(): protobuf.ResultSet | protobuf.PartialResultSet[] {
+    if (this._resultSet) {
+      return this._resultSet;
+    }
+    throw new Error('The ReadRequestResult does not contain a ResultSet');
+  }
+
+  private constructor(
+    type: ReadRequestResultType,
+    error: Error | null,
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[] | null,
+  ) {
+    this._type = type;
+    this._error = error;
+    this._resultSet = resultSet;
+  }
+
+  /**
+   * Creates a `ReadRequestResult` that simulates an error response.
+   *
+   * @param error The error to return for the read request.
+   * @returns A `ReadRequestResult` instance representing an error.
+   */
+  static error(error: Error): ReadRequestResult {
+    return new ReadRequestResult(ReadRequestResultType.ERROR, error, null);
+  }
+
+  /**
+   * Create a ReadRequestResult that will return a ResultSet or a stream of PartialResultSets.
+   * @param resultSet The result set to return.
+   */
+  static resultSet(
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[],
+  ): ReadRequestResult {
+    return new ReadRequestResult(
+      ReadRequestResultType.RESULT_SET,
+      null,
+      resultSet,
+    );
+  }
 }
 
 /**
@@ -245,6 +338,10 @@ export class MockSpanner {
     string,
     StatementResult
   >();
+  private readRequestResults: Map<string, ReadRequestResult> = new Map<
+    string,
+    ReadRequestResult
+  >();
   private executionTimes: Map<string, SimulatedExecutionTime> = new Map<
     string,
     SimulatedExecutionTime
@@ -252,6 +349,7 @@ export class MockSpanner {
 
   private constructor() {
     this.putStatementResult = this.putStatementResult.bind(this);
+    this.putReadRequestResult = this.putReadRequestResult.bind(this);
     this.batchCreateSessions = this.batchCreateSessions.bind(this);
     this.createSession = this.createSession.bind(this);
     this.deleteSession = this.deleteSession.bind(this);
@@ -295,6 +393,21 @@ export class MockSpanner {
    */
   getMetadata(): Metadata[] {
     return this.metadata;
+  }
+
+  /**
+   * Register the expected result for a given `ReadRequest` on the mock server.
+   *
+   * @param query The `ReadRequest` to associate with the result.
+   * @param result The `ReadRequestResult` to return when the `query` is received.
+   */
+  putReadRequestResult(query: ReadRequest, result: ReadRequestResult) {
+    const keySet = JSON.stringify(
+      query.keySet ?? {},
+      Object.keys(query.keySet ?? {}).sort(),
+    );
+    const key = `${query.table}|${keySet}`;
+    this.readRequestResults.set(key, result);
   }
 
   /**
@@ -863,11 +976,108 @@ export class MockSpanner {
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
     this.pushRequest(call.request!, call.metadata);
-    call.emit(
-      'error',
-      createUnimplementedError('StreamingRead is not yet implemented'),
-    );
-    call.end();
+
+    this.simulateExecutionTime(this.streamingRead.name)
+      .then(() => {
+        if (call.request!.transaction) {
+          const fullTransactionId = `${call.request!.session}/transactions/${
+            call.request!.transaction.id
+          }`;
+          if (this.abortedTransactions.has(fullTransactionId)) {
+            call.sendMetadata(new Metadata());
+            call.emit(
+              'error',
+              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`),
+            );
+            call.end();
+            return;
+          }
+        }
+        const keySet = JSON.stringify(
+          call.request!.keySet ?? {},
+          Object.keys(call.request!.keySet ?? {}).sort(),
+        );
+        const key = `${call.request!.table}|${keySet}`;
+        const res = this.readRequestResults.get(key);
+        if (res) {
+          if (call.request!.transaction?.begin) {
+            const txn = this._updateTransaction(
+              call.request!.session,
+              call.request!.transaction.begin,
+            );
+            if (txn instanceof Error) {
+              call.sendMetadata(new Metadata());
+              call.emit('error', txn);
+              call.end();
+              return;
+            }
+            if (res.type === ReadRequestResultType.RESULT_SET) {
+              call.sendMetadata(new Metadata());
+              (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
+            }
+          }
+          let partialResultSets;
+          let resumeIndex;
+          switch (res.type) {
+            case ReadRequestResultType.RESULT_SET:
+              if (Array.isArray(res.resultSet)) {
+                partialResultSets = res.resultSet;
+              } else {
+                partialResultSets = MockSpanner.toPartialResultSets(
+                  res.resultSet,
+                  'NORMAL',
+                );
+              }
+              // Resume on the next index after the last one seen by the client.
+              resumeIndex =
+                call.request!.resumeToken.length === 0
+                  ? 0
+                  : parseInt(
+                      Buffer.from(call.request!.resumeToken).toString(),
+                      10,
+                    ) + 1;
+              for (
+                let index = resumeIndex;
+                index < partialResultSets.length;
+                index++
+              ) {
+                const streamErr = this.shiftStreamError(
+                  this.streamingRead.name,
+                  index,
+                );
+                if (streamErr) {
+                  call.sendMetadata(new Metadata());
+                  call.emit('error', streamErr);
+                  break;
+                }
+                call.write(partialResultSets[index]);
+              }
+              break;
+            case ReadRequestResultType.ERROR:
+              call.sendMetadata(new Metadata());
+              call.emit('error', res.error);
+              break;
+            default:
+              call.emit(
+                'error',
+                new Error(`Unknown ReadRequestResult type: ${res.type}`),
+              );
+          }
+        } else {
+          call.emit(
+            'error',
+            new Error(
+              `There is no result registered for ${call.request!.table}`,
+            ),
+          );
+        }
+        call.end();
+      })
+      .catch(err => {
+        call.sendMetadata(new Metadata());
+        call.emit('error', err);
+        call.end();
+      });
   }
 
   beginTransaction(
@@ -976,10 +1186,7 @@ export class MockSpanner {
   }
 
   partitionQuery(
-    call: grpc.ServerUnaryCall<
-      protobuf.PartitionQueryRequest,
-      protobuf.PartitionResponse
-    >,
+    call: grpc.ServerUnaryCall<ExecuteSqlRequest[], protobuf.PartitionResponse>,
     callback: protobuf.Spanner.PartitionQueryCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
@@ -994,10 +1201,7 @@ export class MockSpanner {
   }
 
   partitionRead(
-    call: grpc.ServerUnaryCall<
-      protobuf.PartitionReadRequest,
-      protobuf.PartitionResponse
-    >,
+    call: grpc.ServerUnaryCall<ReadRequest[], protobuf.PartitionResponse>,
     callback: protobuf.Spanner.PartitionReadCallback,
   ) {
     this.pushRequest(call.request!, call.metadata);
@@ -1061,6 +1265,44 @@ export function createMockSpanner(server: grpc.Server): MockSpanner {
     partitionRead: mock.partitionRead,
   });
   return mock;
+}
+
+/**
+ * Creates a simple result set containing the following data:
+ *
+ * |-------------------------------|
+ * | ID (STRING) | VALUE (STRING) |
+ * |-------------------------------|
+ * |     'a'     | 'Alpha'        |
+ * |     'b'     | 'Beta'         |
+ * |     'c'     | 'Gamma'        |
+ * --------------------------------
+ *
+ * This ResultSet can be used to mock read operations in a mock Spanner server.
+ */
+export function createReadRequestResultSet(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'ID',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'VALUE',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({fields}),
+  });
+
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {values: [{stringValue: 'a'}, {stringValue: 'Alpha'}]},
+      {values: [{stringValue: 'b'}, {stringValue: 'Beta'}]},
+      {values: [{stringValue: 'c'}, {stringValue: 'Gamma'}]},
+    ],
+  });
 }
 
 /**
