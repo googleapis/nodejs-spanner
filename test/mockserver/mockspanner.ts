@@ -58,7 +58,10 @@ const RETRY_INFO_BIN = 'google.rpc.retryinfo-bin';
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
 
 /**
- * The type of result for an ReadRequest statement that the mock server should return.
+ * Specifies the type of result that a mock server should return for a `ReadRequest`.
+ *
+ * `ERROR`: Simulates an error response from the server.
+ * `RESULT_SET`: Simulates a successful response with a result set.
  */
 enum ReadRequestResultType {
   ERROR,
@@ -75,24 +78,44 @@ enum StatementResultType {
 }
 
 /**
- * ReadRequestResult contains the result for an ReadRequest statement on the mock server.
+ * Represents the result of executing a `ReadRequest` on a mock Spanner server.
  */
 export class ReadRequestResult {
   private readonly _type: ReadRequestResultType;
+
+  /**
+   * The type of result this instance represents.
+   */
   get type(): ReadRequestResultType {
     return this._type;
   }
+
   private readonly _error: Error | null;
+
+  /**
+   * The error associated with the result, if any.
+   *
+   * @throws If the result type is not `ERROR`.
+   */
   get error(): Error {
     if (this._error) {
       return this._error;
     }
     throw new Error('The ReadRequestResult does not contain an Error');
   }
+
   private readonly _resultSet:
     | protobuf.ResultSet
     | protobuf.PartialResultSet[]
     | null;
+
+  /**
+   * The result set associated with the result, if any.
+   *
+   * Can be a full `ResultSet` or a stream of `PartialResultSet`s.
+   *
+   * @throws If the result type is not `RESULT_SET`.
+   */
   get resultSet(): protobuf.ResultSet | protobuf.PartialResultSet[] {
     if (this._resultSet) {
       return this._resultSet;
@@ -111,8 +134,10 @@ export class ReadRequestResult {
   }
 
   /**
-   * Create a ReadRequestResult that will return an error.
-   * @param error The error to return for the statement.
+   * Creates a `ReadRequestResult` that simulates an error response.
+   *
+   * @param error The error to return for the read request.
+   * @returns A `ReadRequestResult` instance representing an error.
    */
   static error(error: Error): ReadRequestResult {
     return new ReadRequestResult(ReadRequestResultType.ERROR, error, null);
@@ -370,8 +395,18 @@ export class MockSpanner {
     return this.metadata;
   }
 
+  /**
+   * Register the expected result for a given `ReadRequest` on the mock server.
+   *
+   * @param query The `ReadRequest` to associate with the result.
+   * @param result The `ReadRequestResult` to return when the `query` is received.
+   */
   putReadRequestResult(query: ReadRequest, result: ReadRequestResult) {
-    const key = this.stableKeyFromReadRequest(query);
+    const keySet = JSON.stringify(
+      query.keySet ?? {},
+      Object.keys(query.keySet ?? {}).sort(),
+    );
+    const key = `${query.table}|${keySet}`;
     this.readRequestResults.set(key, result);
   }
 
@@ -939,14 +974,6 @@ export class MockSpanner {
     callback(createUnimplementedError('Read is not yet implemented'));
   }
 
-  stableKeyFromReadRequest(req: ReadRequest): string {
-    const keySet = JSON.stringify(
-      req.keySet ?? {},
-      Object.keys(req.keySet ?? {}).sort(),
-    );
-    return `${req.table}|${keySet}`;
-  }
-
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
     this.pushRequest(call.request!, call.metadata);
 
@@ -966,7 +993,11 @@ export class MockSpanner {
             return;
           }
         }
-        const key = this.stableKeyFromReadRequest(call.request! as ReadRequest);
+        const keySet = JSON.stringify(
+          call.request!.keySet ?? {},
+          Object.keys(call.request!.keySet ?? {}).sort(),
+        );
+        const key = `${call.request!.table}|${keySet}`;
         const res = this.readRequestResults.get(key);
         if (res) {
           if (call.request!.transaction?.begin) {
@@ -1233,6 +1264,19 @@ export function createMockSpanner(server: grpc.Server): MockSpanner {
   return mock;
 }
 
+/**
+ * Creates a simple result set containing the following data:
+ *
+ * |-------------------------------|
+ * | ID (STRING) | VALUE (STRING) |
+ * |-------------------------------|
+ * |     'a'     | 'Alpha'        |
+ * |     'b'     | 'Beta'         |
+ * |     'c'     | 'Gamma'        |
+ * --------------------------------
+ *
+ * This ResultSet can be used to mock read operations in a mock Spanner server.
+ */
 export function createReadRequestResultSet(): protobuf.ResultSet {
   const fields = [
     protobuf.StructType.Field.create({
