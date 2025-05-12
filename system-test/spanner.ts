@@ -40,6 +40,8 @@ import {
   ExecuteSqlRequest,
   TimestampBounds,
   MutationGroup,
+  ReadResponse,
+  RunResponse,
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
@@ -52,6 +54,10 @@ const singer = require('../test/data/singer');
 const music = singer.examples.spanner.music;
 import {util} from 'protobufjs';
 import Long = util.Long;
+import {
+  CreateQueryPartitionsResponse,
+  CreateReadPartitionsResponse,
+} from '../src/batch-transaction';
 const fs = require('fs');
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
@@ -9774,13 +9780,14 @@ describe('Spanner', () => {
 
         let row_count = 0;
         try {
-          const [partitions] =
+          const [queryPartitions]: CreateQueryPartitionsResponse =
             await transaction.createQueryPartitions(selectQuery);
-          assert.deepStrictEqual(partitions.length, 1);
+          assert.deepStrictEqual(queryPartitions.length, 1);
 
-          const promises = partitions.map(async partition => {
-            const [resp] = await transaction.execute(partition);
-            row_count += resp.map(row => row.toJSON()).length;
+          const promises = queryPartitions.map(async queryPartition => {
+            const [results]: RunResponse =
+              await transaction.execute(queryPartition);
+            row_count += results.map(row => row.toJSON()).length;
             assert.strictEqual(row_count, 1);
           });
 
@@ -9806,12 +9813,14 @@ describe('Spanner', () => {
 
         let read_row_count = 0;
         try {
-          const [partitions] = await transaction.createReadPartitions(QUERY);
-          assert.deepStrictEqual(partitions.length, 1);
+          const [readPartitions]: CreateReadPartitionsResponse =
+            await transaction.createReadPartitions(QUERY);
+          assert.deepStrictEqual(readPartitions.length, 1);
 
-          const promises = partitions.map(async partition => {
-            const [resp] = await transaction.execute(partition);
-            read_row_count += resp.map(row => row.toJSON()).length;
+          const promises = readPartitions.map(async readPartition => {
+            const [results]: ReadResponse =
+              await transaction.execute(readPartition);
+            read_row_count += results.map(row => row.toJSON()).length;
             assert.strictEqual(read_row_count, 1);
           });
 
