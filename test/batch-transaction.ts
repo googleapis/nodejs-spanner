@@ -441,7 +441,7 @@ describe('BatchTransaction', () => {
       },
     };
 
-    it('should make read requests for read partitions', () => {
+    it('should make read requests for read partitions using callback', () => {
       const partition = {table: 'abc'};
       const stub = sandbox.stub(batchTransaction, 'read');
 
@@ -489,6 +489,17 @@ describe('BatchTransaction', () => {
 
       const query = stub.lastCall.args[0];
       assert.strictEqual(query, partition);
+    });
+
+    it('should make read requests for read partitions using await', async () => {
+      const partition = {table: 'abc'};
+      const stub = sandbox.stub(batchTransaction, 'read');
+
+      await batchTransaction.execute(partition);
+
+      const [table, options] = stub.lastCall.args;
+      assert.strictEqual(table, partition.table);
+      assert.strictEqual(options, partition);
     });
   });
 

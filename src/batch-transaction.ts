@@ -18,7 +18,15 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import * as is from 'is';
-import {ReadRequest, ExecuteSqlRequest, Snapshot} from './transaction';
+import {
+  ExecuteSqlRequest,
+  ReadCallback,
+  ReadRequest,
+  ReadResponse,
+  RunCallback,
+  RunResponse,
+  Snapshot,
+} from './transaction';
 import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
@@ -36,22 +44,22 @@ export interface TransactionIdentifier {
 }
 
 export type CreateReadPartitionsResponse = [
-  google.spanner.v1.IPartitionReadRequest,
+  ReadRequest[],
   google.spanner.v1.IPartitionResponse,
 ];
 
 export type CreateReadPartitionsCallback = ResourceCallback<
-  google.spanner.v1.IPartitionReadRequest,
+  ReadRequest[],
   google.spanner.v1.IPartitionResponse
 >;
 
 export type CreateQueryPartitionsResponse = [
-  google.spanner.v1.IPartitionQueryRequest,
+  ExecuteSqlRequest[],
   google.spanner.v1.IPartitionResponse,
 ];
 
 export type CreateQueryPartitionsCallback = ResourceCallback<
-  google.spanner.v1.IPartitionQueryRequest,
+  ExecuteSqlRequest[],
   google.spanner.v1.IPartitionResponse
 >;
 
@@ -114,17 +122,17 @@ class BatchTransaction extends Snapshot {
   /**
    * @see [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
    * @typedef {object} QueryPartition
-   * @property {string} partitionToken The partition token.
+   * @property {string} partitionToken A token representing the partition, used to identify and execute the partition at a later time.
    */
   /**
    * @typedef {array} CreateQueryPartitionsResponse
-   * @property {QueryPartition[]} 0 List of query partitions.
+   * @property {ExecuteSqlRequest[]} 0 Array of ExecuteSqlRequest partitions.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback CreateQueryPartitionsCallback
    * @param {?Error} err Request error, if any.
-   * @param {QueryPartition[]} partitions List of query partitions.
+   * @param {ExecuteSqlRequest[]} partitions Array of ExecuteSqlRequest partitions.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -132,17 +140,17 @@ class BatchTransaction extends Snapshot {
    * operation in parallel. Partitions become invalid when the transaction used
    * to create them is closed.
    *
-   * @param {string|object} query A SQL query or
-   *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
-   *     object.
+   * @param {string|ExecuteSqlRequest} query - A SQL query string or an {@link ExecuteSqlRequest} object.
+   *  If a string is provided, it will be wrapped into an `ExecuteSqlRequest`.
    * @param {object} [query.gaxOptions] Request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.partitionOptions] A map of partition options.
    * @param {object} [query.types] A map of parameter types.
-   * @param {CreateQueryPartitionsCallback} [callback] Callback callback function.
-   * @returns {Promise<CreateQueryPartitionsResponse>}
+   * @param {CreateQueryPartitionsCallback} [callback] - Optional Callback function. If not provided, a promise is returned.
+   * @returns {Promise<CreateQueryPartitionsResponse>|void} A promise resolving to an array of
+   *  `ExecuteSqlRequest' partitions and `IPartitionResponse` , or void if a callback is provided.
    *
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_client
@@ -268,20 +276,20 @@ class BatchTransaction extends Snapshot {
   /**
    * @typedef {object} ReadPartition
    * @mixes ReadRequestOptions
-   * @property {string} partitionToken The partition token.
-   * @property {object} [gaxOptions] Request configuration options,
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   * @property {string} partitionToken partitionToken A token representing the partition, used to identify and execute the partition at a later time.
+   * @property {object} [gaxOptions] optional request configuration options,
+   * See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
    */
   /**
    * @typedef {array} CreateReadPartitionsResponse
-   * @property {ReadPartition[]} 0 List of read partitions.
+   * @property {ReadPartition[]} 0 Array of read partitions.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback CreateReadPartitionsCallback
    * @param {?Error} err Request error, if any.
-   * @param {ReadPartition[]} partitions List of read partitions.
+   * @param {ReadPartition[]} partitions Array of read partitions.
    * @param {object} apiResponse The full API response.
    */
   /**
@@ -289,10 +297,11 @@ class BatchTransaction extends Snapshot {
    * operation in parallel. Partitions become invalid when the transaction used
    * to create them is closed.
    *
-   * @param {ReadRequestOptions} options Configuration object, describing what to
+   * @param {ReadRequest} options Configuration object, describing what to
    *     read from.
    * @param {CreateReadPartitionsCallback} [callback] Callback function.
-   * @returns {Promise<CreateReadPartitionsResponse>}
+   * @returns {Promise<CreateReadPartitionsResponse>|void} A promise that resolves
+   * to an array containing the read partitions and the full API response, or `void` if a callback is provided.
    */
   createReadPartitions(
     options: ReadRequest,
@@ -348,28 +357,49 @@ class BatchTransaction extends Snapshot {
     );
   }
   /**
-   * Executes partition.
+   * Executes partition using either a read or a SQL query, depending on the type of partition provided.
    *
-   * @see {@link Transaction#read} when using {@link ReadPartition}.
-   * @see {@link Transaction#run} when using {@link QueryParition}.
+   * @param {ReadRequest|ExecuteSqlRequest} partition The partition object to execute.
+   * This can either be a `ReadPartition` or a `QueryPartition`.
    *
-   * @param {ReadPartition|QueryParition} partition The partition object.
-   * @param {object} [partition.gaxOptions] Request configuration options,
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   * @param {TransactionRequestReadCallback|RunCallback} [callback] Callback
-   *     function.
-   * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
+   * @param {ReadCallback|RunCallback} [callback] Optional Callback function. If not provided,
+   *  a promise will be returned.
+   *
+   * If the partition is a read partition, it will execute a read using {@link Transaction#read}
+   * @see {@link Transaction#read} when using {@link ReadRequest}.
+   *
+   * If the partition is query partition, it will execute a SQL query using {@link Transaction#run}
+   * @see {@link Transaction#run} when using {@link ExecuteSqlRequest}.
+   *
+   * @returns {Promise<ReadResponse | RunResponse>|void} Returns a promise when no callback is provided,
+   *  or void when a callback is used.
    *
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_execute_partitions
    */
-  execute(partition, callback) {
-    if (is.string(partition.table)) {
-      this.read(partition.table, partition, callback);
+  execute(
+    partition: ReadRequest | ExecuteSqlRequest,
+  ): Promise<ReadResponse | RunResponse>;
+  execute(
+    partition: ReadRequest | ExecuteSqlRequest,
+    callback: ReadCallback | RunCallback,
+  ): void;
+  execute(
+    partition: ReadRequest | ExecuteSqlRequest,
+    cb?: ReadCallback | RunCallback,
+  ): void | Promise<ReadResponse | RunResponse> {
+    const isRead = typeof (partition as ReadRequest).table === 'string';
+
+    if (isRead) {
+      this.read(
+        (partition as ReadRequest).table!,
+        partition as ReadRequest,
+        cb as ReadCallback,
+      );
       return;
     }
-    this.run(partition, callback);
+
+    this.run(partition as ExecuteSqlRequest, cb as RunCallback);
   }
   /**
    * Executes partition in streaming mode.
