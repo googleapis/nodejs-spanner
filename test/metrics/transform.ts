@@ -27,7 +27,6 @@ import {
   MeterProvider,
   MetricReader,
 } from '@opentelemetry/sdk-metrics';
-import {monitoring_v3} from 'googleapis';
 import {
   Attributes,
   Counter,
@@ -39,13 +38,13 @@ import {
   SPANNER_METER_NAME,
   METRIC_NAME_ATTEMPT_COUNT,
 } from '../../src/metrics/constants';
-import {PreciseDate} from '@google-cloud/precise-date';
 import {MetricKind, ValueType} from '../../src/metrics/external-types';
 
 const {
   _normalizeLabelKey,
   _transformMetricKind,
   _extractLabels,
+  _formatHrTimeToGcmTime,
   _transformResource,
   _transformValueType,
   _transformPoint,
@@ -269,8 +268,8 @@ describe('transform', () => {
         int64Value: '0',
       },
       interval: {
-        startTime: new PreciseDate(sumDataPoint.startTime).toISOString(),
-        endTime: new PreciseDate(sumDataPoint.endTime).toISOString(),
+        startTime: _formatHrTimeToGcmTime(sumDataPoint.startTime),
+        endTime: _formatHrTimeToGcmTime(sumDataPoint.endTime),
       },
     };
     assert.deepStrictEqual(
@@ -283,7 +282,7 @@ describe('transform', () => {
         int64Value: '0',
       },
       interval: {
-        endTime: new PreciseDate(sumDataPoint.endTime).toISOString(),
+        endTime: _formatHrTimeToGcmTime(sumDataPoint.endTime),
       },
     };
 
@@ -309,8 +308,8 @@ describe('transform', () => {
         },
       },
       interval: {
-        startTime: new PreciseDate(histogramDataPoint.startTime).toISOString(),
-        endTime: new PreciseDate(histogramDataPoint.endTime).toISOString(),
+        startTime: _formatHrTimeToGcmTime(histogramDataPoint.startTime),
+        endTime: _formatHrTimeToGcmTime(histogramDataPoint.endTime),
       },
     };
 
@@ -321,12 +320,10 @@ describe('transform', () => {
 
     const exponentialHistogramExpectation = {
       interval: {
-        startTime: new PreciseDate(
+        startTime: _formatHrTimeToGcmTime(
           exponentialHistogramDataPoint.startTime,
-        ).toISOString(),
-        endTime: new PreciseDate(
-          exponentialHistogramDataPoint.endTime,
-        ).toISOString(),
+        ),
+        endTime: _formatHrTimeToGcmTime(exponentialHistogramDataPoint.endTime),
       },
       value: {
         distributionValue: {
@@ -378,18 +375,21 @@ describe('transform', () => {
     if (errors.length !== 0) {
       throw errors;
     }
-    const timeseries: monitoring_v3.Schema$TimeSeries[] =
+    const timeseries =
       transformResourceMetricToTimeSeriesArray(resourceMetrics);
     assert.strictEqual(timeseries.length, 1);
 
     // Verify the contents of the TimeSeries
-    const ts: monitoring_v3.Schema$TimeSeries = timeseries[0];
+    const ts = timeseries[0];
 
     assert.strictEqual(ts.valueType, 'INT64');
 
     assert.strictEqual(ts.points?.length, 1);
 
-    assert.strictEqual(ts.points[0].value?.int64Value, '3');
+    assert.strictEqual(
+      (ts.points[0].value as {int64Value: string})?.int64Value,
+      '3',
+    );
   });
 
   it('should filter out metrics without spanner-nodejs scope', async () => {
@@ -416,7 +416,7 @@ describe('transform', () => {
     if (errors.length !== 0) {
       throw errors;
     }
-    const timeseries: monitoring_v3.Schema$TimeSeries[] =
+    const timeseries =
       transformResourceMetricToTimeSeriesArray(resourceMetrics);
 
     assert.strictEqual(timeseries.length, 0);

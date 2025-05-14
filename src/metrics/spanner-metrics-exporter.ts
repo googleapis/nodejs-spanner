@@ -13,55 +13,30 @@
 // limitations under the License.
 
 import {PushMetricExporter, ResourceMetrics} from '@opentelemetry/sdk-metrics';
-import {ExportResult, ExportResultCode, SDK_INFO} from '@opentelemetry/core';
+import {ExportResult, ExportResultCode} from '@opentelemetry/core';
 import {ExporterOptions} from './external-types';
-import {GoogleAuth, JWT} from 'google-auth-library';
-import {monitoring_v3} from 'googleapis';
+import {MetricServiceClient} from '@google-cloud/monitoring';
 import {transformResourceMetricToTimeSeriesArray} from './transform';
 import {status} from '@grpc/grpc-js';
-const version = require('../../../package.json').version;
 
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
 const MAX_BATCH_EXPORT_SIZE = 200;
-const VERSION = version;
-const OT_VERSION = SDK_INFO['telemetry.sdk.version'];
-const OT_USER_AGENTS = [
-  {
-    product: 'opentelemetry-js',
-    version: OT_VERSION,
-  },
-  {
-    product: 'google-cloud-metric-exporter',
-    version: VERSION,
-  },
-];
-const OT_REQUEST_HEADER = {
-  'x-opentelemetry-outgoing-request': 0x1,
-};
 
-const DEFAULT_API_ENDPOINT = 'monitoring.googleapis.com:443';
 /**
  * Format and sends metrics information to Google Cloud Monitoring.
  */
 export class CloudMonitoringMetricsExporter implements PushMetricExporter {
   private _projectId: string | void | Promise<string | void>;
-  private readonly _auth: GoogleAuth;
 
-  private _monitoring: monitoring_v3.Monitoring;
+  private readonly _client: MetricServiceClient;
 
-  constructor({auth, userAgent, apiEndpoint}: ExporterOptions) {
-    this._auth = auth;
-
-    this._monitoring = new monitoring_v3.Monitoring({
-      rootUrl: `https://${apiEndpoint || DEFAULT_API_ENDPOINT}`,
-      headers: OT_REQUEST_HEADER,
-      userAgentDirectives: OT_USER_AGENTS.concat(userAgent ? [userAgent] : []),
-    });
+  constructor({auth}: ExporterOptions) {
+    this._client = new MetricServiceClient({auth: auth});
 
     // Start this async process as early as possible. It will be
     // awaited on the first export because constructors are synchronous
-    this._projectId = this._auth.getProjectId().catch(err => {
+    this._projectId = auth.getProjectId().catch(err => {
       console.error(err);
     });
   }
@@ -107,7 +82,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
       return {code: ExportResultCode.FAILED, error};
     }
 
-    const timeSeriesList: monitoring_v3.Schema$TimeSeries[] =
+    const timeSeriesList =
       transformResourceMetricToTimeSeriesArray(resourceMetrics);
 
     let failure: {sendFailed: false} | {sendFailed: true; error: Error} = {
@@ -138,35 +113,23 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
       : {code: ExportResultCode.SUCCESS};
   }
 
-  private async _sendTimeSeries(timeSeries: monitoring_v3.Schema$TimeSeries[]) {
+  private async _sendTimeSeries(timeSeries) {
     if (timeSeries.length === 0) {
       return Promise.resolve();
     }
 
-    const authClient = await this._authorize();
-    // await this._monitoring.projects.timeSeries.createService({
-    //   name: `projects/${this._projectId}`,
-    //   requestBody: {timeSeries},
-    //   auth: authClient,
-    // });
+    // TODO: Use createServiceTimeSeries when it is available
+    await this._client.createTimeSeries({
+      name: `projects/${this._projectId}`,
+      timeSeries: timeSeries,
+    });
   }
 
   /** Returns the minimum number of arrays of max size chunkSize, partitioned from the given array. */
-  private _partitionList(
-    list: monitoring_v3.Schema$TimeSeries[],
-    chunkSize: number,
-  ) {
+  private _partitionList(list, chunkSize: number) {
     return Array.from({length: Math.ceil(list.length / chunkSize)}, (_, i) =>
       list.slice(i * chunkSize, (i + 1) * chunkSize),
     );
-  }
-
-  /**
-   * Gets the Google Application Credentials from the environment variables
-   * and authenticates the client.
-   */
-  private async _authorize(): Promise<JWT> {
-    return this._auth.getClient() as Promise<JWT>;
   }
 }
 

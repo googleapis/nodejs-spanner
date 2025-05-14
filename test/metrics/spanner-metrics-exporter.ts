@@ -30,8 +30,9 @@ import {Counter, Meter, Histogram} from '@opentelemetry/api';
 import {ExportResult, ExportResultCode} from '@opentelemetry/core';
 
 const PROJECT_ID = 'test-project';
-const INSTANCE_ID = 'test_instance';
-const DATABASE_ID = 'test_db';
+const INSTANCE_ID = 'test-instance';
+const DATABASE_ID = 'test-db';
+const LOCATION = 'test-location';
 
 const auth = new GoogleAuth();
 auth.getProjectId = sinon.stub().resolves(PROJECT_ID);
@@ -74,8 +75,8 @@ describe('CustomExporter', () => {
 // Verify that the export call will convert and send the requests out.
 describe('Export', () => {
   class InMemoryMetricReader extends MetricReader {
-    protected async onShutdown(): Promise<void> {}
     protected async onForceFlush(): Promise<void> {}
+    protected async onShutdown(): Promise<void> {}
   }
   let reader: MetricReader;
   let meterProvider: MeterProvider;
@@ -90,6 +91,7 @@ describe('Export', () => {
   let exporter: CloudMonitoringMetricsExporter;
 
   beforeEach(() => {
+    exporter = new CloudMonitoringMetricsExporter({auth});
     reader = new InMemoryMetricReader();
     meterProvider = new MeterProvider({
       readers: [reader],
@@ -99,7 +101,7 @@ describe('Export', () => {
       project_id: PROJECT_ID,
       instance_id: INSTANCE_ID,
       instance_config: 'test_config',
-      location: 'test_location',
+      location: LOCATION,
       client_hash: 'test_hash',
       client_uid: 'test_uid',
       client_name: 'test_name',
@@ -141,8 +143,6 @@ describe('Export', () => {
       description: 'Test GFE latencies in ms',
       unit: 'ms',
     });
-
-    exporter = new CloudMonitoringMetricsExporter({auth});
   });
 
   it('should export GCM metrics', async () => {

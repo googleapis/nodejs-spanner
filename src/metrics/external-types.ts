@@ -19,18 +19,6 @@ export interface ExporterOptions {
    * Optional authentication options for Google services.
    */
   auth: GoogleAuth;
-  /**
-   * Add a custom user agent and version strings to all monitoring exports
-   */
-  userAgent?: {
-    product: string;
-    version: string;
-  };
-  /**
-   * The api endpoint of the cloud monitoring service. Defaults to
-   * monitoring.googleapis.com:443.
-   */
-  apiEndpoint?: string;
 }
 
 export enum MetricKind {

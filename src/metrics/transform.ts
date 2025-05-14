@@ -23,8 +23,6 @@ import {
 import {MonitoredResource} from '@google-cloud/opentelemetry-resource-util';
 import * as path from 'path';
 import {MetricKind, ValueType} from './external-types';
-import {monitoring_v3} from 'googleapis';
-import {PreciseDate} from '@google-cloud/precise-date';
 import {
   SPANNER_METER_NAME,
   CLIENT_METRICS_PREFIX,
@@ -76,7 +74,7 @@ function _transformValueType(metric: MetricData): ValueType {
   } else if (name.includes('count')) {
     return ValueType.INT64;
   }
-  console.info('Encountered unexpected metric %s', name);
+  console.warn('Encountered unexpected metric %s', name);
   return ValueType.VALUE_TYPE_UNSPECIFIED;
 }
 
@@ -85,7 +83,7 @@ function _transformValueType(metric: MetricData): ValueType {
  */
 export function transformResourceMetricToTimeSeriesArray({
   scopeMetrics,
-}: ResourceMetrics): monitoring_v3.Schema$TimeSeries[] {
+}: ResourceMetrics) {
   if (!scopeMetrics) return [];
 
   return (
@@ -108,17 +106,14 @@ export function transformResourceMetricToTimeSeriesArray({
 /**
  * Creates a GCM TimeSeries.
  */
-function _createTimeSeries<T>(
-  metric: MetricData,
-  dataPoint: DataPoint<T>,
-): monitoring_v3.Schema$TimeSeries {
+function _createTimeSeries<T>(metric: MetricData, dataPoint: DataPoint<T>) {
   const type = path.posix.join(CLIENT_METRICS_PREFIX, metric.descriptor.name);
   const {metricLabels: labels, monitoredResourceLabels} =
     _extractLabels(dataPoint);
   const transformedMetric = {
     type,
     labels,
-  } as monitoring_v3.Schema$Metric;
+  };
 
   return {
     metric: transformedMetric,
@@ -133,10 +128,7 @@ function _createTimeSeries<T>(
 /**
  * Transform timeseries's point, so that metric can be uploaded to GCM.
  */
-function _transformPoint<T>(
-  metric: MetricData,
-  dataPoint: DataPoint<T>,
-): monitoring_v3.Schema$Point {
+function _transformPoint<T>(metric: MetricData, dataPoint: DataPoint<T>) {
   switch (metric.dataPointType) {
     case DataPointType.SUM:
     case DataPointType.GAUGE:
@@ -149,18 +141,18 @@ function _transformPoint<T>(
           // Add start time for non-gauge points
           ...(metric.dataPointType === DataPointType.SUM && metric.isMonotonic
             ? {
-                startTime: new PreciseDate(dataPoint.startTime).toISOString(),
+                startTime: _formatHrTimeToGcmTime(dataPoint.startTime),
               }
             : null),
-          endTime: new PreciseDate(dataPoint.endTime).toISOString(),
+          endTime: _formatHrTimeToGcmTime(dataPoint.endTime),
         },
       };
     case DataPointType.HISTOGRAM:
       return {
         value: _transformHistogramValue(dataPoint.value as Histogram),
         interval: {
-          startTime: new PreciseDate(dataPoint.startTime).toISOString(),
-          endTime: new PreciseDate(dataPoint.endTime).toISOString(),
+          startTime: _formatHrTimeToGcmTime(dataPoint.startTime),
+          endTime: _formatHrTimeToGcmTime(dataPoint.endTime),
         },
       };
     case DataPointType.EXPONENTIAL_HISTOGRAM:
@@ -169,16 +161,16 @@ function _transformPoint<T>(
           dataPoint.value as ExponentialHistogram,
         ),
         interval: {
-          startTime: new PreciseDate(dataPoint.startTime).toISOString(),
-          endTime: new PreciseDate(dataPoint.endTime).toISOString(),
+          startTime: _formatHrTimeToGcmTime(dataPoint.startTime),
+          endTime: _formatHrTimeToGcmTime(dataPoint.endTime),
         },
       };
     default:
       exhaust(metric);
       return {
-        value: dataPoint.value as monitoring_v3.Schema$TypedValue,
+        value: dataPoint.value,
         interval: {
-          endTime: new PreciseDate(dataPoint.endTime).toISOString(),
+          endTime: _formatHrTimeToGcmTime(dataPoint.endTime),
         },
       };
   }
@@ -217,10 +209,7 @@ function _normalizeLabelKey(key: string): string {
 }
 
 /** Transforms a OpenTelemetry Point's value to a GCM Point value. */
-function _transformNumberValue(
-  valueType: ValueType,
-  value: number,
-): monitoring_v3.Schema$TypedValue {
+function _transformNumberValue(valueType: ValueType, value: number) {
   if (valueType === ValueType.INT64) {
     return {int64Value: value.toString()};
   } else if (valueType === ValueType.DOUBLE) {
@@ -229,9 +218,7 @@ function _transformNumberValue(
   throw Error(`unsupported value type: ${valueType}`);
 }
 
-function _transformHistogramValue(
-  value: Histogram,
-): monitoring_v3.Schema$TypedValue {
+function _transformHistogramValue(value: Histogram) {
   return {
     distributionValue: {
       // sumOfSquaredDeviation param not aggregated
@@ -245,9 +232,7 @@ function _transformHistogramValue(
   };
 }
 
-function _transformExponentialHistogramValue(
-  value: ExponentialHistogram,
-): monitoring_v3.Schema$TypedValue {
+function _transformExponentialHistogramValue(value: ExponentialHistogram) {
   // Adapated from reference impl in Go which has more explanatory comments
   // https://github.com/GoogleCloudPlatform/opentelemetry-operations-go/blob/v1.8.0/exporter/collector/metrics.go#L582
   const underflow =
@@ -259,7 +244,7 @@ function _transformExponentialHistogramValue(
     0, // overflow bucket is always empty
   ];
 
-  let bucketOptions: monitoring_v3.Schema$BucketOptions;
+  let bucketOptions;
   if (value.positive.bucketCounts.length === 0) {
     bucketOptions = {
       explicitBuckets: {bounds: []},
@@ -290,6 +275,13 @@ function _transformExponentialHistogramValue(
   };
 }
 
+function _formatHrTimeToGcmTime(hrTime) {
+  return {
+    seconds: hrTime[0],
+    nanos: hrTime[1],
+  };
+}
+
 /**
  * Assert switch case is exhaustive
  */
@@ -301,6 +293,7 @@ export const _TEST_ONLY = {
   _normalizeLabelKey,
   _transformMetricKind,
   _extractLabels,
+  _formatHrTimeToGcmTime,
   _transformResource,
   _transformPoint,
   _transformValueType,

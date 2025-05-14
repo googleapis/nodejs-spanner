@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^6.0.0",
+    "@google-cloud/monitoring": "^5.0.0",
     "@google-cloud/opentelemetry-resource-util": "^2.4.0",
     "@google-cloud/precise-date": "^5.0.0",
     "@google-cloud/projectify": "^5.0.0",
@@ -75,7 +76,6 @@
     "extend": "^3.0.2",
     "google-auth-library": "^10.0.0-rc.1",
     "google-gax": "^5.0.1-rc.0",
-    "googleapis": "^148.0.0",
     "grpc-gcp": "^1.0.1",
     "is": "^3.3.0",
     "lodash.snakecase": "^4.1.1",
