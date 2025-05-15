@@ -18,7 +18,7 @@ async function createDatabaseWithEncryptionKey(
   instanceId,
   databaseId,
   projectId,
-  keyName
+  keyName,
 ) {
   // [START spanner_create_database_with_encryption_key]
 
@@ -63,7 +63,7 @@ async function createDatabaseWithEncryptionKey(
   });
 
   console.log(
-    `Database encrypted with key ${metadata.encryptionConfig.kmsKeyName}.`
+    `Database encrypted with key ${metadata.encryptionConfig.kmsKeyName}.`,
   );
   // [END spanner_create_database_with_encryption_key]
 }

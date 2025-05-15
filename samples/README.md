@@ -36,6 +36,7 @@ and automatic, synchronous replication for high availability.
   * [Creates an incremental backup schedule](#creates-an-incremental-backup-schedule)
   * [Create-instance-without-default-backup-schedules](#create-instance-without-default-backup-schedules)
   * [CRUD](#crud)
+  * [Adds split points to a database.](#adds-split-points-to-a-database.)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
   * [Database-create-with-multiple-kms-keys](#database-create-with-multiple-kms-keys)
@@ -519,6 +520,23 @@ __Usage:__
 
 
 `node samples/crud.js`
+
+
+-----
+
+
+
+
+### Adds split points to a database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-add-split-points.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-add-split-points.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-add-split-points.js  <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

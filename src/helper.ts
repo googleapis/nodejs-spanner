@@ -20,7 +20,7 @@ import {grpc} from 'google-gax';
  * @return {boolean} True if the error is a 'Database not found' error, and otherwise false.
  */
 export function isDatabaseNotFoundError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
@@ -35,7 +35,7 @@ export function isDatabaseNotFoundError(
  * @return {boolean} True if the error is an 'Instance not found' error, and otherwise false.
  */
 export function isInstanceNotFoundError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
@@ -50,7 +50,7 @@ export function isInstanceNotFoundError(
  * @return {boolean} True if the error is a 'Could not load the default credentials' error, and otherwise false.
  */
 export function isDefaultCredentialsNotSetError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
@@ -64,12 +64,12 @@ export function isDefaultCredentialsNotSetError(
  * @return {boolean} True if the error is an 'Unable to detect a Project Id in the current environment' error, and otherwise false.
  */
 export function isProjectIdNotSetInEnvironmentError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
     error.message.includes(
-      'Unable to detect a Project Id in the current environment'
+      'Unable to detect a Project Id in the current environment',
     )
   );
 }
@@ -80,11 +80,39 @@ export function isProjectIdNotSetInEnvironmentError(
  * @return {boolean} True if the error is a 'Create session permission' error, and otherwise false.
  */
 export function isCreateSessionPermissionError(
-  error: grpc.ServiceError | undefined
+  error: grpc.ServiceError | undefined,
 ): boolean {
   return (
     error !== undefined &&
     error.code === grpc.status.PERMISSION_DENIED &&
     error.message.includes('spanner.sessions.create')
   );
+}
+
+/**
+ * Converts any value into an array. Acts as a replacement for `arrify`.
+ * If the value is null or undefined, returns an empty array.
+ * If the value is already an array, returns is unchanges.
+ * Otherwise, wraps the value in a new array.
+ * @param value The value to convert into an array.
+ * @returns An array containing the value, or an empty array.
+ */
+export function toArray(value: any) {
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (typeof value[Symbol.iterator] === 'function') {
+    return [...value];
+  }
+
+  return [value];
 }

@@ -30,7 +30,7 @@ import {protobuf} from 'google-gax';
 // Dynamically loaded proto JSON is needed to get the type information
 // to fill in default values for request objects
 const root = protobuf.Root.fromJSON(
-  require('../protos/protos.json')
+  require('../protos/protos.json'),
 ).resolveAll();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,13 +47,13 @@ function generateSampleMessage<T extends object>(instance: T) {
     instance.constructor as typeof protobuf.Message
   ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
+    filledObject,
   ) as T;
 }
 
 function stubBidiStreamingCall<ResponseType>(
   response?: ResponseType,
-  error?: Error
+  error?: Error,
 ) {
   const transformStub = error
     ? sinon.stub().callsArgWith(2, error)
@@ -91,7 +91,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           spannerexecutorproxyModule.v1.SpannerExecutorProxyClient.servicePath;
         assert.strictEqual(
           servicePath,
-          'spanner-cloud-executor.googleapis.com'
+          'spanner-cloud-executor.googleapis.com',
         );
         assert(stub.called);
         stub.restore();
@@ -103,7 +103,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           spannerexecutorproxyModule.v1.SpannerExecutorProxyClient.apiEndpoint;
         assert.strictEqual(
           apiEndpoint,
-          'spanner-cloud-executor.googleapis.com'
+          'spanner-cloud-executor.googleapis.com',
         );
         assert(stub.called);
         stub.restore();
@@ -153,7 +153,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           const servicePath = client.apiEndpoint;
           assert.strictEqual(
             servicePath,
-            'spanner-cloud-executor.configured.example.com'
+            'spanner-cloud-executor.configured.example.com',
           );
           if (saved) {
             process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = saved;
@@ -210,11 +210,18 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
-      assert(client.spannerExecutorProxyStub);
-      client.close().then(() => {
-        done();
+      client.initialize().catch(err => {
+        throw err;
       });
+      assert(client.spannerExecutorProxyStub);
+      client
+        .close()
+        .then(() => {
+          done();
+        })
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has close method for the non-initialized client', done => {
@@ -224,9 +231,14 @@ describe('v1.SpannerExecutorProxyClient', () => {
           projectId: 'bogus',
         });
       assert.strictEqual(client.spannerExecutorProxyStub, undefined);
-      client.close().then(() => {
-        done();
-      });
+      client
+        .close()
+        .then(() => {
+          done();
+        })
+        .catch(err => {
+          throw err;
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -273,13 +285,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.executor.v1.SpannerAsyncActionRequest()
+        new protos.google.spanner.executor.v1.SpannerAsyncActionRequest(),
       );
 
       const expectedResponse = generateSampleMessage(
-        new protos.google.spanner.executor.v1.SpannerAsyncActionResponse()
+        new protos.google.spanner.executor.v1.SpannerAsyncActionResponse(),
       );
       client.innerApiCalls.executeActionAsync =
         stubBidiStreamingCall(expectedResponse);
@@ -288,10 +300,10 @@ describe('v1.SpannerExecutorProxyClient', () => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.executor.v1.SpannerAsyncActionResponse
+            response: protos.google.spanner.executor.v1.SpannerAsyncActionResponse,
           ) => {
             resolve(response);
-          }
+          },
         );
         stream.on('error', (err: Error) => {
           reject(err);
@@ -304,12 +316,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
       assert(
         (client.innerApiCalls.executeActionAsync as SinonStub)
           .getCall(0)
-          .calledWith(null)
+          .calledWith(null),
       );
       assert.deepStrictEqual(
         ((stream as unknown as PassThrough)._transform as SinonStub).getCall(0)
           .args[0],
-        request
+        request,
       );
     });
 
@@ -319,24 +331,24 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       const request = generateSampleMessage(
-        new protos.google.spanner.executor.v1.SpannerAsyncActionRequest()
+        new protos.google.spanner.executor.v1.SpannerAsyncActionRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.executeActionAsync = stubBidiStreamingCall(
         undefined,
-        expectedError
+        expectedError,
       );
       const stream = client.executeActionAsync();
       const promise = new Promise((resolve, reject) => {
         stream.on(
           'data',
           (
-            response: protos.google.spanner.executor.v1.SpannerAsyncActionResponse
+            response: protos.google.spanner.executor.v1.SpannerAsyncActionResponse,
           ) => {
             resolve(response);
-          }
+          },
         );
         stream.on('error', (err: Error) => {
           reject(err);
@@ -348,18 +360,18 @@ describe('v1.SpannerExecutorProxyClient', () => {
       assert(
         (client.innerApiCalls.executeActionAsync as SinonStub)
           .getCall(0)
-          .calledWith(null)
+          .calledWith(null),
       );
       assert.deepStrictEqual(
         ((stream as unknown as PassThrough)._transform as SinonStub).getCall(0)
           .args[0],
-        request
+        request,
       );
     });
   });
 
   describe('Path templates', () => {
-    describe('backup', () => {
+    describe('backup', async () => {
       const fakePath = '/rendered/path/backup';
       const expectedParameters = {
         project: 'projectValue',
@@ -371,7 +383,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -383,13 +395,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
         const result = client.backupPath(
           'projectValue',
           'instanceValue',
-          'backupValue'
+          'backupValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.backupPathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -399,7 +411,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -409,7 +421,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -419,12 +431,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('backupSchedule', () => {
+    describe('backupSchedule', async () => {
       const fakePath = '/rendered/path/backupSchedule';
       const expectedParameters = {
         project: 'projectValue',
@@ -437,7 +449,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.backupSchedulePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -450,13 +462,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
           'projectValue',
           'instanceValue',
           'databaseValue',
-          'scheduleValue'
+          'scheduleValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.backupSchedulePathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -466,7 +478,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -476,7 +488,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -486,7 +498,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -496,12 +508,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('database', () => {
+    describe('database', async () => {
       const fakePath = '/rendered/path/database';
       const expectedParameters = {
         project: 'projectValue',
@@ -513,7 +525,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databasePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -525,13 +537,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
         const result = client.databasePath(
           'projectValue',
           'instanceValue',
-          'databaseValue'
+          'databaseValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.databasePathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -541,7 +553,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databasePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -551,7 +563,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databasePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -561,12 +573,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databasePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('databaseRole', () => {
+    describe('databaseRole', async () => {
       const fakePath = '/rendered/path/databaseRole';
       const expectedParameters = {
         project: 'projectValue',
@@ -579,7 +591,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.databaseRolePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -592,13 +604,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
           'projectValue',
           'instanceValue',
           'databaseValue',
-          'roleValue'
+          'roleValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.databaseRolePathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -608,7 +620,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -618,7 +630,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -628,7 +640,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -638,12 +650,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('instance', () => {
+    describe('instance', async () => {
       const fakePath = '/rendered/path/instance';
       const expectedParameters = {
         project: 'projectValue',
@@ -654,7 +666,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instancePathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -668,7 +680,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -678,7 +690,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -688,12 +700,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.instancePathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('instanceConfig', () => {
+    describe('instanceConfig', async () => {
       const fakePath = '/rendered/path/instanceConfig';
       const expectedParameters = {
         project: 'projectValue',
@@ -704,7 +716,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instanceConfigPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -715,13 +727,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
       it('instanceConfigPath', () => {
         const result = client.instanceConfigPath(
           'projectValue',
-          'instanceConfigValue'
+          'instanceConfigValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -731,7 +743,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -742,12 +754,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('instancePartition', () => {
+    describe('instancePartition', async () => {
       const fakePath = '/rendered/path/instancePartition';
       const expectedParameters = {
         project: 'projectValue',
@@ -759,7 +771,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.instancePartitionPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -771,7 +783,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         const result = client.instancePartitionPath(
           'projectValue',
           'instanceValue',
-          'instancePartitionValue'
+          'instancePartitionValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
@@ -780,7 +792,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
               .render as SinonStub
           )
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -793,7 +805,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -806,7 +818,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -820,12 +832,12 @@ describe('v1.SpannerExecutorProxyClient', () => {
               .match as SinonStub
           )
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });
 
-    describe('session', () => {
+    describe('session', async () => {
       const fakePath = '/rendered/path/session';
       const expectedParameters = {
         project: 'projectValue',
@@ -838,7 +850,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
           credentials: {client_email: 'bogus', private_key: 'bogus'},
           projectId: 'bogus',
         });
-      client.initialize();
+      await client.initialize();
       client.pathTemplates.sessionPathTemplate.render = sinon
         .stub()
         .returns(fakePath);
@@ -851,13 +863,13 @@ describe('v1.SpannerExecutorProxyClient', () => {
           'projectValue',
           'instanceValue',
           'databaseValue',
-          'sessionValue'
+          'sessionValue',
         );
         assert.strictEqual(result, fakePath);
         assert(
           (client.pathTemplates.sessionPathTemplate.render as SinonStub)
             .getCall(-1)
-            .calledWith(expectedParameters)
+            .calledWith(expectedParameters),
         );
       });
 
@@ -867,7 +879,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.sessionPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -877,7 +889,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.sessionPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -887,7 +899,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.sessionPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
 
@@ -897,7 +909,7 @@ describe('v1.SpannerExecutorProxyClient', () => {
         assert(
           (client.pathTemplates.sessionPathTemplate.match as SinonStub)
             .getCall(-1)
-            .calledWith(fakePath)
+            .calledWith(fakePath),
         );
       });
     });

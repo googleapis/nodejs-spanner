@@ -33,7 +33,7 @@ const glob = global as {} as {GCLOUD_SANDBOX_ENV?: boolean | {}};
 const gaxProtosDir = path.join(
   path.dirname(require.resolve('google-gax')),
   '..',
-  'protos'
+  'protos',
 );
 
 let getUserAgentFromPackageJsonOverride: Function | null;
@@ -72,7 +72,7 @@ const fakeGrpcProtoLoader = {
   loadSync(filename: string, options?: grpcProtoLoader.Options) {
     return (grpcProtoLoadOverride || grpcProtoLoader.loadSync)(
       filename,
-      options
+      options,
     );
   },
 };
@@ -201,9 +201,9 @@ describe('GrpcService', () => {
           grpcVersion: 'grpc-foo/1.2.3',
           customEndpoint: 'endpoint',
         },
-        CONFIG
+        CONFIG,
       ),
-      OPTIONS
+      OPTIONS,
     );
     assert.strictEqual(grpcService.grpc, fakeGrpc);
     assert.strictEqual(grpcService.grpcVersion, 'grpc-foo/1.2.3');
@@ -220,7 +220,7 @@ describe('GrpcService', () => {
     };
     const grpcService = new GrpcService(
       Object.assign({grpc: fakeGrpc}, CONFIG),
-      OPTIONS
+      OPTIONS,
     );
     assert.strictEqual(grpcService.grpc, fakeGrpc);
     assert.strictEqual(grpcService.grpcVersion, 'grpc/unknown');
@@ -368,7 +368,7 @@ describe('GrpcService', () => {
       const grpcService = new GrpcService(config, OPTIONS);
       assert.deepStrictEqual(
         grpcService.grpcMetadata.getMap(),
-        fakeGrpcMetadata
+        fakeGrpcMetadata,
       );
     });
 
@@ -377,12 +377,12 @@ describe('GrpcService', () => {
         {
           'x-goog-api-client': EXPECTED_API_CLIENT_HEADER,
         },
-        CONFIG.grpcMetadata
+        CONFIG.grpcMetadata,
       );
       const grpcService = new GrpcService(CONFIG, OPTIONS);
       assert.deepStrictEqual(
         grpcService.grpcMetadata.getMap(),
-        fakeGrpcMetadata
+        fakeGrpcMetadata,
       );
     });
 
@@ -417,7 +417,7 @@ describe('GrpcService', () => {
     it('should localize the service', () => {
       assert.deepStrictEqual(
         Object.keys(grpcService.protos),
-        Object.keys(CONFIG.protoServices)
+        Object.keys(CONFIG.protoServices),
       );
     });
 
@@ -442,7 +442,7 @@ describe('GrpcService', () => {
       for (const serviceName of Object.keys(CONFIG.protoServices)) {
         assert.strictEqual(
           grpcService.protos[serviceName],
-          MOCK_GRPC_API[`google.${SERVICE_PATH}.${serviceName}`]
+          MOCK_GRPC_API[`google.${SERVICE_PATH}.${serviceName}`],
         );
       }
     });
@@ -536,7 +536,7 @@ describe('GrpcService', () => {
       });
       assert.strictEqual(
         GrpcService.objToStruct_(obj, options),
-        convertedObject
+        convertedObject,
       );
     });
   });
@@ -1133,7 +1133,7 @@ describe('GrpcService', () => {
           {
             objectMode: true,
           },
-          REQ_OPTS
+          REQ_OPTS,
         );
 
         grpcService.requestStream(PROTO_OPTS, reqOpts);
@@ -1144,7 +1144,7 @@ describe('GrpcService', () => {
         assert.strictEqual(retryRequestOptions.objectMode, true);
         assert.strictEqual(
           retryRequestOptions.shouldRetryFn,
-          GrpcService.shouldRetryRequest_
+          GrpcService.shouldRetryRequest_,
         );
       });
 
@@ -1684,7 +1684,7 @@ describe('GrpcService', () => {
 
       assert.strictEqual(
         grpcService.decorateRequest_(reqOpts),
-        replacedReqOpts
+        replacedReqOpts,
       );
     });
   });
@@ -1869,8 +1869,8 @@ describe('GrpcService', () => {
                   {
                     'grpc.primary_user_agent': grpcService.userAgent,
                   },
-                  GrpcService.GRPC_SERVICE_OPTIONS
-                )
+                  GrpcService.GRPC_SERVICE_OPTIONS,
+                ),
               );
 
               return fakeService;
@@ -2044,7 +2044,7 @@ describe('GrpcService', () => {
 
         assert.strictEqual(
           objectToStructConverter.encodeValue_(buffer).blobValue.toString(),
-          'Value'
+          'Value',
         );
       });
 
@@ -2111,7 +2111,7 @@ describe('GrpcService', () => {
             it('should replace circular reference with [Circular]', () => {
               assert.deepStrictEqual(
                 objectToStructConverter.encodeValue_(VALUE),
-                {stringValue: '[Circular]'}
+                {stringValue: '[Circular]'},
               );
             });
           });
@@ -2132,7 +2132,7 @@ describe('GrpcService', () => {
 
           assert.deepStrictEqual(
             objectToStructConverter.encodeValue_(date, OPTIONS),
-            {stringValue: String(date)}
+            {stringValue: String(date)},
           );
         });
       });

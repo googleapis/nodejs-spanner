@@ -38,7 +38,7 @@ const spannerBenchWrapper = protoDescriptor.spanner_bench;
 // The benchwrapper should only be executed against an emulator.
 if (!process.env.SPANNER_EMULATOR_HOST) {
   throw new Error(
-    'This benchmarking server only works when connected to an emulator. Please set SPANNER_EMULATOR_HOST.'
+    'This benchmarking server only works when connected to an emulator. Please set SPANNER_EMULATOR_HOST.',
   );
 }
 // This will connect the Spanner client to an emulator, as SPANNER_EMULATOR_HOST has been set.
@@ -110,7 +110,7 @@ function Update(call, callback) {
             .withCode(err.code)
             .withDetails(err.details || err.message)
             .withMetadata(err.metadata)
-            .build()
+            .build(),
         );
         transaction.rollback().then(() => {});
         return;
@@ -145,5 +145,5 @@ server.bindAsync(
       return;
     }
     server.start();
-  }
+  },
 );

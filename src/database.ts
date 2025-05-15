@@ -97,7 +97,7 @@ import {
 import {finished, Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
-import arrify = require('arrify');
+import {toArray} from './helper';
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
@@ -151,7 +151,7 @@ type GetTransactionCallback = NormalCallback<Transaction>;
 export interface SessionPoolConstructor {
   new (
     database: Database,
-    options?: SessionPoolOptions | null
+    options?: SessionPoolOptions | null,
   ): SessionPoolInterface;
 }
 
@@ -313,7 +313,7 @@ export type GetStateCallback = NormalCallback<
 interface DatabaseRequest {
   (
     config: RequestConfig,
-    callback: ResourceCallback<GaxOperation, IOperation>
+    callback: ResourceCallback<GaxOperation, IOperation>,
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
@@ -368,7 +368,7 @@ class Database extends common.GrpcServiceObject {
     instance: Instance,
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
   ) {
     const methods = {
       /**
@@ -425,7 +425,7 @@ class Database extends common.GrpcServiceObject {
       createMethod: (
         _: {},
         options: CreateDatabaseOptions,
-        callback: CreateDatabaseCallback
+        callback: CreateDatabaseCallback,
       ) => {
         const pool = this.pool_ as SessionPool;
         if (pool._pending > 0) {
@@ -438,7 +438,7 @@ class Database extends common.GrpcServiceObject {
           let timeout;
           const promises = [
             new Promise<void>(
-              resolve => (timeout = setTimeout(resolve, 10000))
+              resolve => (timeout = setTimeout(resolve, 10000)),
             ),
             new Promise<void>(resolve => {
               pool
@@ -456,9 +456,11 @@ class Database extends common.GrpcServiceObject {
                 });
             }),
           ];
-          Promise.race(promises).then(() =>
-            instance.createDatabase(formattedName_, options, callback)
-          );
+          Promise.race(promises)
+            .then(() =>
+              instance.createDatabase(formattedName_, options, callback),
+            )
+            .catch(() => {});
         } else {
           return instance.createDatabase(formattedName_, options, callback);
         }
@@ -487,7 +489,7 @@ class Database extends common.GrpcServiceObject {
     this._observabilityOptions = instance._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       this.formattedName_,
-      this._observabilityOptions?.enableEndToEndTracing
+      this._observabilityOptions?.enableEndToEndTracing,
     );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -501,7 +503,7 @@ class Database extends common.GrpcServiceObject {
     }
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
-      Database.getEnvironmentQueryOptions()
+      Database.getEnvironmentQueryOptions(),
     );
   }
 
@@ -571,18 +573,18 @@ class Database extends common.GrpcServiceObject {
    */
   setMetadata(
     metadata: IDatabase,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<SetDatabaseMetadataResponse>;
   setMetadata(metadata: IDatabase, callback: SetDatabaseMetadataCallback): void;
   setMetadata(
     metadata: IDatabase,
     gaxOptions: CallOptions,
-    callback: SetDatabaseMetadataCallback
+    callback: SetDatabaseMetadataCallback,
   ): void;
   setMetadata(
     metadata: IDatabase,
     optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
-    cb?: SetDatabaseMetadataCallback
+    cb?: SetDatabaseMetadataCallback,
   ): void | Promise<SetDatabaseMetadataResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -594,7 +596,7 @@ class Database extends common.GrpcServiceObject {
         {
           name: this.formattedName_,
         },
-        metadata
+        metadata,
       ),
       updateMask: {
         paths: Object.keys(metadata).map(snakeCase),
@@ -608,7 +610,7 @@ class Database extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.commonHeaders_,
       },
-      callback!
+      callback!,
     );
   }
 
@@ -688,15 +690,15 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   batchCreateSessions(
-    options: number | BatchCreateSessionsOptions
+    options: number | BatchCreateSessionsOptions,
   ): Promise<BatchCreateSessionsResponse>;
   batchCreateSessions(
     options: number | BatchCreateSessionsOptions,
-    callback: BatchCreateSessionsCallback
+    callback: BatchCreateSessionsCallback,
   ): void;
   batchCreateSessions(
     options: number | BatchCreateSessionsOptions,
-    callback?: BatchCreateSessionsCallback
+    callback?: BatchCreateSessionsCallback,
   ): void | Promise<BatchCreateSessionsResponse> {
     if (typeof options === 'number') {
       options = {count: options};
@@ -720,7 +722,7 @@ class Database extends common.GrpcServiceObject {
     const allHeaders = this._metadataWithRequestId(
       this._nextNthRequest(),
       1,
-      headers
+      headers,
     );
 
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
@@ -749,7 +751,7 @@ class Database extends common.GrpcServiceObject {
 
           span.end();
           callback!(null, sessions, resp!);
-        }
+        },
       );
     });
   }
@@ -757,7 +759,7 @@ class Database extends common.GrpcServiceObject {
   public _metadataWithRequestId(
     nthRequest: number,
     attempt: number,
-    priorMetadata?: {[k: string]: string}
+    priorMetadata?: {[k: string]: string},
   ): {[k: string]: string} {
     if (!priorMetadata) {
       priorMetadata = {};
@@ -769,7 +771,7 @@ class Database extends common.GrpcServiceObject {
       this._clientId || 1,
       1, // TODO: Properly infer the channelId
       nthRequest,
-      attempt
+      attempt,
     );
     return withReqId;
   }
@@ -800,7 +802,7 @@ class Database extends common.GrpcServiceObject {
    */
   batchTransaction(
     identifier: TransactionIdentifier,
-    options?: TimestampBounds
+    options?: TimestampBounds,
   ): BatchTransaction {
     const session =
       typeof identifier.session === 'string'
@@ -853,7 +855,7 @@ class Database extends common.GrpcServiceObject {
   close(callback: SessionPoolCloseCallback): void;
   close(): Promise<DatabaseCloseResponse>;
   close(
-    callback?: SessionPoolCloseCallback
+    callback?: SessionPoolCloseCallback,
   ): void | Promise<DatabaseCloseResponse> {
     const key = this.id!.split('/').pop();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -879,16 +881,16 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<CreateTransactionResponse>}
    */
   createBatchTransaction(
-    options?: TimestampBounds
+    options?: TimestampBounds,
   ): Promise<CreateBatchTransactionResponse>;
   createBatchTransaction(callback: CreateBatchTransactionCallback): void;
   createBatchTransaction(
     options: TimestampBounds,
-    callback: CreateBatchTransactionCallback
+    callback: CreateBatchTransactionCallback,
   ): void;
   createBatchTransaction(
     optionsOrCallback?: TimestampBounds | CreateBatchTransactionCallback,
-    cb?: CreateBatchTransactionCallback
+    cb?: CreateBatchTransactionCallback,
   ): void | Promise<CreateBatchTransactionResponse> {
     const callback =
       typeof optionsOrCallback === 'function'
@@ -911,7 +913,7 @@ class Database extends common.GrpcServiceObject {
           }
           const transaction = this.batchTransaction(
             {session: session!},
-            options
+            options,
           );
           this._releaseOnEnd(session!, transaction, span);
           transaction.begin((err, resp) => {
@@ -931,7 +933,7 @@ class Database extends common.GrpcServiceObject {
             callback!(null, transaction, resp!);
           });
         });
-      }
+      },
     );
   }
   /**
@@ -1011,11 +1013,11 @@ class Database extends common.GrpcServiceObject {
   createSession(callback: CreateSessionCallback): void;
   createSession(
     options: CreateSessionOptions,
-    callback: CreateSessionCallback
+    callback: CreateSessionCallback,
   ): void;
   createSession(
     optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
-    cb?: CreateSessionCallback
+    cb?: CreateSessionCallback,
   ): void | Promise<CreateSessionResponse> {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -1042,7 +1044,7 @@ class Database extends common.GrpcServiceObject {
     const headers = this._metadataWithRequestId(
       this._nextNthRequest(),
       1,
-      this.commonHeaders_
+      this.commonHeaders_,
     );
     if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
@@ -1069,7 +1071,7 @@ class Database extends common.GrpcServiceObject {
           session._observabilityOptions = this._traceConfig!.opts;
           span.end();
           callback(null, session, resp!);
-        }
+        },
       );
     });
   }
@@ -1147,18 +1149,18 @@ class Database extends common.GrpcServiceObject {
    */
   createTable(
     schema: Schema,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<CreateTableResponse>;
   createTable(schema: Schema, callback: CreateTableCallback): void;
   createTable(
     schema: Schema,
     gaxOptions: CallOptions,
-    callback: CreateTableCallback
+    callback: CreateTableCallback,
   ): void;
   createTable(
     schema: Schema,
     gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
-    cb?: CreateTableCallback
+    cb?: CreateTableCallback,
   ): void | Promise<CreateTableResponse> {
     const gaxOptions =
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
@@ -1171,7 +1173,7 @@ class Database extends common.GrpcServiceObject {
         return;
       }
       const tableName = (schema as string).match(
-        /CREATE TABLE `*([^\s`(]+)/
+        /CREATE TABLE `*([^\s`(]+)/,
       )![1];
       const table = this.table(tableName!);
       table._observabilityOptions = this._traceConfig!.opts;
@@ -1252,7 +1254,7 @@ class Database extends common.GrpcServiceObject {
   delete(gaxOptions: CallOptions, callback: DatabaseDeleteCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DatabaseDeleteCallback,
-    cb?: DatabaseDeleteCallback
+    cb?: DatabaseDeleteCallback,
   ): void | Promise<DatabaseDeleteResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1272,7 +1274,7 @@ class Database extends common.GrpcServiceObject {
           gaxOpts,
           headers: this.commonHeaders_,
         },
-        callback!
+        callback!,
       );
     });
   }
@@ -1318,7 +1320,7 @@ class Database extends common.GrpcServiceObject {
   exists(gaxOptions: CallOptions, callback: ExistsCallback): void;
   exists(
     gaxOptionsOrCallback?: CallOptions | ExistsCallback,
-    cb?: ExistsCallback
+    cb?: ExistsCallback,
   ): void | Promise<[boolean]> {
     const gaxOptions =
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
@@ -1390,7 +1392,7 @@ class Database extends common.GrpcServiceObject {
   get(options: GetDatabaseConfig, callback: DatabaseCallback): void;
   get(
     optionsOrCallback?: GetDatabaseConfig | DatabaseCallback,
-    cb?: DatabaseCallback
+    cb?: DatabaseCallback,
   ): void | Promise<DatabaseResponse> {
     const options =
       typeof optionsOrCallback === 'object'
@@ -1414,7 +1416,7 @@ class Database extends common.GrpcServiceObject {
                   this.metadata = metadata;
                   callback!(null, this, metadata as r.Response);
                 });
-            }
+            },
           );
           return;
         }
@@ -1477,11 +1479,11 @@ class Database extends common.GrpcServiceObject {
   getMetadata(callback: GetDatabaseMetadataCallback): void;
   getMetadata(
     gaxOptions: CallOptions,
-    callback: GetDatabaseMetadataCallback
+    callback: GetDatabaseMetadataCallback,
   ): void;
   getMetadata(
     gaxOptionsOrCallback?: CallOptions | GetDatabaseMetadataCallback,
-    cb?: GetDatabaseMetadataCallback
+    cb?: GetDatabaseMetadataCallback,
   ): void | Promise<GetDatabaseMetadataResponse> {
     const callback =
       typeof gaxOptionsOrCallback === 'function'
@@ -1509,7 +1511,7 @@ class Database extends common.GrpcServiceObject {
           this.metadata = resp;
         }
         callback!(err, resp);
-      }
+      },
     );
   }
 
@@ -1550,12 +1552,12 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   getRestoreInfo(
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<IRestoreInfoTranslatedEnum | undefined>;
   getRestoreInfo(callback: GetRestoreInfoCallback): void;
   getRestoreInfo(options: CallOptions, callback: GetRestoreInfoCallback): void;
   async getRestoreInfo(
-    optionsOrCallback?: CallOptions | GetRestoreInfoCallback
+    optionsOrCallback?: CallOptions | GetRestoreInfoCallback,
   ): Promise<IRestoreInfoTranslatedEnum | undefined> {
     const gaxOptions =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1598,7 +1600,7 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   getState(
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
@@ -1606,7 +1608,7 @@ class Database extends common.GrpcServiceObject {
   getState(callback: GetStateCallback): void;
   getState(options: CallOptions, callback: GetStateCallback): void;
   async getState(
-    optionsOrCallback?: CallOptions | GetStateCallback
+    optionsOrCallback?: CallOptions | GetStateCallback,
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
     | undefined
@@ -1642,7 +1644,7 @@ class Database extends common.GrpcServiceObject {
    */
 
   getDatabaseDialect(
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
     | undefined
@@ -1650,11 +1652,11 @@ class Database extends common.GrpcServiceObject {
   getDatabaseDialect(callback: GetDatabaseDialectCallback): void;
   getDatabaseDialect(
     options: CallOptions,
-    callback: GetDatabaseDialectCallback
+    callback: GetDatabaseDialectCallback,
   ): void;
   async getDatabaseDialect(
     optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
-    callback?: GetDatabaseDialectCallback
+    callback?: GetDatabaseDialectCallback,
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
     | undefined
@@ -1739,7 +1741,7 @@ class Database extends common.GrpcServiceObject {
   getSchema(options: CallOptions, callback: GetSchemaCallback): void;
   getSchema(
     optionsOrCallback?: CallOptions | GetSchemaCallback,
-    cb?: GetSchemaCallback
+    cb?: GetSchemaCallback,
   ): void | Promise<GetSchemaResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1761,7 +1763,7 @@ class Database extends common.GrpcServiceObject {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err, statements, ...args: any[]) => {
         callback!(err, statements ? statements.statements : null, ...args);
-      }
+      },
     );
   }
 
@@ -1813,11 +1815,11 @@ class Database extends common.GrpcServiceObject {
   getIamPolicy(callback: GetIamPolicyCallback): void;
   getIamPolicy(
     options: GetIamPolicyOptions,
-    callback: GetIamPolicyCallback
+    callback: GetIamPolicyCallback,
   ): void;
   getIamPolicy(
     optionsOrCallback?: GetIamPolicyOptions | GetIamPolicyCallback,
-    cb?: GetIamPolicyCallback
+    cb?: GetIamPolicyCallback,
   ): void | Promise<GetIamPolicyResponse> {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -1840,7 +1842,7 @@ class Database extends common.GrpcServiceObject {
       },
       (err, resp) => {
         callback!(err, resp);
-      }
+      },
     );
   }
 
@@ -1934,7 +1936,7 @@ class Database extends common.GrpcServiceObject {
   getSessions(options: GetSessionsOptions, callback: GetSessionsCallback): void;
   getSessions(
     optionsOrCallback?: GetSessionsOptions | GetSessionsCallback,
-    cb?: GetSessionsCallback
+    cb?: GetSessionsCallback,
   ): void | Promise<GetSessionsResponse> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -1959,7 +1961,7 @@ class Database extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetSessionsOptions).pageSize,
           pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetSessionsOptions).pageSize;
       delete (gaxOpts as GetSessionsOptions).pageToken;
@@ -1968,7 +1970,7 @@ class Database extends common.GrpcServiceObject {
     const headers = this._metadataWithRequestId(
       this._nextNthRequest(),
       1,
-      this.commonHeaders_
+      this.commonHeaders_,
     );
 
     return startTrace('Database.getSessions', this._traceConfig, span => {
@@ -2001,7 +2003,7 @@ class Database extends common.GrpcServiceObject {
             ? extend({}, options, nextPageRequest!)
             : null;
           callback!(err, sessionInstances!, nextQuery, ...args);
-        }
+        },
       );
     });
   }
@@ -2063,7 +2065,7 @@ class Database extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetSessionsOptions).pageSize,
           pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetSessionsOptions).pageSize;
       delete (gaxOpts as GetSessionsOptions).pageToken;
@@ -2142,7 +2144,7 @@ class Database extends common.GrpcServiceObject {
   getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
   getSnapshot(
     optionsOrCallback?: TimestampBounds | GetSnapshotCallback,
-    cb?: GetSnapshotCallback
+    cb?: GetSnapshotCallback,
   ): void | Promise<[Snapshot]> {
     const callback =
       typeof optionsOrCallback === 'function'
@@ -2163,11 +2165,11 @@ class Database extends common.GrpcServiceObject {
     ) {
       const error = Object.assign(
         new Error(
-          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.'
+          'maxStaleness / minReadTimestamp is not supported for multi-use read-only transactions.',
         ),
         {
           code: 3, // invalid argument
-        }
+        },
       ) as ServiceError;
       callback!(error);
       return;
@@ -2258,12 +2260,12 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   getTransaction(
-    optionsOrCallback?: GetTransactionOptions
+    optionsOrCallback?: GetTransactionOptions,
   ): Promise<[Transaction]>;
   getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
     optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
-    callback?: GetTransactionCallback
+    callback?: GetTransactionCallback,
   ): void | Promise<[Transaction]> {
     const cb =
       typeof optionsOrCallback === 'function'
@@ -2274,29 +2276,35 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
 
-    return startTrace('Database.getTransaction', this._traceConfig, span => {
-      this.pool_.getSession((err, session, transaction) => {
-        if (options.requestOptions) {
-          transaction!.requestOptions = Object.assign(
-            transaction!.requestOptions || {},
-            options.requestOptions
-          );
-        }
-        transaction?.setReadWriteTransactionOptions(
-          options as RunTransactionOptions
-        );
-
-        if (!err) {
-          span.addEvent('Using Session', {'session.id': session?.id});
-          transaction!._observabilityOptions = this._observabilityOptions;
-          this._releaseOnEnd(session!, transaction!, span);
-        } else {
-          setSpanError(span, err);
-        }
-        span.end();
-        cb!(err as grpc.ServiceError | null, transaction);
-      });
-    });
+    return startTrace(
+      'Database.getTransaction',
+      {
+        ...this._traceConfig,
+        transactionTag: options.requestOptions?.transactionTag,
+      },
+      span => {
+        this.pool_.getSession((err, session, transaction) => {
+          if (!err) {
+            if (options.requestOptions) {
+              transaction!.requestOptions = Object.assign(
+                transaction!.requestOptions || {},
+                options.requestOptions,
+              );
+            }
+            transaction?.setReadWriteTransactionOptions(
+              options as RunTransactionOptions,
+            );
+            span.addEvent('Using Session', {'session.id': session?.id});
+            transaction!._observabilityOptions = this._observabilityOptions;
+            this._releaseOnEnd(session!, transaction!, span);
+          } else {
+            setSpanError(span, err);
+          }
+          span.end();
+          cb!(err as grpc.ServiceError | null, transaction);
+        });
+      },
+    );
   }
 
   /**
@@ -2357,17 +2365,17 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   getOperations(
-    options?: GetDatabaseOperationsOptions
+    options?: GetDatabaseOperationsOptions,
   ): Promise<GetDatabaseOperationsResponse>;
   getOperations(callback: GetDatabaseOperationsCallback): void;
   getOperations(
     options: GetDatabaseOperationsOptions,
-    callback: GetDatabaseOperationsCallback
+    callback: GetDatabaseOperationsCallback,
   ): void;
   async getOperations(
     optionsOrCallback?:
       | GetDatabaseOperationsOptions
-      | GetDatabaseOperationsCallback
+      | GetDatabaseOperationsCallback,
   ): Promise<GetDatabaseOperationsResponse> {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -2448,11 +2456,11 @@ class Database extends common.GrpcServiceObject {
   getDatabaseRoles(callback: GetDatabaseRolesCallback): void;
   getDatabaseRoles(
     gaxOptions: CallOptions,
-    callback: GetDatabaseRolesCallback
+    callback: GetDatabaseRolesCallback,
   ): void;
   getDatabaseRoles(
     optionsOrCallback?: CallOptions | GetDatabaseRolesCallback,
-    cb?: GetDatabaseRolesCallback
+    cb?: GetDatabaseRolesCallback,
   ): void | Promise<GetDatabaseRolesResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -2471,7 +2479,7 @@ class Database extends common.GrpcServiceObject {
           pageSize: (gaxOpts as GetDatabaseRolesOptions).pageSize,
           pageToken: (gaxOpts as GetDatabaseRolesOptions).pageToken,
         },
-        reqOpts
+        reqOpts,
       );
       delete (gaxOpts as GetDatabaseRolesOptions).pageSize;
       delete (gaxOpts as GetDatabaseRolesOptions).pageToken;
@@ -2494,7 +2502,7 @@ class Database extends common.GrpcServiceObject {
           : null;
 
         callback!(err, roles, nextQuery, ...args);
-      }
+      },
     );
   }
 
@@ -2509,11 +2517,11 @@ class Database extends common.GrpcServiceObject {
   makePooledRequest_(config: RequestConfig): Promise<Session>;
   makePooledRequest_(
     config: RequestConfig,
-    callback: PoolRequestCallback
+    callback: PoolRequestCallback,
   ): void;
   makePooledRequest_(
     config: RequestConfig,
-    callback?: PoolRequestCallback
+    callback?: PoolRequestCallback,
   ): void | Promise<Session> {
     const pool = this.pool_;
     pool.getSession((err, session) => {
@@ -2652,18 +2660,18 @@ class Database extends common.GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(
     backupPath: string,
-    options?: RestoreOptions | CallOptions
+    options?: RestoreOptions | CallOptions,
   ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   restore(
     backupPath: string,
     options: RestoreOptions | CallOptions,
-    callback: RestoreDatabaseCallback
+    callback: RestoreDatabaseCallback,
   ): void;
   restore(
     backupName: string,
     optionsOrCallback?: RestoreOptions | CallOptions | RestoreDatabaseCallback,
-    cb?: RestoreDatabaseCallback
+    cb?: RestoreDatabaseCallback,
   ): Promise<RestoreDatabaseResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -2704,7 +2712,7 @@ class Database extends common.GrpcServiceObject {
           return;
         }
         callback!(null, this, operation, resp);
-      }
+      },
     );
   }
 
@@ -2864,18 +2872,18 @@ class Database extends common.GrpcServiceObject {
   run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
   run(
     query: string | ExecuteSqlRequest,
-    options?: TimestampBounds
+    options?: TimestampBounds,
   ): Promise<RunResponse>;
   run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
     options: TimestampBounds,
-    callback: RunCallback
+    callback: RunCallback,
   ): void;
   run(
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
-    cb?: RunCallback
+    cb?: RunCallback,
   ): void | Promise<RunResponse> {
     let stats: ResultSetStats;
     let metadata: ResultSetMetadata;
@@ -2889,31 +2897,34 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    const traceConfig = {
-      sql: query,
-      ...this._traceConfig,
-    };
-    return startTrace('Database.run', traceConfig, span => {
-      this.runStream(query, options)
-        .on('error', err => {
-          setSpanError(span, err);
-          span.end();
-          callback!(err as grpc.ServiceError, rows, stats, metadata);
-        })
-        .on('response', response => {
-          if (response.metadata) {
-            metadata = response.metadata;
-          }
-        })
-        .on('stats', _stats => (stats = _stats))
-        .on('data', row => {
-          rows.push(row);
-        })
-        .on('end', () => {
-          span.end();
-          callback!(null, rows, stats, metadata);
-        });
-    });
+    return startTrace(
+      'Database.run',
+      {
+        ...(query as ExecuteSqlRequest),
+        ...this._traceConfig,
+      },
+      span => {
+        this.runStream(query, options)
+          .on('error', err => {
+            setSpanError(span, err);
+            span.end();
+            callback!(err as grpc.ServiceError, rows, stats, metadata);
+          })
+          .on('response', response => {
+            if (response.metadata) {
+              metadata = response.metadata;
+            }
+          })
+          .on('stats', _stats => (stats = _stats))
+          .on('data', row => {
+            rows.push(row);
+          })
+          .on('end', () => {
+            span.end();
+            callback!(null, rows, stats, metadata);
+          });
+      },
+    );
   }
   /**
    * Partitioned DML transactions are used to execute DML statements with a
@@ -2930,44 +2941,49 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<RunUpdateResponse>}
    */
   runPartitionedUpdate(
-    query: string | RunPartitionedUpdateOptions
+    query: string | RunPartitionedUpdateOptions,
   ): Promise<[number]>;
   runPartitionedUpdate(
     query: string | RunPartitionedUpdateOptions,
-    callback?: RunUpdateCallback
+    callback?: RunUpdateCallback,
   ): void;
   runPartitionedUpdate(
     query: string | RunPartitionedUpdateOptions,
-    callback?: RunUpdateCallback
+    callback?: RunUpdateCallback,
   ): void | Promise<[number]> {
-    const traceConfig = {
-      sql: query,
-      ...this._traceConfig,
-    };
-    return startTrace('Database.runPartitionedUpdate', traceConfig, span => {
-      this.sessionFactory_.getSessionForPartitionedOps((err, session) => {
-        if (err) {
-          setSpanError(span, err);
-          span.end();
-          callback!(err as ServiceError, 0);
-          return;
-        }
-
-        this._runPartitionedUpdate(session!, query, (err, count) => {
+    return startTrace(
+      'Database.runPartitionedUpdate',
+      {
+        ...(query as RunPartitionedUpdateOptions),
+        ...this._traceConfig,
+        requestTag: (query as RunPartitionedUpdateOptions)?.requestOptions
+          ?.requestTag,
+      },
+      span => {
+        this.sessionFactory_.getSessionForPartitionedOps((err, session) => {
           if (err) {
             setSpanError(span, err);
+            span.end();
+            callback!(err as ServiceError, 0);
+            return;
           }
-          span.end();
-          callback!(err, count);
+
+          void this._runPartitionedUpdate(session!, query, (err, count) => {
+            if (err) {
+              setSpanError(span, err);
+            }
+            span.end();
+            callback!(err, count);
+          });
         });
-      });
-    });
+      },
+    );
   }
 
   _runPartitionedUpdate(
     session: Session,
     query: string | RunPartitionedUpdateOptions,
-    callback?: RunUpdateCallback
+    callback?: RunUpdateCallback,
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
@@ -2981,14 +2997,14 @@ class Database extends common.GrpcServiceObject {
         return;
       }
 
-      transaction.runUpdate(query, (err, updateCount) => {
+      transaction.runUpdate(query, async (err, updateCount) => {
         if (err) {
           if (err.code !== grpc.status.ABORTED) {
             this.sessionFactory_.release(session!);
             callback!(err, 0);
             return;
           }
-          this._runPartitionedUpdate(session, query, callback);
+          void this._runPartitionedUpdate(session, query, callback);
         } else {
           this.sessionFactory_.release(session!);
           callback!(null, updateCount);
@@ -3125,82 +3141,86 @@ class Database extends common.GrpcServiceObject {
    */
   runStream(
     query: string | ExecuteSqlRequest,
-    options?: TimestampBounds
+    options?: TimestampBounds,
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
-    const traceConfig = {
-      sql: query,
-      ...this._traceConfig,
-    };
-    return startTrace('Database.runStream', traceConfig, span => {
-      this.sessionFactory_.getSession((err, session) => {
-        if (err) {
-          setSpanError(span, err);
-          proxyStream.destroy(err);
-          span.end();
-          return;
-        }
-
-        span.addEvent('Using Session', {'session.id': session?.id});
-
-        const snapshot = session!.snapshot(options, this.queryOptions_);
-
-        this._releaseOnEnd(session!, snapshot, span);
-
-        let dataReceived = false;
-        let dataStream = snapshot.runStream(query);
-
-        const endListener = () => {
-          snapshot.end();
-        };
-        dataStream
-          .once('data', () => (dataReceived = true))
-          .once('error', err => {
+    return startTrace(
+      'Database.runStream',
+      {
+        ...(query as ExecuteSqlRequest),
+        ...this._traceConfig,
+        requestTag: (query as ExecuteSqlRequest)?.requestOptions?.requestTag,
+      },
+      span => {
+        this.sessionFactory_.getSession((err, session) => {
+          if (err) {
             setSpanError(span, err);
+            proxyStream.destroy(err);
+            span.end();
+            return;
+          }
 
-            if (
-              !dataReceived &&
-              isSessionNotFoundError(err as grpc.ServiceError) &&
-              !this.sessionFactory_.isMultiplexedEnabled()
-            ) {
-              // If it is a 'Session not found' error and we have not yet received
-              // any data, we can safely retry the query on a new session.
-              // Register the error on the session so the pool can discard it.
-              if (session) {
-                session.lastError = err as grpc.ServiceError;
+          span.addEvent('Using Session', {'session.id': session?.id});
+
+          const snapshot = session!.snapshot(options, this.queryOptions_);
+
+          this._releaseOnEnd(session!, snapshot, span);
+
+          let dataReceived = false;
+          let dataStream = snapshot.runStream(query);
+
+          const endListener = () => {
+            snapshot.end();
+          };
+          dataStream
+            .once('data', () => (dataReceived = true))
+            .once('error', err => {
+              setSpanError(span, err);
+
+              if (
+                !dataReceived &&
+                isSessionNotFoundError(err as grpc.ServiceError) &&
+                !this.sessionFactory_.isMultiplexedEnabled()
+              ) {
+                // If it is a 'Session not found' error and we have not yet received
+                // any data, we can safely retry the query on a new session.
+                // Register the error on the session so the pool can discard it.
+                if (session) {
+                  session.lastError = err as grpc.ServiceError;
+                }
+                span.addEvent('No session available', {
+                  'session.id': session?.id,
+                });
+                // Remove the current data stream from the end user stream.
+                dataStream.unpipe(proxyStream);
+                dataStream.removeListener('end', endListener);
+                dataStream.end();
+                snapshot.end();
+                span.end();
+                // Create a new data stream and add it to the end user stream.
+                dataStream = this.runStream(query, options);
+                dataStream.pipe(proxyStream);
+              } else {
+                proxyStream.destroy(err);
+                snapshot.end();
               }
-              span.addEvent('No session available', {
-                'session.id': session?.id,
-              });
-              // Remove the current data stream from the end user stream.
-              dataStream.unpipe(proxyStream);
-              dataStream.removeListener('end', endListener);
-              dataStream.end();
-              snapshot.end();
-              span.end();
-              // Create a new data stream and add it to the end user stream.
-              dataStream = this.runStream(query, options);
-              dataStream.pipe(proxyStream);
-            } else {
-              proxyStream.destroy(err);
-              snapshot.end();
-            }
-          })
-          .on('stats', stats => proxyStream.emit('stats', stats))
-          .on('response', response => proxyStream.emit('response', response))
-          .once('end', endListener)
-          .pipe(proxyStream);
-      });
+            })
+            .on('stats', stats => proxyStream.emit('stats', stats))
+            .on('response', response => proxyStream.emit('response', response))
+            .once('end', endListener)
+            .pipe(proxyStream);
+        });
 
-      finished(proxyStream, err => {
-        if (err) {
-          setSpanError(span, err);
-        }
-        span.end();
-      });
+        finished(proxyStream, err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+        });
 
-      return proxyStream as PartialResultStream;
-    });
+        return proxyStream as PartialResultStream;
+      },
+    );
   }
 
   /**
@@ -3295,11 +3315,11 @@ class Database extends common.GrpcServiceObject {
   runTransaction(runFn: RunTransactionCallback): void;
   runTransaction(
     options: RunTransactionOptions,
-    runFn: RunTransactionCallback
+    runFn: RunTransactionCallback,
   ): void;
   runTransaction(
     optionsOrRunFn: RunTransactionOptions | RunTransactionCallback,
-    fn?: RunTransactionCallback
+    fn?: RunTransactionCallback,
   ): void {
     const runFn =
       typeof optionsOrRunFn === 'function'
@@ -3310,69 +3330,81 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    startTrace('Database.runTransaction', this._traceConfig, span => {
-      this.pool_.getSession((err, session?, transaction?) => {
-        if (err) {
-          setSpanError(span, err);
-        }
+    startTrace(
+      'Database.runTransaction',
+      {
+        ...this._traceConfig,
+        transactionTag: options.requestOptions?.transactionTag,
+      },
+      span => {
+        this.pool_.getSession((err, session?, transaction?) => {
+          if (err) {
+            setSpanError(span, err);
+          }
 
-        if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
-          span.addEvent('No session available', {
-            'session.id': session?.id,
-          });
-          span.end();
-          this.runTransaction(options, runFn!);
-          return;
-        }
-
-        if (err) {
-          span.end();
-          runFn!(err as grpc.ServiceError);
-          return;
-        }
-
-        transaction!._observabilityOptions = this._observabilityOptions;
-
-        transaction!.setReadWriteTransactionOptions(
-          options as RunTransactionOptions
-        );
-
-        const release = () => {
-          this.pool_.release(session!);
-          span.end();
-        };
-
-        const runner = new TransactionRunner(
-          session!,
-          transaction!,
-          runFn!,
-          options
-        );
-
-        runner.run().then(release, err => {
-          setSpanError(span, err!);
-
-          if (isSessionNotFoundError(err)) {
+          if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
             span.addEvent('No session available', {
               'session.id': session?.id,
             });
-            release();
+            span.end();
             this.runTransaction(options, runFn!);
-          } else {
-            setImmediate(runFn!, err);
-            release();
+            return;
           }
+
+          if (err) {
+            span.end();
+            runFn!(err as grpc.ServiceError);
+            return;
+          }
+
+          transaction!._observabilityOptions = this._observabilityOptions;
+
+          transaction!.requestOptions = Object.assign(
+            transaction!.requestOptions || {},
+            options.requestOptions,
+          );
+
+          transaction!.setReadWriteTransactionOptions(
+            options as RunTransactionOptions,
+          );
+
+          const release = () => {
+            this.pool_.release(session!);
+            span.end();
+          };
+
+          const runner = new TransactionRunner(
+            session!,
+            transaction!,
+            runFn!,
+            options,
+          );
+
+          runner.run().then(release, err => {
+            setSpanError(span, err!);
+
+            if (isSessionNotFoundError(err)) {
+              span.addEvent('No session available', {
+                'session.id': session?.id,
+              });
+              release();
+              this.runTransaction(options, runFn!);
+            } else {
+              setImmediate(runFn!, err);
+              release();
+            }
+          });
         });
-      });
-    });
+      },
+    );
   }
 
   runTransactionAsync<T = {}>(
-    runFn: AsyncRunTransactionCallback<T>
+    runFn: AsyncRunTransactionCallback<T>,
   ): Promise<T>;
   runTransactionAsync<T = {}>(
     options: RunTransactionOptions,
-    runFn: AsyncRunTransactionCallback<T>
+    runFn: AsyncRunTransactionCallback<T>,
   ): Promise<T>;
   /**
    * @callback AsyncRunTransactionCallback
@@ -3435,7 +3467,7 @@ class Database extends common.GrpcServiceObject {
    */
   async runTransactionAsync<T = {}>(
     optionsOrRunFn: RunTransactionOptions | AsyncRunTransactionCallback<T>,
-    fn?: AsyncRunTransactionCallback<T>
+    fn?: AsyncRunTransactionCallback<T>,
   ): Promise<T> {
     const runFn =
       typeof optionsOrRunFn === 'function'
@@ -3448,9 +3480,13 @@ class Database extends common.GrpcServiceObject {
 
     let sessionId = '';
     const getSession = this.pool_.getSession.bind(this.pool_);
+
     return startTrace(
       'Database.runTransactionAsync',
-      this._traceConfig,
+      {
+        ...this._traceConfig,
+        transactionTag: options?.requestOptions?.transactionTag,
+      },
       async span => {
         // Loop to retry 'Session not found' errors.
         // (and yes, we like while (true) more than for (;;) here)
@@ -3460,10 +3496,10 @@ class Database extends common.GrpcServiceObject {
             const [session, transaction] = await promisify(getSession)();
             transaction.requestOptions = Object.assign(
               transaction.requestOptions || {},
-              options.requestOptions
+              options.requestOptions,
             );
             transaction!.setReadWriteTransactionOptions(
-              options as RunTransactionOptions
+              options as RunTransactionOptions,
             );
             sessionId = session?.id;
             span.addEvent('Using Session', {'session.id': sessionId});
@@ -3471,7 +3507,7 @@ class Database extends common.GrpcServiceObject {
               session,
               transaction,
               runFn,
-              options
+              options,
             );
 
             try {
@@ -3494,7 +3530,7 @@ class Database extends common.GrpcServiceObject {
             }
           }
         }
-      }
+      },
     );
   }
 
@@ -3558,13 +3594,16 @@ class Database extends common.GrpcServiceObject {
    */
   batchWriteAtLeastOnce(
     mutationGroups: MutationGroup[],
-    options?: BatchWriteOptions
+    options?: BatchWriteOptions,
   ): NodeJS.ReadableStream {
     const proxyStream: Transform = through.obj();
 
     return startTrace(
       'Database.batchWriteAtLeastOnce',
-      this._traceConfig,
+      {
+        ...this._traceConfig,
+        transactionTag: options?.requestOptions?.transactionTag,
+      },
       span => {
         this.pool_.getSession((err, session) => {
           if (err) {
@@ -3583,7 +3622,7 @@ class Database extends common.GrpcServiceObject {
               mutationGroups: mutationGroups.map(mg => mg.proto()),
               requestOptions: options?.requestOptions,
               excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
-            }
+            },
           );
           let dataReceived = false;
           let dataStream = this.requestStream({
@@ -3618,7 +3657,7 @@ class Database extends common.GrpcServiceObject {
                 // Create a new stream and add it to the end user stream.
                 dataStream = this.batchWriteAtLeastOnce(
                   mutationGroups,
-                  options
+                  options,
                 );
                 dataStream.pipe(proxyStream);
               } else {
@@ -3634,7 +3673,7 @@ class Database extends common.GrpcServiceObject {
         });
 
         return proxyStream as NodeJS.ReadableStream;
-      }
+      },
     );
   }
 
@@ -3691,18 +3730,18 @@ class Database extends common.GrpcServiceObject {
   writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
   writeAtLeastOnce(
     mutations: MutationSet,
-    options: WriteAtLeastOnceOptions
+    options: WriteAtLeastOnceOptions,
   ): Promise<CommitResponse>;
   writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
   writeAtLeastOnce(
     mutations: MutationSet,
     options: WriteAtLeastOnceOptions,
-    callback: CommitCallback
+    callback: CommitCallback,
   ): void;
   writeAtLeastOnce(
     mutations: MutationSet,
     optionsOrCallback?: WriteAtLeastOnceOptions | CommitCallback,
-    callback?: CommitCallback
+    callback?: CommitCallback,
   ): void | Promise<CommitResponse> {
     const cb =
       typeof optionsOrCallback === 'function'
@@ -3737,7 +3776,7 @@ class Database extends common.GrpcServiceObject {
         this._releaseOnEnd(session!, transaction!, span);
         try {
           transaction!.setReadWriteTransactionOptions(
-            options as RunTransactionOptions
+            options as RunTransactionOptions,
           );
           transaction?.setQueuedMutations(mutations.proto());
           return transaction?.commit(options, (err, resp) => {
@@ -3844,21 +3883,21 @@ class Database extends common.GrpcServiceObject {
   setIamPolicy(policy: SetIamPolicyRequest): Promise<SetIamPolicyResponse>;
   setIamPolicy(
     policy: SetIamPolicyRequest,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<SetIamPolicyResponse>;
   setIamPolicy(
     policy: SetIamPolicyRequest,
-    callback: SetIamPolicyCallback
+    callback: SetIamPolicyCallback,
   ): void;
   setIamPolicy(
     policy: SetIamPolicyRequest,
     options: CallOptions,
-    callback: SetIamPolicyCallback
+    callback: SetIamPolicyCallback,
   ): void;
   setIamPolicy(
     policy: SetIamPolicyRequest,
     optionsOrCallback?: CallOptions | SetIamPolicyCallback,
-    cb?: SetIamPolicyCallback
+    cb?: SetIamPolicyCallback,
   ): Promise<SetIamPolicyResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -3884,7 +3923,7 @@ class Database extends common.GrpcServiceObject {
       },
       (err, resp) => {
         callback!(err, resp);
-      }
+      },
     );
   }
 
@@ -3974,18 +4013,18 @@ class Database extends common.GrpcServiceObject {
    */
   updateSchema(
     statements: Schema,
-    gaxOptions?: CallOptions
+    gaxOptions?: CallOptions,
   ): Promise<UpdateSchemaResponse>;
   updateSchema(statements: Schema, callback: UpdateSchemaCallback): void;
   updateSchema(
     statements: Schema,
     gaxOptions: CallOptions,
-    callback: UpdateSchemaCallback
+    callback: UpdateSchemaCallback,
   ): void;
   updateSchema(
     statements: Schema,
     optionsOrCallback?: CallOptions | UpdateSchemaCallback,
-    cb?: UpdateSchemaCallback
+    cb?: UpdateSchemaCallback,
   ): Promise<UpdateSchemaResponse> | void {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -3994,7 +4033,7 @@ class Database extends common.GrpcServiceObject {
 
     if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {
-        statements: arrify(statements) as string[],
+        statements: toArray(statements) as string[],
       };
     }
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest =
@@ -4002,7 +4041,7 @@ class Database extends common.GrpcServiceObject {
         {
           database: this.formattedName_,
         },
-        statements
+        statements,
       );
     return this.request(
       {
@@ -4012,7 +4051,7 @@ class Database extends common.GrpcServiceObject {
         gaxOpts,
         headers: this.commonHeaders_,
       },
-      callback!
+      callback!,
     );
   }
   /**

@@ -227,7 +227,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   _transform(
     chunk: google.spanner.v1.PartialResultSet,
     enc: string,
-    next: Function
+    next: Function,
   ): void {
     this.emit('response', chunk);
 
@@ -274,8 +274,8 @@ export class PartialResultStream extends Transform implements ResultEvents {
       if (this._numPushFailed === this._options.maxResumeRetries) {
         this.destroy(
           new Error(
-            `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`
-          )
+            `Stream is still not ready to receive data after ${this._numPushFailed} attempts to resume.`,
+          ),
         );
         return;
       }
@@ -311,7 +311,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       const merged = PartialResultStream.merge(
         field.type as google.spanner.v1.Type,
         this._pendingValue,
-        values.shift()
+        values.shift(),
       );
 
       values.unshift(...merged);
@@ -382,7 +382,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
         value: codec.decode(
           value,
           type as google.spanner.v1.Type,
-          columnMetadata
+          columnMetadata,
         ),
       };
     });
@@ -410,7 +410,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   static merge(
     type: google.spanner.v1.Type,
     head: Value,
-    tail: Value
+    tail: Value,
   ): Value[] {
     if (
       type.code === google.spanner.v1.TypeCode.ARRAY ||
@@ -444,7 +444,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
   static mergeLists(
     type: google.spanner.v1.Type,
     head: Value[],
-    tail: Value[]
+    tail: Value[],
   ): Value[] {
     let listType: google.spanner.v1.Type;
 
@@ -461,7 +461,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
     const merged = PartialResultStream.merge(
       listType,
       head.pop(),
-      tail.shift()
+      tail.shift(),
     );
 
     return [...head, ...merged, ...tail];
@@ -486,7 +486,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
  */
 export function partialResultStream(
   requestFn: RequestFunction,
-  options?: RowOptions
+  options?: RowOptions,
 ): PartialResultStream {
   const retryableCodes = [grpc.status.UNAVAILABLE];
   const maxQueued = 10;
@@ -550,7 +550,7 @@ export function partialResultStream(
       // checkpoint stream has queued. After that, we will destroy the
       // user's stream with the Deadline exceeded error.
       setImmediate(() =>
-        batchAndSplitOnTokenStream.destroy(new DeadlineError(err))
+        batchAndSplitOnTokenStream.destroy(new DeadlineError(err)),
       );
       return;
     }
@@ -595,7 +595,7 @@ export function partialResultStream(
   (requestsStream as any).intercept('error', err =>
     // Retry __after__ all pending data has been processed to ensure that the
     // checkpoint stream is reset at the correct position.
-    setImmediate(() => retry(err))
+    setImmediate(() => retry(err)),
   );
 
   return (

@@ -15,7 +15,7 @@
  */
 import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
-import arrify = require('arrify');
+import {toArray} from './helper';
 import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
@@ -137,7 +137,7 @@ export class SpannerDate extends Date {
 
     return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${date.padStart(
       2,
-      '0'
+      '0',
     )}`;
   }
 }
@@ -297,7 +297,7 @@ export class ProtoMessage {
       this.value = protoMessageParams.value;
     } else if (protoMessageParams.messageFunction) {
       this.value = protoMessageParams.messageFunction['encode'](
-        protoMessageParams.value
+        protoMessageParams.value,
       ).finish();
     } else {
       throw new GoogleError(`protoMessageParams cannot be used to construct 
@@ -310,7 +310,7 @@ export class ProtoMessage {
   toJSON(): string {
     if (this.messageFunction) {
       return this.messageFunction['toObject'](
-        this.messageFunction['decode'](this.value)
+        this.messageFunction['decode'](this.value),
       );
     }
     return this.value.toString();
@@ -442,19 +442,19 @@ export class Interval {
   constructor(months: number, days: number, nanoseconds: bigint) {
     if (!is.integer(months)) {
       throw new GoogleError(
-        `Invalid months: ${months}, months should be an integral value`
+        `Invalid months: ${months}, months should be an integral value`,
       );
     }
 
     if (!is.integer(days)) {
       throw new GoogleError(
-        `Invalid days: ${days}, days should be an integral value`
+        `Invalid days: ${days}, days should be an integral value`,
       );
     }
 
     if (is.null(nanoseconds) || is.undefined(nanoseconds)) {
       throw new GoogleError(
-        `Invalid nanoseconds: ${nanoseconds}, nanoseconds should be a valid bigint value`
+        `Invalid nanoseconds: ${nanoseconds}, nanoseconds should be a valid bigint value`,
       );
     }
 
@@ -504,13 +504,13 @@ export class Interval {
   static fromSeconds(seconds: number): Interval {
     if (!is.integer(seconds)) {
       throw new GoogleError(
-        `Invalid seconds: ${seconds}, seconds should be an integral value`
+        `Invalid seconds: ${seconds}, seconds should be an integral value`,
       );
     }
     return new Interval(
       0,
       0,
-      BigInt(Interval.NANOSECONDS_PER_SECOND) * BigInt(seconds)
+      BigInt(Interval.NANOSECONDS_PER_SECOND) * BigInt(seconds),
     );
   }
 
@@ -520,13 +520,13 @@ export class Interval {
   static fromMilliseconds(milliseconds: number): Interval {
     if (!is.integer(milliseconds)) {
       throw new GoogleError(
-        `Invalid milliseconds: ${milliseconds}, milliseconds should be an integral value`
+        `Invalid milliseconds: ${milliseconds}, milliseconds should be an integral value`,
       );
     }
     return new Interval(
       0,
       0,
-      BigInt(Interval.NANOSECONDS_PER_MILLISECOND) * BigInt(milliseconds)
+      BigInt(Interval.NANOSECONDS_PER_MILLISECOND) * BigInt(milliseconds),
     );
   }
 
@@ -536,13 +536,13 @@ export class Interval {
   static fromMicroseconds(microseconds: number): Interval {
     if (!is.integer(microseconds)) {
       throw new GoogleError(
-        `Invalid microseconds: ${microseconds}, microseconds should be an integral value`
+        `Invalid microseconds: ${microseconds}, microseconds should be an integral value`,
       );
     }
     return new Interval(
       0,
       0,
-      BigInt(Interval.NANOSECONDS_PER_MICROSECOND) * BigInt(microseconds)
+      BigInt(Interval.NANOSECONDS_PER_MICROSECOND) * BigInt(microseconds),
     );
   }
 
@@ -572,7 +572,7 @@ export class Interval {
     const hours: number = parseInt(getNullOrDefault(5).replace('H', ''));
     const minutes: number = parseInt(getNullOrDefault(6).replace('M', ''));
     const seconds: Big = Big(
-      getNullOrDefault(7).replace('S', '').replace(',', '.')
+      getNullOrDefault(7).replace('S', '').replace(',', '.'),
     );
 
     const totalMonths: number = Big(years)
@@ -581,22 +581,22 @@ export class Interval {
       .toNumber();
     if (!Number.isSafeInteger(totalMonths)) {
       throw new GoogleError(
-        'Total months is outside of the range of safe integer'
+        'Total months is outside of the range of safe integer',
       );
     }
 
     const totalNanoseconds = BigInt(
       seconds
         .add(
-          Big((BigInt(hours) * BigInt(Interval.SECONDS_PER_HOUR)).toString())
+          Big((BigInt(hours) * BigInt(Interval.SECONDS_PER_HOUR)).toString()),
         )
         .add(
           Big(
-            (BigInt(minutes) * BigInt(Interval.SECONDS_PER_MINUTE)).toString()
-          )
+            (BigInt(minutes) * BigInt(Interval.SECONDS_PER_MINUTE)).toString(),
+          ),
         )
         .mul(Big(this.NANOSECONDS_PER_SECOND))
-        .toString()
+        .toString(),
     );
 
     return new Interval(totalMonths, days, totalNanoseconds);
@@ -614,7 +614,7 @@ export class Interval {
     let result = 'P';
     if (this.months !== 0) {
       const years_part: number = Math.trunc(
-        this.months / Interval.MONTHS_PER_YEAR
+        this.months / Interval.MONTHS_PER_YEAR,
       );
       const months_part: number =
         this.months - years_part * Interval.MONTHS_PER_YEAR;
@@ -815,7 +815,7 @@ function convertValueToJson(value: Value, options: JSONOptions): Value {
 function decode(
   value: Value,
   type: spannerClient.spanner.v1.Type,
-  columnMetadata?: object
+  columnMetadata?: object,
 ): Value {
   if (is.null(value)) {
     return null;
@@ -908,7 +908,7 @@ function decode(
         return decode(
           value,
           type.arrayElementType! as spannerClient.spanner.v1.Type,
-          columnMetadata
+          columnMetadata,
         );
       });
       break;
@@ -918,7 +918,7 @@ function decode(
         const value = decode(
           (!Array.isArray(decoded) && decoded[name!]) || decoded[index],
           type as spannerClient.spanner.v1.Type,
-          columnMetadata
+          columnMetadata,
         );
         return {name, value};
       });
@@ -1203,7 +1203,7 @@ function getType(value: Value): Type {
  * @returns {object}
  */
 function convertToListValue<T>(value: T): p.IListValue {
-  const values = (arrify(value) as T[]).map(codec.encode);
+  const values = (toArray(value) as T[]).map(codec.encode);
   return {values};
 }
 
@@ -1216,7 +1216,7 @@ function convertToListValue<T>(value: T): p.IListValue {
  * @returns {object}
  */
 function convertMsToProtoTimestamp(
-  ms: number
+  ms: number,
 ): spannerClient.protobuf.ITimestamp {
   const rawSeconds = ms / 1000;
   const seconds = Math.floor(rawSeconds);
@@ -1250,7 +1250,7 @@ function convertProtoTimestampToDate({
  * @return {object}
  */
 function createTypeObject(
-  friendlyType?: string | Type
+  friendlyType?: string | Type,
 ): spannerClient.spanner.v1.Type {
   if (!friendlyType) {
     friendlyType = 'unspecified';
@@ -1277,7 +1277,7 @@ function createTypeObject(
 
   if (code === 'STRUCT') {
     type.structType = {
-      fields: arrify(config.fields!).map(field => {
+      fields: toArray(config.fields!).map(field => {
         return {name: field.name, type: codec.createTypeObject(field)};
       }),
     };

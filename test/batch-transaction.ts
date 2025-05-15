@@ -32,6 +32,8 @@ import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
+import {ExecuteSqlRequest} from '../src/transaction';
+import {CallOptions} from 'google-gax';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -159,16 +161,16 @@ describe('BatchTransaction', () => {
       },
     };
 
-    const QUERY = {
+    const QUERY: ExecuteSqlRequest = {
       sql: 'SELECT * FROM Singers',
-      gaxOptions: GAX_OPTS,
+      gaxOptions: GAX_OPTS as CallOptions,
       params: {},
       types: {},
       dataBoostEnabled: true,
       directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
-    it('should make the correct request', () => {
+    it('should make the correct request using callback', () => {
       const fakeParams = {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
@@ -192,11 +194,11 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
 
-    it('should accept query as string', () => {
+    it('should accept query as string in a callback based request to createQueryPartitions', () => {
       const query = 'SELECT * FROM Singers';
 
       const expectedQuery = Object.assign({}, {sql: query});
@@ -213,6 +215,34 @@ describe('BatchTransaction', () => {
       assert.strictEqual(method, 'partitionQuery');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, undefined);
+    });
+
+    it('should make the correct request using await', async () => {
+      const fakeParams = {
+        params: {a: 'b'},
+        paramTypes: {a: 'string'},
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
+      };
+
+      const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
+
+      (sandbox.stub(FakeTransaction, 'encodeParams') as sinon.SinonStub)
+        .withArgs(QUERY)
+        .returns(fakeParams);
+
+      await batchTransaction.createQueryPartitions(QUERY);
+
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionQuery');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
+      );
     });
   });
 
@@ -341,7 +371,7 @@ describe('BatchTransaction', () => {
       directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
-    it('should make the correct request', () => {
+    it('should make the correct request using callback', () => {
       const fakeKeySet = {};
       const expectedQuery = {
         table: QUERY.table,
@@ -365,7 +395,35 @@ describe('BatchTransaction', () => {
       assert.strictEqual(gaxOpts, GAX_OPTS);
       assert.deepStrictEqual(
         headers,
-        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
+      );
+    });
+
+    it('should make the correct request using await', async () => {
+      const fakeKeySet = {};
+      const expectedQuery = {
+        table: QUERY.table,
+        keySet: fakeKeySet,
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
+      };
+
+      const stub = sandbox.stub(batchTransaction, 'createPartitions_');
+
+      (sandbox.stub(FakeTransaction, 'encodeKeySet') as sinon.SinonStub)
+        .withArgs(QUERY)
+        .returns(fakeKeySet);
+
+      await batchTransaction.createReadPartitions(QUERY);
+
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
+      assert.strictEqual(client, 'SpannerClient');
+      assert.strictEqual(method, 'partitionRead');
+      assert.deepStrictEqual(reqOpts, expectedQuery);
+      assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'}),
       );
     });
   });
@@ -383,7 +441,7 @@ describe('BatchTransaction', () => {
       },
     };
 
-    it('should make read requests for read partitions', () => {
+    it('should make read requests for read partitions using callback', () => {
       const partition = {table: 'abc'};
       const stub = sandbox.stub(batchTransaction, 'read');
 
@@ -432,6 +490,17 @@ describe('BatchTransaction', () => {
       const query = stub.lastCall.args[0];
       assert.strictEqual(query, partition);
     });
+
+    it('should make read requests for read partitions using await', async () => {
+      const partition = {table: 'abc'};
+      const stub = sandbox.stub(batchTransaction, 'read');
+
+      await batchTransaction.execute(partition);
+
+      const [table, options] = stub.lastCall.args;
+      assert.strictEqual(table, partition.table);
+      assert.strictEqual(options, partition);
+    });
   });
 
   describe('executeStream', () => {
@@ -472,7 +541,7 @@ describe('BatchTransaction', () => {
 
     beforeEach(() => {
       batchTransaction.id = ID;
-      batchTransaction.session = SESSION as Session;
+      batchTransaction.session = SESSION as unknown as Session;
       batchTransaction.readTimestampProto = TIMESTAMP;
     });
 

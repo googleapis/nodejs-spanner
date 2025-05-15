@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_interleaved_table]
   /**
@@ -66,7 +66,7 @@ function main(
     await operation.promise();
 
     console.log(
-      `Created an interleaved table hierarchy in database ${databaseId} using PostgreSQL dialect.`
+      `Created an interleaved table hierarchy in database ${databaseId} using PostgreSQL dialect.`,
     );
   }
   pgInterleaving();

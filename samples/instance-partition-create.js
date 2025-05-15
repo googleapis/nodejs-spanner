@@ -22,7 +22,7 @@
 function main(
   instanceId = 'my-instance',
   instancePartitionId = 'my-instance-partition',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   async function createInstancePartition() {
     // [START spanner_create_instance_partition]
@@ -50,8 +50,8 @@ function main(
         `Creating instance partition ${instanceAdminClient.instancePartitionPath(
           projectId,
           instanceId,
-          instancePartitionId
-        )}.`
+          instancePartitionId,
+        )}.`,
       );
       const [operation] = await instanceAdminClient.createInstancePartition({
         instancePartitionId: instancePartitionId,
@@ -64,7 +64,7 @@ function main(
       });
 
       console.log(
-        `Waiting for operation on ${instancePartitionId} to complete...`
+        `Waiting for operation on ${instancePartitionId} to complete...`,
       );
       await operation.promise();
 

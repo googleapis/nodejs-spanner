@@ -18,7 +18,7 @@
 async function createDatabaseWithVersionRetentionPeriod(
   instanceId,
   databaseId,
-  projectId
+  projectId,
 ) {
   // [START spanner_create_database_with_version_retention_period]
   // Imports the Google Cloud client library
@@ -56,10 +56,10 @@ async function createDatabaseWithVersionRetentionPeriod(
 
     const [data] = await database.get();
     console.log(
-      `Version retention period: ${data.metadata.versionRetentionPeriod}`
+      `Version retention period: ${data.metadata.versionRetentionPeriod}`,
     );
     const earliestVersionTime = Spanner.timestamp(
-      data.metadata.earliestVersionTime
+      data.metadata.earliestVersionTime,
     );
     console.log(`Earliest version time: ${earliestVersionTime}`);
   } catch (err) {

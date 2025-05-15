@@ -41,7 +41,7 @@ async function databaseWithQueryOptions(instanceId, databaseId, projectId) {
       // The list of available statistics packages can be found by querying the
       // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
       optimizerStatisticsPackage: 'latest',
-    }
+    },
   );
 
   const query = {
@@ -60,7 +60,7 @@ async function databaseWithQueryOptions(instanceId, databaseId, projectId) {
         ? json.MarketingBudget
         : null; // This value is nullable
       console.log(
-        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`,
       );
     });
   } catch (err) {
@@ -115,7 +115,7 @@ async function queryWithQueryOptions(instanceId, databaseId, projectId) {
         ? json.MarketingBudget
         : null; // This value is nullable
       console.log(
-        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`,
       );
     });
   } catch (err) {
@@ -137,8 +137,8 @@ require('yargs')
       databaseWithQueryOptions(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .command(
     'queryWithQueryOptions <instanceName> <databaseName> <projectId>',
@@ -148,14 +148,14 @@ require('yargs')
       queryWithQueryOptions(
         opts.instanceName,
         opts.databaseName,
-        opts.projectId
-      )
+        opts.projectId,
+      ),
   )
   .example(
-    'node $0 databaseWithQueryOptions "my-instance" "my-database" "my-project-id"'
+    'node $0 databaseWithQueryOptions "my-instance" "my-database" "my-project-id"',
   )
   .example(
-    'node $0 queryWithQueryOptions "my-instance" "my-database" "my-project-id"'
+    'node $0 queryWithQueryOptions "my-instance" "my-database" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

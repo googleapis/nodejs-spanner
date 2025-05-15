@@ -8,16 +8,16 @@
     "*.js"
   ],
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18"
   },
   "scripts": {
     "test-with-archived": "mocha system-test --timeout 1600000",
     "test": "mocha system-test/spanner.test.js --timeout 1600000"
   },
   "dependencies": {
-    "@google-cloud/kms": "^4.0.0",
-    "@google-cloud/precise-date": "^4.0.0",
-    "@google-cloud/spanner": "^7.19.1",
+    "@google-cloud/kms": "^5.0.0",
+    "@google-cloud/precise-date": "^5.0.0",
+    "@google-cloud/spanner": "^8.0.0",
     "protobufjs": "^7.0.0",
     "yargs": "^17.0.0"
   },

@@ -23,7 +23,7 @@ function main(
   projectId = 'my-project-id',
   instanceId = 'my-instance-id',
   databaseId = 'my-database-id',
-  scheduleId = 'my-schedule-id'
+  scheduleId = 'my-schedule-id',
 ) {
   async function updateBackupSchedule() {
     // [START spanner_update_backup_schedule]
@@ -51,7 +51,7 @@ function main(
             projectId,
             instanceId,
             databaseId,
-            scheduleId
+            scheduleId,
           ),
           spec: {
             cronSpec: {

@@ -4,6 +4,55 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.0.0](https://github.com/googleapis/nodejs-spanner/compare/v7.21.0...v8.0.0) (2025-05-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove the arrify package  ([#2292](https://github.com/googleapis/nodejs-spanner/issues/2292))
+* migrate to Node 18 ([#2271](https://github.com/googleapis/nodejs-spanner/issues/2271))
+
+### Features
+
+* Add promise based signatures for createQueryPartitions ([#2284](https://github.com/googleapis/nodejs-spanner/issues/2284)) ([255d8a6](https://github.com/googleapis/nodejs-spanner/commit/255d8a6a5749b6a05cd87dd7444cab7dd75d3e42))
+* Add promise based signatures on createReadPartitions ([#2300](https://github.com/googleapis/nodejs-spanner/issues/2300)) ([7b8a1f7](https://github.com/googleapis/nodejs-spanner/commit/7b8a1f70f0de3aa5886a2cde9325c9a36222a311))
+* Support promise based signatures for execute method ([#2301](https://github.com/googleapis/nodejs-spanner/issues/2301)) ([bb857e1](https://github.com/googleapis/nodejs-spanner/commit/bb857e18459f717d67b9b3d144c2b022178363cb))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/kms to v5 ([#2289](https://github.com/googleapis/nodejs-spanner/issues/2289)) ([1ccb505](https://github.com/googleapis/nodejs-spanner/commit/1ccb505935e70b6f576f06e566325146ee68f3ff))
+* **deps:** Update dependency @google-cloud/precise-date to v5 ([#2290](https://github.com/googleapis/nodejs-spanner/issues/2290)) ([44f7575](https://github.com/googleapis/nodejs-spanner/commit/44f7575efd3751d0595beef2ec4eb9f39bc426d7))
+* **deps:** Update dependency big.js to v7 ([#2286](https://github.com/googleapis/nodejs-spanner/issues/2286)) ([0911297](https://github.com/googleapis/nodejs-spanner/commit/0911297cc33aec93c09ef2be42413f20c75fc2bf))
+
+
+### Miscellaneous Chores
+
+* Migrate to Node 18 ([#2271](https://github.com/googleapis/nodejs-spanner/issues/2271)) ([cab3f22](https://github.com/googleapis/nodejs-spanner/commit/cab3f229ccb2189bd5af0c25a3006b553f8a5453))
+* Remove the arrify package  ([#2292](https://github.com/googleapis/nodejs-spanner/issues/2292)) ([e8f5ca1](https://github.com/googleapis/nodejs-spanner/commit/e8f5ca15125d570949769e6e66f0d911cb21f58d))
+
+## [7.21.0](https://github.com/googleapis/nodejs-spanner/compare/v7.20.0...v7.21.0) (2025-04-15)
+
+
+### Features
+
+* Adding sample for pre-split feature ([#2274](https://github.com/googleapis/nodejs-spanner/issues/2274)) ([3d5f080](https://github.com/googleapis/nodejs-spanner/commit/3d5f08065fdf40a1c441d97a049d7dacf1a5be93))
+
+
+### Bug Fixes
+
+* Adding span attributes for request tag and transaction tag ([#2236](https://github.com/googleapis/nodejs-spanner/issues/2236)) ([3f69dad](https://github.com/googleapis/nodejs-spanner/commit/3f69dad36cfdeb4effd191e0d38079ead1bd6654))
+
+## [7.20.0](https://github.com/googleapis/nodejs-spanner/compare/v7.19.1...v7.20.0) (2025-04-11)
+
+
+### Features
+
+* Add support for Interval ([#2192](https://github.com/googleapis/nodejs-spanner/issues/2192)) ([8c886cb](https://github.com/googleapis/nodejs-spanner/commit/8c886cbc0d7523fb99e65cfc5d8f565b630e26f0))
+* **debugging:** Implement x-goog-spanner-request-id propagation per request ([#2205](https://github.com/googleapis/nodejs-spanner/issues/2205)) ([e42caea](https://github.com/googleapis/nodejs-spanner/commit/e42caeaaa656c395d240f4af412ddb947f29c59b))
+* **spanner:** Add support for snapshot isolation ([#2245](https://github.com/googleapis/nodejs-spanner/issues/2245)) ([b60a683](https://github.com/googleapis/nodejs-spanner/commit/b60a683c0e1ddbf704766eb99f102fed925a348c))
+* **spanner:** Support for Multiplexed Session Partitioned Ops ([#2252](https://github.com/googleapis/nodejs-spanner/issues/2252)) ([e7ce471](https://github.com/googleapis/nodejs-spanner/commit/e7ce471332f6e73614638b96ed54c87095d785a2))
+
 ## [7.19.1](https://github.com/googleapis/nodejs-spanner/compare/v7.19.0...v7.19.1) (2025-03-13)
 
 

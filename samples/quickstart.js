@@ -17,7 +17,7 @@
 async function quickstart(
   projectId = 'YOUR-PROJECT-ID', // Your Google Cloud Platform project ID
   instanceId = 'my-instance', // Your Cloud Spanner instance ID
-  databaseId = 'my-database' // Your Cloud Spanner database ID
+  databaseId = 'my-database', // Your Cloud Spanner database ID
 ) {
   // [START spanner_quickstart]
   // Imports the Google Cloud client library

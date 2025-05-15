@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_partitioned_dml]
   /**

@@ -39,8 +39,8 @@ async function createInstance(instanceId, projectId) {
     console.log(
       `Creating instance ${instanceAdminClient.instancePath(
         projectId,
-        instanceId
-      )}.`
+        instanceId,
+      )}.`,
     );
     const [operation] = await instanceAdminClient.createInstance({
       instanceId: instanceId,
@@ -48,7 +48,7 @@ async function createInstance(instanceId, projectId) {
       instance: {
         config: instanceAdminClient.instanceConfigPath(
           projectId,
-          'regional-us-central1'
+          'regional-us-central1',
         ),
         nodeCount: 1,
         displayName: 'Display name for the instance.',
@@ -81,17 +81,18 @@ require('yargs')
     'createInstance <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance using Instance Admin Client.',
     {},
-    opts => createInstance(opts.instanceName, opts.projectId)
+    opts => createInstance(opts.instanceName, opts.projectId),
   )
   .example('node $0 createInstance "my-instance" "my-project-id"')
   .command(
     'createInstanceWithProcessingUnits <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance with processing units.',
     {},
-    opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
+    opts =>
+      createInstanceWithProcessingUnits(opts.instanceName, opts.projectId),
   )
   .example(
-    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"',
   )
   .wrap(120)
   .recommendCommands()

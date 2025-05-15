@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_postgresql_dml_with_parameters]
   /**
@@ -66,7 +66,7 @@ function main(
         });
         await transaction.commit();
         console.log(
-          `Successfully executed ${rowCounts} postgreSQL statements using DML.`
+          `Successfully executed ${rowCounts} postgreSQL statements using DML.`,
         );
       } catch (err) {
         console.error('ERROR:', err);

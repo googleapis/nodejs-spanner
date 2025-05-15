@@ -41,6 +41,7 @@ import {
   addLeaderAwareRoutingHeader,
   getCommonHeaders,
 } from './common';
+import {ObservabilityOptions} from './instrument';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
@@ -112,12 +113,12 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
  * ```
  */
 export class Session extends common.GrpcServiceObject {
-  id!: string;
   formattedName_?: string;
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   commonHeaders_: {[k: string]: string};
+  _observabilityOptions?: ObservabilityOptions;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -234,7 +235,7 @@ export class Session extends common.GrpcServiceObject {
       createMethod: (
         _: {},
         optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
-        callback: CreateSessionCallback
+        callback: CreateSessionCallback,
       ) => {
         const options =
           typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -259,9 +260,10 @@ export class Session extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
+    this._observabilityOptions = database._observabilityOptions;
     this.commonHeaders_ = getCommonHeaders(
       (this.parent as Database).formattedName_,
-      database._observabilityOptions?.enableEndToEndTracing
+      this._observabilityOptions?.enableEndToEndTracing,
     );
     this.request = database.request;
     this.requestStream = database.requestStream;
@@ -307,7 +309,7 @@ export class Session extends common.GrpcServiceObject {
   delete(gaxOptions: CallOptions, callback: DeleteSessionCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DeleteSessionCallback,
-    cb?: DeleteSessionCallback
+    cb?: DeleteSessionCallback,
   ): void | Promise<DeleteSessionResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -328,10 +330,10 @@ export class Session extends common.GrpcServiceObject {
           this.commonHeaders_,
           this,
           nextNthRequest(database),
-          1
+          1,
         ),
       },
-      callback!
+      callback!,
     );
   }
   /**
@@ -376,11 +378,11 @@ export class Session extends common.GrpcServiceObject {
   getMetadata(callback: GetSessionMetadataCallback): void;
   getMetadata(
     gaxOptions: CallOptions,
-    callback: GetSessionMetadataCallback
+    callback: GetSessionMetadataCallback,
   ): void;
   getMetadata(
     optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
-    cb?: GetSessionMetadataCallback
+    cb?: GetSessionMetadataCallback,
   ): void | Promise<GetSessionMetadataResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -406,7 +408,7 @@ export class Session extends common.GrpcServiceObject {
           headers,
           this.session,
           nextNthRequest(database),
-          1
+          1,
         ),
       },
       (err, resp) => {
@@ -416,7 +418,7 @@ export class Session extends common.GrpcServiceObject {
           this.metadata = resp;
         }
         callback!(err, resp);
-      }
+      },
     );
   }
   /**
@@ -442,7 +444,7 @@ export class Session extends common.GrpcServiceObject {
   keepAlive(gaxOptions: CallOptions, callback: KeepAliveCallback): void;
   keepAlive(
     optionsOrCallback?: CallOptions | KeepAliveCallback,
-    cb?: KeepAliveCallback
+    cb?: KeepAliveCallback,
   ): void | Promise<KeepAliveResponse> {
     const gaxOpts =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
@@ -465,10 +467,10 @@ export class Session extends common.GrpcServiceObject {
           this.commonHeaders_,
           this,
           nextNthRequest(database),
-          1
+          1,
         ),
       },
-      callback!
+      callback!,
     );
   }
 
@@ -499,7 +501,7 @@ export class Session extends common.GrpcServiceObject {
    */
   snapshot(
     options?: TimestampBounds,
-    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
   ) {
     return new Snapshot(this, options, queryOptions);
   }
@@ -516,7 +518,7 @@ export class Session extends common.GrpcServiceObject {
    */
   transaction(
     queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
-    requestOptions?: Pick<IRequestOptions, 'transactionTag'>
+    requestOptions?: Pick<IRequestOptions, 'transactionTag'>,
   ) {
     return new Transaction(this, undefined, queryOptions, requestOptions);
   }

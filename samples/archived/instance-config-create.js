@@ -22,7 +22,7 @@
 function main(
   instanceConfigId = 'custom-my-instance-config',
   baseInstanceConfigId = 'my-base-instance-config',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_create_instance_config]
 
@@ -51,11 +51,11 @@ function main(
         displayName: instanceConfigId,
         baseConfig: baseInstanceConfig.name,
         replicas: baseInstanceConfig.replicas.concat(
-          baseInstanceConfig.optionalReplicas[0]
+          baseInstanceConfig.optionalReplicas[0],
         ),
       });
       console.log(
-        `Waiting for create operation for ${instanceConfig.id} to complete...`
+        `Waiting for create operation for ${instanceConfig.id} to complete...`,
       );
       await operation.promise();
       console.log(`Created instance config ${instanceConfigId}.`);
@@ -64,7 +64,7 @@ function main(
         'ERROR: Creating instance config ',
         instanceConfigId,
         ' failed with error message ',
-        err
+        err,
       );
     }
   }

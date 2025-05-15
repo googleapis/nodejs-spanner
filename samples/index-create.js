@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_create_index]
   /**
@@ -50,7 +50,7 @@ function main(
         database: databaseAdminClient.databasePath(
           projectId,
           instanceId,
-          databaseId
+          databaseId,
         ),
         statements: request,
       });

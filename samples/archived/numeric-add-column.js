@@ -45,7 +45,7 @@ async function addNumericColumn(instanceId, databaseId, projectId) {
   await operation.promise();
 
   console.log(
-    `Added Revenue column to Venues table in database ${databaseId}.`
+    `Added Revenue column to Venues table in database ${databaseId}.`,
   );
   // [END spanner_add_numeric_column]
 }

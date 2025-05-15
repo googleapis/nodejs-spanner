@@ -17,6 +17,7 @@
 import {randomBytes} from 'crypto';
 // eslint-disable-next-line n/no-extraneous-import
 import * as grpc from '@grpc/grpc-js';
+import {getActiveOrNoopSpan} from './instrument';
 const randIdForProcess = randomBytes(8)
   .readUint32LE(0)
   .toString(16)
@@ -28,7 +29,7 @@ class AtomicCounter {
 
   constructor(initialValue?: number) {
     this.backingBuffer = new Uint32Array(
-      new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT)
+      new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT),
     );
     if (initialValue) {
       this.increment(initialValue);
@@ -62,7 +63,7 @@ function craftRequestId(
   nthClientId: number,
   channelId: number,
   nthRequest: number,
-  attempt: number
+  attempt: number,
 ) {
   return `${REQUEST_HEADER_VERSION}.${randIdForProcess}.${nthClientId}.${channelId}.${nthRequest}.${attempt}`;
 }
@@ -130,7 +131,7 @@ function injectRequestIDIntoHeaders(
   headers: {[k: string]: string},
   session: any,
   nthRequest?: number,
-  attempt?: number
+  attempt?: number,
 ) {
   if (!session) {
     return headers;
@@ -152,7 +153,7 @@ function _metadataWithRequestId(
   session: any,
   nthRequest: number,
   attempt: number,
-  priorMetadata?: {[k: string]: string}
+  priorMetadata?: {[k: string]: string},
 ): {[k: string]: string} {
   if (!priorMetadata) {
     priorMetadata = {};
@@ -171,7 +172,7 @@ function _metadataWithRequestId(
     clientId,
     channelId,
     nthRequest,
-    attempt
+    attempt,
   );
   return withReqId;
 }
@@ -187,12 +188,31 @@ export interface RequestIDError extends grpc.ServiceError {
   requestID: string;
 }
 
+const X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR = 'x_goog_spanner_request_id';
+
+/*
+ * attributeXGoogSpannerRequestIdToActiveSpan extracts the x-goog-spanner-request-id
+ * from config, if possible and then adds it as an attribute to the current/active span.
+ * Since x-goog-spanner-request-id is associated with RPC invoking methods, it is invoked
+ * long after tracing has been performed.
+ */
+function attributeXGoogSpannerRequestIdToActiveSpan(config: any) {
+  const reqId = extractRequestID(config);
+  if (!(reqId && reqId.length > 0)) {
+    return;
+  }
+  const span = getActiveOrNoopSpan();
+  span.setAttribute(X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR, reqId);
+}
+
 const X_GOOG_REQ_ID_REGEX = /^1\.[0-9A-Fa-f]{8}(\.\d+){3}\.\d+/;
 
 export {
   AtomicCounter,
   X_GOOG_REQ_ID_REGEX,
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
+  X_GOOG_SPANNER_REQUEST_ID_SPAN_ATTR,
+  attributeXGoogSpannerRequestIdToActiveSpan,
   craftRequestId,
   injectRequestIDIntoError,
   injectRequestIDIntoHeaders,
