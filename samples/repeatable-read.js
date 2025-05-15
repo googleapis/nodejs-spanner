@@ -21,7 +21,7 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
 ) {
   // [START spanner_isolation_level]
   // Imports the Google Cloud Spanner client library
@@ -72,11 +72,11 @@ function main(
             "UPDATE Albums SET AlbumTitle = 'New Album Title' WHERE SingerId = 1 AND AlbumId = 1";
           const [rowCount] = await transaction.runUpdate(update);
           console.log(
-            `Successfully updated ${rowCount} record in Albums table.`
+            `Successfully updated ${rowCount} record in Albums table.`,
           );
           await transaction.commit();
           console.log(
-            'Successfully executed read-write transaction with isolationLevel option.'
+            'Successfully executed read-write transaction with isolationLevel option.',
           );
         } catch (err) {
           console.error('ERROR:', err);
@@ -85,7 +85,7 @@ function main(
           // Close the database when finished.
           await database.close();
         }
-      }
+      },
     );
   }
   runTransactionWithIsolationLevel();
