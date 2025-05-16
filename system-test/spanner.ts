@@ -40,6 +40,8 @@ import {
   ExecuteSqlRequest,
   TimestampBounds,
   MutationGroup,
+  ReadResponse,
+  RunResponse,
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
@@ -52,9 +54,14 @@ const singer = require('../test/data/singer');
 const music = singer.examples.spanner.music;
 import {util} from 'protobufjs';
 import Long = util.Long;
+import {
+  CreateQueryPartitionsResponse,
+  CreateReadPartitionsResponse,
+} from '../src/batch-transaction';
 const fs = require('fs');
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
+const KOKORO_JOB_NAME = process.env.KOKORO_JOB_NAME;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
 
 const IAM_MEMBER = process.env.IAM_MEMBER;
@@ -3357,7 +3364,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      if (SKIP_BACKUPS === 'true') {
+      if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
         this.skip();
       }
       googleSqlDatabase1 = DATABASE;
@@ -9696,7 +9703,7 @@ describe('Spanner', () => {
         }
       });
 
-      it('should create and execute a query partition', function (done) {
+      it('should create and execute a query partition using callback', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9726,7 +9733,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('should create and execute a read partition', function (done) {
+      it('should create and execute a read partition using callback', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9756,6 +9763,71 @@ describe('Spanner', () => {
             });
           });
         });
+      });
+
+      it('should create and execute a query partition using await', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = @id',
+          params: {
+            id: 'k998',
+          },
+        };
+
+        let row_count = 0;
+        try {
+          const [queryPartitions]: CreateQueryPartitionsResponse =
+            await transaction.createQueryPartitions(selectQuery);
+          assert.deepStrictEqual(queryPartitions.length, 1);
+
+          const promises = queryPartitions.map(async queryPartition => {
+            const [results]: RunResponse =
+              await transaction.execute(queryPartition);
+            row_count += results.map(row => row.toJSON()).length;
+            assert.strictEqual(row_count, 1);
+          });
+
+          await Promise.all(promises);
+        } catch (err) {
+          assert.ifError(err);
+        }
+      });
+
+      it('should create and execute a read partition using await', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: true,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        let read_row_count = 0;
+        try {
+          const [readPartitions]: CreateReadPartitionsResponse =
+            await transaction.createReadPartitions(QUERY);
+          assert.deepStrictEqual(readPartitions.length, 1);
+
+          const promises = readPartitions.map(async readPartition => {
+            const [results]: ReadResponse =
+              await transaction.execute(readPartition);
+            read_row_count += results.map(row => row.toJSON()).length;
+            assert.strictEqual(read_row_count, 1);
+          });
+
+          await Promise.all(promises);
+        } catch (err) {
+          assert.ifError(err);
+        }
       });
     });
   });
