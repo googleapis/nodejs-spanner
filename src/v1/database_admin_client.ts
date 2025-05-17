@@ -2814,6 +2814,10 @@ export class DatabaseAdminClient {
    *   ```
    *   For more details, see protobuffer [self
    *   description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   * @param {boolean} [request.throughputMode]
+   *   Optional. This field is exposed to be used by the Spanner Migration Tool.
+   *   For more details, see
+   *   [SMT](https://github.com/GoogleCloudPlatform/spanner-migration-tool).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
