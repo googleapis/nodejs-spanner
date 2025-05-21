@@ -23,7 +23,6 @@ function main(
   projectId = 'my-project-id',
 ) {
   // [START spanner_set_max_commit_delay]
-  // Imports the Google Cloud client library.
   const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
@@ -38,8 +37,7 @@ function main(
     projectId: projectId,
   });
 
-  async function spannerSetMaxCommitDelay() {
-    // Gets a reference to a Cloud Spanner instance and database.
+  async function setMaxCommitDelay() {
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
@@ -62,11 +60,9 @@ function main(
         );
 
         await transaction.commit({
-          // The maximum amount of time to delay the transaction to improve
-          // throughput.
           maxCommitDelay: protos.google.protobuf.Duration({
             seconds: 0, // 0 seconds
-            nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
+            nanos: 100000000, // 100 milliseconds
           }),
         });
       } catch (err) {
@@ -77,7 +73,7 @@ function main(
       }
     });
   }
-  spannerSetMaxCommitDelay();
+  setMaxCommitDelay();
   // [END spanner_set_max_commit_delay]
 }
 process.on('unhandledRejection', err => {
