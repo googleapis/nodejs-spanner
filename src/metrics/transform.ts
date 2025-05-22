@@ -71,8 +71,10 @@ function _transformValueType(metric: MetricData): ValueType {
     dataPointType === DataPointType.EXPONENTIAL_HISTOGRAM
   ) {
     return ValueType.DISTRIBUTION;
-  } else if (name.includes('count')) {
+  } else if (dataPointType === DataPointType.SUM) {
     return ValueType.INT64;
+  } else if (dataPointType === DataPointType.GAUGE) {
+    return ValueType.DOUBLE;
   }
   console.warn('Encountered unexpected metric %s', name);
   return ValueType.VALUE_TYPE_UNSPECIFIED;
@@ -211,9 +213,12 @@ function _normalizeLabelKey(key: string): string {
 /** Transforms a OpenTelemetry Point's value to a GCM Point value. */
 function _transformNumberValue(valueType: ValueType, value: number) {
   if (valueType === ValueType.INT64) {
-    return {int64Value: value.toString()};
+    return {int64Value: Math.round(value).toString()};
   } else if (valueType === ValueType.DOUBLE) {
-    return {doubleValue: value};
+    const doubleString = Number.isInteger(value)
+      ? `${value}.0`
+      : value.toString();
+    return {doubleValue: doubleString};
   }
   throw Error(`unsupported value type: ${valueType}`);
 }
@@ -275,6 +280,7 @@ function _transformExponentialHistogramValue(value: ExponentialHistogram) {
   };
 }
 
+/** Transforms an OpenTelemetry time value to a GCM time value. */
 function _formatHrTimeToGcmTime(hrTime) {
   return {
     seconds: hrTime[0],

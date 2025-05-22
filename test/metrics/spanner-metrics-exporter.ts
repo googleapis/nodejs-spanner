@@ -34,6 +34,8 @@ const INSTANCE_ID = 'test-instance';
 const DATABASE_ID = 'test-db';
 const LOCATION = 'test-location';
 
+const MAX_BATCH_EXPORT_SIZE = 200;
+
 const auth = new GoogleAuth();
 auth.getProjectId = sinon.stub().resolves(PROJECT_ID);
 
@@ -223,5 +225,45 @@ describe('Export', () => {
     );
 
     assert(sendTimeSeriesStub.calledOnce);
+  });
+
+  it('should batch exports into multiple calls', async () => {
+    // Create metircs larger than the batch size
+    const numberOfDistinctMetrics = MAX_BATCH_EXPORT_SIZE * 2 + 1;
+    for (let i = 0; i < numberOfDistinctMetrics; i++) {
+      attempt_counter.add(1, {...metricAttributes, testId: `batch-test-${i}`});
+    }
+
+    const {resourceMetrics} = await reader.collect();
+
+    const sendTimeSeriesStub = sinon
+      .stub(exporter as any, '_sendTimeSeries')
+      .resolves();
+    const resultCallbackSpy = sinon.spy();
+
+    exporter.export(resourceMetrics, resultCallbackSpy);
+
+    await new Promise(resolve => setImmediate(resolve));
+
+    // Confirm number of metrics for each batch
+    const expectedNumberOfCalls = Math.ceil(
+      numberOfDistinctMetrics / MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(sendTimeSeriesStub.callCount, expectedNumberOfCalls);
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(0).args[0].length,
+      MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(1).args[0].length,
+      MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(2).args[0].length,
+      numberOfDistinctMetrics % MAX_BATCH_EXPORT_SIZE,
+    );
+
+    const callbackResult = resultCallbackSpy.getCall(0).args[0];
+    assert.strictEqual(callbackResult.code, ExportResultCode.SUCCESS);
   });
 });
