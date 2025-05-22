@@ -21,7 +21,7 @@ import {status} from '@grpc/grpc-js';
 
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
-const MAX_BATCH_EXPORT_SIZE = 200;
+export const MAX_BATCH_EXPORT_SIZE = 200;
 
 /**
  * Format and sends metrics information to Google Cloud Monitoring.

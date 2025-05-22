@@ -16,7 +16,10 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
 import {GoogleAuth} from 'google-auth-library';
-import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
+import {
+  CloudMonitoringMetricsExporter,
+  MAX_BATCH_EXPORT_SIZE,
+} from '../../src/metrics/spanner-metrics-exporter';
 import {
   SPANNER_METER_NAME,
   METRIC_NAME_ATTEMPT_COUNT,
@@ -86,7 +89,7 @@ describe('Export', () => {
   let gfe_connectivity_error_count: Counter;
   let attempt_latency: Histogram;
   let operation_latency: Histogram;
-  let gfe_latencies: Histogram;
+  let gfe_latency: Histogram;
   let metricAttributes: {[key: string]: string};
   let exporter: CloudMonitoringMetricsExporter;
 
@@ -139,7 +142,7 @@ describe('Export', () => {
       unit: 'ms',
     });
 
-    gfe_latencies = meter.createHistogram(METRIC_NAME_GFE_LATENCIES, {
+    gfe_latency = meter.createHistogram(METRIC_NAME_GFE_LATENCIES, {
       description: 'Test GFE latencies in ms',
       unit: 'ms',
     });
@@ -151,7 +154,7 @@ describe('Export', () => {
     gfe_connectivity_error_count.add(12, metricAttributes);
     attempt_latency.record(30, metricAttributes);
     operation_latency.record(45, metricAttributes);
-    gfe_latencies.record(22, metricAttributes);
+    gfe_latency.record(22, metricAttributes);
 
     const {errors, resourceMetrics} = await reader.collect();
     if (errors.length !== 0) {
@@ -223,5 +226,45 @@ describe('Export', () => {
     );
 
     assert(sendTimeSeriesStub.calledOnce);
+  });
+
+  it('should batch exports into multiple calls', async () => {
+    // Create metircs larger than the batch size
+    const numberOfDistinctMetrics = MAX_BATCH_EXPORT_SIZE * 2 + 1;
+    for (let i = 0; i < numberOfDistinctMetrics; i++) {
+      attempt_counter.add(1, {...metricAttributes, testId: `batch-test-${i}`});
+    }
+
+    const {resourceMetrics} = await reader.collect();
+
+    const sendTimeSeriesStub = sinon
+      .stub(exporter as any, '_sendTimeSeries')
+      .resolves();
+    const resultCallbackSpy = sinon.spy();
+
+    exporter.export(resourceMetrics, resultCallbackSpy);
+
+    await new Promise(resolve => setImmediate(resolve));
+
+    // Confirm number of metrics for each batch
+    const expectedNumberOfCalls = Math.ceil(
+      numberOfDistinctMetrics / MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(sendTimeSeriesStub.callCount, expectedNumberOfCalls);
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(0).args[0].length,
+      MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(1).args[0].length,
+      MAX_BATCH_EXPORT_SIZE,
+    );
+    assert.strictEqual(
+      sendTimeSeriesStub.getCall(2).args[0].length,
+      numberOfDistinctMetrics % MAX_BATCH_EXPORT_SIZE,
+    );
+
+    const callbackResult = resultCallbackSpy.getCall(0).args[0];
+    assert.strictEqual(callbackResult.code, ExportResultCode.SUCCESS);
   });
 });

@@ -61,6 +61,7 @@ describe('transform', () => {
   let metricExponentialHistogram: ExponentialHistogramMetricData;
   let metricUnknown;
   let sumDataPoint: DataPoint<number>;
+  let gaugeDataPoint: DataPoint<number>;
   let histogramDataPoint: DataPoint<Histogram>;
   let exponentialHistogramDataPoint: DataPoint<ExponentialHistogram>;
 
@@ -93,14 +94,14 @@ describe('transform', () => {
       aggregationTemporality: AggregationTemporality.DELTA,
       isMonotonic: true,
       dataPointType: DataPointType.SUM,
-      descriptor: {valueType: OTValueType.DOUBLE, name: 'some_count'} as any,
+      descriptor: {valueType: OTValueType.INT, name: 'some_count'} as any,
     };
 
     metricGauge = {
       dataPoints: [],
       aggregationTemporality: '' as any,
       dataPointType: DataPointType.GAUGE,
-      descriptor: {valueType: OTValueType.INT, name: 'a_count'} as any,
+      descriptor: {valueType: OTValueType.DOUBLE, name: 'a_count'} as any,
     };
 
     metricHistogram = {
@@ -127,6 +128,13 @@ describe('transform', () => {
     sumDataPoint = {
       attributes,
       value: 0,
+      startTime: process.hrtime(),
+      endTime: process.hrtime(),
+    };
+
+    gaugeDataPoint = {
+      attributes,
+      value: 0.0,
       startTime: process.hrtime(),
       endTime: process.hrtime(),
     };
@@ -244,7 +252,7 @@ describe('transform', () => {
   it('should transform otel value types to GCM value types', () => {
     assert.strictEqual(_transformValueType(metricSum), ValueType.INT64);
 
-    assert.strictEqual(_transformValueType(metricGauge), ValueType.INT64);
+    assert.strictEqual(_transformValueType(metricGauge), ValueType.DOUBLE);
 
     assert.strictEqual(
       _transformValueType(metricHistogram),
@@ -279,15 +287,15 @@ describe('transform', () => {
 
     const gaugeExpectation = {
       value: {
-        int64Value: '0',
+        doubleValue: '0.0',
       },
       interval: {
-        endTime: _formatHrTimeToGcmTime(sumDataPoint.endTime),
+        endTime: _formatHrTimeToGcmTime(gaugeDataPoint.endTime),
       },
     };
 
     assert.deepStrictEqual(
-      _transformPoint(metricGauge, sumDataPoint),
+      _transformPoint(metricGauge, gaugeDataPoint),
       gaugeExpectation,
     );
 
