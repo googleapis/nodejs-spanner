@@ -11486,6 +11486,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlRequest protoDescriptors */
                         protoDescriptors?: (Uint8Array|Buffer|string|null);
+
+                        /** UpdateDatabaseDdlRequest throughputMode */
+                        throughputMode?: (boolean|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlRequest. */
@@ -11508,6 +11511,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlRequest protoDescriptors. */
                         public protoDescriptors: (Uint8Array|Buffer|string);
+
+                        /** UpdateDatabaseDdlRequest throughputMode. */
+                        public throughputMode: boolean;
 
                         /**
                          * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
