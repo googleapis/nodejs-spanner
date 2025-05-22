@@ -49,13 +49,13 @@ export const METRIC_NAME_OPERATION_LATENCIES = 'operation_latencies';
 export const METRIC_NAME_ATTEMPT_LATENCIES = 'attempt_latencies';
 export const METRIC_NAME_OPERATION_COUNT = 'operation_count';
 export const METRIC_NAME_ATTEMPT_COUNT = 'attempt_count';
-export const METRIC_NAME_GFE_LATENCY = 'gfe_latency';
+export const METRIC_NAME_GFE_LATENCIES = 'gfe_latencies';
 export const METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT =
   'gfe_connectivity_error_count';
 export const METRIC_NAMES = new Set([
   METRIC_NAME_OPERATION_LATENCIES,
   METRIC_NAME_ATTEMPT_LATENCIES,
-  METRIC_NAME_GFE_LATENCY,
+  METRIC_NAME_GFE_LATENCIES,
   METRIC_NAME_OPERATION_COUNT,
   METRIC_NAME_ATTEMPT_COUNT,
   METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,

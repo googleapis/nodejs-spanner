@@ -24,7 +24,7 @@ import {
   METRIC_NAME_OPERATION_COUNT,
   METRIC_NAME_OPERATION_LATENCIES,
   METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
-  METRIC_NAME_GFE_LATENCY,
+  METRIC_NAME_GFE_LATENCIES,
 } from '../../src/metrics/constants';
 import {Counter, Meter, Histogram} from '@opentelemetry/api';
 import {ExportResult, ExportResultCode} from '@opentelemetry/core';
@@ -86,7 +86,7 @@ describe('Export', () => {
   let gfe_connectivity_error_count: Counter;
   let attempt_latency: Histogram;
   let operation_latency: Histogram;
-  let gfe_latencey: Histogram;
+  let gfe_latencies: Histogram;
   let metricAttributes: {[key: string]: string};
   let exporter: CloudMonitoringMetricsExporter;
 
@@ -139,7 +139,7 @@ describe('Export', () => {
       unit: 'ms',
     });
 
-    gfe_latencey = meter.createHistogram(METRIC_NAME_GFE_LATENCY, {
+    gfe_latencies = meter.createHistogram(METRIC_NAME_GFE_LATENCIES, {
       description: 'Test GFE latencies in ms',
       unit: 'ms',
     });
@@ -151,7 +151,7 @@ describe('Export', () => {
     gfe_connectivity_error_count.add(12, metricAttributes);
     attempt_latency.record(30, metricAttributes);
     operation_latency.record(45, metricAttributes);
-    gfe_latencey.record(22, metricAttributes);
+    gfe_latencies.record(22, metricAttributes);
 
     const {errors, resourceMetrics} = await reader.collect();
     if (errors.length !== 0) {

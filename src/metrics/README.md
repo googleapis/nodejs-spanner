@@ -10,7 +10,7 @@ The exporter filters metrics based on the following conditions, utilizing values
   * `attempt_count`
   * `operation_latencies`
   * `operation_count`
-  * `gfe_latency`
+  * `gfe_latencies`
   * `gfe_connectivity_error_count`
 
 ## Service Endpoint
