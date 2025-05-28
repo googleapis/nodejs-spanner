@@ -121,14 +121,13 @@ export class MetricsTracer {
   }
 
   public recordAttemptStart() {
+    if (!this.enabled) return;
     this.currentOperation.incrementAttemptCount();
     this.currentOperation.createNewAttempt();
   }
 
   public recordAttemptCompletion(status: number = Status.OK) {
-    if (!this.enabled) {
-      return;
-    }
+    if (!this.enabled) return;
     this.currentOperation.currentAttempt.status = status;
     const attemptAttributes = this._createAttemptOtelAttributes();
     const endTime = new Date(Date.now());

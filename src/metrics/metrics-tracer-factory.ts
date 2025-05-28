@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+import * as crypto from 'crypto';
+import * as os from 'os';
+import * as process from 'process';
+import {v4 as uuidv4} from 'uuid';
 import {Counter, Histogram, metrics} from '@opentelemetry/api';
-import * as constants from './constants';
+import {detectResourcesSync} from '@opentelemetry/resources';
+import {gcpDetector} from '@opentelemetry/resource-detector-gcp';
+import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
 
@@ -34,7 +40,20 @@ export class MetricsTracerFactory {
     this.enabled = enabled;
     this.gfeEnabled = gfeEnabled;
     this._createMetricInstruments();
-    this._clientAttributes = {};
+
+    const clientName = `${Constants.SPANNER_METER_NAME}/${version}`;
+    const clientUid = MetricsTracerFactory._generateClientUId();
+    const clientHash = MetricsTracerFactory._generateClientHash(clientUid);
+    const location = MetricsTracerFactory._detectClientLocation();
+
+    this._clientAttributes = {
+      [Constants.METRIC_LABEL_KEY_CLIENT_NAME]: clientName,
+      [Constants.METRIC_LABEL_KEY_CLIENT_UID]: clientUid,
+      [Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]: clientHash,
+      // Skipping instance config until we have a way to get it
+      [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
+      [Constants.MONITORED_RES_LABEL_KEY_LOCATION]: location,
+    };
   }
 
   get instrumentAttemptLatency(): Histogram {
@@ -66,39 +85,39 @@ export class MetricsTracerFactory {
   }
 
   set project(project: string) {
-    this._clientAttributes[constants.MONITORED_RES_LABEL_KEY_PROJECT] = project;
+    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT] = project;
   }
 
   set instance(instance: string) {
-    this._clientAttributes[constants.MONITORED_RES_LABEL_KEY_INSTANCE] =
+    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE] =
       instance;
   }
 
   set instanceConfig(instanceConfig: string) {
-    this._clientAttributes[constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG] =
+    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG] =
       instanceConfig;
   }
 
   set location(location: string) {
-    this._clientAttributes[constants.MONITORED_RES_LABEL_KEY_LOCATION] =
+    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION] =
       location;
   }
 
   set clientHash(hash: string) {
-    this._clientAttributes[constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH] =
+    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH] =
       hash;
   }
 
   set clientUid(clientUid: string) {
-    this._clientAttributes[constants.METRIC_LABEL_KEY_CLIENT_UID] = clientUid;
+    this._clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID] = clientUid;
   }
 
   set clientName(clientName: string) {
-    this._clientAttributes[constants.METRIC_LABEL_KEY_CLIENT_NAME] = clientName;
+    this._clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME] = clientName;
   }
 
   set database(database: string) {
-    this._clientAttributes[constants.METRIC_LABEL_KEY_DATABASE] = database;
+    this._clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE] = database;
   }
 
   public createMetricsTracer(): MetricsTracer {
@@ -118,20 +137,20 @@ export class MetricsTracerFactory {
   private _createMetricInstruments() {
     // This uses the globally registered provider (defaults to Noop provider)
     const meterProvider = metrics.getMeterProvider();
-    const meter = meterProvider.getMeter(constants.SPANNER_METER_NAME, version);
+    const meter = meterProvider.getMeter(Constants.SPANNER_METER_NAME, version);
 
     this._instrumentAttemptLatency = meter.createHistogram(
-      constants.METRIC_NAME_ATTEMPT_LATENCIES,
+      Constants.METRIC_NAME_ATTEMPT_LATENCIES,
       {unit: 'ms', description: 'Time an individual attempt took.'},
     );
 
     this._instrumentAttemptCounter = meter.createCounter(
-      constants.METRIC_NAME_ATTEMPT_COUNT,
+      Constants.METRIC_NAME_ATTEMPT_COUNT,
       {unit: '1', description: 'Number of attempts.'},
     );
 
     this._instrumentOperationLatency = meter.createHistogram(
-      constants.METRIC_NAME_OPERATION_LATENCIES,
+      Constants.METRIC_NAME_OPERATION_LATENCIES,
       {
         unit: 'ms',
         description:
@@ -140,18 +159,79 @@ export class MetricsTracerFactory {
     );
 
     this._instrumentOperationCounter = meter.createCounter(
-      constants.METRIC_NAME_OPERATION_COUNT,
+      Constants.METRIC_NAME_OPERATION_COUNT,
       {unit: '1', description: 'Number of operations.'},
     );
 
     this._instrumentGfeLatency = meter.createHistogram(
-      constants.METRIC_NAME_GFE_LATENCIES,
+      Constants.METRIC_NAME_GFE_LATENCIES,
       {unit: 'ms', description: 'GFE Latency.'},
     );
 
     this._instrumentGfeConnectivityErrorCount = meter.createCounter(
-      constants.METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
+      Constants.METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
       {unit: '1', description: 'GFE missing header count.'},
     );
+  }
+
+  /**
+   * Generates a unique identifier for the client_uid metric field. The identifier is composed of a
+   * UUID, the process ID (PID), and the hostname.
+   */
+  private static _generateClientUId(): string {
+    const identifier = uuidv4();
+    const pid = process.pid.toString();
+    let hostname = 'localhost';
+
+    try {
+      hostname = os.hostname();
+    } catch (err) {
+      console.warn('Unable to get the hostname.', err);
+    }
+
+    return `${identifier}@${pid}@${hostname}`;
+  }
+
+  /**
+   * Generates a 6-digit zero-padded lowercase hexadecimal hash using the 10 most significant bits
+   * of a 64-bit hash value.
+   *
+   * The primary purpose of this function is to generate a hash value for the `client_hash`
+   * resource label using `client_uid` metric field. The range of values is chosen to be small
+   * enough to keep the cardinality of the Resource targets under control. Note: If at later time
+   * the range needs to be increased, it can be done by increasing the value of `kPrefixLength` to
+   * up to 24 bits without changing the format of the returned value.
+   */
+  private static _generateClientHash(clientUid: string): string {
+    if (clientUid === null || clientUid === undefined) {
+      return '000000';
+    }
+
+    const hash = crypto.createHash('sha256');
+    hash.update(clientUid);
+    const digest = hash.digest('hex');
+    const hashPart = digest.substring(0, 16);
+    const longHash = BigInt('0x' + hashPart);
+    const kPrefixLength = 10;
+    const shiftedValue = longHash >> BigInt(64 - kPrefixLength);
+    return shiftedValue.toString(16).padStart(6, '0');
+  }
+
+  /**
+   * Gets the location (region) of the client, otherwise returns to the "global" region.
+   */
+  private static _detectClientLocation(): string {
+    try {
+      const resource = detectResourcesSync({
+        detectors: [gcpDetector],
+      });
+      const region = resource.attributes[Constants.ATTR_CLOUD_REGION];
+      if (typeof region === 'string' && region) {
+        return region;
+      }
+    } catch (err) {
+      console.warn('Unable to detect location.', err);
+    }
+    return 'global';
   }
 }

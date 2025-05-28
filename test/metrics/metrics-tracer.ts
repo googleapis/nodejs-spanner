@@ -17,7 +17,7 @@
 import {status as Status} from '@grpc/grpc-js';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as constants from '../../src/metrics/constants';
+import * as Constants from '../../src/metrics/constants';
 import {MetricsTracer} from '../../src/metrics/metrics-tracer';
 
 const PROJECT_ID = 'test-project';
@@ -34,7 +34,7 @@ describe('MetricsTracer', () => {
 
   beforeEach(() => {
     attributes = {
-      [constants.MONITORED_RES_LABEL_KEY_PROJECT]: PROJECT_ID,
+      [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: PROJECT_ID,
     };
 
     fakeAttemptCounter = {
@@ -87,11 +87,11 @@ describe('MetricsTracer', () => {
       const [[latency, otelAttrs]] = fakeAttemptLatency.record.args;
       assert.strictEqual(typeof latency, 'number');
       assert.strictEqual(
-        otelAttrs[constants.MONITORED_RES_LABEL_KEY_PROJECT],
+        otelAttrs[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
         PROJECT_ID,
       );
       assert.strictEqual(
-        otelAttrs[constants.METRIC_LABEL_KEY_STATUS],
+        otelAttrs[Constants.METRIC_LABEL_KEY_STATUS],
         Status.OK.toString(),
       );
     });
@@ -116,7 +116,7 @@ describe('MetricsTracer', () => {
       assert.strictEqual(fakeOperationLatency.record.calledOnce, true);
 
       const [[_, opAttrs]] = fakeOperationLatency.record.args;
-      assert.strictEqual(opAttrs[constants.METRIC_LABEL_KEY_STATUS], '-1');
+      assert.strictEqual(opAttrs[Constants.METRIC_LABEL_KEY_STATUS], '-1');
     });
 
     it('should do nothing if disabled', () => {
@@ -166,7 +166,7 @@ describe('MetricsTracer', () => {
   it('should not overwrite project if already set', () => {
     tracer.project = 'new-project';
     assert.strictEqual(
-      attributes[constants.MONITORED_RES_LABEL_KEY_PROJECT],
+      attributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
       PROJECT_ID,
     );
   });
@@ -182,33 +182,33 @@ describe('MetricsTracer', () => {
     tracer.methodName = 'method';
 
     assert.strictEqual(
-      attributes[constants.MONITORED_RES_LABEL_KEY_INSTANCE],
+      attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
       'test-instance',
     );
     assert.strictEqual(
-      attributes[constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
+      attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
       'config',
     );
     assert.strictEqual(
-      attributes[constants.MONITORED_RES_LABEL_KEY_LOCATION],
+      attributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
       'us-central1',
     );
     assert.strictEqual(
-      attributes[constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
+      attributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
       'hash123',
     );
     assert.strictEqual(
-      attributes[constants.METRIC_LABEL_KEY_CLIENT_UID],
+      attributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
       'uid123',
     );
     assert.strictEqual(
-      attributes[constants.METRIC_LABEL_KEY_CLIENT_NAME],
+      attributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
       'name123',
     );
     assert.strictEqual(
-      attributes[constants.METRIC_LABEL_KEY_DATABASE],
+      attributes[Constants.METRIC_LABEL_KEY_DATABASE],
       'db123',
     );
-    assert.strictEqual(attributes[constants.METRIC_LABEL_KEY_METHOD], 'method');
+    assert.strictEqual(attributes[Constants.METRIC_LABEL_KEY_METHOD], 'method');
   });
 });

@@ -22,7 +22,7 @@ import {
 import {GoogleAuth} from 'google-auth-library';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as constants from '../../src/metrics/constants';
+import * as Constants from '../../src/metrics/constants';
 import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
 import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 
@@ -142,11 +142,28 @@ describe('MetricsTracerFactory', () => {
     assert.ok(tracer);
   });
 
+  it('should correctly set default attributes', () => {
+    const factory = new MetricsTracerFactory(true);
+    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
+    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
+    assert.ok(
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
+    );
+    assert.ok(
+      factory.clientAttributes[
+        Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG
+      ],
+    );
+    assert.ok(
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
+    );
+  });
+
   it('should correctly set project attribute', () => {
     const factory = new MetricsTracerFactory(true);
     factory.project = 'test-project';
     assert.strictEqual(
-      factory.clientAttributes[constants.MONITORED_RES_LABEL_KEY_PROJECT],
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
       'test-project',
     );
   });
@@ -155,7 +172,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.instance = 'my-instance';
     assert.strictEqual(
-      factory.clientAttributes[constants.MONITORED_RES_LABEL_KEY_INSTANCE],
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
       'my-instance',
     );
   });
@@ -165,7 +182,7 @@ describe('MetricsTracerFactory', () => {
     factory.instanceConfig = 'my-config';
     assert.strictEqual(
       factory.clientAttributes[
-        constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG
+        Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG
       ],
       'my-config',
     );
@@ -175,7 +192,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.location = 'us-central1';
     assert.strictEqual(
-      factory.clientAttributes[constants.MONITORED_RES_LABEL_KEY_LOCATION],
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
       'us-central1',
     );
   });
@@ -184,7 +201,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.clientHash = 'abc123';
     assert.strictEqual(
-      factory.clientAttributes[constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
+      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
       'abc123',
     );
   });
@@ -193,7 +210,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.clientUid = 'uid123';
     assert.strictEqual(
-      factory.clientAttributes[constants.METRIC_LABEL_KEY_CLIENT_UID],
+      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
       'uid123',
     );
   });
@@ -202,7 +219,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.clientName = 'client-app';
     assert.strictEqual(
-      factory.clientAttributes[constants.METRIC_LABEL_KEY_CLIENT_NAME],
+      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
       'client-app',
     );
   });
@@ -211,7 +228,7 @@ describe('MetricsTracerFactory', () => {
     const factory = new MetricsTracerFactory(true);
     factory.database = 'my-database';
     assert.strictEqual(
-      factory.clientAttributes[constants.METRIC_LABEL_KEY_DATABASE],
+      factory.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
       'my-database',
     );
   });
