@@ -26,6 +26,7 @@ import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
 
 export class MetricsTracerFactory {
+  private static _instance: MetricsTracerFactory | null = null;
   private _clientAttributes: {[key: string]: string};
   private _instrumentAttemptCounter!: Counter;
   private _instrumentAttemptLatency!: Histogram;
@@ -36,7 +37,7 @@ export class MetricsTracerFactory {
   public enabled: boolean;
   public gfeEnabled: boolean;
 
-  constructor(enabled: boolean, gfeEnabled = false) {
+  private constructor(enabled: boolean, gfeEnabled = false) {
     this.enabled = enabled;
     this.gfeEnabled = gfeEnabled;
     this._createMetricInstruments();
@@ -54,6 +55,17 @@ export class MetricsTracerFactory {
       [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
       [Constants.MONITORED_RES_LABEL_KEY_LOCATION]: location,
     };
+  }
+
+  public static getInstance(enabled: boolean, gfeEnabled = false) {
+    // Create a singleton instance, enabling/disabling metrics can only be done on the initial call
+    if (MetricsTracerFactory._instance === null) {
+      MetricsTracerFactory._instance = new MetricsTracerFactory(
+        enabled,
+        gfeEnabled,
+      );
+    }
+    return MetricsTracerFactory._instance;
   }
 
   get instrumentAttemptLatency(): Histogram {

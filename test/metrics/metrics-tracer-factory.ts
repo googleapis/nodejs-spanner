@@ -19,21 +19,16 @@ import {
   MeterProvider,
   PeriodicExportingMetricReader,
 } from '@opentelemetry/sdk-metrics';
-import {GoogleAuth} from 'google-auth-library';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as Constants from '../../src/metrics/constants';
 import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
 import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 
-const PROJECT_ID = 'test-project';
-
-const auth = new GoogleAuth();
-auth.getProjectId = sinon.stub().resolves(PROJECT_ID);
-
 describe('MetricsTracerFactory', () => {
   let originalProvider: ApiMeterProvider;
   let sandbox: sinon.SinonSandbox;
+  let mockExporter: CloudMonitoringMetricsExporter;
   let recordAttemptLatencyStub: sinon.SinonStub;
   let addAttemptCounterStub: sinon.SinonStub;
   let recordOperationLatencyStub: sinon.SinonStub;
@@ -41,19 +36,7 @@ describe('MetricsTracerFactory', () => {
   let recordGfeLatencyStub: sinon.SinonStub;
   let addGfeConnectivityErrorCountStub: sinon.SinonStub;
 
-  beforeEach(() => {
-    // Set the global metrics provider and related objects
-    originalProvider = metrics.getMeterProvider();
-    const exporter = new CloudMonitoringMetricsExporter({auth});
-    const reader = new PeriodicExportingMetricReader({
-      exporter: exporter,
-      exportIntervalMillis: 60000,
-    });
-    const provider = new MeterProvider({
-      readers: [reader],
-    });
-    metrics.setGlobalMeterProvider(provider);
-
+  before(() => {
     sandbox = sinon.createSandbox();
 
     recordAttemptLatencyStub = sandbox.stub();
@@ -86,35 +69,60 @@ describe('MetricsTracerFactory', () => {
       .returns({add: addGfeConnectivityErrorCountStub});
 
     sandbox.stub(MeterProvider.prototype, 'getMeter').returns(meterStub as any);
+
+    // Set the global metrics provider and related objects
+    originalProvider = metrics.getMeterProvider();
+    mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
+    const reader = new PeriodicExportingMetricReader({
+      exporter: mockExporter,
+      exportIntervalMillis: 60000,
+    });
+    const provider = new MeterProvider({
+      readers: [reader],
+    });
+    metrics.setGlobalMeterProvider(provider);
   });
 
-  afterEach(() => {
-    metrics.setGlobalMeterProvider(originalProvider);
+  after(() => {
     sandbox.restore();
+    metrics.setGlobalMeterProvider(originalProvider);
+  });
+
+  beforeEach(() => {
+    sandbox.resetHistory();
   });
 
   it('should use the globally set meter provider', async () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     const tracer = factory.createMetricsTracer();
 
-    for (let i = 0; i < 3; i++) {
+    const operations = 3;
+    const attempts = 5;
+    for (let i = 0; i < operations; i++) {
       tracer.recordOperationStart();
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < attempts; j++) {
         tracer.recordAttemptStart();
+        // Simulate processing time during attempt
+        await new Promise(resolve => {
+          setTimeout(resolve, 50);
+        });
         tracer.recordAttemptCompletion();
       }
       tracer.recordOperationCompletion();
     }
 
-    assert.ok(recordAttemptLatencyStub.calledWith(sinon.match.number));
-    assert.strictEqual(recordAttemptLatencyStub.callCount, 3 * 5);
-
     assert.ok(recordOperationLatencyStub.calledWith(sinon.match.number));
-    assert.strictEqual(recordOperationLatencyStub.callCount, 3);
+    assert.strictEqual(recordOperationLatencyStub.callCount, operations);
+
+    assert.ok(recordAttemptLatencyStub.calledWith(sinon.match.number));
+    assert.strictEqual(
+      recordAttemptLatencyStub.callCount,
+      operations * attempts,
+    );
   });
 
   it('should initialize metric instruments when enabled', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
 
     assert.deepStrictEqual(factory.instrumentAttemptLatency, {
       record: recordAttemptLatencyStub,
@@ -137,13 +145,13 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should create a MetricsTracer instance', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     const tracer = factory.createMetricsTracer();
     assert.ok(tracer);
   });
 
   it('should correctly set default attributes', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
     assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
     assert.ok(
@@ -160,7 +168,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set project attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.project = 'test-project';
     assert.strictEqual(
       factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
@@ -169,7 +177,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set instance attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.instance = 'my-instance';
     assert.strictEqual(
       factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
@@ -178,7 +186,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set instanceConfig attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.instanceConfig = 'my-config';
     assert.strictEqual(
       factory.clientAttributes[
@@ -189,7 +197,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set location attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.location = 'us-central1';
     assert.strictEqual(
       factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
@@ -198,7 +206,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set clientHash attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.clientHash = 'abc123';
     assert.strictEqual(
       factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
@@ -207,7 +215,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set clientUid attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.clientUid = 'uid123';
     assert.strictEqual(
       factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
@@ -216,7 +224,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set clientName attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.clientName = 'client-app';
     assert.strictEqual(
       factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
@@ -225,7 +233,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set database attribute', () => {
-    const factory = new MetricsTracerFactory(true);
+    const factory = MetricsTracerFactory.getInstance(true);
     factory.database = 'my-database';
     assert.strictEqual(
       factory.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],

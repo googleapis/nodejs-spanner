@@ -143,6 +143,7 @@ export class MetricsTracer {
 
   public recordOperationStart() {
     if (!this.enabled) return;
+    this.currentOperation = new MetricOpTracer();
     this.currentOperation.start();
   }
 
@@ -179,7 +180,7 @@ export class MetricsTracer {
 
   private _createOperationOtelAttributes() {
     if (!this.enabled) return {};
-    const attributes = this._clientAttributes;
+    const attributes = {...this._clientAttributes};
     attributes[METRIC_LABEL_KEY_STATUS] =
       this.currentOperation.status.toString();
 
@@ -188,7 +189,7 @@ export class MetricsTracer {
 
   private _createAttemptOtelAttributes() {
     if (!this.enabled) return {};
-    const attributes = this._clientAttributes;
+    const attributes = {...this._clientAttributes};
     if (this.currentOperation.currentAttempt === null) return attributes;
     attributes[METRIC_LABEL_KEY_STATUS] =
       this.currentOperation.currentAttempt.status.toString();
