@@ -286,6 +286,10 @@ export class Snapshot extends EventEmitter {
   protected _waitingRequests: Array<() => void>;
   protected _inlineBeginStarted;
   protected _useInRunner = false;
+  protected _latestPreCommitToken:
+    | spannerClient.spanner.v1.IMultiplexedSessionPrecommitToken
+    | undefined
+    | null;
   id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -371,6 +375,7 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName,
     };
+    this._latestPreCommitToken = null;
   }
 
   /**
@@ -477,6 +482,14 @@ export class Snapshot extends EventEmitter {
             if (err) {
               setSpanError(span, err);
             } else {
+              if (
+                this._latestPreCommitToken === null ||
+                this._latestPreCommitToken === undefined ||
+                this._latestPreCommitToken!.seqNum! <
+                  resp.precommitToken!.seqNum!
+              ) {
+                this._latestPreCommitToken = resp.precommitToken;
+              }
               this._update(resp);
             }
             span.end();
@@ -779,6 +792,14 @@ export class Snapshot extends EventEmitter {
       )
         ?.on('response', response => {
           if (response.metadata && response.metadata!.transaction && !this.id) {
+            if (
+              this._latestPreCommitToken === null ||
+              this._latestPreCommitToken === undefined ||
+              this._latestPreCommitToken!.seqNum! <
+                response.precommitToken!.seqNum!
+            ) {
+              this._latestPreCommitToken = response.precommitToken;
+            }
             this._update(response.metadata!.transaction);
           }
         })
@@ -1382,6 +1403,14 @@ export class Snapshot extends EventEmitter {
       )
         .on('response', response => {
           if (response.metadata && response.metadata!.transaction && !this.id) {
+            if (
+              this._latestPreCommitToken === null ||
+              this._latestPreCommitToken === undefined ||
+              this._latestPreCommitToken!.seqNum! <
+                response.precommitToken!.seqNum!
+            ) {
+              this._latestPreCommitToken = response.precommitToken;
+            }
             this._update(response.metadata!.transaction);
           }
         })
@@ -2040,6 +2069,14 @@ export class Transaction extends Dml {
             return;
           }
 
+          if (
+            this._latestPreCommitToken === null ||
+            this._latestPreCommitToken === undefined ||
+            this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
+          ) {
+            this._latestPreCommitToken = resp.precommitToken;
+          }
+
           const {resultSets, status} = resp;
           for (const resultSet of resultSets) {
             if (!this.id && resultSet.metadata?.transaction) {
@@ -2182,8 +2219,14 @@ export class Transaction extends Dml {
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
+    const precommitToken = this._latestPreCommitToken;
     const requestOptions = (options as CommitOptions).requestOptions;
-    const reqOpts: CommitRequest = {mutations, session, requestOptions};
+    const reqOpts: CommitRequest = {
+      mutations,
+      session,
+      requestOptions,
+      precommitToken,
+    };
 
     return startTrace(
       'Transaction.commit',
