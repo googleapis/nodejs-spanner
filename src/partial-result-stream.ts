@@ -245,9 +245,9 @@ export class PartialResultStream extends Transform implements ResultEvents {
       res = this._addChunk(chunk);
     }
 
-    if(chunk.last) {
+    if (chunk.last) {
       this.emit('end');
-      return
+      return;
     }
 
     if (res) {
