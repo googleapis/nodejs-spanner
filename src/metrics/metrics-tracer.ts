@@ -50,7 +50,7 @@ class MetricOpTracer {
   constructor() {
     this._attemptCount = 0;
     this._startTime = new Date(Date.now());
-    this._currentAttempt = {};
+    this._currentAttempt = null;
     this.status = -1;
   }
 
