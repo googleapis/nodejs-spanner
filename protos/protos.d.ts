@@ -35121,6 +35121,1282 @@ export namespace google {
                 PG_JSONB = 3,
                 PG_OID = 4
             }
+
+            /** Properties of a ChangeStreamRecord. */
+            interface IChangeStreamRecord {
+
+                /** ChangeStreamRecord dataChangeRecord */
+                dataChangeRecord?: (google.spanner.v1.ChangeStreamRecord.IDataChangeRecord|null);
+
+                /** ChangeStreamRecord heartbeatRecord */
+                heartbeatRecord?: (google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord|null);
+
+                /** ChangeStreamRecord partitionStartRecord */
+                partitionStartRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord|null);
+
+                /** ChangeStreamRecord partitionEndRecord */
+                partitionEndRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord|null);
+
+                /** ChangeStreamRecord partitionEventRecord */
+                partitionEventRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord|null);
+            }
+
+            /** Represents a ChangeStreamRecord. */
+            class ChangeStreamRecord implements IChangeStreamRecord {
+
+                /**
+                 * Constructs a new ChangeStreamRecord.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IChangeStreamRecord);
+
+                /** ChangeStreamRecord dataChangeRecord. */
+                public dataChangeRecord?: (google.spanner.v1.ChangeStreamRecord.IDataChangeRecord|null);
+
+                /** ChangeStreamRecord heartbeatRecord. */
+                public heartbeatRecord?: (google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord|null);
+
+                /** ChangeStreamRecord partitionStartRecord. */
+                public partitionStartRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord|null);
+
+                /** ChangeStreamRecord partitionEndRecord. */
+                public partitionEndRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord|null);
+
+                /** ChangeStreamRecord partitionEventRecord. */
+                public partitionEventRecord?: (google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord|null);
+
+                /** ChangeStreamRecord record. */
+                public record?: ("dataChangeRecord"|"heartbeatRecord"|"partitionStartRecord"|"partitionEndRecord"|"partitionEventRecord");
+
+                /**
+                 * Creates a new ChangeStreamRecord instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns ChangeStreamRecord instance
+                 */
+                public static create(properties?: google.spanner.v1.IChangeStreamRecord): google.spanner.v1.ChangeStreamRecord;
+
+                /**
+                 * Encodes the specified ChangeStreamRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.verify|verify} messages.
+                 * @param message ChangeStreamRecord message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IChangeStreamRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ChangeStreamRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.verify|verify} messages.
+                 * @param message ChangeStreamRecord message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IChangeStreamRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ChangeStreamRecord message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ChangeStreamRecord
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord;
+
+                /**
+                 * Decodes a ChangeStreamRecord message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ChangeStreamRecord
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord;
+
+                /**
+                 * Verifies a ChangeStreamRecord message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ChangeStreamRecord message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ChangeStreamRecord
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord;
+
+                /**
+                 * Creates a plain object from a ChangeStreamRecord message. Also converts values to other types if specified.
+                 * @param message ChangeStreamRecord
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.ChangeStreamRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ChangeStreamRecord to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for ChangeStreamRecord
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace ChangeStreamRecord {
+
+                /** Properties of a DataChangeRecord. */
+                interface IDataChangeRecord {
+
+                    /** DataChangeRecord commitTimestamp */
+                    commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** DataChangeRecord recordSequence */
+                    recordSequence?: (string|null);
+
+                    /** DataChangeRecord serverTransactionId */
+                    serverTransactionId?: (string|null);
+
+                    /** DataChangeRecord isLastRecordInTransactionInPartition */
+                    isLastRecordInTransactionInPartition?: (boolean|null);
+
+                    /** DataChangeRecord table */
+                    table?: (string|null);
+
+                    /** DataChangeRecord columnMetadata */
+                    columnMetadata?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata[]|null);
+
+                    /** DataChangeRecord mods */
+                    mods?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod[]|null);
+
+                    /** DataChangeRecord modType */
+                    modType?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModType|keyof typeof google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModType|null);
+
+                    /** DataChangeRecord valueCaptureType */
+                    valueCaptureType?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ValueCaptureType|keyof typeof google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ValueCaptureType|null);
+
+                    /** DataChangeRecord numberOfRecordsInTransaction */
+                    numberOfRecordsInTransaction?: (number|null);
+
+                    /** DataChangeRecord numberOfPartitionsInTransaction */
+                    numberOfPartitionsInTransaction?: (number|null);
+
+                    /** DataChangeRecord transactionTag */
+                    transactionTag?: (string|null);
+
+                    /** DataChangeRecord isSystemTransaction */
+                    isSystemTransaction?: (boolean|null);
+                }
+
+                /** Represents a DataChangeRecord. */
+                class DataChangeRecord implements IDataChangeRecord {
+
+                    /**
+                     * Constructs a new DataChangeRecord.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ChangeStreamRecord.IDataChangeRecord);
+
+                    /** DataChangeRecord commitTimestamp. */
+                    public commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** DataChangeRecord recordSequence. */
+                    public recordSequence: string;
+
+                    /** DataChangeRecord serverTransactionId. */
+                    public serverTransactionId: string;
+
+                    /** DataChangeRecord isLastRecordInTransactionInPartition. */
+                    public isLastRecordInTransactionInPartition: boolean;
+
+                    /** DataChangeRecord table. */
+                    public table: string;
+
+                    /** DataChangeRecord columnMetadata. */
+                    public columnMetadata: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata[];
+
+                    /** DataChangeRecord mods. */
+                    public mods: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod[];
+
+                    /** DataChangeRecord modType. */
+                    public modType: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModType|keyof typeof google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModType);
+
+                    /** DataChangeRecord valueCaptureType. */
+                    public valueCaptureType: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ValueCaptureType|keyof typeof google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ValueCaptureType);
+
+                    /** DataChangeRecord numberOfRecordsInTransaction. */
+                    public numberOfRecordsInTransaction: number;
+
+                    /** DataChangeRecord numberOfPartitionsInTransaction. */
+                    public numberOfPartitionsInTransaction: number;
+
+                    /** DataChangeRecord transactionTag. */
+                    public transactionTag: string;
+
+                    /** DataChangeRecord isSystemTransaction. */
+                    public isSystemTransaction: boolean;
+
+                    /**
+                     * Creates a new DataChangeRecord instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns DataChangeRecord instance
+                     */
+                    public static create(properties?: google.spanner.v1.ChangeStreamRecord.IDataChangeRecord): google.spanner.v1.ChangeStreamRecord.DataChangeRecord;
+
+                    /**
+                     * Encodes the specified DataChangeRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.verify|verify} messages.
+                     * @param message DataChangeRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ChangeStreamRecord.IDataChangeRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified DataChangeRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.verify|verify} messages.
+                     * @param message DataChangeRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.IDataChangeRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a DataChangeRecord message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns DataChangeRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.DataChangeRecord;
+
+                    /**
+                     * Decodes a DataChangeRecord message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns DataChangeRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.DataChangeRecord;
+
+                    /**
+                     * Verifies a DataChangeRecord message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a DataChangeRecord message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns DataChangeRecord
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.DataChangeRecord;
+
+                    /**
+                     * Creates a plain object from a DataChangeRecord message. Also converts values to other types if specified.
+                     * @param message DataChangeRecord
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this DataChangeRecord to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for DataChangeRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace DataChangeRecord {
+
+                    /** Properties of a ColumnMetadata. */
+                    interface IColumnMetadata {
+
+                        /** ColumnMetadata name */
+                        name?: (string|null);
+
+                        /** ColumnMetadata type */
+                        type?: (google.spanner.v1.IType|null);
+
+                        /** ColumnMetadata isPrimaryKey */
+                        isPrimaryKey?: (boolean|null);
+
+                        /** ColumnMetadata ordinalPosition */
+                        ordinalPosition?: (number|Long|string|null);
+                    }
+
+                    /** Represents a ColumnMetadata. */
+                    class ColumnMetadata implements IColumnMetadata {
+
+                        /**
+                         * Constructs a new ColumnMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata);
+
+                        /** ColumnMetadata name. */
+                        public name: string;
+
+                        /** ColumnMetadata type. */
+                        public type?: (google.spanner.v1.IType|null);
+
+                        /** ColumnMetadata isPrimaryKey. */
+                        public isPrimaryKey: boolean;
+
+                        /** ColumnMetadata ordinalPosition. */
+                        public ordinalPosition: (number|Long|string);
+
+                        /**
+                         * Creates a new ColumnMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ColumnMetadata instance
+                         */
+                        public static create(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata;
+
+                        /**
+                         * Encodes the specified ColumnMetadata message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata.verify|verify} messages.
+                         * @param message ColumnMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ColumnMetadata message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata.verify|verify} messages.
+                         * @param message ColumnMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IColumnMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ColumnMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ColumnMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata;
+
+                        /**
+                         * Decodes a ColumnMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ColumnMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata;
+
+                        /**
+                         * Verifies a ColumnMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ColumnMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ColumnMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata;
+
+                        /**
+                         * Creates a plain object from a ColumnMetadata message. Also converts values to other types if specified.
+                         * @param message ColumnMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ColumnMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ColumnMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ColumnMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ModValue. */
+                    interface IModValue {
+
+                        /** ModValue columnMetadataIndex */
+                        columnMetadataIndex?: (number|null);
+
+                        /** ModValue value */
+                        value?: (google.protobuf.IValue|null);
+                    }
+
+                    /** Represents a ModValue. */
+                    class ModValue implements IModValue {
+
+                        /**
+                         * Constructs a new ModValue.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue);
+
+                        /** ModValue columnMetadataIndex. */
+                        public columnMetadataIndex: number;
+
+                        /** ModValue value. */
+                        public value?: (google.protobuf.IValue|null);
+
+                        /**
+                         * Creates a new ModValue instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ModValue instance
+                         */
+                        public static create(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue;
+
+                        /**
+                         * Encodes the specified ModValue message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue.verify|verify} messages.
+                         * @param message ModValue message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ModValue message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue.verify|verify} messages.
+                         * @param message ModValue message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ModValue message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ModValue
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue;
+
+                        /**
+                         * Decodes a ModValue message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ModValue
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue;
+
+                        /**
+                         * Verifies a ModValue message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ModValue message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ModValue
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue;
+
+                        /**
+                         * Creates a plain object from a ModValue message. Also converts values to other types if specified.
+                         * @param message ModValue
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.ModValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ModValue to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ModValue
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a Mod. */
+                    interface IMod {
+
+                        /** Mod keys */
+                        keys?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[]|null);
+
+                        /** Mod oldValues */
+                        oldValues?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[]|null);
+
+                        /** Mod newValues */
+                        newValues?: (google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[]|null);
+                    }
+
+                    /** Represents a Mod. */
+                    class Mod implements IMod {
+
+                        /**
+                         * Constructs a new Mod.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod);
+
+                        /** Mod keys. */
+                        public keys: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[];
+
+                        /** Mod oldValues. */
+                        public oldValues: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[];
+
+                        /** Mod newValues. */
+                        public newValues: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IModValue[];
+
+                        /**
+                         * Creates a new Mod instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns Mod instance
+                         */
+                        public static create(properties?: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod;
+
+                        /**
+                         * Encodes the specified Mod message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod.verify|verify} messages.
+                         * @param message Mod message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified Mod message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod.verify|verify} messages.
+                         * @param message Mod message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.IMod, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a Mod message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns Mod
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod;
+
+                        /**
+                         * Decodes a Mod message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns Mod
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod;
+
+                        /**
+                         * Verifies a Mod message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a Mod message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns Mod
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod;
+
+                        /**
+                         * Creates a plain object from a Mod message. Also converts values to other types if specified.
+                         * @param message Mod
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.v1.ChangeStreamRecord.DataChangeRecord.Mod, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this Mod to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for Mod
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** ModType enum. */
+                    enum ModType {
+                        MOD_TYPE_UNSPECIFIED = 0,
+                        INSERT = 10,
+                        UPDATE = 20,
+                        DELETE = 30
+                    }
+
+                    /** ValueCaptureType enum. */
+                    enum ValueCaptureType {
+                        VALUE_CAPTURE_TYPE_UNSPECIFIED = 0,
+                        OLD_AND_NEW_VALUES = 10,
+                        NEW_VALUES = 20,
+                        NEW_ROW = 30,
+                        NEW_ROW_AND_OLD_VALUES = 40
+                    }
+                }
+
+                /** Properties of a HeartbeatRecord. */
+                interface IHeartbeatRecord {
+
+                    /** HeartbeatRecord timestamp */
+                    timestamp?: (google.protobuf.ITimestamp|null);
+                }
+
+                /** Represents a HeartbeatRecord. */
+                class HeartbeatRecord implements IHeartbeatRecord {
+
+                    /**
+                     * Constructs a new HeartbeatRecord.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord);
+
+                    /** HeartbeatRecord timestamp. */
+                    public timestamp?: (google.protobuf.ITimestamp|null);
+
+                    /**
+                     * Creates a new HeartbeatRecord instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns HeartbeatRecord instance
+                     */
+                    public static create(properties?: google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord): google.spanner.v1.ChangeStreamRecord.HeartbeatRecord;
+
+                    /**
+                     * Encodes the specified HeartbeatRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.HeartbeatRecord.verify|verify} messages.
+                     * @param message HeartbeatRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified HeartbeatRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.HeartbeatRecord.verify|verify} messages.
+                     * @param message HeartbeatRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.IHeartbeatRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a HeartbeatRecord message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns HeartbeatRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.HeartbeatRecord;
+
+                    /**
+                     * Decodes a HeartbeatRecord message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns HeartbeatRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.HeartbeatRecord;
+
+                    /**
+                     * Verifies a HeartbeatRecord message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a HeartbeatRecord message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns HeartbeatRecord
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.HeartbeatRecord;
+
+                    /**
+                     * Creates a plain object from a HeartbeatRecord message. Also converts values to other types if specified.
+                     * @param message HeartbeatRecord
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ChangeStreamRecord.HeartbeatRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this HeartbeatRecord to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for HeartbeatRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a PartitionStartRecord. */
+                interface IPartitionStartRecord {
+
+                    /** PartitionStartRecord startTimestamp */
+                    startTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionStartRecord recordSequence */
+                    recordSequence?: (string|null);
+
+                    /** PartitionStartRecord partitionTokens */
+                    partitionTokens?: (string[]|null);
+                }
+
+                /** Represents a PartitionStartRecord. */
+                class PartitionStartRecord implements IPartitionStartRecord {
+
+                    /**
+                     * Constructs a new PartitionStartRecord.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord);
+
+                    /** PartitionStartRecord startTimestamp. */
+                    public startTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionStartRecord recordSequence. */
+                    public recordSequence: string;
+
+                    /** PartitionStartRecord partitionTokens. */
+                    public partitionTokens: string[];
+
+                    /**
+                     * Creates a new PartitionStartRecord instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns PartitionStartRecord instance
+                     */
+                    public static create(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord): google.spanner.v1.ChangeStreamRecord.PartitionStartRecord;
+
+                    /**
+                     * Encodes the specified PartitionStartRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionStartRecord.verify|verify} messages.
+                     * @param message PartitionStartRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PartitionStartRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionStartRecord.verify|verify} messages.
+                     * @param message PartitionStartRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.IPartitionStartRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PartitionStartRecord message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PartitionStartRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.PartitionStartRecord;
+
+                    /**
+                     * Decodes a PartitionStartRecord message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PartitionStartRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.PartitionStartRecord;
+
+                    /**
+                     * Verifies a PartitionStartRecord message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PartitionStartRecord message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PartitionStartRecord
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.PartitionStartRecord;
+
+                    /**
+                     * Creates a plain object from a PartitionStartRecord message. Also converts values to other types if specified.
+                     * @param message PartitionStartRecord
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ChangeStreamRecord.PartitionStartRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PartitionStartRecord to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for PartitionStartRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a PartitionEndRecord. */
+                interface IPartitionEndRecord {
+
+                    /** PartitionEndRecord endTimestamp */
+                    endTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionEndRecord recordSequence */
+                    recordSequence?: (string|null);
+
+                    /** PartitionEndRecord partitionToken */
+                    partitionToken?: (string|null);
+                }
+
+                /** Represents a PartitionEndRecord. */
+                class PartitionEndRecord implements IPartitionEndRecord {
+
+                    /**
+                     * Constructs a new PartitionEndRecord.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord);
+
+                    /** PartitionEndRecord endTimestamp. */
+                    public endTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionEndRecord recordSequence. */
+                    public recordSequence: string;
+
+                    /** PartitionEndRecord partitionToken. */
+                    public partitionToken: string;
+
+                    /**
+                     * Creates a new PartitionEndRecord instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns PartitionEndRecord instance
+                     */
+                    public static create(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord): google.spanner.v1.ChangeStreamRecord.PartitionEndRecord;
+
+                    /**
+                     * Encodes the specified PartitionEndRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEndRecord.verify|verify} messages.
+                     * @param message PartitionEndRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PartitionEndRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEndRecord.verify|verify} messages.
+                     * @param message PartitionEndRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.IPartitionEndRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PartitionEndRecord message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PartitionEndRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.PartitionEndRecord;
+
+                    /**
+                     * Decodes a PartitionEndRecord message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PartitionEndRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.PartitionEndRecord;
+
+                    /**
+                     * Verifies a PartitionEndRecord message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PartitionEndRecord message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PartitionEndRecord
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.PartitionEndRecord;
+
+                    /**
+                     * Creates a plain object from a PartitionEndRecord message. Also converts values to other types if specified.
+                     * @param message PartitionEndRecord
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ChangeStreamRecord.PartitionEndRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PartitionEndRecord to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for PartitionEndRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a PartitionEventRecord. */
+                interface IPartitionEventRecord {
+
+                    /** PartitionEventRecord commitTimestamp */
+                    commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionEventRecord recordSequence */
+                    recordSequence?: (string|null);
+
+                    /** PartitionEventRecord partitionToken */
+                    partitionToken?: (string|null);
+
+                    /** PartitionEventRecord moveInEvents */
+                    moveInEvents?: (google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent[]|null);
+
+                    /** PartitionEventRecord moveOutEvents */
+                    moveOutEvents?: (google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent[]|null);
+                }
+
+                /** Represents a PartitionEventRecord. */
+                class PartitionEventRecord implements IPartitionEventRecord {
+
+                    /**
+                     * Constructs a new PartitionEventRecord.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord);
+
+                    /** PartitionEventRecord commitTimestamp. */
+                    public commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                    /** PartitionEventRecord recordSequence. */
+                    public recordSequence: string;
+
+                    /** PartitionEventRecord partitionToken. */
+                    public partitionToken: string;
+
+                    /** PartitionEventRecord moveInEvents. */
+                    public moveInEvents: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent[];
+
+                    /** PartitionEventRecord moveOutEvents. */
+                    public moveOutEvents: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent[];
+
+                    /**
+                     * Creates a new PartitionEventRecord instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns PartitionEventRecord instance
+                     */
+                    public static create(properties?: google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord;
+
+                    /**
+                     * Encodes the specified PartitionEventRecord message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.verify|verify} messages.
+                     * @param message PartitionEventRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PartitionEventRecord message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.verify|verify} messages.
+                     * @param message PartitionEventRecord message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.IPartitionEventRecord, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PartitionEventRecord message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PartitionEventRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord;
+
+                    /**
+                     * Decodes a PartitionEventRecord message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PartitionEventRecord
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord;
+
+                    /**
+                     * Verifies a PartitionEventRecord message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PartitionEventRecord message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PartitionEventRecord
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord;
+
+                    /**
+                     * Creates a plain object from a PartitionEventRecord message. Also converts values to other types if specified.
+                     * @param message PartitionEventRecord
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PartitionEventRecord to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for PartitionEventRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace PartitionEventRecord {
+
+                    /** Properties of a MoveInEvent. */
+                    interface IMoveInEvent {
+
+                        /** MoveInEvent sourcePartitionToken */
+                        sourcePartitionToken?: (string|null);
+                    }
+
+                    /** Represents a MoveInEvent. */
+                    class MoveInEvent implements IMoveInEvent {
+
+                        /**
+                         * Constructs a new MoveInEvent.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent);
+
+                        /** MoveInEvent sourcePartitionToken. */
+                        public sourcePartitionToken: string;
+
+                        /**
+                         * Creates a new MoveInEvent instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns MoveInEvent instance
+                         */
+                        public static create(properties?: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent;
+
+                        /**
+                         * Encodes the specified MoveInEvent message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent.verify|verify} messages.
+                         * @param message MoveInEvent message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MoveInEvent message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent.verify|verify} messages.
+                         * @param message MoveInEvent message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveInEvent, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MoveInEvent message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MoveInEvent
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent;
+
+                        /**
+                         * Decodes a MoveInEvent message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MoveInEvent
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent;
+
+                        /**
+                         * Verifies a MoveInEvent message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MoveInEvent message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MoveInEvent
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent;
+
+                        /**
+                         * Creates a plain object from a MoveInEvent message. Also converts values to other types if specified.
+                         * @param message MoveInEvent
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveInEvent, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MoveInEvent to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for MoveInEvent
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a MoveOutEvent. */
+                    interface IMoveOutEvent {
+
+                        /** MoveOutEvent destinationPartitionToken */
+                        destinationPartitionToken?: (string|null);
+                    }
+
+                    /** Represents a MoveOutEvent. */
+                    class MoveOutEvent implements IMoveOutEvent {
+
+                        /**
+                         * Constructs a new MoveOutEvent.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent);
+
+                        /** MoveOutEvent destinationPartitionToken. */
+                        public destinationPartitionToken: string;
+
+                        /**
+                         * Creates a new MoveOutEvent instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns MoveOutEvent instance
+                         */
+                        public static create(properties?: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent;
+
+                        /**
+                         * Encodes the specified MoveOutEvent message. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent.verify|verify} messages.
+                         * @param message MoveOutEvent message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MoveOutEvent message, length delimited. Does not implicitly {@link google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent.verify|verify} messages.
+                         * @param message MoveOutEvent message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.IMoveOutEvent, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MoveOutEvent message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MoveOutEvent
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent;
+
+                        /**
+                         * Decodes a MoveOutEvent message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MoveOutEvent
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent;
+
+                        /**
+                         * Verifies a MoveOutEvent message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MoveOutEvent message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MoveOutEvent
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent;
+
+                        /**
+                         * Creates a plain object from a MoveOutEvent message. Also converts values to other types if specified.
+                         * @param message MoveOutEvent
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.v1.ChangeStreamRecord.PartitionEventRecord.MoveOutEvent, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MoveOutEvent to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for MoveOutEvent
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+                }
+            }
         }
     }
 
