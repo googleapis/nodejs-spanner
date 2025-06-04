@@ -48,7 +48,7 @@ function main(instanceId, databaseId, projectId) {
         // for the RPC. If you set a timeout that is longer than the default timeout, then
         // the default timeout will be used.
         const query = {
-          sql: "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (9, 'George', 'Washington')",
+          sql: "INSERT INTO Singers (SingerId, FirstName, LastName) VALUES (110, 'George', 'Washington')",
           gaxOptions: {
             timeout: 60000, // 60 seconds timeout
           },
