@@ -127,6 +127,7 @@ and automatic, synchronous replication for high availability.
   * [Alters a sequence in a GoogleSQL database.](#alters-a-sequence-in-a-googlesql-database.)
   * [Creates sequence in GoogleSQL database.](#creates-sequence-in-googlesql-database.)
   * [Drops a sequence in GoogleSQL database.](#drops-a-sequence-in-googlesql-database.)
+  * [Executes a read/write transaction with statement timeout](#executes-a-read/write-transaction-with-statement-timeout)
   * [Struct](#struct)
   * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
   * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
@@ -2067,6 +2068,23 @@ __Usage:__
 
 
 `node sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes a read/write transaction with statement timeout
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/statement-timeout.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/statement-timeout.js,samples/README.md)
+
+__Usage:__
+
+
+`node statement-timeout.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
