@@ -40,7 +40,7 @@ import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
-import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
+import {ExecuteSqlRequest, ReadRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseOperationsOptions} from '../src/instance';
 import {
@@ -1388,6 +1388,89 @@ describe('Spanner with mock server', () => {
       } finally {
         await database.close();
       }
+    });
+
+    it('should return the results correctly when last field is present in PartialResultSet for query', async () => {
+      // Setup a query result with more than maxQueued (10) PartialResultSets.
+      // None of the PartialResultSets include a resume token.
+      const sql = 'SELECT C1 FROM TestTable';
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'C1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+      ];
+      const metadata = new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+      const results: PartialResultSet[] = [];
+      for (let i = 0; i < 2; i++) {
+        results.push(
+          PartialResultSet.create({
+            metadata,
+            values: [{stringValue: `V${i}`}],
+            last: i == 1,
+          }),
+        );
+      }
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(results),
+      );
+
+      const database = newTestDatabase();
+      const [rows] = await database.run(sql);
+      assert.equal(rows.length, 2)
+      await database.close();
+    });
+
+    it('should return the results correctly when last field is present in PartialResultSet for read', async () => {
+      // Setup a query result with more than maxQueued (10) PartialResultSets.
+      // None of the PartialResultSets include a resume token.
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'C1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+      ];
+      const metadata = new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+      const results: PartialResultSet[] = [];
+      for (let i = 0; i < 2; i++) {
+        results.push(
+          PartialResultSet.create({
+            metadata,
+            values: [{stringValue: `V${i}`}],
+            last: i == 0,
+          }),
+        );
+      }
+      const request = {
+        table: 'TestTable',
+        keySet: {
+          keys: [],
+          all: true,
+          ranges: [],
+        }
+      }
+      spannerMock.putReadRequestResult(
+        request,
+        mock.ReadRequestResult.resultSet(results)
+      );
+
+      const database = newTestDatabase();
+      const table = database.table('TestTable')
+      const query = {
+        columns: ['C1']
+      }
+      const [rows] = await table.read(query);
+      assert.equal(rows.length, 1)
+      await database.close();
     });
 
     it('should handle missing parameters in query', async () => {
