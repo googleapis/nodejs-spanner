@@ -1411,7 +1411,7 @@ describe('Spanner with mock server', () => {
           PartialResultSet.create({
             metadata,
             values: [{stringValue: `V${i}`}],
-            last: i == 1,
+            last: i === 1,
           }),
         );
       }
@@ -1422,7 +1422,7 @@ describe('Spanner with mock server', () => {
 
       const database = newTestDatabase();
       const [rows] = await database.run(sql);
-      assert.equal(rows.length, 2)
+      assert.equal(rows.length, 2);
       await database.close();
     });
 
@@ -1446,7 +1446,7 @@ describe('Spanner with mock server', () => {
           PartialResultSet.create({
             metadata,
             values: [{stringValue: `V${i}`}],
-            last: i == 0,
+            last: i === 0,
           }),
         );
       }
@@ -1456,20 +1456,20 @@ describe('Spanner with mock server', () => {
           keys: [],
           all: true,
           ranges: [],
-        }
-      }
+        },
+      };
       spannerMock.putReadRequestResult(
         request,
-        mock.ReadRequestResult.resultSet(results)
+        mock.ReadRequestResult.resultSet(results),
       );
 
       const database = newTestDatabase();
-      const table = database.table('TestTable')
+      const table = database.table('TestTable');
       const query = {
-        columns: ['C1']
-      }
+        columns: ['C1'],
+      };
       const [rows] = await table.read(query);
-      assert.equal(rows.length, 1)
+      assert.equal(rows.length, 1);
       await database.close();
     });
 
