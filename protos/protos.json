@@ -7675,7 +7675,7 @@
                 "csharp_namespace": "Google.Cloud.Spanner.V1",
                 "go_package": "cloud.google.com/go/spanner/apiv1/spannerpb;spannerpb",
                 "java_multiple_files": true,
-                "java_outer_classname": "TypeProto",
+                "java_outer_classname": "ChangeStreamProto",
                 "java_package": "com.google.spanner.v1",
                 "php_namespace": "Google\\Cloud\\Spanner\\V1",
                 "ruby_package": "Google::Cloud::Spanner::V1",
@@ -9372,6 +9372,256 @@
                     "PG_NUMERIC": 2,
                     "PG_JSONB": 3,
                     "PG_OID": 4
+                  }
+                },
+                "ChangeStreamRecord": {
+                  "oneofs": {
+                    "record": {
+                      "oneof": [
+                        "dataChangeRecord",
+                        "heartbeatRecord",
+                        "partitionStartRecord",
+                        "partitionEndRecord",
+                        "partitionEventRecord"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "dataChangeRecord": {
+                      "type": "DataChangeRecord",
+                      "id": 1
+                    },
+                    "heartbeatRecord": {
+                      "type": "HeartbeatRecord",
+                      "id": 2
+                    },
+                    "partitionStartRecord": {
+                      "type": "PartitionStartRecord",
+                      "id": 3
+                    },
+                    "partitionEndRecord": {
+                      "type": "PartitionEndRecord",
+                      "id": 4
+                    },
+                    "partitionEventRecord": {
+                      "type": "PartitionEventRecord",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "DataChangeRecord": {
+                      "fields": {
+                        "commitTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        },
+                        "recordSequence": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "serverTransactionId": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "isLastRecordInTransactionInPartition": {
+                          "type": "bool",
+                          "id": 4
+                        },
+                        "table": {
+                          "type": "string",
+                          "id": 5
+                        },
+                        "columnMetadata": {
+                          "rule": "repeated",
+                          "type": "ColumnMetadata",
+                          "id": 6
+                        },
+                        "mods": {
+                          "rule": "repeated",
+                          "type": "Mod",
+                          "id": 7
+                        },
+                        "modType": {
+                          "type": "ModType",
+                          "id": 8
+                        },
+                        "valueCaptureType": {
+                          "type": "ValueCaptureType",
+                          "id": 9
+                        },
+                        "numberOfRecordsInTransaction": {
+                          "type": "int32",
+                          "id": 10
+                        },
+                        "numberOfPartitionsInTransaction": {
+                          "type": "int32",
+                          "id": 11
+                        },
+                        "transactionTag": {
+                          "type": "string",
+                          "id": 12
+                        },
+                        "isSystemTransaction": {
+                          "type": "bool",
+                          "id": 13
+                        }
+                      },
+                      "nested": {
+                        "ColumnMetadata": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "type": {
+                              "type": "Type",
+                              "id": 2
+                            },
+                            "isPrimaryKey": {
+                              "type": "bool",
+                              "id": 3
+                            },
+                            "ordinalPosition": {
+                              "type": "int64",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ModValue": {
+                          "fields": {
+                            "columnMetadataIndex": {
+                              "type": "int32",
+                              "id": 1
+                            },
+                            "value": {
+                              "type": "google.protobuf.Value",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "Mod": {
+                          "fields": {
+                            "keys": {
+                              "rule": "repeated",
+                              "type": "ModValue",
+                              "id": 1
+                            },
+                            "oldValues": {
+                              "rule": "repeated",
+                              "type": "ModValue",
+                              "id": 2
+                            },
+                            "newValues": {
+                              "rule": "repeated",
+                              "type": "ModValue",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "ModType": {
+                          "values": {
+                            "MOD_TYPE_UNSPECIFIED": 0,
+                            "INSERT": 10,
+                            "UPDATE": 20,
+                            "DELETE": 30
+                          }
+                        },
+                        "ValueCaptureType": {
+                          "values": {
+                            "VALUE_CAPTURE_TYPE_UNSPECIFIED": 0,
+                            "OLD_AND_NEW_VALUES": 10,
+                            "NEW_VALUES": 20,
+                            "NEW_ROW": 30,
+                            "NEW_ROW_AND_OLD_VALUES": 40
+                          }
+                        }
+                      }
+                    },
+                    "HeartbeatRecord": {
+                      "fields": {
+                        "timestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "PartitionStartRecord": {
+                      "fields": {
+                        "startTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        },
+                        "recordSequence": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "partitionTokens": {
+                          "rule": "repeated",
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "PartitionEndRecord": {
+                      "fields": {
+                        "endTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        },
+                        "recordSequence": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "partitionToken": {
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    },
+                    "PartitionEventRecord": {
+                      "fields": {
+                        "commitTimestamp": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        },
+                        "recordSequence": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "partitionToken": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "moveInEvents": {
+                          "rule": "repeated",
+                          "type": "MoveInEvent",
+                          "id": 4
+                        },
+                        "moveOutEvents": {
+                          "rule": "repeated",
+                          "type": "MoveOutEvent",
+                          "id": 5
+                        }
+                      },
+                      "nested": {
+                        "MoveInEvent": {
+                          "fields": {
+                            "sourcePartitionToken": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        },
+                        "MoveOutEvent": {
+                          "fields": {
+                            "destinationPartitionToken": {
+                              "type": "string",
+                              "id": 1
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
