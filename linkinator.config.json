@@ -6,8 +6,7 @@
     "img.shields.io",
     "https://console.cloud.google.com/cloudshell",
     "https://support.google.com",
-    "https://github.com/googleapis/nodejs-spanner/blob/main/samples/",
-    "https://github.com/googleapis/nodejs-spanner/blob/fix-docs-test/samples/"
+    "^https://github\\.com/googleapis/nodejs-spanner/blob/[^/]+/samples/.*"
   ],
   "silent": true,
   "concurrency": 5,
