@@ -128,12 +128,14 @@ and automatic, synchronous replication for high availability.
   * [Alters a sequence in a GoogleSQL database.](#alters-a-sequence-in-a-googlesql-database.)
   * [Creates sequence in GoogleSQL database.](#creates-sequence-in-googlesql-database.)
   * [Drops a sequence in GoogleSQL database.](#drops-a-sequence-in-googlesql-database.)
+  * [Executes a read/write transaction with statement timeout](#executes-a-read/write-transaction-with-statement-timeout)
   * [Struct](#struct)
   * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
   * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
   * [Drops a foreign key constraint with delete cascade action](#drops-a-foreign-key-constraint-with-delete-cascade-action)
   * [Timestamp](#timestamp)
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
+  * [Executes a read/write transaction with transaction timeout](#executes-a-read/write-transaction-with-transaction-timeout)
   * [Transaction](#transaction)
   * [Updates a backup schedule](#updates-a-backup-schedule)
   * [Updates an instance.](#updates-an-instance.)
@@ -2091,6 +2093,23 @@ __Usage:__
 
 
 
+### Executes a read/write transaction with statement timeout
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/statement-timeout.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/statement-timeout.js,samples/README.md)
+
+__Usage:__
+
+
+`node statement-timeout.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Struct
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/struct.js).
@@ -2186,6 +2205,23 @@ __Usage:__
 
 
 `node transaction-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes a read/write transaction with transaction timeout
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/transaction-timeout.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction-timeout.js,samples/README.md)
+
+__Usage:__
+
+
+`node transaction-timeout.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
