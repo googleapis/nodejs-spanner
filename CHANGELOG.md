@@ -4,6 +4,25 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.1.0](https://github.com/googleapis/nodejs-spanner/compare/v8.0.0...v8.1.0) (2025-06-06)
+
+
+### Features
+
+* Add Custom OpenTelemetry Exporter in for Service Metrics ([#2272](https://github.com/googleapis/nodejs-spanner/issues/2272)) ([610d1b9](https://github.com/googleapis/nodejs-spanner/commit/610d1b989ba186c0758791343deaa7f683c4bd26))
+* Add throughput_mode to UpdateDatabaseDdlRequest to be used by Spanner Migration Tool. See https://github.com/GoogleCloudPlatform/spanner-migration-tool ([#2304](https://github.com/googleapis/nodejs-spanner/issues/2304)) ([a29af56](https://github.com/googleapis/nodejs-spanner/commit/a29af56ae3c31f07115cb938bcf3f0f77241b725))
+* **spanner:** Add new change_stream.proto ([#2315](https://github.com/googleapis/nodejs-spanner/issues/2315)) ([57d67be](https://github.com/googleapis/nodejs-spanner/commit/57d67be2e3b6d6ac2a8a903acf8613b27a049c3b))
+
+
+### Bug Fixes
+
+* Docs-test ([#2297](https://github.com/googleapis/nodejs-spanner/issues/2297)) ([61c571c](https://github.com/googleapis/nodejs-spanner/commit/61c571c729c2a065df6ff166db784a6e6eaef74d))
+
+
+### Performance Improvements
+
+* Skip gRPC trailers for StreamingRead & ExecuteStreamingSql ([#2313](https://github.com/googleapis/nodejs-spanner/issues/2313)) ([8bd0781](https://github.com/googleapis/nodejs-spanner/commit/8bd0781e8b434a421f0e0f3395439a5a86c7847c))
+
 ## [8.0.0](https://github.com/googleapis/nodejs-spanner/compare/v7.21.0...v8.0.0) (2025-05-12)
 
 
