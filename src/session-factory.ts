@@ -65,6 +65,14 @@ export interface SessionFactoryInterface {
   getSessionForPartitionedOps(callback: GetSessionCallback): void;
 
   /**
+   * When called returns a session for read write.
+   *
+   * @name SessionFactoryInterface#getSessionForReadWrite
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForReadWrite(callback: GetSessionCallback): void;
+
+  /**
    * When called returns the pool object.
    *
    * @name SessionFactoryInterface#getPool
@@ -106,6 +114,7 @@ export class SessionFactory
   pool_: SessionPoolInterface;
   isMultiplexed: boolean;
   isMultiplexedPartitionOps: boolean;
+  isMultiplexedRW: boolean;
   constructor(
     database: Database,
     name: String,
@@ -131,6 +140,10 @@ export class SessionFactory
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
         'true';
+
+    this.isMultiplexedRW =
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true';
     // Multiplexed sessions should only be created if its enabled.
     if (this.isMultiplexed) {
       this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
@@ -170,6 +183,23 @@ export class SessionFactory
    */
   getSessionForPartitionedOps(callback: GetSessionCallback): void {
     this.isMultiplexedPartitionOps
+      ? this.getSession(callback)
+      : this.pool_.getSession(callback);
+  }
+
+  /**
+   * Retrieves a session for read write operations, selecting the appropriate session type
+   * based on whether multiplexed sessions are enabled.
+   *
+   * If multiplexed sessions are enabled for read write this methods delegates the request to `getSession()`, which returns
+   * either a multiplexed session or a regular session based on the configuration.
+   *
+   * If the multiplexed sessions are disabled, a session is retrieved from the regular session pool.
+   *
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForReadWrite(callback: GetSessionCallback): void {
+    this.isMultiplexedRW
       ? this.getSession(callback)
       : this.pool_.getSession(callback);
   }
