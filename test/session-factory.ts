@@ -247,7 +247,7 @@ describe('SessionFactory', () => {
   });
 
   describe('getSessionForReadWrite', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is disabled', () => {
+    describe('when multiplexed session for r/w disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
@@ -277,7 +277,7 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is enabled', () => {
+    describe('when multiplexed session for r/w enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
