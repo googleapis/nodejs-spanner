@@ -28,13 +28,7 @@ describe('MetricsTracer', () => {
   let fakeOperationLatency: any;
   let fakeGfeCounter: any;
   let fakeGfeLatency: any;
-  let attributes: {[key: string]: string};
-
   beforeEach(() => {
-    attributes = {
-      [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: PROJECT_ID,
-    };
-
     fakeAttemptCounter = {
       add: sinon.spy(),
     };
@@ -60,7 +54,6 @@ describe('MetricsTracer', () => {
     };
 
     tracer = new MetricsTracer(
-      attributes,
       fakeAttemptCounter,
       fakeAttemptLatency,
       fakeOperationCounter,
@@ -69,6 +62,7 @@ describe('MetricsTracer', () => {
       fakeGfeLatency,
       true, // enabled
     );
+    tracer.projectId = PROJECT_ID;
   });
 
   describe('recordAttemptCompletion', () => {
@@ -152,7 +146,8 @@ describe('MetricsTracer', () => {
   });
 
   it('should not overwrite project if already set', () => {
-    tracer.project = 'new-project';
+    tracer.projectId = 'new-project';
+    const attributes = tracer.clientAttributes;
     assert.strictEqual(
       attributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
       PROJECT_ID,
@@ -168,7 +163,7 @@ describe('MetricsTracer', () => {
     tracer.clientName = 'name123';
     tracer.database = 'db123';
     tracer.methodName = 'method';
-
+    const attributes = tracer.clientAttributes;
     assert.strictEqual(
       attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
       'test-instance',

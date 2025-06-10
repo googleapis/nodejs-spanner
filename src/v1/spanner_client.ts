@@ -30,7 +30,7 @@ import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 import {loggingUtils as logging} from 'google-gax';
-
+import {MetricsTracerFactory} from '../metrics/metrics-tracer-factory';
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/spanner_client_config.json`.
@@ -315,6 +315,22 @@ export class SpannerClient {
       const callPromise = this.spannerStub.then(
         stub =>
           (...args: Array<{}>) => {
+            const metricsFactory = MetricsTracerFactory.getInstance();
+            let project = '',
+              instance = '',
+              database = '';
+            if (metricsFactory.enabled) {
+              ({project, instance, database} =
+                metricsFactory.getInstanceAttributes(
+                  args[0]['name'] ?? args[0]['session'] ?? args[0]['database'],
+                ));
+            }
+            const metricsTracer = metricsFactory.createMetricsTracer(
+              project,
+              instance,
+              database,
+            );
+            metricsTracer?.recordOperationStart();
             if (this._terminated) {
               if (methodName in this.descriptors.stream) {
                 const stream = new PassThrough({objectMode: true});
@@ -331,7 +347,16 @@ export class SpannerClient {
               return Promise.reject('The client has already been closed.');
             }
             const func = stub[methodName];
-            return func.apply(stub, args);
+            // Wrap the function call to add retry attempt logging
+            const wrappedFunc = (...funcArgs: Array<{}>) => {
+              metricsTracer?.recordAttemptStart();
+              const val = func.apply(stub, funcArgs);
+              metricsTracer?.recordAttemptCompletion();
+              return val;
+            };
+            const val = wrappedFunc.apply(stub, args);
+            metricsTracer?.recordOperationCompletion();
+            return val;
           },
         (err: Error | null | undefined) => () => {
           throw err;
@@ -2828,7 +2853,10 @@ export class SpannerClient {
    * The client will no longer be usable and all future behavior is undefined.
    * @returns {Promise} A promise that resolves when the client is closed.
    */
-  close(): Promise<void> {
+  async close(): Promise<void> {
+    const meterProvider = MetricsTracerFactory.getInstance().getMeterProvider();
+    await meterProvider.shutdown();
+
     if (this.spannerStub && !this._terminated) {
       return this.spannerStub.then(stub => {
         this._log.info('ending gRPC channel');
@@ -2836,6 +2864,7 @@ export class SpannerClient {
         stub.close();
       });
     }
+
     return Promise.resolve();
   }
 }
