@@ -65,6 +65,7 @@ import {
   randIdForProcess,
   resetNthClientId,
 } from '../src/request_id_header';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -236,7 +237,7 @@ describe('Spanner with mock server', () => {
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
   const selectAllTypes = 'SELECT * FROM TABLE_WITH_ALL_TYPES';
-  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP) 
+  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP)
                                 VALUES (@bool, @int64, @float64, @numeric, @string, @bytes, @json, @date, @timestamp)`;
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
   const readPartitionsQuery = {
@@ -327,6 +328,8 @@ describe('Spanner with mock server', () => {
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
     process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
+    MetricsTracerFactory.resetInstance();
+    process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'true';
     spanner = new Spanner({
       servicePath: 'localhost',
       port,
@@ -423,6 +426,8 @@ describe('Spanner with mock server', () => {
     });
 
     it('should execute read with requestOptions', async () => {
+      MetricsTracerFactory.resetInstance();
+      MetricsTracerFactory.enabled = false;
       const database = newTestDatabase();
       const [snapshot] = await database.getSnapshot();
       try {
