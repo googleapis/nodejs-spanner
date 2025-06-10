@@ -257,29 +257,28 @@ describe('Transaction', () => {
         });
       });
 
+      it('should localize precommitToken if present', done => {
+        const precommitToken = {
+          precommitToken: Buffer.from('precommit-token-begin'),
+          seqNum: 1,
+        };
+        const response = Object.assign({precommitToken}, BEGIN_RESPONSE);
+
+        REQUEST.callsFake((_, callback) => callback(null, response));
+
+        snapshot.begin(err => {
+          assert.ifError(err);
+          assert.strictEqual(snapshot._latestPreCommitToken, precommitToken);
+          done();
+        });
+      });
+
       it('should return the response', done => {
         REQUEST.callsFake((_, callback) => callback(null, BEGIN_RESPONSE));
 
         snapshot.begin((err, resp) => {
           assert.ifError(err);
           assert.strictEqual(resp, BEGIN_RESPONSE);
-          done();
-        });
-      });
-
-      it('should return the precommitToken in the api response', done => {
-        const beginResponse = {
-          id: Buffer.from('transaction-id-123'),
-          precommitToken: {
-            precommitToken: Buffer.from('precommit-token-begin'),
-            seqNum: 1,
-          },
-        };
-        REQUEST.callsFake((_, callback) => callback(null, beginResponse));
-
-        snapshot.begin((err, resp) => {
-          assert.ifError(err);
-          assert.strictEqual(resp, beginResponse);
           done();
         });
       });
@@ -2423,6 +2422,71 @@ describe('Transaction', () => {
 
         fakeStream.emit('response', {
           precommitToken: fakePrecommitToken,
+        });
+      });
+
+      it('should override the precommitToken with the value that has higher seqNum received in response', done => {
+        const TABLE = 'my-table-123';
+        const fakeStream = new EventEmitter();
+        const fakePrecommitToken1 = {
+          precommitToken: Buffer.from('precommit-token1-createReadStream'),
+          seqNum: 1,
+        };
+
+        const fakePrecommitToken2 = {
+          precommitToken: Buffer.from('precommit-token2-createReadStream'),
+          seqNum: 2,
+        };
+
+        const fakePrecommitToken3 = {
+          precommitToken: Buffer.from('precommit-token3-createReadStream'),
+          seqNum: 0,
+        };
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = transaction.createReadStream(TABLE);
+        assert.strictEqual(stream, fakeStream);
+
+        assert.strictEqual(transaction._latestPreCommitToken, null);
+
+        let responseCount = 0;
+
+        stream.on('response', resp => {
+          responseCount++;
+          if (responseCount === 1) {
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken1);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken1,
+            );
+          } else if (responseCount === 2) {
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken2);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken2,
+            );
+          } else if (responseCount === 3) {
+            // fakePrecommitToken3 should get ignored
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken3);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken2,
+            );
+            done();
+          }
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken1,
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken2,
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken3,
         });
       });
     });

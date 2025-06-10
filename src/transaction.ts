@@ -226,6 +226,11 @@ export interface RunUpdateCallback {
 export type CommitCallback =
   NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
+type PrecommitTokenProvider =
+  | spannerClient.spanner.v1.ITransaction
+  | spannerClient.spanner.v1.IPartialResultSet
+  | spannerClient.spanner.v1.IExecuteBatchDmlResponse;
+
 /**
  * @typedef {object} TimestampBounds
  * @property {boolean} [strong=true] Read at a timestamp where all previously
@@ -378,6 +383,16 @@ export class Snapshot extends EventEmitter {
     this._latestPreCommitToken = null;
   }
 
+  protected _updatePrecommitToken(resp: PrecommitTokenProvider): void {
+    if (
+      this._latestPreCommitToken === null ||
+      this._latestPreCommitToken === undefined ||
+      this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
+    ) {
+      this._latestPreCommitToken = resp.precommitToken;
+    }
+  }
+
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -482,14 +497,7 @@ export class Snapshot extends EventEmitter {
             if (err) {
               setSpanError(span, err);
             } else {
-              if (
-                this._latestPreCommitToken === null ||
-                this._latestPreCommitToken === undefined ||
-                this._latestPreCommitToken!.seqNum! <
-                  resp.precommitToken!.seqNum!
-              ) {
-                this._latestPreCommitToken = resp.precommitToken;
-              }
+              this._updatePrecommitToken(resp);
               this._update(resp);
             }
             span.end();
@@ -791,15 +799,8 @@ export class Snapshot extends EventEmitter {
         },
       )
         ?.on('response', response => {
+          this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            if (
-              this._latestPreCommitToken === null ||
-              this._latestPreCommitToken === undefined ||
-              this._latestPreCommitToken!.seqNum! <
-                response.precommitToken!.seqNum!
-            ) {
-              this._latestPreCommitToken = response.precommitToken;
-            }
             this._update(response.metadata!.transaction);
           }
         })
@@ -1402,15 +1403,8 @@ export class Snapshot extends EventEmitter {
         },
       )
         .on('response', response => {
+          this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            if (
-              this._latestPreCommitToken === null ||
-              this._latestPreCommitToken === undefined ||
-              this._latestPreCommitToken!.seqNum! <
-                response.precommitToken!.seqNum!
-            ) {
-              this._latestPreCommitToken = response.precommitToken;
-            }
             this._update(response.metadata!.transaction);
           }
         })
@@ -2069,13 +2063,7 @@ export class Transaction extends Dml {
             return;
           }
 
-          if (
-            this._latestPreCommitToken === null ||
-            this._latestPreCommitToken === undefined ||
-            this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
-          ) {
-            this._latestPreCommitToken = resp.precommitToken;
-          }
+          this._updatePrecommitToken(resp);
 
           const {resultSets, status} = resp;
           for (const resultSet of resultSets) {

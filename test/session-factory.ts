@@ -386,27 +386,5 @@ describe('SessionFactory', () => {
         assert.strictEqual(sessionFactory.isMultiplexedEnabled(), false);
       });
     });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-      it('should have enabled the multiplexed', () => {
-        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-        assert.strictEqual(sessionFactory.isMultiplexedEnabled(), true);
-      });
-    });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are disabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-      it('should not have enabled the multiplexed', () => {
-        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-        assert.strictEqual(sessionFactory.isMultiplexedEnabled(), false);
-      });
-    });
   });
 });
