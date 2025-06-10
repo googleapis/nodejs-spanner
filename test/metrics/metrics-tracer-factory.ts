@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {metrics, MeterProvider as ApiMeterProvider} from '@opentelemetry/api';
+import {metrics} from '@opentelemetry/api';
 import {
   MeterProvider,
   PeriodicExportingMetricReader,
@@ -24,7 +24,6 @@ import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
 import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 
 describe('MetricsTracerFactory', () => {
-  let originalProvider: ApiMeterProvider;
   let sandbox: sinon.SinonSandbox;
   let mockExporter: CloudMonitoringMetricsExporter;
   let recordAttemptLatencyStub: sinon.SinonStub;
@@ -68,22 +67,19 @@ describe('MetricsTracerFactory', () => {
 
     sandbox.stub(MeterProvider.prototype, 'getMeter').returns(meterStub as any);
 
-    // Set the global metrics provider and related objects
-    originalProvider = metrics.getMeterProvider();
+    // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
+    const provider = MetricsTracerFactory.getMeterProvider(true, {});
     const reader = new PeriodicExportingMetricReader({
       exporter: mockExporter,
       exportIntervalMillis: 60000,
     });
-    const provider = new MeterProvider({
-      readers: [reader],
-    });
-    metrics.setGlobalMeterProvider(provider);
+    provider.addMetricReader(reader);
   });
 
   after(() => {
     sandbox.restore();
-    metrics.setGlobalMeterProvider(originalProvider);
+    MetricsTracerFactory.resetMeterProvider();
   });
 
   beforeEach(() => {

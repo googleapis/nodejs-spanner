@@ -16,6 +16,7 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
+import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram, metrics} from '@opentelemetry/api';
 import {detectResourcesSync, Resource} from '@opentelemetry/resources';
 import {gcpDetector} from '@opentelemetry/resource-detector-gcp';
@@ -23,8 +24,10 @@ import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
 
+
 export class MetricsTracerFactory {
   private static _instance: MetricsTracerFactory | null = null;
+  private static _meterProvider : MeterProvider | null = null;
   private _clientAttributes: {[key: string]: string};
   private _instrumentAttemptCounter!: Counter;
   private _instrumentAttemptLatency!: Histogram;
@@ -78,6 +81,20 @@ export class MetricsTracerFactory {
     }
     return MetricsTracerFactory._instance;
   }
+
+  public static getMeterProvider(enabled: boolean = false, resourceAttributes: {[key: string]: string} = {}): MeterProvider {
+    if (MetricsTracerFactory._meterProvider === null) {
+      const resource = new Resource(resourceAttributes);
+      MetricsTracerFactory._meterProvider = new MeterProvider({ resource: resource });
+    }
+
+    return MetricsTracerFactory._meterProvider;
+  }
+
+  public static resetMeterProvider() {
+    MetricsTracerFactory._meterProvider = null;
+  }
+
 
   get instrumentAttemptLatency(): Histogram {
     return this._instrumentAttemptLatency;
@@ -158,7 +175,7 @@ export class MetricsTracerFactory {
 
   private _createMetricInstruments() {
     // This uses the globally registered provider (defaults to Noop provider)
-    const meterProvider = metrics.getMeterProvider();
+    const meterProvider = MetricsTracerFactory.getMeterProvider();
     const meter = meterProvider.getMeter(Constants.SPANNER_METER_NAME, version);
 
     this._instrumentAttemptLatency = meter.createHistogram(
