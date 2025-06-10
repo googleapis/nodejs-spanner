@@ -119,6 +119,7 @@ import {
   craftRequestId,
   newAtomicCounter,
 } from './request_id_header';
+import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
 
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
@@ -861,6 +862,11 @@ class Database extends common.GrpcServiceObject {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback!);
+    // Force flush metrics
+    const meterProvider = MetricsTracerFactory.getInstance().getMeterProvider();
+    meterProvider.forceFlush().catch(error => {
+      throw error;
+    });
   }
   /**
    * @typedef {array} CreateTransactionResponse

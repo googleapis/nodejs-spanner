@@ -68,7 +68,8 @@ describe('MetricsTracerFactory', () => {
 
     // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
-    const provider = MetricsTracerFactory.getMeterProvider();
+    MetricsTracerFactory.resetInstance();
+    const provider = MetricsTracerFactory.getInstance(true).getMeterProvider();
     const reader = new PeriodicExportingMetricReader({
       exporter: mockExporter,
       exportIntervalMillis: 60000,
@@ -78,30 +79,35 @@ describe('MetricsTracerFactory', () => {
 
   after(() => {
     sandbox.restore();
-    MetricsTracerFactory.resetMeterProvider();
+    MetricsTracerFactory.getInstance(true).resetMeterProvider();
+    MetricsTracerFactory.resetInstance();
   });
 
   beforeEach(() => {
     sandbox.resetHistory();
   });
 
-  it('should use the globally set meter provider', async () => {
+  it('should use the set meter provider', async () => {
     const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer();
+    const tracer = factory.createMetricsTracer(
+      'project',
+      'instance',
+      'database',
+    );
 
     const operations = 3;
     const attempts = 5;
     for (let i = 0; i < operations; i++) {
-      tracer.recordOperationStart();
+      tracer!.recordOperationStart();
       for (let j = 0; j < attempts; j++) {
-        tracer.recordAttemptStart();
+        tracer!.recordAttemptStart();
         // Simulate processing time during attempt
         await new Promise(resolve => {
           setTimeout(resolve, 50);
         });
-        tracer.recordAttemptCompletion();
+        tracer!.recordAttemptCompletion();
       }
-      tracer.recordOperationCompletion();
+      tracer!.recordOperationCompletion();
     }
 
     assert.ok(recordOperationLatencyStub.calledWith(sinon.match.number));
@@ -145,100 +151,27 @@ describe('MetricsTracerFactory', () => {
 
   it('should correctly set default attributes', () => {
     const factory = MetricsTracerFactory.getInstance(true);
-    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
-    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
-  });
-
-  it('should correctly create resource attributes', async () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const resourceAttributes =
-      await factory.createResourceAttributes('test-proj-id');
-
-    assert.strictEqual(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-      'test-proj-id',
+    const tracer = factory.createMetricsTracer(
+      'project',
+      'instance',
+      'database',
     );
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE]);
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
+      'project',
+    );
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
+      'instance',
+    );
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
+      'database',
+    );
+    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
+    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
     assert.ok(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
-    );
-    assert.ok(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
-    );
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION]);
-  });
-
-  it('should correctly set project attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.project = 'test-project';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-      'test-project',
-    );
-  });
-
-  it('should correctly set instance attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.instance = 'my-instance';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
-      'my-instance',
-    );
-  });
-
-  it('should correctly set instanceConfig attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.instanceConfig = 'my-config';
-    assert.strictEqual(
-      factory.clientAttributes[
-        Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG
-      ],
-      'my-config',
-    );
-  });
-
-  it('should correctly set location attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.location = 'us-central1';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
-      'us-central1',
-    );
-  });
-
-  it('should correctly set clientHash attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientHash = 'abc123';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
-      'abc123',
-    );
-  });
-
-  it('should correctly set clientUid attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientUid = 'uid123';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
-      'uid123',
-    );
-  });
-
-  it('should correctly set clientName attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientName = 'client-app';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
-      'client-app',
-    );
-  });
-
-  it('should correctly set database attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.database = 'my-database';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
-      'my-database',
+      tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
     );
   });
 });
