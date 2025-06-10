@@ -68,7 +68,10 @@ describe('MetricsTracerFactory', () => {
 
     // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
-    const provider = MetricsTracerFactory.getMeterProvider();
+
+    MetricsTracerFactory.resetInstance();
+    const provider =
+      MetricsTracerFactory.getInstance('project-id')!.getMeterProvider();
     const reader = new PeriodicExportingMetricReader({
       exporter: mockExporter,
       exportIntervalMillis: 60000,
@@ -78,30 +81,33 @@ describe('MetricsTracerFactory', () => {
 
   after(() => {
     sandbox.restore();
-    MetricsTracerFactory.resetMeterProvider();
+    MetricsTracerFactory.getInstance()!.resetMeterProvider();
+    MetricsTracerFactory.resetInstance();
   });
 
   beforeEach(() => {
     sandbox.resetHistory();
   });
 
-  it('should use the globally set meter provider', async () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer();
+  it('should use the set meter provider', async () => {
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer(
+      'projects/project/instances/instance/databases/database',
+    );
 
     const operations = 3;
     const attempts = 5;
     for (let i = 0; i < operations; i++) {
-      tracer.recordOperationStart();
+      tracer!.recordOperationStart();
       for (let j = 0; j < attempts; j++) {
-        tracer.recordAttemptStart();
+        tracer!.recordAttemptStart();
         // Simulate processing time during attempt
         await new Promise(resolve => {
           setTimeout(resolve, 50);
         });
-        tracer.recordAttemptCompletion();
+        tracer!.recordAttemptCompletion();
       }
-      tracer.recordOperationCompletion();
+      tracer!.recordOperationCompletion();
     }
 
     assert.ok(recordOperationLatencyStub.calledWith(sinon.match.number));
@@ -115,130 +121,81 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should initialize metric instruments when enabled', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
+    const factory = MetricsTracerFactory.getInstance();
 
-    assert.deepStrictEqual(factory.instrumentAttemptLatency, {
+    assert.deepStrictEqual(factory!.instrumentAttemptLatency, {
       record: recordAttemptLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentAttemptCounter, {
+    assert.deepStrictEqual(factory!.instrumentAttemptCounter, {
       add: addAttemptCounterStub,
     });
-    assert.deepStrictEqual(factory.instrumentOperationLatency, {
+    assert.deepStrictEqual(factory!.instrumentOperationLatency, {
       record: recordOperationLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentOperationCounter, {
+    assert.deepStrictEqual(factory!.instrumentOperationCounter, {
       add: addOperationCounterStub,
     });
-    assert.deepStrictEqual(factory.instrumentGfeLatency, {
+    assert.deepStrictEqual(factory!.instrumentGfeLatency, {
       record: recordGfeLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentGfeConnectivityErrorCount, {
+    assert.deepStrictEqual(factory!.instrumentGfeConnectivityErrorCount, {
       add: addGfeConnectivityErrorCountStub,
     });
   });
 
   it('should create a MetricsTracer instance', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer();
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer();
     assert.ok(tracer);
   });
 
   it('should correctly set default attributes', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
-    assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer(
+      'projects/project/instances/instance/databases/database',
+    );
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
+      'database',
+    );
+    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
+    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
+  });
+});
+
+describe('getInstanceAttributes', () => {
+  let factory: MetricsTracerFactory;
+  before(() => {
+    factory = MetricsTracerFactory.getInstance()!;
   });
 
-  it('should correctly create resource attributes', async () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const resourceAttributes =
-      await factory.createResourceAttributes('test-proj-id');
-
-    assert.strictEqual(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-      'test-proj-id',
-    );
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE]);
-    assert.ok(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
-    );
-    assert.ok(
-      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
-    );
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION]);
+  it('should extract project, instance, and database from full resource path', () => {
+    const formattedName = 'projects/proj1/instances/inst1/databases/db1';
+    const attrs = factory.getInstanceAttributes(formattedName);
+    assert.deepStrictEqual(attrs, {
+      project: 'proj1',
+      instance: 'inst1',
+      database: 'db1',
+    });
   });
 
-  it('should correctly set project attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.project = 'test-project';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-      'test-project',
-    );
+  it('should extract project and instance, and empty database if database is missing', () => {
+    const formattedName = 'projects/proj2/instances/inst2';
+    const attrs = factory.getInstanceAttributes(formattedName);
+    assert.deepStrictEqual(attrs, {
+      project: 'proj2',
+      instance: 'inst2',
+      database: '',
+    });
   });
 
-  it('should correctly set instance attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.instance = 'my-instance';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
-      'my-instance',
-    );
+  it('should return empty strings for all if input is empty', () => {
+    const attrs = factory.getInstanceAttributes('');
+    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
   });
 
-  it('should correctly set instanceConfig attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.instanceConfig = 'my-config';
-    assert.strictEqual(
-      factory.clientAttributes[
-        Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG
-      ],
-      'my-config',
-    );
-  });
-
-  it('should correctly set location attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.location = 'us-central1';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
-      'us-central1',
-    );
-  });
-
-  it('should correctly set clientHash attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientHash = 'abc123';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
-      'abc123',
-    );
-  });
-
-  it('should correctly set clientUid attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientUid = 'uid123';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
-      'uid123',
-    );
-  });
-
-  it('should correctly set clientName attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.clientName = 'client-app';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
-      'client-app',
-    );
-  });
-
-  it('should correctly set database attribute', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    factory.database = 'my-database';
-    assert.strictEqual(
-      factory.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
-      'my-database',
-    );
+  it('should return empty strings for all if input is malformed', () => {
+    const attrs = factory.getInstanceAttributes('foo/bar/baz');
+    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
   });
 });

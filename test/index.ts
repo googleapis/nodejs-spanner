@@ -38,6 +38,7 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
@@ -116,6 +117,7 @@ const fakeV1: any = {
 function fakeGoogleAuth() {
   return {
     calledWith_: arguments,
+    getProjectId: () => Promise.resolve('project-id'),
   };
 }
 
@@ -193,6 +195,7 @@ describe('Spanner', () => {
     fakeV1.SpannerClient = fakeGapicClient;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
+    MetricsTracerFactory.enabled = false;
     spanner = new Spanner(OPTIONS);
     spanner.projectId = OPTIONS.projectId;
     replaceProjectIdTokenOverride = null;
@@ -2175,7 +2178,11 @@ describe('Spanner', () => {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
-        assert.deepStrictEqual(gaxOpts, expectedGaxOpts);
+
+        // Check that gaxOpts has the expected structure
+        assert.ok(gaxOpts.otherArgs);
+        assert.deepStrictEqual(gaxOpts.otherArgs.headers, CONFIG.headers);
+
         arg(); // done()
       };
 

@@ -27,6 +27,7 @@ import {
   MeterProvider,
   MetricReader,
 } from '@opentelemetry/sdk-metrics';
+import {Resource} from '@opentelemetry/resources';
 import {
   Attributes,
   Counter,
@@ -55,6 +56,7 @@ describe('transform', () => {
   let reader: MetricReader;
   let meterProvider: MeterProvider;
   let attributes: Attributes;
+  let resource: Resource;
   let metricSum: SumMetricData;
   let metricGauge: GaugeMetricData;
   let metricHistogram: HistogramMetricData;
@@ -72,15 +74,18 @@ describe('transform', () => {
 
   before(() => {
     reader = new InMemoryMetricReader();
+    resource = new Resource({
+      ['project_id']: 'project_id',
+      ['client_hash']: 'test_hash',
+      ['location']: 'test_location',
+      ['instance_id']: 'instance_id',
+      ['instance_config']: 'test_config',
+    });
     meterProvider = new MeterProvider({
+      resource: resource,
       readers: [reader],
     });
     attributes = {
-      project_id: 'project_id',
-      instance_id: 'instance_id',
-      instance_config: 'test_config',
-      location: 'test_location',
-      client_hash: 'test_hash',
       client_uid: 'test_uid',
       client_name: 'test_name',
       database: 'database_id',
@@ -224,29 +229,44 @@ describe('transform', () => {
   });
 
   it('should extract metric and resource labels', () => {
-    const {metricLabels, monitoredResourceLabels} =
-      _extractLabels(sumDataPoint);
+    // const {metricLabels, monitoredResourceLabels} =
+    const dataLabels = _extractLabels(sumDataPoint);
+    const resourceLabels = _extractLabels(resource);
 
     // Metric Labels
-    assert.strictEqual(metricLabels['client_uid'], 'test_uid');
-    assert.strictEqual(metricLabels['client_name'], 'test_name');
-    assert.strictEqual(metricLabels['database'], 'database_id');
-    assert.strictEqual(metricLabels['method'], 'test_method');
-    assert.strictEqual(metricLabels['status'], 'test_status');
+    assert.strictEqual(dataLabels.metricLabels['client_uid'], 'test_uid');
+    assert.strictEqual(dataLabels.metricLabels['client_name'], 'test_name');
+    assert.strictEqual(dataLabels.metricLabels['database'], 'database_id');
+    assert.strictEqual(dataLabels.metricLabels['method'], 'test_method');
+    assert.strictEqual(dataLabels.metricLabels['status'], 'test_status');
 
     // Resource Labels
-    assert.strictEqual(monitoredResourceLabels['project_id'], 'project_id');
-    assert.strictEqual(monitoredResourceLabels['instance_id'], 'instance_id');
     assert.strictEqual(
-      monitoredResourceLabels['instance_config'],
+      resourceLabels.monitoredResourceLabels['project_id'],
+      'project_id',
+    );
+    assert.strictEqual(
+      resourceLabels.monitoredResourceLabels['instance_id'],
+      'instance_id',
+    );
+    assert.strictEqual(
+      resourceLabels.monitoredResourceLabels['instance_config'],
       'test_config',
     );
-    assert.strictEqual(monitoredResourceLabels['location'], 'test_location');
-    assert.strictEqual(monitoredResourceLabels['client_hash'], 'test_hash');
+    assert.strictEqual(
+      resourceLabels.monitoredResourceLabels['location'],
+      'test_location',
+    );
+    assert.strictEqual(
+      resourceLabels.monitoredResourceLabels['client_hash'],
+      'test_hash',
+    );
 
     // Other Labels
-    assert(!('other' in metricLabels));
-    assert(!('other' in monitoredResourceLabels));
+    assert(!('other' in dataLabels.metricLabels));
+    assert(!('other' in resourceLabels.metricLabels));
+    assert(!('other' in dataLabels.monitoredResourceLabels));
+    assert(!('other' in resourceLabels.monitoredResourceLabels));
   });
 
   it('should transform otel value types to GCM value types', () => {

@@ -31,6 +31,18 @@ import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
 const {startTrace} = require('../src/instrument');
 
+// Set up OpenTelemetry for testing
+const {
+  NodeTracerProvider,
+  InMemorySpanExporter,
+} = require('@opentelemetry/sdk-trace-node');
+const {AlwaysOnSampler} = require('@opentelemetry/sdk-trace-base');
+const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {
+  AsyncHooksContextManager,
+} = require('@opentelemetry/context-async-hooks');
+const {context} = require('@opentelemetry/api');
+
 let pQueueOverride: typeof PQueue | null = null;
 
 function FakePQueue(options) {
@@ -56,6 +68,8 @@ describe('SessionPool', () => {
   // tslint:disable-next-line variable-name
   let SessionPool: typeof sp.SessionPool;
   let inventory;
+  let tracerProvider: any;
+  let contextManager: any;
 
   const DATABASE = {
     batchCreateSessions: noop,
@@ -90,10 +104,30 @@ describe('SessionPool', () => {
   };
 
   before(() => {
+    // Set up OpenTelemetry tracer provider for testing
+    const exporter = new InMemorySpanExporter();
+    tracerProvider = new NodeTracerProvider({
+      sampler: new AlwaysOnSampler(),
+      exporter: exporter,
+      spanProcessors: [new SimpleSpanProcessor(exporter)],
+    });
+    tracerProvider.register();
+
+    // Set up context manager
+    contextManager = new AsyncHooksContextManager();
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
+
     SessionPool = proxyquire('../src/session-pool.js', {
       'p-queue': FakePQueue,
       'stack-trace': fakeStackTrace,
     }).SessionPool;
+  });
+
+  after(() => {
+    // Clean up OpenTelemetry
+    tracerProvider.shutdown();
+    contextManager.disable();
   });
 
   beforeEach(() => {

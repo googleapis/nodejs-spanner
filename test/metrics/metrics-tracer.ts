@@ -28,13 +28,7 @@ describe('MetricsTracer', () => {
   let fakeOperationLatency: any;
   let fakeGfeCounter: any;
   let fakeGfeLatency: any;
-  let attributes: {[key: string]: string};
-
   beforeEach(() => {
-    attributes = {
-      [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: PROJECT_ID,
-    };
-
     fakeAttemptCounter = {
       add: sinon.spy(),
     };
@@ -60,7 +54,6 @@ describe('MetricsTracer', () => {
     };
 
     tracer = new MetricsTracer(
-      attributes,
       fakeAttemptCounter,
       fakeAttemptLatency,
       fakeOperationCounter,
@@ -69,14 +62,16 @@ describe('MetricsTracer', () => {
       fakeGfeLatency,
       true, // enabled
     );
+    tracer.projectId = PROJECT_ID;
   });
 
   describe('recordAttemptCompletion', () => {
     it('should record attempt latency when enabled', () => {
+      tracer.recordOperationStart();
       tracer.recordAttemptStart();
-      assert.ok(tracer.currentOperation.currentAttempt);
-      assert.ok(tracer.currentOperation.currentAttempt.startTime);
-      assert.strictEqual(tracer.currentOperation.attemptCount, 1);
+      assert.ok(tracer.currentOperation!.currentAttempt);
+      assert.ok(tracer.currentOperation!.currentAttempt.startTime);
+      assert.strictEqual(tracer.currentOperation!.attemptCount, 1);
 
       tracer.recordAttemptCompletion(Status.OK);
 
@@ -89,7 +84,7 @@ describe('MetricsTracer', () => {
       );
       assert.strictEqual(
         otelAttrs[Constants.METRIC_LABEL_KEY_STATUS],
-        Status.OK.toString(),
+        Status[Status.OK],
       );
     });
 
@@ -104,7 +99,7 @@ describe('MetricsTracer', () => {
   describe('recordOperationCompletion', () => {
     it('should record operation and attempt metrics when enabled', () => {
       tracer.recordOperationStart();
-      assert.ok(tracer.currentOperation.startTime);
+      assert.ok(tracer.currentOperation!.startTime);
       tracer.recordAttemptStart();
       tracer.recordOperationCompletion();
 
@@ -113,7 +108,7 @@ describe('MetricsTracer', () => {
       assert.strictEqual(fakeOperationLatency.record.calledOnce, true);
 
       const [[_, opAttrs]] = fakeOperationLatency.record.args;
-      assert.strictEqual(opAttrs[Constants.METRIC_LABEL_KEY_STATUS], '-1');
+      assert.strictEqual(opAttrs[Constants.METRIC_LABEL_KEY_STATUS], 'UNKNOWN');
     });
 
     it('should do nothing if disabled', () => {
@@ -127,32 +122,35 @@ describe('MetricsTracer', () => {
   describe('recordGfeLatency', () => {
     it('should record GFE latency if enabled', () => {
       tracer.enabled = true;
-      tracer.recordGfeLatency(123);
+      tracer.gfeLatency = 123;
+      tracer.recordGfeLatency(Status.OK);
       assert.strictEqual(fakeGfeLatency.record.calledOnce, true);
     });
 
     it('should not record if disabled', () => {
       tracer.enabled = false;
-      tracer.recordGfeLatency(123);
+      tracer.gfeLatency = 123;
+      tracer.recordGfeLatency(Status.OK);
       assert.strictEqual(fakeGfeLatency.record.called, false);
     });
   });
 
   describe('recordGfeConnectivityErrorCount', () => {
     it('should increment GFE error counter if enabled', () => {
-      tracer.recordGfeConnectivityErrorCount();
+      tracer.recordGfeConnectivityErrorCount(Status.OK);
       assert.strictEqual(fakeGfeCounter.add.calledOnce, true);
     });
 
     it('should not increment if disabled', () => {
       tracer.enabled = false;
-      tracer.recordGfeConnectivityErrorCount();
+      tracer.recordGfeConnectivityErrorCount(Status.OK);
       assert.strictEqual(fakeGfeCounter.add.called, false);
     });
   });
 
   it('should not overwrite project if already set', () => {
-    tracer.project = 'new-project';
+    tracer.projectId = 'new-project';
+    const attributes = tracer.clientAttributes;
     assert.strictEqual(
       attributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
       PROJECT_ID,
@@ -168,7 +166,7 @@ describe('MetricsTracer', () => {
     tracer.clientName = 'name123';
     tracer.database = 'db123';
     tracer.methodName = 'method';
-
+    const attributes = tracer.clientAttributes;
     assert.strictEqual(
       attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
       'test-instance',
@@ -198,5 +196,35 @@ describe('MetricsTracer', () => {
       'db123',
     );
     assert.strictEqual(attributes[Constants.METRIC_LABEL_KEY_METHOD], 'method');
+  });
+
+  describe('extractGfeLatency', () => {
+    let tracer: MetricsTracer;
+    beforeEach(() => {
+      tracer = new MetricsTracer(null, null, null, null, null, null, true);
+    });
+
+    it('should extract latency from a valid server-timing header', () => {
+      const header = 'gfet4t7; dur=123';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, 123);
+    });
+
+    it('should return null if header is undefined', () => {
+      const latency = tracer.extractGfeLatency(undefined as any);
+      assert.strictEqual(latency, null);
+    });
+
+    it('should return null if header does not match expected format', () => {
+      const header = 'some-other-header';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, null);
+    });
+
+    it('should extract only the first number if extra data is present', () => {
+      const header = 'gfet4t7; dur=456; other=value';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, 456);
+    });
   });
 });

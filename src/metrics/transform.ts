@@ -20,6 +20,7 @@ import {
   ExponentialHistogram,
   ResourceMetrics,
 } from '@opentelemetry/sdk-metrics';
+import {Resource} from '@opentelemetry/resources';
 import {MonitoredResource} from '@google-cloud/opentelemetry-resource-util';
 import * as path from 'path';
 import {MetricKind, ValueType} from './external-types';
@@ -83,9 +84,11 @@ function _transformValueType(metric: MetricData): ValueType {
 /**
  * Convert the metrics data to a list of Google Cloud Monitoring time series.
  */
-export function transformResourceMetricToTimeSeriesArray({
-  scopeMetrics,
-}: ResourceMetrics) {
+export function transformResourceMetricToTimeSeriesArray(
+  resourceMetrics: ResourceMetrics,
+) {
+  const resource = resourceMetrics?.resource;
+  const scopeMetrics = resourceMetrics?.scopeMetrics;
   if (!scopeMetrics) return [];
 
   return (
@@ -100,18 +103,38 @@ export function transformResourceMetricToTimeSeriesArray({
       // Flatmap the data points in each metric to create a TimeSeries for each point
       .flatMap(metric =>
         metric.dataPoints.flatMap(dataPoint =>
-          _createTimeSeries(metric, dataPoint),
+          _createTimeSeries(metric, dataPoint, resource),
         ),
       )
   );
 }
+
 /**
  * Creates a GCM TimeSeries.
  */
-function _createTimeSeries<T>(metric: MetricData, dataPoint: DataPoint<T>) {
+function _createTimeSeries<T>(
+  metric: MetricData,
+  dataPoint: DataPoint<T>,
+  resource?: Resource,
+) {
   const type = path.posix.join(CLIENT_METRICS_PREFIX, metric.descriptor.name);
-  const {metricLabels: labels, monitoredResourceLabels} =
-    _extractLabels(dataPoint);
+  const resourceLabels = resource
+    ? _extractLabels(resource)
+    : {metricLabels: {}, monitoredResourceLabels: {}};
+
+  // const {metricLabels: labels, monitoredResourceLabels} =
+  const dataLabels = _extractLabels(dataPoint);
+
+  const labels = {
+    ...resourceLabels.metricLabels,
+    ...dataLabels.metricLabels,
+  };
+
+  const monitoredResourceLabels = {
+    ...resourceLabels.monitoredResourceLabels,
+    ...dataLabels.monitoredResourceLabels,
+  };
+
   const transformedMetric = {
     type,
     labels,
@@ -179,7 +202,7 @@ function _transformPoint<T>(metric: MetricData, dataPoint: DataPoint<T>) {
 }
 
 /** Extracts metric and monitored resource labels from data point */
-function _extractLabels<T>({attributes = {}}: DataPoint<T>) {
+function _extractLabels<T>({attributes = {}}: DataPoint<T> | Resource) {
   return Object.entries(attributes).reduce(
     (result, [key, value]) => {
       const normalizedKey = _normalizeLabelKey(key);
