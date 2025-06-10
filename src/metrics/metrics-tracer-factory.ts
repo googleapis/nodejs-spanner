@@ -16,18 +16,17 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import {Counter, Histogram, metrics} from '@opentelemetry/api';
+import {MeterProvider} from '@opentelemetry/sdk-metrics';
+import {Counter, Histogram} from '@opentelemetry/api';
 import {detectResourcesSync, Resource} from '@opentelemetry/resources';
 import {gcpDetector} from '@opentelemetry/resource-detector-gcp';
 import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
 
-
 export class MetricsTracerFactory {
   private static _instance: MetricsTracerFactory | null = null;
-  private static _meterProvider : MeterProvider | null = null;
+  private static _meterProvider: MeterProvider | null = null;
   private _clientAttributes: {[key: string]: string};
   private _instrumentAttemptCounter!: Counter;
   private _instrumentAttemptLatency!: Histogram;
@@ -38,14 +37,13 @@ export class MetricsTracerFactory {
   private _clientUid: string;
   public enabled: boolean;
 
-  private constructor(enabled: boolean = false) {
+  private constructor(enabled = false) {
     this.enabled = enabled;
     this._createMetricInstruments();
 
     this._clientUid = MetricsTracerFactory._generateClientUId();
-    this._clientAttributes = this.createClientAttributes()
+    this._clientAttributes = this.createClientAttributes();
   }
-
 
   private createClientAttributes(): {[key: string]: string} {
     const clientName = `${Constants.SPANNER_METER_NAME}/${version}`;
@@ -58,13 +56,15 @@ export class MetricsTracerFactory {
   /**
   Create set of attributes for resource metrics
    */
-  public static createResourceAttributes(projectId: string): {[key: string]: string} {
+  public static createResourceAttributes(projectId: string): {
+    [key: string]: string;
+  } {
     const clientUid = MetricsTracerFactory._generateClientUId();
     const clientHash = MetricsTracerFactory._generateClientHash(clientUid);
     const location = MetricsTracerFactory._detectClientLocation();
     return {
       [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: projectId,
-      [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: "unknown",
+      [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: 'unknown',
       [Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]: clientHash,
       // Skipping instance config until we have a way to get it
       [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
@@ -75,17 +75,19 @@ export class MetricsTracerFactory {
   public static getInstance(enabled: boolean) {
     // Create a singleton instance, enabling/disabling metrics can only be done on the initial call
     if (MetricsTracerFactory._instance === null) {
-      MetricsTracerFactory._instance = new MetricsTracerFactory(
-        enabled,
-      );
+      MetricsTracerFactory._instance = new MetricsTracerFactory(enabled);
     }
     return MetricsTracerFactory._instance;
   }
 
-  public static getMeterProvider(enabled: boolean = false, resourceAttributes: {[key: string]: string} = {}): MeterProvider {
+  public static getMeterProvider(
+    resourceAttributes: {[key: string]: string} = {},
+  ): MeterProvider {
     if (MetricsTracerFactory._meterProvider === null) {
       const resource = new Resource(resourceAttributes);
-      MetricsTracerFactory._meterProvider = new MeterProvider({ resource: resource });
+      MetricsTracerFactory._meterProvider = new MeterProvider({
+        resource: resource,
+      });
     }
 
     return MetricsTracerFactory._meterProvider;
@@ -94,7 +96,6 @@ export class MetricsTracerFactory {
   public static resetMeterProvider() {
     MetricsTracerFactory._meterProvider = null;
   }
-
 
   get instrumentAttemptLatency(): Histogram {
     return this._instrumentAttemptLatency;
@@ -169,7 +170,7 @@ export class MetricsTracerFactory {
       this._instrumentOperationLatency,
       this._instrumentGfeConnectivityErrorCount,
       this._instrumentGfeLatency,
-      this.enabled
+      this.enabled,
     );
   }
 
@@ -204,12 +205,20 @@ export class MetricsTracerFactory {
 
     this._instrumentGfeLatency = meter.createHistogram(
       Constants.METRIC_NAME_GFE_LATENCIES,
-      {unit: 'ms', description: "Latency between Google's network receiving an RPC and reading back the first byte of the response"},
+      {
+        unit: 'ms',
+        description:
+          "Latency between Google's network receiving an RPC and reading back the first byte of the response",
+      },
     );
 
     this._instrumentGfeConnectivityErrorCount = meter.createCounter(
       Constants.METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
-      {unit: '1', description: 'Number of requests that failed to reach the Google network.'},
+      {
+        unit: '1',
+        description:
+          'Number of requests that failed to reach the Google network.',
+      },
     );
   }
 

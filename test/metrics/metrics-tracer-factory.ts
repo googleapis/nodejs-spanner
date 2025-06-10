@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {metrics} from '@opentelemetry/api';
 import {
   MeterProvider,
   PeriodicExportingMetricReader,
@@ -69,7 +68,7 @@ describe('MetricsTracerFactory', () => {
 
     // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
-    const provider = MetricsTracerFactory.getMeterProvider(true, {});
+    const provider = MetricsTracerFactory.getMeterProvider();
     const reader = new PeriodicExportingMetricReader({
       exporter: mockExporter,
       exportIntervalMillis: 60000,
@@ -151,11 +150,19 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly create resource attributes', () => {
-    const resourceAttributes = MetricsTracerFactory.createResourceAttributes("test-proj-id");
-    assert.strictEqual(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT], 'test-proj-id');
+    const resourceAttributes =
+      MetricsTracerFactory.createResourceAttributes('test-proj-id');
+    assert.strictEqual(
+      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
+      'test-proj-id',
+    );
     assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE]);
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]);
-    assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]);
+    assert.ok(
+      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
+    );
+    assert.ok(
+      resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
+    );
     assert.ok(resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION]);
   });
 
