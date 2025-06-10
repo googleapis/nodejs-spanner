@@ -33,9 +33,7 @@ export const MetricInterceptor = (options, nextCall) => {
       // Record attempt metric on request start
       const factory = MetricsTracerFactory.getInstance();
       const requestId = metadata.get('x-goog-spanner-request-id')[0] as string;
-      const metricsTracer = factory?.getCurrentTracer(
-        requestId,
-      ) as MetricsTracer;
+      const metricsTracer = factory?.getCurrentTracer(requestId);
       metricsTracer?.recordAttemptStart();
       const newListener = {
         onReceiveMetadata: function (metadata, next) {

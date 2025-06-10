@@ -301,6 +301,10 @@ export class MetricsTracerFactory {
   }
 
   private _extractOperationRequest(requestId: string): string {
+    if (!requestId) {
+      return '';
+    }
+
     const regex = /^(\d+\.[a-f0-9]+\.\d+\.\d+\.\d+)\.\d+$/i;
     const match = requestId.match(regex);
 
