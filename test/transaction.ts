@@ -257,6 +257,22 @@ describe('Transaction', () => {
         });
       });
 
+      it('should localize precommitToken if present', done => {
+        const precommitToken = {
+          precommitToken: Buffer.from('precommit-token-begin'),
+          seqNum: 1,
+        };
+        const response = Object.assign({precommitToken}, BEGIN_RESPONSE);
+
+        REQUEST.callsFake((_, callback) => callback(null, response));
+
+        snapshot.begin(err => {
+          assert.ifError(err);
+          assert.strictEqual(snapshot._latestPreCommitToken, precommitToken);
+          done();
+        });
+      });
+
       it('should return the response', done => {
         REQUEST.callsFake((_, callback) => callback(null, BEGIN_RESPONSE));
 
@@ -1565,6 +1581,34 @@ describe('Transaction', () => {
         const requestCallback = stub.lastCall.args[1];
         setImmediate(requestCallback, null, fakeResponse);
       });
+
+      it('should return precommitToken in the api response', done => {
+        const stub = sandbox.stub(transaction, 'request');
+        const expectedRowCounts = [5, 7];
+        const fakeResponse = {
+          resultSets: [
+            {stats: {rowCount: 'a', a: '5'}},
+            {stats: {rowCount: 'b', b: '7'}},
+          ],
+          precommitToken: {
+            precommitToken: Buffer.from('precommit-token-batch-update'),
+            seqNum: 1,
+          },
+        };
+
+        transaction.batchUpdate(
+          OBJ_STATEMENTS,
+          (err, rowCounts, apiResponse) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(rowCounts, expectedRowCounts);
+            assert.strictEqual(apiResponse, fakeResponse);
+            done();
+          },
+        );
+
+        const requestCallback = stub.lastCall.args[1];
+        setImmediate(requestCallback, null, fakeResponse);
+      });
     });
 
     describe('begin', () => {
@@ -1754,6 +1798,19 @@ describe('Transaction', () => {
           done();
         };
         transaction.commit(options, assert.ifError);
+      });
+
+      it('should accept precommitToken', done => {
+        const precommitToken = {
+          precommitToken: Buffer.from('precommit-token-commit'),
+          seqNum: 1,
+        };
+        transaction._latestPreCommitToken = precommitToken;
+        transaction.request = config => {
+          assert.strictEqual(config.reqOpts.precommitToken, precommitToken);
+          done();
+        };
+        transaction.commit(assert.ifError);
       });
 
       it('should use the transaction `id` when set', () => {
@@ -2264,6 +2321,31 @@ describe('Transaction', () => {
 
         transaction.runStream(QUERY);
       });
+
+      it('should return a precommitToken in response', done => {
+        const QUERY: ExecuteSqlRequest = {
+          sql: 'SELET * FROM `MyTable`',
+        };
+        const fakeStream = new EventEmitter();
+        const fakePrecommitToken = {
+          precommitToken: Buffer.from('precommit-token-runStream'),
+          seqNum: 1,
+        };
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = transaction.runStream(QUERY);
+        assert.strictEqual(stream, fakeStream);
+
+        stream.on('response', resp => {
+          assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken);
+          done();
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken,
+        });
+      });
     });
 
     describe('createReadStream', () => {
@@ -2317,6 +2399,94 @@ describe('Transaction', () => {
 
         assert.deepStrictEqual(reqOpts.requestOptions, {
           transactionTag,
+        });
+      });
+
+      it('should return a precommitToken in response', done => {
+        const TABLE = 'my-table-123';
+        const fakeStream = new EventEmitter();
+        const fakePrecommitToken = {
+          precommitToken: Buffer.from('precommit-token-createReadStream'),
+          seqNum: 1,
+        };
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = transaction.createReadStream(TABLE);
+        assert.strictEqual(stream, fakeStream);
+
+        stream.on('response', resp => {
+          assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken);
+          done();
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken,
+        });
+      });
+
+      it('should override the precommitToken with the value that has higher seqNum received in response', done => {
+        const TABLE = 'my-table-123';
+        const fakeStream = new EventEmitter();
+        const fakePrecommitToken1 = {
+          precommitToken: Buffer.from('precommit-token1-createReadStream'),
+          seqNum: 1,
+        };
+
+        const fakePrecommitToken2 = {
+          precommitToken: Buffer.from('precommit-token2-createReadStream'),
+          seqNum: 2,
+        };
+
+        const fakePrecommitToken3 = {
+          precommitToken: Buffer.from('precommit-token3-createReadStream'),
+          seqNum: 0,
+        };
+
+        PARTIAL_RESULT_STREAM.returns(fakeStream);
+
+        const stream = transaction.createReadStream(TABLE);
+        assert.strictEqual(stream, fakeStream);
+
+        assert.strictEqual(transaction._latestPreCommitToken, null);
+
+        let responseCount = 0;
+
+        stream.on('response', resp => {
+          responseCount++;
+          if (responseCount === 1) {
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken1);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken1,
+            );
+          } else if (responseCount === 2) {
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken2);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken2,
+            );
+          } else if (responseCount === 3) {
+            // fakePrecommitToken3 should get ignored
+            assert.deepStrictEqual(resp.precommitToken, fakePrecommitToken3);
+            assert.deepStrictEqual(
+              transaction._latestPreCommitToken,
+              fakePrecommitToken2,
+            );
+            done();
+          }
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken1,
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken2,
+        });
+
+        fakeStream.emit('response', {
+          precommitToken: fakePrecommitToken3,
         });
       });
     });
