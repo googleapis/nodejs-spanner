@@ -42,7 +42,8 @@ const {
   verifySpansAndEvents,
   batchCreateSessionsEvents,
   waitingSessionsEvents,
-  cacheSessionEvents,
+  cacheRegularSessionEvents,
+  cacheMultiplexedSessionEvents,
 } = require('./helper');
 const {
   AsyncHooksContextManager,
@@ -198,6 +199,10 @@ describe('EndToEnd', async () => {
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Snapshot.run',
           ];
+          const cacheSessionEvents =
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+              ? cacheMultiplexedSessionEvents
+              : cacheRegularSessionEvents;
           const expectedEventNames = [
             'Begin Transaction',
             'Transaction Creation Done',
@@ -222,7 +227,10 @@ describe('EndToEnd', async () => {
         void transaction!.commit();
 
         const expectedSpanNames = ['CloudSpanner.Database.getTransaction'];
-        const expectedEventNames = [...cacheSessionEvents, 'Using Session'];
+        const expectedEventNames = [
+          ...cacheRegularSessionEvents,
+          'Using Session',
+        ];
         await verifySpansAndEvents(
           traceExporter,
           expectedSpanNames,
@@ -242,6 +250,10 @@ describe('EndToEnd', async () => {
             'CloudSpanner.Snapshot.runStream',
             'CloudSpanner.Database.runStream',
           ];
+          const cacheSessionEvents =
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+              ? cacheMultiplexedSessionEvents
+              : cacheRegularSessionEvents;
           const expectedEventNames = [
             'Starting stream',
             ...cacheSessionEvents,
@@ -264,6 +276,10 @@ describe('EndToEnd', async () => {
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
       ];
+      const cacheSessionEvents =
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+          ? cacheMultiplexedSessionEvents
+          : cacheRegularSessionEvents;
       const expectedEventNames = [
         'Starting stream',
         ...cacheSessionEvents,
@@ -293,7 +309,7 @@ describe('EndToEnd', async () => {
           'Transaction Creation Done',
           'Starting Commit',
           'Commit Done',
-          ...cacheSessionEvents,
+          ...cacheRegularSessionEvents,
         ];
 
         await verifySpansAndEvents(
@@ -318,7 +334,7 @@ describe('EndToEnd', async () => {
       const expectedEventNames = [
         'Starting stream',
         'Transaction Creation Done',
-        ...cacheSessionEvents,
+        ...cacheRegularSessionEvents,
         'Using Session',
       ];
       await verifySpansAndEvents(
@@ -337,6 +353,10 @@ describe('EndToEnd', async () => {
           'CloudSpanner.Transaction.commit',
           'CloudSpanner.Database.writeAtLeastOnce',
         ];
+        const cacheSessionEvents =
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
+            ? cacheMultiplexedSessionEvents
+            : cacheRegularSessionEvents;
         const expectedEventNames = [
           'Starting Commit',
           'Commit Done',
@@ -540,7 +560,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
           );
 
           const expectedEventNames = [
-            ...cacheSessionEvents,
+            ...cacheRegularSessionEvents,
             'Using Session',
             'Starting stream',
             'Transaction Creation Done',
@@ -649,7 +669,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
             );
 
             const expectedEventNames = [
-              ...cacheSessionEvents,
+              ...cacheRegularSessionEvents,
               'Using Session',
               'Starting stream',
             ];

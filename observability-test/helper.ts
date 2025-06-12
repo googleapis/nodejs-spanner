@@ -32,9 +32,15 @@ export const waitingSessionsEvents = [
   'Using Session',
 ];
 
-export const cacheSessionEvents = [
+export const cacheRegularSessionEvents = [
   'Acquiring session',
   'Cache hit: has usable session',
+  'Acquired session',
+];
+
+export const cacheMultiplexedSessionEvents = [
+  'Acquiring session',
+  'Cache hit: has usable multiplexed session',
   'Acquired session',
 ];
 

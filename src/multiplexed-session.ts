@@ -192,11 +192,16 @@ export class MultiplexedSession
    *
    */
   async _acquire(): Promise<Session | null> {
+    const span = getActiveOrNoopSpan();
+    span.addEvent('Acquiring session');
     const session = await this._getSession();
     // Prepare a transaction for a session
     session!.txn = session!.transaction(
       (session!.parent as Database).queryOptions_,
     );
+    span.addEvent('Acquired session', {
+      'session.id': session?.id.toString(),
+    });
     return session;
   }
 
