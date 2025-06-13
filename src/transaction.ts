@@ -226,11 +226,6 @@ export interface RunUpdateCallback {
 export type CommitCallback =
   NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
-type PrecommitTokenProvider =
-  | spannerClient.spanner.v1.ITransaction
-  | spannerClient.spanner.v1.IPartialResultSet
-  | spannerClient.spanner.v1.IExecuteBatchDmlResponse;
-
 /**
  * @typedef {object} TimestampBounds
  * @property {boolean} [strong=true] Read at a timestamp where all previously
@@ -291,10 +286,6 @@ export class Snapshot extends EventEmitter {
   protected _waitingRequests: Array<() => void>;
   protected _inlineBeginStarted;
   protected _useInRunner = false;
-  protected _latestPreCommitToken:
-    | spannerClient.spanner.v1.IMultiplexedSessionPrecommitToken
-    | undefined
-    | null;
   id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -380,17 +371,6 @@ export class Snapshot extends EventEmitter {
       opts: this._observabilityOptions,
       dbName: this._dbName,
     };
-    this._latestPreCommitToken = null;
-  }
-
-  protected _updatePrecommitToken(resp: PrecommitTokenProvider): void {
-    if (
-      this._latestPreCommitToken === null ||
-      this._latestPreCommitToken === undefined ||
-      this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
-    ) {
-      this._latestPreCommitToken = resp.precommitToken;
-    }
   }
 
   /**
@@ -497,7 +477,6 @@ export class Snapshot extends EventEmitter {
             if (err) {
               setSpanError(span, err);
             } else {
-              this._updatePrecommitToken(resp);
               this._update(resp);
             }
             span.end();
@@ -799,7 +778,6 @@ export class Snapshot extends EventEmitter {
         },
       )
         ?.on('response', response => {
-          this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
             this._update(response.metadata!.transaction);
           }
@@ -1403,7 +1381,6 @@ export class Snapshot extends EventEmitter {
         },
       )
         .on('response', response => {
-          this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
             this._update(response.metadata!.transaction);
           }
@@ -2063,8 +2040,6 @@ export class Transaction extends Dml {
             return;
           }
 
-          this._updatePrecommitToken(resp);
-
           const {resultSets, status} = resp;
           for (const resultSet of resultSets) {
             if (!this.id && resultSet.metadata?.transaction) {
@@ -2207,13 +2182,11 @@ export class Transaction extends Dml {
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const precommitToken = this._latestPreCommitToken;
     const requestOptions = (options as CommitOptions).requestOptions;
     const reqOpts: CommitRequest = {
       mutations,
       session,
       requestOptions,
-      precommitToken,
     };
 
     return startTrace(

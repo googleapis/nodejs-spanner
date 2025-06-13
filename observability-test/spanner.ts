@@ -27,6 +27,7 @@ import * as mockDatabaseAdmin from '../test/mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {Row} from '../src/partial-result-stream';
 import {END_TO_END_TRACING_HEADER} from '../src/common';
+import {context, trace} from '@opentelemetry/api';
 const {
   AlwaysOnSampler,
   NodeTracerProvider,
@@ -1197,30 +1198,42 @@ SELECT 1p
   }
 
   it('database.run with bad syntax: async/await', async () => {
-    const instance = spanner.instance('instance');
-    const database = instance.database('database');
+    const tracer = trace.getTracer('test');
+    const rootSpan = tracer.startSpan('manual-root-span');
+    const ctx = trace.setSpan(context.active(), rootSpan);
 
-    try {
-      await database.run(selectSql1p);
-    } catch (e) {
-      // This catch is meant to ensure that we
-      // can assert on the generated spans.
-    } finally {
-      provider.forceFlush();
-    }
+    await context.with(ctx, async () => {
+      const instance = spanner.instance('instance');
+      const database = instance.database('database');
 
-    assertRunBadSyntaxExpectations();
+      try {
+        await database.run(selectSql1p);
+      } catch (e) {
+        // handle expected error
+      } finally {
+        rootSpan.end();
+        await provider.forceFlush();
+      }
+
+      assertRunBadSyntaxExpectations();
+    });
   });
 
-  it('database.run with bad syntax: callback', done => {
-    const instance = spanner.instance('instance');
-    const database = instance.database('database');
+  it('database.run with bad syntax: callback', async done => {
+    const rootContext = trace.setSpan(
+      context.active(),
+      trace.getTracer('default').startSpan('test-span'),
+    );
+    await context.with(rootContext, async () => {
+      const instance = spanner.instance('instance');
+      const database = instance.database('database');
 
-    database.run(selectSql1p, err => {
-      assert.ok(err);
-      provider.forceFlush();
-      assertRunBadSyntaxExpectations();
-      done();
+      database.run(selectSql1p, err => {
+        assert.ok(err);
+        provider.forceFlush();
+        assertRunBadSyntaxExpectations();
+        done();
+      });
     });
   });
 
@@ -1328,6 +1341,14 @@ SELECT 1p
     // Assert that despite all being exported, SessionPool.createSessions
     // is not in the same trace as runStream, createSessions is invoked at
     // Spanner Client instantiation, thus before database.run is invoked.
+    console.log(
+      'line 1333: ',
+      sessionPoolCreateSessionsSpan.spanContext().traceId,
+    );
+    console.log(
+      'line 1334: ',
+      spanDatabaseRunTransactionAsync.spanContext().traceId,
+    );
     assert.notEqual(
       sessionPoolCreateSessionsSpan.spanContext().traceId,
       spanDatabaseRunTransactionAsync.spanContext().traceId,
@@ -1356,30 +1377,36 @@ SELECT 1p
   }
 
   it('database.runTransaction with async/await for INSERT with existent data + transaction.commit', async () => {
-    const instance = spanner.instance('instance');
-    const database = instance.database('database');
+    const rootContext = trace.setSpan(
+      context.active(),
+      trace.getTracer('default').startSpan('test-span'),
+    );
+    await context.with(rootContext, async () => {
+      const instance = spanner.instance('instance');
+      const database = instance.database('database');
 
-    const update = {
-      sql: insertAlreadyExistentDataSql,
-    };
+      const update = {
+        sql: insertAlreadyExistentDataSql,
+      };
 
-    try {
-      await database.runTransactionAsync(async transaction => {
-        try {
-          await transaction!.run(update);
-        } finally {
-          await transaction!.commit();
-        }
-      });
-    } catch (e) {
-      assert.strictEqual(
-        (e as grpc.ServiceError).code,
-        grpc.status.ALREADY_EXISTS,
-      );
-    }
+      try {
+        await database.runTransactionAsync(async transaction => {
+          try {
+            await transaction!.run(update);
+          } finally {
+            await transaction!.commit();
+          }
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as grpc.ServiceError).code,
+          grpc.status.ALREADY_EXISTS,
+        );
+      }
 
-    provider.forceFlush();
-    assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData();
+      provider.forceFlush();
+      assertDatabaseRunPlusAwaitTransactionForAlreadyExistentData();
+    });
   });
 });
 

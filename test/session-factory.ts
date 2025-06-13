@@ -152,30 +152,6 @@ describe('SessionFactory', () => {
         assert.strictEqual(sessionFactory.isMultiplexed, true);
       });
     });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are disabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
-      it('should correctly initialize the isMultiplexedRW field', () => {
-        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-        assert.strictEqual(sessionFactory.isMultiplexedRW, false);
-      });
-    });
-
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      it('should correctly initialize the isMultiplexedRW field', () => {
-        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
-        assert.strictEqual(sessionFactory.isMultiplexedRW, true);
-      });
-    });
   });
 
   describe('getSession', () => {
@@ -238,76 +214,6 @@ describe('SessionFactory', () => {
           ) as sinon.SinonStub
         ).callsFake(callback => callback(fakeError, null));
         sessionFactory.getSession((err, resp) => {
-          assert.strictEqual(err, fakeError);
-          assert.strictEqual(resp, null);
-          done();
-        });
-      });
-    });
-  });
-
-  describe('getSessionForReadWrite', () => {
-    describe('when multiplexed session for r/w disabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
-      it('should retrieve a regular session from the pool', done => {
-        (
-          sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => callback(null, fakeSession));
-        sessionFactory.getSessionForReadWrite((err, resp) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(resp, fakeSession);
-          done();
-        });
-      });
-
-      it('should propagate errors when regular session retrieval fails', done => {
-        const fakeError = new Error();
-        (
-          sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
-        ).callsFake(callback => callback(fakeError, null));
-        sessionFactory.getSessionForReadWrite((err, resp) => {
-          assert.strictEqual(err, fakeError);
-          assert.strictEqual(resp, null);
-          done();
-        });
-      });
-    });
-
-    describe('when multiplexed session for r/w enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      it('should return the multiplexed session', done => {
-        (
-          sandbox.stub(
-            sessionFactory.multiplexedSession_,
-            'getSession',
-          ) as sinon.SinonStub
-        ).callsFake(callback => callback(null, fakeMuxSession));
-        sessionFactory.getSessionForReadWrite((err, resp) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(resp, fakeMuxSession);
-          assert.strictEqual(resp?.metadata.multiplexed, true);
-          assert.strictEqual(fakeMuxSession.metadata.multiplexed, true);
-          done();
-        });
-      });
-
-      it('should propagate error when multiplexed session return fails', done => {
-        const fakeError = new Error();
-        (
-          sandbox.stub(
-            sessionFactory.multiplexedSession_,
-            'getSession',
-          ) as sinon.SinonStub
-        ).callsFake(callback => callback(fakeError, null));
-        sessionFactory.getSessionForReadWrite((err, resp) => {
           assert.strictEqual(err, fakeError);
           assert.strictEqual(resp, null);
           done();
