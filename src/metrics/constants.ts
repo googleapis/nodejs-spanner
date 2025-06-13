@@ -16,6 +16,10 @@ export const SPANNER_METER_NAME = 'spanner-nodejs';
 export const CLIENT_METRICS_PREFIX = 'spanner.googleapis.com/internal/client';
 export const SPANNER_RESOURCE_TYPE = 'spanner_instance_client';
 
+// OTel semantic conventions
+// See https://github.com/open-telemetry/opentelemetry-js/blob/main/semantic-conventions/README.md#unstable-semconv
+export const ATTR_CLOUD_REGION = 'cloud.region';
+
 // Monitored resource labels
 export const MONITORED_RES_LABEL_KEY_PROJECT = 'project_id';
 export const MONITORED_RES_LABEL_KEY_INSTANCE = 'instance_id';
