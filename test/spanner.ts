@@ -341,6 +341,9 @@ describe('Spanner with mock server', () => {
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = 'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
   });
 
   beforeEach(() => {

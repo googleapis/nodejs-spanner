@@ -1075,6 +1075,9 @@ SELECT 1p
   });
 
   function assertRunBadSyntaxExpectations() {
+    console.log(process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS);
+    // process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = 'false';
+    // process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
     traceExporter.forceFlush();
     const spans = traceExporter.getFinishedSpans();
     spans.sort((spanA, spanB) => {
@@ -1197,6 +1200,9 @@ SELECT 1p
   }
 
   it('database.run with bad syntax: async/await', async () => {
+    console.log(process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS);
+    // process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = 'false';
+    // process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
     const instance = spanner.instance('instance');
     const database = instance.database('database');
 

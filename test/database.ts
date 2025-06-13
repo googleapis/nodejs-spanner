@@ -308,6 +308,12 @@ describe('Database', () => {
 
   afterEach(() => sandbox.restore());
 
+  after(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = 'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+  });
+
   describe('instantiation', () => {
     it('should promisify all the things', () => {
       assert(promisified);
