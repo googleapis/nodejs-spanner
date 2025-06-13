@@ -1879,6 +1879,84 @@ describe('Transaction', () => {
         assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
       });
 
+      it('should retry commit only once upon sending precommitToken to read-only participants', () => {
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        const expectedTimestamp = new PreciseDate(0);
+        const fakeTimestamp = {seconds: 0, nanos: 0};
+
+        // retry response on first commit retry
+        const fakeFirstRetryResponse = {
+          commitTimestamp: null,
+          MultiplexedSessionRetry: 'precommitToken',
+          precommitToken: {
+            precommitToken: Buffer.from('precommit-token-first-commit-retry'),
+            seqNum: 2,
+          },
+        };
+
+        // retry response on second commit retry
+        // (if second retry will take place)
+        const fakeSecondRetryResponse = {
+          commitTimestamp: null,
+          MultiplexedSessionRetry: 'precommitToken',
+          precommitToken: {
+            precommitToken: Buffer.from('precommit-token-second-commit-retry'),
+            seqNum: 3,
+          },
+        };
+
+        const fakeResponse = {commitTimestamp: fakeTimestamp};
+        const fakePrecommitToken = {
+          precommitToken: Buffer.from('precommit-token-commit'),
+          seqNum: 1,
+        };
+
+        transaction._latestPreCommitToken = fakePrecommitToken;
+
+        requestStub.onFirstCall().callsFake((_, callback) => {
+          // assert that the transaction contains the precommit token
+          assert.deepStrictEqual(
+            transaction._latestPreCommitToken,
+            fakePrecommitToken,
+          );
+          callback(null, fakeFirstRetryResponse);
+        });
+
+        requestStub.onSecondCall().callsFake((_, callback) => {
+          // assert that on first commit retry the _latestPreCommitToken
+          // has been updated in the transaction object
+          assert.deepStrictEqual(
+            transaction._latestPreCommitToken,
+            fakeFirstRetryResponse.precommitToken,
+          );
+          callback(null, fakeResponse);
+        });
+
+        requestStub.onThirdCall().callsFake((_, callback) => {
+          // assert that on second commit retry the _latestPreCommitToken has been updated
+          // in the transaction object (if the second retry will take place)
+          assert.deepStrictEqual(
+            transaction._latestPreCommitToken,
+            fakeSecondRetryResponse.precommitToken,
+          );
+          callback(null, fakeResponse);
+        });
+
+        transaction.commit((err, resp) => {
+          assert.ifError(err);
+          // make sure that retry happens only once
+          assert.strictEqual(requestStub.callCount, 2);
+          assert.deepStrictEqual(
+            transaction.commitTimestamp,
+            expectedTimestamp,
+          );
+          assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
+          // assert on the successfull commit response
+          assert.deepStrictEqual(resp, fakeResponse);
+        });
+      });
+
       it('should return any errors and the response', () => {
         const requestStub = sandbox.stub(transaction, 'request');
 

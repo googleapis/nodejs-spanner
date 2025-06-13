@@ -130,6 +130,10 @@ describe('SessionFactory', () => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
       it('should create a MultiplexedSession object', () => {
         assert(
           sessionFactory.multiplexedSession_ instanceof MultiplexedSession,
@@ -169,6 +173,11 @@ describe('SessionFactory', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
       });
 
       it('should correctly initialize the isMultiplexedRW field', () => {
@@ -211,6 +220,10 @@ describe('SessionFactory', () => {
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
 
       it('should return the multiplexed session', done => {
@@ -283,6 +296,11 @@ describe('SessionFactory', () => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
       it('should return the multiplexed session', done => {
         (
           sandbox.stub(
@@ -328,6 +346,10 @@ describe('SessionFactory', () => {
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
 
       it('should not call the release method', () => {

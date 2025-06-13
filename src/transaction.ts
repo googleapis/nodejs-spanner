@@ -229,7 +229,8 @@ export type CommitCallback =
 type PrecommitTokenProvider =
   | spannerClient.spanner.v1.ITransaction
   | spannerClient.spanner.v1.IPartialResultSet
-  | spannerClient.spanner.v1.IExecuteBatchDmlResponse;
+  | spannerClient.spanner.v1.IExecuteBatchDmlResponse
+  | spannerClient.spanner.v1.ICommitResponse;
 
 /**
  * @typedef {object} TimestampBounds
@@ -1831,6 +1832,7 @@ export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
   commitTimestampProto?: spannerClient.protobuf.ITimestamp;
   private _queuedMutations: spannerClient.spanner.v1.Mutation[];
+  private _retryCommit: Boolean;
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1884,6 +1886,7 @@ export class Transaction extends Dml {
     this._options = {readWrite: options};
     this._options.isolationLevel = IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
     this.requestOptions = requestOptions;
+    this._retryCommit = false;
   }
 
   /**
@@ -2291,6 +2294,16 @@ export class Transaction extends Dml {
             err: null | Error,
             resp: spannerClient.spanner.v1.ICommitResponse,
           ) => {
+            if (
+              resp &&
+              'MultiplexedSessionRetry' in resp &&
+              !this._retryCommit
+            ) {
+              this._retryCommit = true;
+              this._updatePrecommitToken(resp);
+              return this.commit(options, callback);
+            }
+
             this.end();
 
             if (err) {
