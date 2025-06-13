@@ -105,8 +105,9 @@ const {
  * associated in their respective hierarchies.
  */
 function ensureInitialContextManagerSet() {
-  if (context.active() === ROOT_CONTEXT) {
-    // If no active context was set previously, trace context propagation cannot
+  if (!context['_contextManager'] || context.active() === ROOT_CONTEXT) {
+    // If no context manager is currently set, or if the active context is the ROOT_CONTEXT,
+    // trace context propagation cannot
     // function correctly with async/await for OpenTelemetry
     // See {@link https://opentelemetry.io/docs/languages/js/context/#active-context}
     context.disable(); // Disable any prior contextManager.
