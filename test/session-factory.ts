@@ -86,12 +86,6 @@ describe('SessionFactory', () => {
     sandbox.restore();
   });
 
-  after(() => {
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = 'false';
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-  });
-
   describe('instantiation', () => {
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       before(() => {
