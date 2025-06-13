@@ -18,8 +18,8 @@ import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
 import {MeterProvider} from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram} from '@opentelemetry/api';
-import {detectResourcesSync, Resource} from '@opentelemetry/resources';
-import {gcpDetector} from '@opentelemetry/resource-detector-gcp';
+import {detectResources, Resource} from '@opentelemetry/resources';
+import {GcpDetectorSync} from '@google-cloud/opentelemetry-resource-util';
 import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
@@ -56,12 +56,13 @@ export class MetricsTracerFactory {
   /**
   Create set of attributes for resource metrics
    */
-  public static createResourceAttributes(projectId: string): {
-    [key: string]: string;
-  } {
-    const clientUid = MetricsTracerFactory._generateClientUId();
-    const clientHash = MetricsTracerFactory._generateClientHash(clientUid);
-    const location = MetricsTracerFactory._detectClientLocation();
+  public async createResourceAttributes(
+    projectId: string,
+  ): Promise<{[key: string]: string}> {
+    const clientHash = MetricsTracerFactory._generateClientHash(
+      this._clientUid,
+    );
+    const location = await MetricsTracerFactory._detectClientLocation();
     return {
       [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: projectId,
       [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: 'unknown',
@@ -175,7 +176,6 @@ export class MetricsTracerFactory {
   }
 
   private _createMetricInstruments() {
-    // This uses the globally registered provider (defaults to Noop provider)
     const meterProvider = MetricsTracerFactory.getMeterProvider();
     const meter = meterProvider.getMeter(Constants.SPANNER_METER_NAME, version);
 
@@ -268,11 +268,15 @@ export class MetricsTracerFactory {
   /**
    * Gets the location (region) of the client, otherwise returns to the "global" region.
    */
-  private static _detectClientLocation(): string {
+  private static async _detectClientLocation(): Promise<string> {
+    const defaultRegion = 'global';
     try {
-      const resource = detectResourcesSync({
-        detectors: [gcpDetector],
+      const resource = await detectResources({
+        detectors: [new GcpDetectorSync()],
       });
+
+      await resource?.waitForAsyncAttributes?.();
+
       const region = resource.attributes[Constants.ATTR_CLOUD_REGION];
       if (typeof region === 'string' && region) {
         return region;
@@ -280,6 +284,6 @@ export class MetricsTracerFactory {
     } catch (err) {
       console.warn('Unable to detect location.', err);
     }
-    return 'global';
+    return defaultRegion;
   }
 }

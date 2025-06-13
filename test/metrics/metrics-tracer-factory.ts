@@ -149,9 +149,11 @@ describe('MetricsTracerFactory', () => {
     assert.ok(factory.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
   });
 
-  it('should correctly create resource attributes', () => {
+  it('should correctly create resource attributes', async () => {
+    const factory = MetricsTracerFactory.getInstance(true);
     const resourceAttributes =
-      MetricsTracerFactory.createResourceAttributes('test-proj-id');
+      await factory.createResourceAttributes('test-proj-id');
+
     assert.strictEqual(
       resourceAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
       'test-proj-id',
