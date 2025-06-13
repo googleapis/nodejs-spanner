@@ -227,6 +227,7 @@ describe('Database', () => {
   let database;
 
   before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     Database = proxyquire('../src/database.js', {
       './common-grpc/service-object': {
         GrpcServiceObject: FakeGrpcServiceObject,

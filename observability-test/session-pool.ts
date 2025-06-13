@@ -79,6 +79,7 @@ describe('SessionPool', () => {
   };
 
   before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     SessionPool = proxyquire('../src/session-pool.js', {
       'p-queue': FakePQueue,
       'stack-trace': fakeStackTrace,

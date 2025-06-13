@@ -361,19 +361,6 @@ describe('Database', () => {
       sessionFactory.pool_.emit('error', error);
     });
 
-    it('should re-emit Multiplexed Session errors', done => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      const error = new Error('err');
-
-      const sessionFactory = new SessionFactory(database, NAME);
-
-      database.on('error', err => {
-        assert.strictEqual(err, error);
-        done();
-      });
-      sessionFactory.multiplexedSession_?.emit('error', error);
-    });
-
     it('should inherit from ServiceObject', done => {
       const options = {};
 
@@ -401,6 +388,26 @@ describe('Database', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(database.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: database.formattedName_,
+      });
+    });
+
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+      it('should re-emit Multiplexed Session errors', done => {
+        const error = new Error('err');
+
+        const sessionFactory = new SessionFactory(database, NAME);
+
+        database.on('error', err => {
+          assert.strictEqual(err, error);
+          done();
+        });
+        sessionFactory.multiplexedSession_?.emit('error', error);
       });
     });
   });

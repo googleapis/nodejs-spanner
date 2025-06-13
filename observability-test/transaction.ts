@@ -77,6 +77,7 @@ describe('Transaction', () => {
   let snapshot;
 
   before(() => {
+    // process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     const txns = proxyquire('../src/transaction', {
       '@google-cloud/promisify': {promisifyAll: PROMISIFY_ALL},
       './codec': {codec},

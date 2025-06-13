@@ -102,6 +102,7 @@ describe('BatchTransaction', () => {
   let batchTransaction: bt.BatchTransaction;
 
   before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     BatchTransaction = proxyquire('../src/batch-transaction.js', {
       '@google-cloud/precise-date': {PreciseDate: FakeTimestamp},
       '@google-cloud/promisify': fakePfy,

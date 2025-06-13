@@ -89,6 +89,7 @@ describe('Table', () => {
   };
 
   before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     Table = proxyquire('../src/table.js', {
       '@google-cloud/promisify': fakePfy,
     }).Table;

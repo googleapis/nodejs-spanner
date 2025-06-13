@@ -125,6 +125,9 @@ async function setup(
 }
 
 describe('EndToEnd', async () => {
+  before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+  });
   const contextManager = new AsyncHooksContextManager();
   setGlobalContextManager(contextManager);
   afterEach(() => {

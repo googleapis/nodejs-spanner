@@ -63,6 +63,10 @@ describe('startTrace', () => {
   const contextManager = new AsyncHooksContextManager();
   setGlobalContextManager(contextManager);
 
+  before(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+  });
+
   afterEach(() => {
     globalExporter.forceFlush();
   });

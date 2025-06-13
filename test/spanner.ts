@@ -2081,6 +2081,12 @@ describe('Spanner with mock server', () => {
           'false';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
       it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
         const database = newTestDatabase({min: 1, max: 1});
         const pool = (database.sessionFactory_ as SessionFactory)
@@ -2109,6 +2115,12 @@ describe('Spanner with mock server', () => {
           'true';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
       it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
         const database = newTestDatabase({min: 1, max: 1});
         const pool = (database.sessionFactory_ as SessionFactory)
@@ -2134,6 +2146,12 @@ describe('Spanner with mock server', () => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
           'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
       });
 
       it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
