@@ -44,7 +44,7 @@ class MetricAttemptTracer {
 class MetricOperationTracer {
   private _attemptCount: number;
   private _startTime: Date;
-  private _currentAttempt;
+  public _currentAttempt;
   public status: number;
 
   constructor() {
@@ -78,9 +78,9 @@ class MetricOperationTracer {
 
 export class MetricsTracer {
   public currentOperation: MetricOperationTracer = new MetricOperationTracer();
+  private _clientAttributes: {[key: string]: string} = {};
 
   constructor(
-    private _clientAttributes: {[key: string]: string},
     private _instrumentAttemptCounter: Counter,
     private _instrumentAttemptLatency: Histogram,
     private _instrumentOperationCounter: Counter,
@@ -159,6 +159,7 @@ export class MetricsTracer {
       this.currentOperation.attemptCount,
       attemptAttributes,
     );
+    this.currentOperation.status = this.currentOperation.currentAttempt.status;
   }
 
   public recordGfeLatency(latency: number) {
@@ -190,9 +191,9 @@ export class MetricsTracer {
     return attributes;
   }
 
-  set project(project: string) {
+  set projectId(projectId: string) {
     if (!(MONITORED_RES_LABEL_KEY_PROJECT in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_PROJECT] = project;
+      this._clientAttributes[MONITORED_RES_LABEL_KEY_PROJECT] = projectId;
     }
   }
 

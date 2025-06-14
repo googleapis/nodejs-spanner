@@ -94,6 +94,10 @@ import {
   injectRequestIDIntoError,
   nextSpannerClientId,
 } from './request_id_header';
+import {Resource} from '@opentelemetry/resources';
+import {PeriodicExportingMetricReader} from '@opentelemetry/sdk-metrics';
+import {CloudMonitoringMetricsExporter} from './metrics/spanner-metrics-exporter';
+import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -399,6 +403,8 @@ class Spanner extends GrpcService {
     );
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
+
+    this.configureMetrics_();
   }
 
   /**
@@ -1505,6 +1511,22 @@ class Spanner extends GrpcService {
       this.instanceConfigs_.set(key, new InstanceConfig(this, name));
     }
     return this.instanceConfigs_.get(key)!;
+  }
+
+  /**
+   * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
+   */
+  configureMetrics_() {
+    const metricsEnabled =
+      process.env.SPANNER_ENABLE_BUILTIN_METRICS === 'true';
+    const factory = MetricsTracerFactory.getInstance(metricsEnabled);
+    if (metricsEnabled) {
+      const periodicReader = new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringMetricsExporter({auth: this.auth}),
+        exportIntervalMillis: 60000,
+      });
+      const meterProvider = factory.getMeterProvider([periodicReader]);
+    }
   }
 
   /**
