@@ -296,6 +296,7 @@ export class Snapshot extends EventEmitter {
     | undefined
     | null;
   id?: Uint8Array | string;
+  multiplexedSessionPreviousTransactionId?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
   readTimestamp?: PreciseDate;
@@ -451,6 +452,13 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
+    if (
+      gaxOpts.retry?.retryCodes![0] === grpc.status.ABORTED &&
+      this.session.multiplexed
+    ) {
+      options.readWrite!.multiplexedSessionPreviousTransactionId =
+        this.multiplexedSessionPreviousTransactionId;
+    }
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,

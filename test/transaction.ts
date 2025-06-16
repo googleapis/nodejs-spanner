@@ -1702,6 +1702,49 @@ describe('Transaction', () => {
           ),
         );
       });
+
+      describe('when multiplexed session is enabled for read/write', () => {
+        it('should track the multiplexedSessionPreviousTransactionId', () => {
+          const fakePreviousTransactionId = 'fake-previous-transaction-id';
+          const fakeGaxOptions = {
+            retry: {
+              retryCodes: [grpc.status.ABORTED],
+            },
+          };
+          // multiplexed session
+          const multiplexedSession = Object.assign(
+            {multiplexed: true},
+            SESSION,
+          );
+          transaction = new Transaction(multiplexedSession);
+          // transaction option must contain the previous transaction id for multiplexed session
+          transaction.multiplexedSessionPreviousTransactionId =
+            fakePreviousTransactionId;
+          const stub = sandbox.stub(transaction, 'request');
+          transaction.begin(fakeGaxOptions);
+
+          const expectedOptions = {
+            isolationLevel: 0,
+            readWrite: {
+              multiplexedSessionPreviousTransactionId:
+                fakePreviousTransactionId,
+            },
+          };
+          const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'beginTransaction');
+          // request options should contain the multiplexedSessionPreviousTransactionId
+          assert.deepStrictEqual(reqOpts.options, expectedOptions);
+          assert.deepStrictEqual(
+            headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.commonHeaders_,
+            ),
+          );
+        });
+      });
     });
 
     describe('commit', () => {
