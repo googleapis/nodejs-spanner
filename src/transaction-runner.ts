@@ -116,6 +116,7 @@ export abstract class Runner<T> {
   session: Session;
   transaction?: Transaction;
   options: RunTransactionOptions;
+  multiplexedSessionPreviousTransactionId?: Uint8Array | string;
   constructor(
     session: Session,
     transaction: Transaction,
@@ -210,6 +211,8 @@ export abstract class Runner<T> {
     transaction!.setReadWriteTransactionOptions(
       this.options as RunTransactionOptions,
     );
+    transaction.multiplexedSessionPreviousTransactionId =
+      this.multiplexedSessionPreviousTransactionId;
     if (this.attempts > 0) {
       await transaction.begin();
     }
@@ -239,6 +242,8 @@ export abstract class Runner<T> {
       } catch (e) {
         this.session.lastError = e as grpc.ServiceError;
         lastError = e as grpc.ServiceError;
+      } finally {
+        this.multiplexedSessionPreviousTransactionId = transaction.id;
       }
 
       // Note that if the error is a 'Session not found' error, it will be

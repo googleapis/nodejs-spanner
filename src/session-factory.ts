@@ -93,6 +93,13 @@ export interface SessionFactoryInterface {
    * @name SessionFactoryInterface#isMultiplexedEnabled
    */
   isMultiplexedEnabled(): boolean;
+
+  /**
+   * When called returns if the multiplexed is enabled or not for read write transactions.
+   *
+   * @name SessionFactoryInterface#isMultiplexedEnabledForRW
+   */
+  isMultiplexedEnabledForRW(): boolean;
 }
 
 /**
@@ -242,5 +249,16 @@ export class SessionFactory
    */
   isMultiplexedEnabled(): boolean {
     return this.isMultiplexed;
+  }
+
+  /**
+   * Returns if a multiplexed is enabled or not for read write transaction.
+   *
+   * This method returns true if multiplexed session is enabled for read write transactions, otherwise returns false
+   *
+   * @returns {boolean}
+   */
+  isMultiplexedEnabledForRW(): boolean {
+    return this.isMultiplexedRW;
   }
 }
