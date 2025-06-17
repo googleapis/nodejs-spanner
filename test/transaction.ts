@@ -1706,11 +1706,6 @@ describe('Transaction', () => {
       describe('when multiplexed session is enabled for read/write', () => {
         it('should track the multiplexedSessionPreviousTransactionId', () => {
           const fakePreviousTransactionId = 'fake-previous-transaction-id';
-          const fakeGaxOptions = {
-            retry: {
-              retryCodes: [grpc.status.ABORTED],
-            },
-          };
           // multiplexed session
           const multiplexedSession = Object.assign(
             {multiplexed: true},
@@ -1721,7 +1716,7 @@ describe('Transaction', () => {
           transaction.multiplexedSessionPreviousTransactionId =
             fakePreviousTransactionId;
           const stub = sandbox.stub(transaction, 'request');
-          transaction.begin(fakeGaxOptions);
+          transaction.begin();
 
           const expectedOptions = {
             isolationLevel: 0,

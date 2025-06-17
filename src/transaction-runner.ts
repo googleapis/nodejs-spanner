@@ -217,11 +217,7 @@ export abstract class Runner<T> {
         this.multiplexedSessionPreviousTransactionId;
     }
     if (this.attempts > 0) {
-      await transaction.begin({
-        retry: {
-          retryCodes: [grpc.status.ABORTED],
-        },
-      });
+      await transaction.begin();
     }
     return transaction;
   }

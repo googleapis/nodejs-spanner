@@ -394,6 +394,13 @@ export class Snapshot extends EventEmitter {
     }
   }
 
+  protected _setPreviousTransactionId(
+    transaction: spannerClient.spanner.v1.ITransactionSelector,
+  ): void {
+    transaction.begin!.readWrite!.multiplexedSessionPreviousTransactionId =
+      this.multiplexedSessionPreviousTransactionId;
+  }
+
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -453,7 +460,7 @@ export class Snapshot extends EventEmitter {
     const session = this.session.formattedName_!;
     const options = this._options;
     if (
-      gaxOpts.retry?.retryCodes![0] === grpc.status.ABORTED &&
+      this.multiplexedSessionPreviousTransactionId &&
       this.session.multiplexed
     ) {
       options.readWrite!.multiplexedSessionPreviousTransactionId =
@@ -707,6 +714,10 @@ export class Snapshot extends EventEmitter {
       transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
+    }
+
+    if (this.id && this._options.readWrite && this.session.multiplexed) {
+      this._setPreviousTransactionId(transaction);
     }
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1315,6 +1326,10 @@ export class Snapshot extends EventEmitter {
       } else {
         transaction.singleUse = this._options;
       }
+
+      if (this.id && this._options.readWrite && this.session.multiplexed) {
+        this._setPreviousTransactionId(transaction);
+      }
       delete query.gaxOptions;
       delete query.json;
       delete query.jsonOptions;
@@ -1628,6 +1643,7 @@ export class Snapshot extends EventEmitter {
     const {id, readTimestamp} = resp;
 
     this.id = id!;
+    this.multiplexedSessionPreviousTransactionId = id!;
     this.metadata = resp;
 
     const span = getActiveOrNoopSpan();
@@ -2016,6 +2032,10 @@ export class Transaction extends Dml {
       transaction.id = this.id as Uint8Array;
     } else {
       transaction.begin = this._options;
+    }
+
+    if (this.id && this._options.readWrite && this.session.multiplexed) {
+      this._setPreviousTransactionId(transaction);
     }
 
     const requestOptionsWithTag = this.configureTagOptions(

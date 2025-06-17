@@ -29,6 +29,7 @@ import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 const concat = require('concat-stream');
 
 class FakeTransaction extends EventEmitter {
+  multiplexedSessionPreviousTransactionId;
   async begin(): Promise<void> {}
   request() {}
   requestStream() {}
@@ -228,6 +229,29 @@ describe('TransactionRunner', () => {
         runner.attempts++;
         await runner.getTransaction();
         assert.strictEqual(beginStub.callCount, 1);
+      });
+
+      describe('when multiplexed session is enabled for read/write transaction', () => {
+        it('should set the multiplexedSessionPreviousTransactionId in the new transaction object', async () => {
+          const expectedTransaction = new FakeTransaction();
+          const fakePreviousTransactionId = 'fake-transaction-id';
+          sandbox.stub(expectedTransaction, 'begin').resolves();
+
+          sandbox.stub(SESSION, 'transaction').returns(expectedTransaction);
+          delete runner.transaction;
+
+          runner.multiplexedSessionPreviousTransactionId =
+            fakePreviousTransactionId;
+
+          runner.session = Object.assign({multiplexed: true}, SESSION);
+
+          const transaction = await runner.getTransaction();
+
+          assert.strictEqual(
+            transaction.multiplexedSessionPreviousTransactionId,
+            fakePreviousTransactionId,
+          );
+        });
       });
     });
 
