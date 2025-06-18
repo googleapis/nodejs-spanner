@@ -1704,7 +1704,7 @@ describe('Transaction', () => {
       });
 
       describe('when multiplexed session is enabled for read/write', () => {
-        it('should track the multiplexedSessionPreviousTransactionId', () => {
+        it('should update multiplexedSessionPreviousTransactionId before making request to begin', () => {
           const fakePreviousTransactionId = 'fake-previous-transaction-id';
           // multiplexed session
           const multiplexedSession = Object.assign(

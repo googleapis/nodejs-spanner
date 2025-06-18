@@ -24,6 +24,7 @@ import * as through from 'through2';
 import {RunTransactionOptions} from '../src/transaction-runner';
 import {google} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import {randomUUID} from 'crypto';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
@@ -256,8 +257,11 @@ describe('TransactionRunner', () => {
     });
 
     describe('run', () => {
+      let getTransactionStub;
       beforeEach(() => {
-        sandbox.stub(runner, 'getTransaction').resolves(fakeTransaction);
+        getTransactionStub = sandbox
+          .stub(runner, 'getTransaction')
+          .resolves(fakeTransaction);
       });
 
       it('should run a transaction', async () => {
@@ -329,6 +333,87 @@ describe('TransactionRunner', () => {
             assert.deepStrictEqual(err.errors, [fakeError]);
             done();
           });
+      });
+
+      describe('when multiplexed session is enabled for read/write', () => {
+        it('should update the multiplexedSessionPreviousTransactionId before retrying aborted transaction', async () => {
+          const fakeReturnValue = 12;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.ABORTED;
+
+          const fakeTransaction1 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+          const fakeTransaction2 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+          const fakeTransaction3 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+          const fakeTransaction4 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+
+          getTransactionStub.onCall(0).resolves(fakeTransaction1);
+          getTransactionStub.onCall(1).resolves(fakeTransaction2);
+          getTransactionStub.onCall(2).resolves(fakeTransaction3);
+          getTransactionStub.onCall(3).resolves(fakeTransaction4);
+
+          runFn.onCall(0).callsFake(() => {
+            // before retry assert if the multiplexedSessionPreviousTransactionId is set properly
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction1.id,
+            );
+            return Promise.reject(fakeError);
+          });
+
+          // first retry
+          runFn.onCall(1).callsFake(() => {
+            // before retry assert if the multiplexedSessionPreviousTransactionId is set properly
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction2.id,
+            );
+            return Promise.reject(fakeError);
+          });
+
+          // second retry
+          runFn.onCall(2).callsFake(() => {
+            // before retry assert if the multiplexedSessionPreviousTransactionId is set properly
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction3.id,
+            );
+            return Promise.reject(fakeError);
+          });
+
+          // third retry
+          runFn.onCall(3).callsFake(() => {
+            // before retry assert if the multiplexedSessionPreviousTransactionId is set properly
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction4.id,
+            );
+            return Promise.resolve(fakeReturnValue);
+          });
+
+          const delayStub = sandbox
+            .stub(runner, 'getNextDelay')
+            .withArgs(fakeError)
+            .returns(0);
+
+          const returnValue = await runner.run();
+
+          assert.strictEqual(returnValue, fakeReturnValue);
+          // assert that retry happens three times only
+          assert.strictEqual(runner.attempts, 3);
+          assert.strictEqual(delayStub.callCount, 3);
+        });
       });
     });
   });

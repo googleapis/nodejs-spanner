@@ -133,7 +133,6 @@ export abstract class Runner<T> {
     };
 
     this.options = Object.assign(defaults, options);
-    this.multiplexedSessionPreviousTransactionId = transaction.id;
   }
   /**
    * Runs the user function against the provided transaction. Resolving the
@@ -239,6 +238,7 @@ export abstract class Runner<T> {
     // timing out.
     while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
+      this.multiplexedSessionPreviousTransactionId = transaction.id;
 
       try {
         return await this._run(transaction);
