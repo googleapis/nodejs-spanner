@@ -116,6 +116,7 @@ export abstract class Runner<T> {
   session: Session;
   transaction?: Transaction;
   options: RunTransactionOptions;
+  multiplexedSessionPreviousTransactionId?: Uint8Array | string;
   constructor(
     session: Session,
     transaction: Transaction,
@@ -210,6 +211,10 @@ export abstract class Runner<T> {
     transaction!.setReadWriteTransactionOptions(
       this.options as RunTransactionOptions,
     );
+    if (this.session.multiplexed) {
+      transaction.multiplexedSessionPreviousTransactionId =
+        this.multiplexedSessionPreviousTransactionId;
+    }
     if (this.attempts > 0) {
       await transaction.begin();
     }
@@ -233,6 +238,7 @@ export abstract class Runner<T> {
     // timing out.
     while (this.attempts === 0 || Date.now() - start < timeout) {
       const transaction = await this.getTransaction();
+      this.multiplexedSessionPreviousTransactionId = transaction.id;
 
       try {
         return await this._run(transaction);
