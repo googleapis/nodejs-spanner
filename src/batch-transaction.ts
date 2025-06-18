@@ -36,6 +36,7 @@ import {
 } from '../src/common';
 import {startTrace, setSpanError, traceConfig} from './instrument';
 import {injectRequestIDIntoHeaders} from './request_id_header';
+import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -183,6 +184,13 @@ class BatchTransaction extends Snapshot {
       'BatchTransaction.createQueryPartitions',
       traceConfig,
       span => {
+        const method = 'partitionQuery';
+        const metricsTracer =
+          MetricsTracerFactory.getInstance()?.createMetricsTracer(
+            this.getDBName(),
+            method,
+          );
+        metricsTracer?.recordOperationStart();
         const headers: {[k: string]: string} = {};
         if (this._getSpanner().routeToLeaderEnabled) {
           addLeaderAwareRoutingHeader(headers);
@@ -191,7 +199,7 @@ class BatchTransaction extends Snapshot {
         this.createPartitions_(
           {
             client: 'SpannerClient',
-            method: 'partitionQuery',
+            method: method,
             reqOpts,
             gaxOpts: request.gaxOptions,
             headers: injectRequestIDIntoHeaders(headers, this.session),
@@ -203,6 +211,7 @@ class BatchTransaction extends Snapshot {
 
             span.end();
             cb!(err, partitions, resp);
+            metricsTracer?.recordOperationCompletion();
           },
         );
       },

@@ -194,4 +194,34 @@ describe('MetricsTracer', () => {
     );
     assert.strictEqual(attributes[Constants.METRIC_LABEL_KEY_METHOD], 'method');
   });
+
+  describe('extractGfeLatency', () => {
+    let tracer: MetricsTracer;
+    beforeEach(() => {
+      tracer = new MetricsTracer(null, null, null, null, null, null, true);
+    });
+
+    it('should extract latency from a valid server-timing header', () => {
+      const header = 'gfet4t7; dur=123';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, 123);
+    });
+
+    it('should return null if header is undefined', () => {
+      const latency = tracer.extractGfeLatency(undefined as any);
+      assert.strictEqual(latency, null);
+    });
+
+    it('should return null if header does not match expected format', () => {
+      const header = 'some-other-header';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, null);
+    });
+
+    it('should extract only the first number if extra data is present', () => {
+      const header = 'gfet4t7; dur=456; other=value';
+      const latency = tracer.extractGfeLatency(header);
+      assert.strictEqual(latency, 456);
+    });
+  });
 });

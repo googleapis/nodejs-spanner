@@ -68,8 +68,10 @@ describe('MetricsTracerFactory', () => {
 
     // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
+
     MetricsTracerFactory.resetInstance();
-    const provider = MetricsTracerFactory.getInstance(true).getMeterProvider();
+    const provider =
+      MetricsTracerFactory.getInstance('project-id')!.getMeterProvider();
     const reader = new PeriodicExportingMetricReader({
       exporter: mockExporter,
       exportIntervalMillis: 60000,
@@ -79,7 +81,7 @@ describe('MetricsTracerFactory', () => {
 
   after(() => {
     sandbox.restore();
-    MetricsTracerFactory.getInstance(true).resetMeterProvider();
+    MetricsTracerFactory.getInstance()!.resetMeterProvider();
     MetricsTracerFactory.resetInstance();
   });
 
@@ -88,11 +90,9 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should use the set meter provider', async () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer(
-      'project',
-      'instance',
-      'database',
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer(
+      'projects/project/instances/instance/databases/database',
     );
 
     const operations = 3;
@@ -121,40 +121,38 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should initialize metric instruments when enabled', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
+    const factory = MetricsTracerFactory.getInstance();
 
-    assert.deepStrictEqual(factory.instrumentAttemptLatency, {
+    assert.deepStrictEqual(factory!.instrumentAttemptLatency, {
       record: recordAttemptLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentAttemptCounter, {
+    assert.deepStrictEqual(factory!.instrumentAttemptCounter, {
       add: addAttemptCounterStub,
     });
-    assert.deepStrictEqual(factory.instrumentOperationLatency, {
+    assert.deepStrictEqual(factory!.instrumentOperationLatency, {
       record: recordOperationLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentOperationCounter, {
+    assert.deepStrictEqual(factory!.instrumentOperationCounter, {
       add: addOperationCounterStub,
     });
-    assert.deepStrictEqual(factory.instrumentGfeLatency, {
+    assert.deepStrictEqual(factory!.instrumentGfeLatency, {
       record: recordGfeLatencyStub,
     });
-    assert.deepStrictEqual(factory.instrumentGfeConnectivityErrorCount, {
+    assert.deepStrictEqual(factory!.instrumentGfeConnectivityErrorCount, {
       add: addGfeConnectivityErrorCountStub,
     });
   });
 
   it('should create a MetricsTracer instance', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer();
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer();
     assert.ok(tracer);
   });
 
   it('should correctly set default attributes', () => {
-    const factory = MetricsTracerFactory.getInstance(true);
-    const tracer = factory.createMetricsTracer(
-      'project',
-      'instance',
-      'database',
+    const factory = MetricsTracerFactory.getInstance();
+    const tracer = factory!.createMetricsTracer(
+      'projects/project/instances/instance/databases/database',
     );
     assert.strictEqual(
       tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
@@ -173,5 +171,42 @@ describe('MetricsTracerFactory', () => {
     assert.ok(
       tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
     );
+  });
+});
+
+describe('getInstanceAttributes', () => {
+  let factory: MetricsTracerFactory;
+  before(() => {
+    factory = MetricsTracerFactory.getInstance()!;
+  });
+
+  it('should extract project, instance, and database from full resource path', () => {
+    const formattedName = 'projects/proj1/instances/inst1/databases/db1';
+    const attrs = factory.getInstanceAttributes(formattedName);
+    assert.deepStrictEqual(attrs, {
+      project: 'proj1',
+      instance: 'inst1',
+      database: 'db1',
+    });
+  });
+
+  it('should extract project and instance, and empty database if database is missing', () => {
+    const formattedName = 'projects/proj2/instances/inst2';
+    const attrs = factory.getInstanceAttributes(formattedName);
+    assert.deepStrictEqual(attrs, {
+      project: 'proj2',
+      instance: 'inst2',
+      database: '',
+    });
+  });
+
+  it('should return empty strings for all if input is empty', () => {
+    const attrs = factory.getInstanceAttributes('');
+    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
+  });
+
+  it('should return empty strings for all if input is malformed', () => {
+    const attrs = factory.getInstanceAttributes('foo/bar/baz');
+    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
   });
 });

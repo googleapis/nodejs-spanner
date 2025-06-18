@@ -96,6 +96,7 @@ import {
 } from './request_id_header';
 import {Resource} from '@opentelemetry/resources';
 import {PeriodicExportingMetricReader} from '@opentelemetry/sdk-metrics';
+import {MetricInterceptor} from './metrics/interceptor';
 import {CloudMonitoringMetricsExporter} from './metrics/spanner-metrics-exporter';
 import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
 
@@ -403,7 +404,6 @@ class Spanner extends GrpcService {
     );
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
-
     this.configureMetrics_();
   }
 
@@ -1518,14 +1518,15 @@ class Spanner extends GrpcService {
    */
   configureMetrics_() {
     const metricsEnabled =
-      process.env.SPANNER_ENABLE_BUILTIN_METRICS === 'true';
-    const factory = MetricsTracerFactory.getInstance(metricsEnabled);
+      process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true';
+    MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
+      const factory = MetricsTracerFactory.getInstance(this.projectId);
       const periodicReader = new PeriodicExportingMetricReader({
         exporter: new CloudMonitoringMetricsExporter({auth: this.auth}),
         exportIntervalMillis: 60000,
       });
-      const meterProvider = factory.getMeterProvider([periodicReader]);
+      const meterProvider = factory!.getMeterProvider([periodicReader]);
     }
   }
 
@@ -1587,6 +1588,10 @@ class Spanner extends GrpcService {
       });
       // Attach the x-goog-spanner-request-id to the currently active span.
       attributeXGoogSpannerRequestIdToActiveSpan(config);
+      const interceptors: any[] = [];
+      if (MetricsTracerFactory.enabled) {
+        interceptors.push(MetricInterceptor);
+      }
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
@@ -1594,6 +1599,9 @@ class Spanner extends GrpcService {
         extend(true, {}, config.gaxOpts, {
           otherArgs: {
             headers: config.headers,
+            options: {
+              interceptors: interceptors,
+            },
           },
         }),
       );
@@ -1995,6 +2003,15 @@ class Spanner extends GrpcService {
     return codec.Struct.fromJSON(value);
   }
 }
+
+const cleanup = async () => {
+  const meterProvider = MetricsTracerFactory.getInstance()?.getMeterProvider();
+  meterProvider?.shutdown().catch(error => {
+    throw error;
+  });
+};
+
+process.on('beforeExit', cleanup);
 
 /*! Developer Documentation
  *

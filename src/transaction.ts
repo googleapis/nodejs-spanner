@@ -56,6 +56,7 @@ import {
 } from './instrument';
 import {RunTransactionOptions} from './transaction-runner';
 import {injectRequestIDIntoHeaders, nextNthRequest} from './request_id_header';
+import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -481,12 +482,20 @@ export class Snapshot extends EventEmitter {
         ...this._traceConfig,
       },
       span => {
+        const method = 'beginTransaction';
+        const metricsTracer =
+          MetricsTracerFactory.getInstance()?.createMetricsTracer(
+            this._dbName,
+            method,
+          );
+        metricsTracer?.recordOperationStart();
+
         span.addEvent('Begin Transaction');
 
         this.request(
           {
             client: 'SpannerClient',
-            method: 'beginTransaction',
+            method: method,
             reqOpts,
             gaxOpts,
             headers: injectRequestIDIntoHeaders(headers, this.session),
@@ -503,6 +512,7 @@ export class Snapshot extends EventEmitter {
             }
             span.end();
             callback!(err, resp);
+            metricsTracer?.recordOperationCompletion();
           },
         );
       },
@@ -751,6 +761,13 @@ export class Snapshot extends EventEmitter {
     };
 
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
+      const method = 'streamingRead';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this._dbName,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
       let attempt = 0;
       const database = this.session.parent as Database;
       const nthRequest = nextNthRequest(database);
@@ -819,12 +836,14 @@ export class Snapshot extends EventEmitter {
             }
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         })
         .on('end', err => {
           if (err) {
             setSpanError(span, err);
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         });
 
       if (resultStream instanceof Stream) {
@@ -833,6 +852,7 @@ export class Snapshot extends EventEmitter {
             setSpanError(span, err);
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         });
       }
 
@@ -1348,6 +1368,14 @@ export class Snapshot extends EventEmitter {
       ...this._traceConfig,
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
+      const method = 'executeStreamingSql';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this._dbName,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
+
       let attempt = 0;
       const database = this.session.parent as Database;
       const nthRequest = nextNthRequest(database);
@@ -1381,7 +1409,7 @@ export class Snapshot extends EventEmitter {
 
         return this.requestStream({
           client: 'SpannerClient',
-          method: 'executeStreamingSql',
+          method: method,
           reqOpts: Object.assign({}, reqOpts, {resumeToken}),
           gaxOpts: gaxOptions,
           headers: injectRequestIDIntoHeaders(
@@ -1424,12 +1452,14 @@ export class Snapshot extends EventEmitter {
             }
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         })
         .on('end', err => {
           if (err) {
             setSpanError(span, err as Error);
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         });
 
       if (resultStream instanceof Stream) {
@@ -1438,6 +1468,7 @@ export class Snapshot extends EventEmitter {
             setSpanError(span, err);
           }
           span.end();
+          metricsTracer?.recordOperationCompletion();
         });
       }
 
@@ -2043,10 +2074,18 @@ export class Transaction extends Dml {
       requestTag: (options as BatchUpdateOptions)?.requestOptions?.requestTag,
     };
     return startTrace('Transaction.batchUpdate', traceConfig, span => {
+      const method = 'executeBatchDml';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this._dbName,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
+
       this.request(
         {
           client: 'SpannerClient',
-          method: 'executeBatchDml',
+          method: method,
           reqOpts,
           gaxOpts,
           headers: headers,
@@ -2098,6 +2137,7 @@ export class Transaction extends Dml {
 
           span.end();
           callback!(batchUpdateError!, rowCounts, resp);
+          metricsTracer?.recordOperationCompletion();
         },
       );
     });
@@ -2275,12 +2315,19 @@ export class Transaction extends Dml {
         }
 
         span.addEvent('Starting Commit');
+        const method = 'commit';
+        const metricsTracer =
+          MetricsTracerFactory.getInstance()?.createMetricsTracer(
+            this._dbName,
+            method,
+          );
+        metricsTracer?.recordOperationStart();
 
         const database = this.session.parent as Database;
         this.request(
           {
             client: 'SpannerClient',
-            method: 'commit',
+            method: method,
             reqOpts,
             gaxOpts: gaxOpts,
             headers: injectRequestIDIntoHeaders(
@@ -2325,6 +2372,10 @@ export class Transaction extends Dml {
             );
 
             span.end();
+            MetricsTracerFactory.getInstance()
+              ?.getCurrentTracer(method)
+              ?.recordOperationCompletion();
+
             callback!(err as ServiceError | null, resp);
           },
         );
@@ -2640,10 +2691,18 @@ export class Transaction extends Dml {
         addLeaderAwareRoutingHeader(headers);
       }
 
+      const method = 'rollback';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this._dbName,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
+
       this.request(
         {
           client: 'SpannerClient',
-          method: 'rollback',
+          method: method,
           reqOpts,
           gaxOpts,
           headers: headers,
@@ -2654,6 +2713,7 @@ export class Transaction extends Dml {
           }
           span.end();
           this.end();
+          metricsTracer?.recordOperationCompletion();
           callback!(err);
         },
       );

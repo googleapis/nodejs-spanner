@@ -727,10 +727,17 @@ class Database extends common.GrpcServiceObject {
     );
 
     startTrace('Database.batchCreateSessions', this._traceConfig, span => {
+      const method = 'batchCreateSessions';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this.formattedName_,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
       this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
         {
           client: 'SpannerClient',
-          method: 'batchCreateSessions',
+          method: method,
           reqOpts,
           gaxOpts: options.gaxOptions,
           headers: allHeaders,
@@ -752,6 +759,7 @@ class Database extends common.GrpcServiceObject {
 
           span.end();
           callback!(null, sessions, resp!);
+          metricsTracer?.recordOperationCompletion();
         },
       );
     });
@@ -862,11 +870,6 @@ class Database extends common.GrpcServiceObject {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback!);
-    // Force flush metrics
-    const meterProvider = MetricsTracerFactory.getInstance().getMeterProvider();
-    meterProvider.forceFlush().catch(error => {
-      throw error;
-    });
   }
   /**
    * @typedef {array} CreateTransactionResponse
@@ -1057,10 +1060,17 @@ class Database extends common.GrpcServiceObject {
     }
 
     startTrace('Database.createSession', this._traceConfig, span => {
+      const method = 'createSession';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this.formattedName_,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
       this.request<google.spanner.v1.ISession>(
         {
           client: 'SpannerClient',
-          method: 'createSession',
+          method: method,
           reqOpts,
           gaxOpts: options.gaxOptions,
           headers: headers,
@@ -1077,6 +1087,7 @@ class Database extends common.GrpcServiceObject {
           session._observabilityOptions = this._traceConfig!.opts;
           span.end();
           callback(null, session, resp!);
+          metricsTracer?.recordOperationCompletion();
         },
       );
     });
@@ -1980,13 +1991,20 @@ class Database extends common.GrpcServiceObject {
     );
 
     return startTrace('Database.getSessions', this._traceConfig, span => {
+      const method = 'listSessions';
+      const metricsTracer =
+        MetricsTracerFactory.getInstance()?.createMetricsTracer(
+          this.formattedName_,
+          method,
+        );
+      metricsTracer?.recordOperationStart();
       this.request<
         google.spanner.v1.ISession,
         google.spanner.v1.IListSessionsResponse
       >(
         {
           client: 'SpannerClient',
-          method: 'listSessions',
+          method: method,
           reqOpts,
           gaxOpts,
           headers: headers,
@@ -2009,6 +2027,7 @@ class Database extends common.GrpcServiceObject {
             ? extend({}, options, nextPageRequest!)
             : null;
           callback!(err, sessionInstances!, nextQuery, ...args);
+          metricsTracer?.recordOperationCompletion();
         },
       );
     });
