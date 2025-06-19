@@ -183,6 +183,43 @@ export interface CreateInstanceConfigRequest {
   gaxOptions?: CallOptions;
 }
 
+const loggingInterceptor = (options, nextCall) => {
+      return new grpc.InterceptingCall(nextCall(options), {
+        start: function (metadata, listener, next) {
+          console.log(`[Interceptor LOG] Method: ${options.method_definition.path}`);
+          console.log('[Interceptor LOG] Outgoing Metadata:', metadata.getMap());
+
+          const newListener = {
+            onReceiveMetadata: function (metadata, next) {
+              console.log('[Interceptor LOG] Incoming Metadata:', metadata.getMap());
+              next(metadata);
+            },
+            onReceiveMessage: function (message, next) {
+              console.log('[Interceptor LOG] Incoming Message (type):', message ? message.constructor.name : null);
+              next(message);
+            },
+            onReceiveStatus: function (status, next) {
+              console.log('[Interceptor LOG] Status:', status);
+              next(status);
+            },
+          };
+          next(metadata, newListener);
+        },
+        sendMessage: function (message, next) {
+          console.log('[Interceptor LOG] Outgoing Message (type):', message ? message.constructor.name : null);
+          next(message);
+        },
+        halfClose: function (next) {
+          console.log('[Interceptor LOG] Half Close');
+          next();
+        },
+        cancel: function (next) {
+          console.log('[Interceptor LOG] Cancelled');
+          next();
+        },
+      });
+    };
+
 /**
  * Translates enum values to string keys.
  *
@@ -1572,6 +1609,9 @@ class Spanner extends GrpcService {
         extend(true, {}, config.gaxOpts, {
           otherArgs: {
             headers: config.headers,
+            options: {
+              interceptors: [loggingInterceptor],
+            },
           },
         }),
       );
