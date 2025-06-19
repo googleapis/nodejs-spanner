@@ -1879,6 +1879,65 @@ describe('Transaction', () => {
         assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
       });
 
+      it('should retry commit only once upon sending precommitToken to read-only participants', () => {
+        const requestStub = sandbox.stub(transaction, 'request');
+
+        const expectedTimestamp = new PreciseDate(0);
+        const fakeTimestamp = {seconds: 0, nanos: 0};
+
+        const fakeResponse = {commitTimestamp: fakeTimestamp};
+        const fakePrecommitToken = {
+          precommitToken: Buffer.from('precommit-token-commit'),
+          seqNum: 1,
+        };
+
+        transaction._latestPreCommitToken = fakePrecommitToken;
+
+        // retry response on commit retry
+        const fakeCommitRetryResponse = {
+          commitTimestamp: null,
+          MultiplexedSessionRetry: 'precommitToken',
+          precommitToken: {
+            precommitToken: Buffer.from('precommit-token-commit-retry'),
+            seqNum: 2,
+          },
+        };
+
+        requestStub.onFirstCall().callsFake((_, callback) => {
+          // assert that the transaction contains the precommit token
+          assert.deepStrictEqual(
+            transaction._latestPreCommitToken,
+            fakePrecommitToken,
+          );
+          // retry commit response
+          callback(null, fakeCommitRetryResponse);
+        });
+
+        requestStub.onSecondCall().callsFake((_, callback) => {
+          // assert that before second commit retry the _latestPreCommitToken
+          // containing the commit retry reponse in the transaction object
+          assert.deepStrictEqual(
+            transaction._latestPreCommitToken,
+            fakeCommitRetryResponse.precommitToken,
+          );
+          callback(null, fakeResponse);
+        });
+
+        transaction.commit((err, resp) => {
+          // assert there is no error
+          assert.ifError(err);
+          // make sure that retry happens only once
+          assert.strictEqual(requestStub.callCount, 2);
+          assert.deepStrictEqual(
+            transaction.commitTimestamp,
+            expectedTimestamp,
+          );
+          assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
+          // assert on the successfull commit response
+          assert.deepStrictEqual(resp, fakeResponse);
+        });
+      });
+
       it('should return any errors and the response', () => {
         const requestStub = sandbox.stub(transaction, 'request');
 
