@@ -18,7 +18,6 @@ import {ExporterOptions} from './external-types';
 import {MetricServiceClient} from '@google-cloud/monitoring';
 import {transformResourceMetricToTimeSeriesArray} from './transform';
 import {status} from '@grpc/grpc-js';
-
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
 export const MAX_BATCH_EXPORT_SIZE = 200;
