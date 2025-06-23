@@ -33,7 +33,7 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
-import {getActiveOrNoopSpan} from './instrument';
+import {getActiveOrNoopSpan, Span} from './instrument';
 import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
@@ -52,6 +52,7 @@ import {
   startTrace,
   setSpanError,
   setSpanErrorAndException,
+  endSpan,
   traceConfig,
 } from './instrument';
 import {RunTransactionOptions} from './transaction-runner';
@@ -498,7 +499,7 @@ export class Snapshot extends EventEmitter {
               setSpanError(span, err);
             } else {
               this._updatePrecommitToken(resp);
-              this._update(resp);
+              this._update(resp, span);
             }
             span.end();
             callback!(err, resp);
@@ -750,6 +751,7 @@ export class Snapshot extends EventEmitter {
     };
 
     return startTrace('Snapshot.createReadStream', traceConfig, span => {
+      const spanState = {ended: false};
       let attempt = 0;
       const database = this.session.parent as Database;
       const nthRequest = nextNthRequest(database);
@@ -801,7 +803,7 @@ export class Snapshot extends EventEmitter {
         ?.on('response', response => {
           this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            this._update(response.metadata!.transaction);
+            this._update(response.metadata!.transaction, span);
           }
         })
         .on('error', err => {
@@ -817,13 +819,13 @@ export class Snapshot extends EventEmitter {
               });
             }
           }
-          span.end();
+          endSpan(span, spanState);
         })
         .on('end', err => {
           if (err) {
             setSpanError(span, err);
           }
-          span.end();
+          endSpan(span, spanState);
         });
 
       if (resultStream instanceof Stream) {
@@ -831,7 +833,7 @@ export class Snapshot extends EventEmitter {
           if (err) {
             setSpanError(span, err);
           }
-          span.end();
+          endSpan(span, spanState);
         });
       }
 
@@ -1158,7 +1160,7 @@ export class Snapshot extends EventEmitter {
             if (response.metadata) {
               metadata = response.metadata;
               if (metadata.transaction && !this.id) {
-                this._update(metadata.transaction);
+                this._update(metadata.transaction, span);
               }
             }
           })
@@ -1347,6 +1349,7 @@ export class Snapshot extends EventEmitter {
       ...this._traceConfig,
     };
     return startTrace('Snapshot.runStream', traceConfig, span => {
+      const spanState = {ended: false};
       let attempt = 0;
       const database = this.session.parent as Database;
       const nthRequest = nextNthRequest(database);
@@ -1372,7 +1375,7 @@ export class Snapshot extends EventEmitter {
           } catch (e) {
             const errorStream = new PassThrough();
             setSpanErrorAndException(span, e as Error);
-            span.end();
+            endSpan(span, spanState);
             setImmediate(() => errorStream.destroy(e as Error));
             return errorStream;
           }
@@ -1405,7 +1408,7 @@ export class Snapshot extends EventEmitter {
         .on('response', response => {
           this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            this._update(response.metadata!.transaction);
+            this._update(response.metadata!.transaction, span);
           }
         })
         .on('error', err => {
@@ -1422,13 +1425,13 @@ export class Snapshot extends EventEmitter {
               });
             }
           }
-          span.end();
+          endSpan(span, spanState);
         })
         .on('end', err => {
           if (err) {
             setSpanError(span, err as Error);
           }
-          span.end();
+          endSpan(span, spanState);
         });
 
       if (resultStream instanceof Stream) {
@@ -1436,7 +1439,7 @@ export class Snapshot extends EventEmitter {
           if (err) {
             setSpanError(span, err);
           }
-          span.end();
+          endSpan(span, spanState);
         });
       }
 
@@ -1616,13 +1619,15 @@ export class Snapshot extends EventEmitter {
    *
    * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
    */
-  protected _update(resp: spannerClient.spanner.v1.ITransaction): void {
+  protected _update(
+    resp: spannerClient.spanner.v1.ITransaction,
+    span: Span,
+  ): void {
     const {id, readTimestamp} = resp;
 
     this.id = id!;
     this.metadata = resp;
 
-    const span = getActiveOrNoopSpan();
     span.addEvent('Transaction Creation Done', {id: this.id.toString()});
 
     if (readTimestamp) {
@@ -2068,7 +2073,7 @@ export class Transaction extends Dml {
           const {resultSets, status} = resp;
           for (const resultSet of resultSets) {
             if (!this.id && resultSet.metadata?.transaction) {
-              this._update(resultSet.metadata.transaction);
+              this._update(resultSet.metadata.transaction, span);
             }
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {

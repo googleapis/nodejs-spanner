@@ -230,6 +230,17 @@ export function setSpanErrorAndException(
   return false;
 }
 
+export function endSpan(span: Span, spanState?: {ended: boolean}): void {
+  if (spanState) {
+    if (!spanState.ended) {
+      span.end();
+      spanState.ended = true;
+    }
+  } else {
+    span.end();
+  }
+}
+
 /**
  * getActiveOrNoopSpan queries the global tracer for the currently active
  * span and returns it, otherwise if there is no active span available, it'll
@@ -242,7 +253,11 @@ export function setSpanErrorAndException(
  */
 export function getActiveOrNoopSpan(): Span {
   const span = trace.getActiveSpan();
-  if (span) {
+  if (
+    span &&
+    (span as any).name?.startsWith('CloudSpanner') &&
+    (span as any).ended === false
+  ) {
     return span;
   }
   return new noopSpan();
