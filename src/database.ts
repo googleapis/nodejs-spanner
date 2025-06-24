@@ -111,6 +111,7 @@ import {
   startTrace,
   setSpanError,
   setSpanErrorAndException,
+  endSpan,
   traceConfig,
 } from './instrument';
 import {
@@ -1190,7 +1191,12 @@ class Database extends common.GrpcServiceObject {
    * @param {Transaction} transaction The transaction to observe.
    * @returns {Transaction}
    */
-  private _releaseOnEnd(session: Session, transaction: Snapshot, span: Span) {
+  private _releaseOnEnd(
+    session: Session,
+    transaction: Snapshot,
+    span: Span,
+    spanState?: {ended: boolean},
+  ) {
     transaction.once('end', () => {
       try {
         this.sessionFactory_.release(session);
@@ -1198,7 +1204,7 @@ class Database extends common.GrpcServiceObject {
         setSpanErrorAndException(span, e as Error);
         this.emit('error', e);
       } finally {
-        span.end();
+        endSpan(span, spanState);
       }
     });
   }
@@ -2176,10 +2182,11 @@ class Database extends common.GrpcServiceObject {
     }
 
     return startTrace('Database.getSnapshot', this._traceConfig, span => {
+      const spanState = {ended: false};
       this.sessionFactory_.getSession((err, session) => {
         if (err) {
           setSpanError(span, err);
-          span.end();
+          endSpan(span, spanState);
           callback!(err as ServiceError);
           return;
         }
@@ -2198,19 +2205,19 @@ class Database extends common.GrpcServiceObject {
               });
               session!.lastError = err;
               this.sessionFactory_.release(session!);
-              span.end();
+              endSpan(span, spanState);
               this.getSnapshot(options, callback!);
             } else {
               span.addEvent('Using Session', {'session.id': session?.id});
               this.sessionFactory_.release(session!);
-              span.end();
+              endSpan(span, spanState);
               callback!(err);
             }
             return;
           }
 
-          this._releaseOnEnd(session!, snapshot, span);
-          span.end();
+          this._releaseOnEnd(session!, snapshot, span, spanState);
+          endSpan(span, spanState);
           callback!(err, snapshot);
         });
       });
@@ -2283,6 +2290,7 @@ class Database extends common.GrpcServiceObject {
         transactionTag: options.requestOptions?.transactionTag,
       },
       span => {
+        const spanState = {ended: false};
         this.pool_.getSession((err, session, transaction) => {
           if (!err) {
             if (options.requestOptions) {
@@ -2296,11 +2304,11 @@ class Database extends common.GrpcServiceObject {
             );
             span.addEvent('Using Session', {'session.id': session?.id});
             transaction!._observabilityOptions = this._observabilityOptions;
-            this._releaseOnEnd(session!, transaction!, span);
+            this._releaseOnEnd(session!, transaction!, span, spanState);
           } else {
             setSpanError(span, err);
           }
-          span.end();
+          endSpan(span, spanState);
           cb!(err as grpc.ServiceError | null, transaction);
         });
       },
@@ -3144,6 +3152,7 @@ class Database extends common.GrpcServiceObject {
     options?: TimestampBounds,
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
+    const spanState = {ended: false};
     return startTrace(
       'Database.runStream',
       {
@@ -3156,7 +3165,7 @@ class Database extends common.GrpcServiceObject {
           if (err) {
             setSpanError(span, err);
             proxyStream.destroy(err);
-            span.end();
+            endSpan(span, spanState);
             return;
           }
 
@@ -3164,7 +3173,7 @@ class Database extends common.GrpcServiceObject {
 
           const snapshot = session!.snapshot(options, this.queryOptions_);
 
-          this._releaseOnEnd(session!, snapshot, span);
+          this._releaseOnEnd(session!, snapshot, span, spanState);
 
           let dataReceived = false;
           let dataStream = snapshot.runStream(query);
@@ -3196,7 +3205,7 @@ class Database extends common.GrpcServiceObject {
                 dataStream.removeListener('end', endListener);
                 dataStream.end();
                 snapshot.end();
-                span.end();
+                endSpan(span, spanState);
                 // Create a new data stream and add it to the end user stream.
                 dataStream = this.runStream(query, options);
                 dataStream.pipe(proxyStream);
@@ -3215,7 +3224,7 @@ class Database extends common.GrpcServiceObject {
           if (err) {
             setSpanError(span, err);
           }
-          span.end();
+          endSpan(span, spanState);
         });
 
         return proxyStream as PartialResultStream;

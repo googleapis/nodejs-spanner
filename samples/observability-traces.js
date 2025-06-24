@@ -28,35 +28,80 @@ async function main(
   // [START spanner_opentelemetry_traces_cloudtrace_usage]
 
   const {NodeTracerProvider} = require('@opentelemetry/sdk-trace-node');
+  const {NodeSDK} = require('@opentelemetry/sdk-node');
+  // const {
+  //   TraceExporter,
+  // } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
   const {
-    TraceExporter,
-  } = require('@google-cloud/opentelemetry-cloud-trace-exporter');
-  const {
+    ConsoleSpanExporter,
     BatchSpanProcessor,
     TraceIdRatioBasedSampler,
   } = require('@opentelemetry/sdk-trace-base');
-  const {Spanner} = require('@google-cloud/spanner');
+  const {diag, DiagConsoleLogger, DiagLogLevel} = require('@opentelemetry/api');
+  const {Spanner} = require('../build/src');
+  const {
+    getNodeAutoInstrumentations,
+  } = require('@opentelemetry/auto-instrumentations-node');
 
-  const traceExporter = new TraceExporter();
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel['ALL']);
+
+  const traceExporter = new ConsoleSpanExporter();
 
   // Create a provider with a custom sampler
-  const provider = new NodeTracerProvider({
-    sampler: new TraceIdRatioBasedSampler(1.0), // Sample 100% of traces
-    spanProcessors: [new BatchSpanProcessor(traceExporter)],
-  });
+  // const provider = new NodeTracerProvider({
+  //   sampler: new TraceIdRatioBasedSampler(1.0), // Sample 100% of traces
+  //   spanProcessors: [new BatchSpanProcessor(traceExporter)],
+  // });
 
   // Uncomment following line to register tracerProvider globally or pass it in Spanner object
   // provider.register();
 
   // Set global propagator to propogate the trace context for end to end tracing.
-  const {propagation} = require('@opentelemetry/api');
-  const {W3CTraceContextPropagator} = require('@opentelemetry/core');
-  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+  // const {propagation} = require('@opentelemetry/api');
+  const {
+    W3CTraceContextPropagator,
+    CompositePropagator,
+  } = require('@opentelemetry/core');
+  // propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+
+  const sdk = new NodeSDK({
+    // resource: detectedResourceAttributes.merge(resource),
+    traceExporter: traceExporter,
+    batchSpanProcessor: [new BatchSpanProcessor(traceExporter)],
+    sampler: new TraceIdRatioBasedSampler(1.0), // Sample 100% of traces
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        // Disable file system instrumentation to reduce noise
+        '@opentelemetry/instrumentation-fs': {
+          enabled: false,
+        },
+        '@opentelemetry/instrumentation-net': {
+          enabled: false,
+        },
+        '@opentelemetry/instrumentation-dns': {
+          enabled: false,
+        },
+      }),
+    ],
+    textMapPropagator: new CompositePropagator({
+      propagators: [new W3CTraceContextPropagator()],
+    }),
+  });
+
+  // Initialize the SDK
+  sdk.start();
+  process.on('SIGTERM', () => {
+    sdk
+      .shutdown()
+      .then(() => console.log('Tracing terminated'))
+      .catch(error => console.log('Error terminating tracing', error))
+      .finally(() => process.exit(0));
+  });
 
   const spanner = new Spanner({
     projectId: projectId,
     observabilityOptions: {
-      tracerProvider: provider,
+      // tracerProvider: provider,
       // Enable extended tracing to allow your SQL statements to be annotated.
       enableExtendedTracing: true,
       // Enable end to end tracing.
@@ -78,8 +123,52 @@ async function main(
     console.log(`Query: ${rows.length} found.`);
     rows.forEach(row => console.log(row));
   } finally {
-    spanner.close();
+    // spanner.close();
   }
+
+  database.getSnapshot(async (err, transaction) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    const queryOne = 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums';
+
+    try {
+      // Read #1, using SQL
+      const [qOneRows] = await transaction.run(queryOne);
+
+      qOneRows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
+        );
+      });
+
+      const queryTwo = {
+        columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
+      };
+
+      // Read #2, using the `read` method. Even if changes occur
+      // in-between the reads, the transaction ensures that both
+      // return the same data.
+      const [qTwoRows] = await transaction.read('Albums', queryTwo);
+
+      qTwoRows.forEach(row => {
+        const json = row.toJSON();
+        console.log(
+          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`,
+        );
+      });
+
+      console.log('Successfully executed read-only transaction.');
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      transaction.end();
+      // Close the database when finished.
+      await database.close();
+    }
+  });
 
   provider.forceFlush();
 
