@@ -1616,7 +1616,10 @@ export class Snapshot extends EventEmitter {
    *
    * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
    */
-  protected _update(resp: spannerClient.spanner.v1.ITransaction, span: Span): void {
+  protected _update(
+    resp: spannerClient.spanner.v1.ITransaction,
+    span: Span,
+  ): void {
     const {id, readTimestamp} = resp;
 
     this.id = id!;
