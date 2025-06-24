@@ -33,7 +33,7 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
-import {getActiveOrNoopSpan, Span} from './instrument';
+import {Span} from './instrument';
 import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
