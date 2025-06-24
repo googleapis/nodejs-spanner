@@ -33,7 +33,7 @@ import {
 } from './partial-result-stream';
 import {Session} from './session';
 import {Key} from './table';
-import {getActiveOrNoopSpan} from './instrument';
+import {getActiveOrNoopSpan, Span} from './instrument';
 import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
@@ -498,7 +498,7 @@ export class Snapshot extends EventEmitter {
               setSpanError(span, err);
             } else {
               this._updatePrecommitToken(resp);
-              this._update(resp);
+              this._update(resp, span);
             }
             span.end();
             callback!(err, resp);
@@ -801,7 +801,7 @@ export class Snapshot extends EventEmitter {
         ?.on('response', response => {
           this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            this._update(response.metadata!.transaction);
+            this._update(response.metadata!.transaction, span);
           }
         })
         .on('error', err => {
@@ -1158,7 +1158,7 @@ export class Snapshot extends EventEmitter {
             if (response.metadata) {
               metadata = response.metadata;
               if (metadata.transaction && !this.id) {
-                this._update(metadata.transaction);
+                this._update(metadata.transaction, span);
               }
             }
           })
@@ -1405,7 +1405,7 @@ export class Snapshot extends EventEmitter {
         .on('response', response => {
           this._updatePrecommitToken(response);
           if (response.metadata && response.metadata!.transaction && !this.id) {
-            this._update(response.metadata!.transaction);
+            this._update(response.metadata!.transaction, span);
           }
         })
         .on('error', err => {
@@ -1616,13 +1616,12 @@ export class Snapshot extends EventEmitter {
    *
    * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
    */
-  protected _update(resp: spannerClient.spanner.v1.ITransaction): void {
+  protected _update(resp: spannerClient.spanner.v1.ITransaction, span: Span): void {
     const {id, readTimestamp} = resp;
 
     this.id = id!;
     this.metadata = resp;
 
-    const span = getActiveOrNoopSpan();
     span.addEvent('Transaction Creation Done', {id: this.id.toString()});
 
     if (readTimestamp) {
@@ -2068,7 +2067,7 @@ export class Transaction extends Dml {
           const {resultSets, status} = resp;
           for (const resultSet of resultSets) {
             if (!this.id && resultSet.metadata?.transaction) {
-              this._update(resultSet.metadata.transaction);
+              this._update(resultSet.metadata.transaction, span);
             }
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {
