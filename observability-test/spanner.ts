@@ -652,6 +652,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
               ...cacheSessionEvents,
               'Using Session',
               'Starting stream',
+              'Transaction Creation Done',
             ];
             assert.deepStrictEqual(
               actualEventNames,
@@ -1729,8 +1730,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
                 const expectedEventNames = [
                   ...batchCreateSessionsEvents,
                   'Starting stream',
-                  ...waitingSessionsEvents,
                   'Transaction Creation Done',
+                  ...waitingSessionsEvents,
                 ];
                 assert.deepStrictEqual(
                   actualEventNames,
