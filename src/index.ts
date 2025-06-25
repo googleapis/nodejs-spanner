@@ -276,7 +276,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
-  private _universeDomain: string;
+  private _universeDomain: string | undefined;
   readonly _nthClientId: number;
 
   /**
@@ -390,10 +390,11 @@ class Spanner extends GrpcService {
       options.sslCreds = grpc.credentials.createInsecure();
     }
 
-    const universeDomain = getDomain('spanner', options);
-
+    const domain = getDomain('spanner', options);
+    const universeDomain = getUniverseDomainOnly(options);
+    options.universeDomain = universeDomain;
     const config = {
-      baseUrl: options.apiEndpoint || options.servicePath || universeDomain,
+      baseUrl: options.apiEndpoint || options.servicePath || domain,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {

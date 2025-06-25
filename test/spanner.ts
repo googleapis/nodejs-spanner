@@ -1961,7 +1961,7 @@ describe('Spanner with mock server', () => {
     });
 
     describe('should allow overriding TPC universe', () => {
-      it('when domain main passed via env', () => {
+      it('when domain name passed via env', () => {
         process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN = 'fake-tpc-env.example.com';
         const spanner = new Spanner();
         const universeDomain = spanner.universeDomain;
@@ -1974,7 +1974,7 @@ describe('Spanner with mock server', () => {
         delete process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
       });
 
-      it('when domain main passed via spanner options using universeDomain', () => {
+      it('when domain name passed via spanner options using universeDomain', () => {
         const fakeUniverseDomain = 'fake-tpc.example.com';
         const spanner = new Spanner({
           universeDomain: fakeUniverseDomain,
@@ -1984,7 +1984,7 @@ describe('Spanner with mock server', () => {
         assert.deepStrictEqual(universeDomain, 'spanner.fake-tpc.example.com');
       });
 
-      it('when domain main passed via spanner options using universe_domain', () => {
+      it('when domain name passed via spanner options using universe_domain', () => {
         const fakeUniverseDomain = 'fake-tpc.example.com';
         const spanner = new Spanner({
           universe_domain: fakeUniverseDomain,
