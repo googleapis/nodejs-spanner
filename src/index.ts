@@ -207,19 +207,21 @@ export type TranslateEnumKeys<
   [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
 
-function getUniverseDomainOnly(options: SpannerOptions): string | undefined {
+function getUniverseDomainOnly(options: SpannerOptions): string {
   const universeDomainEnvVar =
     typeof process === 'object' && typeof process.env === 'object'
       ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
       : undefined;
   const universeDomain =
-    options?.universeDomain ?? options?.universe_domain ?? universeDomainEnvVar;
+    options?.universeDomain ??
+    options?.universe_domain ??
+    universeDomainEnvVar ??
+    'googleapis.com';
   return universeDomain;
 }
 
 function getDomain(prefix: string, options: SpannerOptions): string {
-  const universeDomainOnly = getUniverseDomainOnly(options);
-  const suffix = universeDomainOnly ? universeDomainOnly : 'googleapis.com';
+  const suffix = getUniverseDomainOnly(options);
   return `${prefix}.${suffix}`;
 }
 
@@ -390,11 +392,17 @@ class Spanner extends GrpcService {
       options.sslCreds = grpc.credentials.createInsecure();
     }
 
-    const domain = getDomain('spanner', options);
-    const universeDomain = getUniverseDomainOnly(options);
-    options.universeDomain = universeDomain;
+    const universeDomain = getDomain('spanner', options);
+    if (
+      !options.universeDomain &&
+      (options.universe_domain || process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN)
+    ) {
+      options.universeDomain =
+        options.universe_domain ?? process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
+      delete options.universe_domain;
+    }
     const config = {
-      baseUrl: options.apiEndpoint || options.servicePath || domain,
+      baseUrl: options.apiEndpoint || options.servicePath || universeDomain,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {

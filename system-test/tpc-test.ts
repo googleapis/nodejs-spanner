@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {after, describe, it} from 'mocha';
+import {describe, it} from 'mocha';
 import {Spanner} from '../src';
 import * as assert from 'assert';
 
@@ -23,6 +23,15 @@ import * as assert from 'assert';
 // 4. Run `npm run system-test`.
 
 describe.skip('Universe domain tests', () => {
+  const IS_EMULATOR_ENABLED =
+    typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
+
+  before(function () {
+    if (IS_EMULATOR_ENABLED) {
+      this.skip();
+    }
+  });
+
   // These tests are only designed to pass when using the service account
   // credentials for the universe domain environment so we skip them in the CI pipeline.
   //
