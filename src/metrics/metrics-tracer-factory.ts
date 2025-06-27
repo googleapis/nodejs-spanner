@@ -16,7 +16,7 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
-import {MeterProvider} from '@opentelemetry/sdk-metrics';
+import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram} from '@opentelemetry/api';
 import {detectResources, Resource} from '@opentelemetry/resources';
 import {GcpDetectorSync} from '@google-cloud/opentelemetry-resource-util';
@@ -24,161 +24,280 @@ import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
 const version = require('../../../package.json').version;
 
+/**
+ * Factory class for creating and managing MetricsTracer instances and OTEL metric instruments.
+ *
+ * The MetricsTracerFactory is responsible for:
+ * - Creating and managing a singleton instance for metrics collection.
+ * - Initializing and providing OTEL MeterProvider.
+ * - Generating and storing client-specific metadata (UID, hash, name, location, projectId).
+ * - Creating and tracking MetricsTracer instances for individual gRPC Spanner operations.
+ * - Providing utility methods for extracting resource attributes and managing tracers.
+ *
+ * This class is designed to be used as a singleton. Metrics collection can be enabled or disabled
+ * globally via the static `enabled` property, that is set from the SpannerClient.
+ */
 export class MetricsTracerFactory {
   private static _instance: MetricsTracerFactory | null = null;
-  private static _meterProvider: MeterProvider | null = null;
-  private _clientAttributes: {[key: string]: string};
+  private _meterProvider: MeterProvider | null = null;
   private _instrumentAttemptCounter!: Counter;
   private _instrumentAttemptLatency!: Histogram;
   private _instrumentOperationCounter!: Counter;
   private _instrumentOperationLatency!: Histogram;
   private _instrumentGfeConnectivityErrorCount!: Counter;
   private _instrumentGfeLatency!: Histogram;
+  private _clientHash: string;
+  private _clientName: string;
   private _clientUid: string;
-  public enabled: boolean;
-
-  private constructor(enabled = false) {
-    this.enabled = enabled;
-    this._createMetricInstruments();
-
-    this._clientUid = MetricsTracerFactory._generateClientUId();
-    this._clientAttributes = this.createClientAttributes();
-  }
-
-  private createClientAttributes(): {[key: string]: string} {
-    const clientName = `${Constants.SPANNER_METER_NAME}/${version}`;
-    return {
-      [Constants.METRIC_LABEL_KEY_CLIENT_NAME]: clientName,
-      [Constants.METRIC_LABEL_KEY_CLIENT_UID]: this._clientUid,
-    };
-  }
+  private _location = 'global';
+  private _projectId: string;
+  private _currentOperationTracers = new Map();
+  public static _readers: MetricReader[] = [];
+  public static enabled = true;
 
   /**
-  Create set of attributes for resource metrics
+   * Private constructor to enforce singleton pattern.
+   * Initializes client metadata and detects client location if metrics are enabled.
+   * Location will default to global if host machine is not a GCE or GKE instance.
+   * @param projectId The GCP project ID used by the Spanner Client.
    */
-  public async createResourceAttributes(
-    projectId: string,
-  ): Promise<{[key: string]: string}> {
-    const clientHash = MetricsTracerFactory._generateClientHash(
-      this._clientUid,
-    );
-    const location = await MetricsTracerFactory._detectClientLocation();
-    return {
-      [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: projectId,
-      [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: 'unknown',
-      [Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]: clientHash,
-      // Skipping instance config until we have a way to get it
-      [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
-      [Constants.MONITORED_RES_LABEL_KEY_LOCATION]: location,
-    };
-  }
+  private constructor(projectId: string) {
+    this._projectId = projectId;
+    this._clientUid = MetricsTracerFactory._generateClientUId();
+    this._clientName = `${Constants.SPANNER_METER_NAME}/${version}`;
 
-  public static getInstance(enabled: boolean) {
-    // Create a singleton instance, enabling/disabling metrics can only be done on the initial call
-    if (MetricsTracerFactory._instance === null) {
-      MetricsTracerFactory._instance = new MetricsTracerFactory(enabled);
-    }
-    return MetricsTracerFactory._instance;
-  }
-
-  public static getMeterProvider(
-    resourceAttributes: {[key: string]: string} = {},
-  ): MeterProvider {
-    if (MetricsTracerFactory._meterProvider === null) {
-      const resource = new Resource(resourceAttributes);
-      MetricsTracerFactory._meterProvider = new MeterProvider({
-        resource: resource,
+    // Only perform async call to retrieve location is metrics are enabled.
+    if (MetricsTracerFactory.enabled) {
+      (async () => {
+        const location = await MetricsTracerFactory._detectClientLocation();
+        this._location = location.length > 0 ? location : 'global';
+      })().catch(error => {
+        throw error;
       });
     }
 
-    return MetricsTracerFactory._meterProvider;
+    this._clientHash = MetricsTracerFactory._generateClientHash(
+      this._clientUid,
+    );
   }
 
-  public static resetMeterProvider() {
-    MetricsTracerFactory._meterProvider = null;
+  /**
+   * Returns the singleton instance of MetricsTracerFactory.
+   * If metrics are disabled, returns null.
+   * The instance is created only once, and enabling/disabling metrics can only be done on the initial call.
+   * @param projectId Optional GCP project ID for the factory instantiation. Does nothing for subsequent calls.
+   * @returns The singleton MetricsTracerFactory instance or null if disabled.
+   */
+  public static getInstance(projectId = ''): MetricsTracerFactory | null {
+    if (!MetricsTracerFactory.enabled) {
+      return null;
+    }
+
+    // Create a singleton instance, enabling/disabling metrics can only be done on the initial call
+    if (MetricsTracerFactory._instance === null) {
+      MetricsTracerFactory._instance = new MetricsTracerFactory(projectId);
+    }
+    return MetricsTracerFactory!._instance;
   }
 
+  /**
+   * Returns the MeterProvider, creating it and metric instruments if not already initialized.
+   * Client-wide attributes that are known at this time are cached to be provided to all MetricsTracers.
+   * @param readers Optional array of MetricReader instances to attach to the MeterProvider.
+   * @returns The OTEL MeterProvider instance.
+   */
+  public getMeterProvider(readers: MetricReader[] = []): MeterProvider {
+    if (this._meterProvider === null) {
+      const resource = new Resource({
+        [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: this._projectId,
+        [Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]: this._clientHash,
+        [Constants.MONITORED_RES_LABEL_KEY_LOCATION]: this._location,
+        [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: 'unknown',
+        [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
+      });
+      MetricsTracerFactory._readers = readers;
+      this._meterProvider = new MeterProvider({
+        resource: resource,
+        readers: readers,
+      });
+      this._createMetricInstruments();
+    }
+    return this._meterProvider;
+  }
+
+  /**
+   * Resets the singleton instance of the MetricsTracerFactory.
+   */
+  public static resetInstance() {
+    MetricsTracerFactory._instance = null;
+  }
+
+  /**
+   * Resets the MeterProvider.
+   */
+  public resetMeterProvider() {
+    this._meterProvider = null;
+  }
+
+  /**
+   * Returns the attempt latency histogram instrument.
+   */
   get instrumentAttemptLatency(): Histogram {
     return this._instrumentAttemptLatency;
   }
 
+  /**
+   * Returns the attempt counter instrument.
+   */
   get instrumentAttemptCounter(): Counter {
     return this._instrumentAttemptCounter;
   }
 
+  /**
+   * Returns the operation latency histogram instrument.
+   */
   get instrumentOperationLatency(): Histogram {
     return this._instrumentOperationLatency;
   }
 
+  /**
+   * Returns the operation counter instrument.
+   */
   get instrumentOperationCounter(): Counter {
     return this._instrumentOperationCounter;
   }
 
+  /**
+   * Returns the GFE connectivity error count counter instrument.
+   */
   get instrumentGfeConnectivityErrorCount(): Counter {
     return this._instrumentGfeConnectivityErrorCount;
   }
 
+  /**
+   * Returns the GFE latency histogram instrument.
+   */
   get instrumentGfeLatency(): Histogram {
     return this._instrumentGfeLatency;
   }
 
-  get clientAttributes(): Record<string, string> {
-    return this._clientAttributes;
-  }
+  /**
+   * Creates a new MetricsTracer for a given resource name and method, and stores it for later retrieval.
+   * Returns null if metrics are disabled.
+   * @param formattedName The formatted resource name (e.g., full database path).
+   * @param method The gRPC method name.
+   * @returns A new MetricsTracer instance or null if metrics are disabled.
+   */
+  public createMetricsTracer(
+    formattedName = '',
+    method = '',
+  ): MetricsTracer | null {
+    if (!MetricsTracerFactory.enabled) {
+      return null;
+    }
+    if (this._currentOperationTracers.has(method.toLowerCase())) {
+      return this._currentOperationTracers.get(method.toLowerCase());
+    }
+    const {database} = this.getInstanceAttributes(formattedName);
 
-  set project(project: string) {
-    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT] = project;
-  }
-
-  set instance(instance: string) {
-    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE] =
-      instance;
-  }
-
-  set instanceConfig(instanceConfig: string) {
-    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG] =
-      instanceConfig;
-  }
-
-  set location(location: string) {
-    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION] =
-      location;
-  }
-
-  set clientHash(hash: string) {
-    this._clientAttributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH] =
-      hash;
-  }
-
-  set clientUid(clientUid: string) {
-    this._clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID] = clientUid;
-  }
-
-  set clientName(clientName: string) {
-    this._clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME] = clientName;
-  }
-
-  set database(database: string) {
-    this._clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE] = database;
-  }
-
-  public createMetricsTracer(): MetricsTracer {
-    return new MetricsTracer(
-      this._clientAttributes,
+    const tracer = new MetricsTracer(
       this._instrumentAttemptCounter,
       this._instrumentAttemptLatency,
       this._instrumentOperationCounter,
       this._instrumentOperationLatency,
       this._instrumentGfeConnectivityErrorCount,
       this._instrumentGfeLatency,
-      this.enabled,
+      MetricsTracerFactory.enabled,
     );
+    tracer.database = database;
+    tracer.clientName = this._clientName;
+    tracer.clientUid = this._clientUid;
+    tracer.methodName = method;
+    this._currentOperationTracers.set(method.toLowerCase(), tracer);
+    return tracer;
   }
 
-  private _createMetricInstruments() {
-    const meterProvider = MetricsTracerFactory.getMeterProvider();
-    const meter = meterProvider.getMeter(Constants.SPANNER_METER_NAME, version);
+  /**
+   * Takes a formatted name and parses the project, instance, and database.
+   * @param formattedName The formatted resource name (e.g., full database path).
+   * @returns An object containing project, instance, and database strings.
+   */
+  public getInstanceAttributes(formattedName: string) {
+    if (typeof formattedName !== 'string' || formattedName === '') {
+      return {project: '', instance: '', database: ''};
+    }
+    const regex =
+      /projects\/(?<projectId>[^/]+)\/instances\/(?<instanceId>[^/]+)(?:\/databases\/(?<databaseId>[^/]+))?/;
+    const match = formattedName.match(regex);
+    const project = match?.groups?.projectId || '';
+    const instance = match?.groups?.instanceId || '';
+    const database = match?.groups?.databaseId || '';
+    return {project: project, instance: instance, database: database};
+  }
 
+  /**
+   * Retrieves the current MetricsTracer for a given formatted name (method).
+   * Returns null if no tracer exists for the method.
+   * Does not implicitly create MetricsTracers as that should be done
+   * explicitly using the CreateMetricsTracer function.
+   * formattedName is expected to be as set in gRPC metadata.
+   * @param formattedName The formatted resource name or method path.
+   * @returns The MetricsTracer instance or null if not found.
+   */
+  public getCurrentTracer(formattedName: string): MetricsTracer | null {
+    const method = this._extractFormattedName(formattedName);
+    if (!this._currentOperationTracers.has(method)) {
+      // Attempting to retrieve tracer that doesn't exist.
+      return null;
+    }
+    return this._currentOperationTracers.get(method) ?? null;
+  }
+
+  /**
+   * Removes the MetricsTracer associated with the given method from the internal map.
+   * @param method The gRPC method name.
+   */
+  public clearCurrentTracer(method: string) {
+    if (!method) {
+      return;
+    }
+    const methodKey = method.toLowerCase();
+    if (!this._currentOperationTracers.has(methodKey)) {
+      return;
+    }
+    this._currentOperationTracers.delete(methodKey);
+  }
+
+  /**
+   * Extracts the method name from a formatted resource name or gRPC path.
+   * To be used for method names obtained in the Metrics Interceptor.
+   * @param formattedName The formatted resource name or gRPC method path.
+   * @returns The method name in lowercase, or an empty string if not found.
+   */
+  private _extractFormattedName(formattedName: string): string {
+    const regex = /\/([^/]+)$/;
+    const match = formattedName.match(regex);
+
+    if (!match) {
+      return '';
+    }
+    const method = match[1].toLowerCase();
+    return method;
+  }
+
+  /**
+   * Creates and initializes all metric instruments (counters and histograms) for the MeterProvider.
+   * Instruments are only created if metrics are enabled.
+   */
+  private _createMetricInstruments() {
+    if (!MetricsTracerFactory.enabled) {
+      return;
+    }
+
+    const meter = this.getMeterProvider().getMeter(
+      Constants.SPANNER_METER_NAME,
+      version,
+    );
     this._instrumentAttemptLatency = meter.createHistogram(
       Constants.METRIC_NAME_ATTEMPT_LATENCIES,
       {unit: 'ms', description: 'Time an individual attempt took.'},
@@ -225,6 +344,7 @@ export class MetricsTracerFactory {
   /**
    * Generates a unique identifier for the client_uid metric field. The identifier is composed of a
    * UUID, the process ID (PID), and the hostname.
+   * @returns A unique string identifier for the client.
    */
   private static _generateClientUId(): string {
     const identifier = uuidv4();
@@ -249,6 +369,8 @@ export class MetricsTracerFactory {
    * enough to keep the cardinality of the Resource targets under control. Note: If at later time
    * the range needs to be increased, it can be done by increasing the value of `kPrefixLength` to
    * up to 24 bits without changing the format of the returned value.
+   * @param clientUid The client UID string to hash.
+   * @returns A 6-digit hexadecimal hash string.
    */
   private static _generateClientHash(clientUid: string): string {
     if (clientUid === null || clientUid === undefined) {
@@ -267,6 +389,8 @@ export class MetricsTracerFactory {
 
   /**
    * Gets the location (region) of the client, otherwise returns to the "global" region.
+   * Uses GcpDetectorSync to detect the region from the environment.
+   * @returns The detected region string, or "global" if not found.
    */
   private static async _detectClientLocation(): Promise<string> {
     const defaultRegion = 'global';
