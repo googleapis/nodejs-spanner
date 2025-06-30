@@ -1936,6 +1936,66 @@ describe('Spanner with mock server', () => {
     });
   });
 
+  describe('tpc-universe', () => {
+    it('should have default universe domain correspond to googleapis.com', () => {
+      const spanner = new Spanner();
+      const universeDomain = spanner.universeDomain;
+
+      assert.deepStrictEqual(universeDomain, 'spanner.googleapis.com');
+    });
+
+    it('should throw an error upon setting both universe_domain and universeDomain', () => {
+      try {
+        const fake_universe_domain = 'fake-tpc1.example.com';
+        const fakeUniverseDomain = 'fake-tpc2.example.com';
+        new Spanner({
+          universe_domain: fake_universe_domain,
+          universeDomain: fakeUniverseDomain,
+        });
+      } catch (error) {
+        const fakeError = new Error(
+          'Please set either universe_domain or universeDomain, but not both.',
+        );
+        assert.deepStrictEqual(error, fakeError);
+      }
+    });
+
+    describe('should allow overriding TPC universe', () => {
+      it('when domain name passed via env', () => {
+        process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN = 'fake-tpc-env.example.com';
+        const spanner = new Spanner();
+        const universeDomain = spanner.universeDomain;
+
+        assert.deepStrictEqual(
+          universeDomain,
+          'spanner.fake-tpc-env.example.com',
+        );
+
+        delete process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
+      });
+
+      it('when domain name passed via spanner options using universeDomain', () => {
+        const fakeUniverseDomain = 'fake-tpc.example.com';
+        const spanner = new Spanner({
+          universeDomain: fakeUniverseDomain,
+        });
+        const universeDomain = spanner.universeDomain;
+
+        assert.deepStrictEqual(universeDomain, 'spanner.fake-tpc.example.com');
+      });
+
+      it('when domain name passed via spanner options using universe_domain', () => {
+        const fakeUniverseDomain = 'fake-tpc.example.com';
+        const spanner = new Spanner({
+          universe_domain: fakeUniverseDomain,
+        });
+        const universeDomain = spanner.universeDomain;
+
+        assert.deepStrictEqual(universeDomain, 'spanner.fake-tpc.example.com');
+      });
+    });
+  });
+
   describe('read-only transactions', () => {
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
       before(() => {

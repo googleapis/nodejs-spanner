@@ -156,6 +156,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
   interceptors?: any[];
+  universe_domain?: string;
 }
 export interface RequestConfig {
   client: string;
@@ -205,6 +206,24 @@ export type TranslateEnumKeys<
 > = {
   [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
+
+function getUniverseDomainOnly(options: SpannerOptions): string {
+  const universeDomainEnvVar =
+    typeof process === 'object' && typeof process.env === 'object'
+      ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
+      : undefined;
+  const universeDomain =
+    options?.universeDomain ??
+    options?.universe_domain ??
+    universeDomainEnvVar ??
+    'googleapis.com';
+  return universeDomain;
+}
+
+function getDomain(prefix: string, options: SpannerOptions): string {
+  const suffix = getUniverseDomainOnly(options);
+  return `${prefix}.${suffix}`;
+}
 
 /**
  * [Cloud Spanner](https://cloud.google.com/spanner) is a highly scalable,
@@ -259,6 +278,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
+  private _universeDomain: string;
   readonly _nthClientId: number;
 
   /**
@@ -339,6 +359,16 @@ class Spanner extends GrpcService {
       options || {},
     ) as {} as SpannerOptions;
 
+    if (
+      options?.universe_domain &&
+      options?.universeDomain &&
+      options?.universe_domain !== options?.universeDomain
+    ) {
+      throw new Error(
+        'Please set either universe_domain or universeDomain, but not both.',
+      );
+    }
+
     const directedReadOptions = options.directedReadOptions
       ? options.directedReadOptions
       : null;
@@ -361,12 +391,18 @@ class Spanner extends GrpcService {
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
     }
+
+    const universeDomain = getDomain('spanner', options);
+    if (
+      !options.universeDomain &&
+      (options.universe_domain || process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN)
+    ) {
+      options.universeDomain =
+        options.universe_domain ?? process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
+      delete options.universe_domain;
+    }
     const config = {
-      baseUrl:
-        options.apiEndpoint ||
-        options.servicePath ||
-        // TODO: for TPC, this needs to support universeDomain
-        'spanner.googleapis.com',
+      baseUrl: options.apiEndpoint || options.servicePath || universeDomain,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
@@ -399,6 +435,11 @@ class Spanner extends GrpcService {
     );
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
+    this._universeDomain = universeDomain;
+  }
+
+  get universeDomain() {
+    return this._universeDomain;
   }
 
   /**
