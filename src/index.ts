@@ -278,7 +278,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
-  private _universeDomain: string | undefined;
+  private _universeDomain: string;
   readonly _nthClientId: number;
 
   /**
