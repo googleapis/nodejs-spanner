@@ -1523,8 +1523,12 @@ class Spanner extends GrpcService {
         return;
       }
       const clientName = config.client;
-      if (!this.clients_.has(clientName)) {
-        this.clients_.set(clientName, new v1[clientName](this.options));
+      try {
+        if (!this.clients_.has(clientName)) {
+          this.clients_.set(clientName, new v1[clientName](this.options));
+        }
+      } catch (err) {
+        callback(err, null);
       }
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
