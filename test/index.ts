@@ -2000,6 +2000,22 @@ describe('Spanner', () => {
       });
     });
 
+    it('should be able to catch any error from google-gax-library', done => {
+      const error = new Error('Error.');
+
+      fakeV1[CONFIG.client] = class {
+        constructor(options) {
+          assert.strictEqual(options, spanner.options);
+          throw error;
+        }
+      };
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
     it('should create and cache a gapic client', done => {
       fakeV1[CONFIG.client] = class {
         constructor(options) {

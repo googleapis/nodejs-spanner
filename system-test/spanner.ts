@@ -166,6 +166,7 @@ describe('Spanner', () => {
         Name STRING(1024),
       ) PRIMARY KEY(SingerId)`,
         ];
+
     const [googleSqlOperation] = await databaseAdminClient.createDatabase({
       createStatement: 'CREATE DATABASE `' + gSQLdatabaseId + '`',
       extraStatements: createSingersTableStatement,
@@ -342,26 +343,23 @@ describe('Spanner', () => {
           name: databaseAdminClient.databasePath(
             projectId,
             instanceId,
-            database,
+            database.id,
           ),
         });
         assert.strictEqual(
           metadata!.name,
-          databaseAdminClient.databasePath(projectId, instanceId, database),
+          databaseAdminClient.databasePath(projectId, instanceId, database.id),
         );
         assert.strictEqual(metadata!.state, 'READY');
-        if (IS_EMULATOR_ENABLED) {
-          assert.strictEqual(
-            metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED',
-          );
-        } else {
-          assert.strictEqual(metadata!.databaseDialect, dialect);
-        }
+        assert.strictEqual(metadata!.databaseDialect, dialect);
       }
 
       it('GOOGLE_STANDARD_SQL should have created the database', async () => {
-        void createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
+        await createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
+      });
+
+      it('POSTGRESQL should have created the database', async () => {
+        await createDatabase(PG_DATABASE, 'POSTGRESQL');
       });
     });
   });
@@ -2411,14 +2409,7 @@ describe('Spanner', () => {
         assert.ifError(err);
         assert.strictEqual(metadata!.name, database.formattedName_);
         assert.strictEqual(metadata!.state, 'READY');
-        if (IS_EMULATOR_ENABLED) {
-          assert.strictEqual(
-            metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED',
-          );
-        } else {
-          assert.strictEqual(metadata!.databaseDialect, dialect);
-        }
+        assert.strictEqual(metadata!.databaseDialect, dialect);
         done();
       });
     };
