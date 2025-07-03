@@ -18,7 +18,10 @@ import * as sinon from 'sinon';
 import * as Constants from '../../src/metrics/constants';
 import {MetricsTracer} from '../../src/metrics/metrics-tracer';
 
-const PROJECT_ID = 'test-project';
+const DATABASE = 'test-db';
+const INSTANCE = 'instance';
+const METHOD = 'test-method';
+const REQUEST = 'test-request';
 
 describe('MetricsTracer', () => {
   let tracer: MetricsTracer;
@@ -60,9 +63,12 @@ describe('MetricsTracer', () => {
       fakeOperationLatency,
       fakeGfeCounter,
       fakeGfeLatency,
-      true, // enabled
+      true, // enabled,
+      DATABASE,
+      INSTANCE,
+      METHOD,
+      REQUEST,
     );
-    tracer.projectId = PROJECT_ID;
   });
 
   describe('recordAttemptCompletion', () => {
@@ -78,10 +84,6 @@ describe('MetricsTracer', () => {
       assert.strictEqual(fakeAttemptLatency.record.calledOnce, true);
       const [[latency, otelAttrs]] = fakeAttemptLatency.record.args;
       assert.strictEqual(typeof latency, 'number');
-      assert.strictEqual(
-        otelAttrs[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-        PROJECT_ID,
-      );
       assert.strictEqual(
         otelAttrs[Constants.METRIC_LABEL_KEY_STATUS],
         Status[Status.OK],
@@ -148,60 +150,22 @@ describe('MetricsTracer', () => {
     });
   });
 
-  it('should not overwrite project if already set', () => {
-    tracer.projectId = 'new-project';
-    const attributes = tracer.clientAttributes;
-    assert.strictEqual(
-      attributes[Constants.MONITORED_RES_LABEL_KEY_PROJECT],
-      PROJECT_ID,
-    );
-  });
-
-  it('should set all other attribute setters', () => {
-    tracer.instance = 'test-instance';
-    tracer.instanceConfig = 'config';
-    tracer.location = 'us-central1';
-    tracer.clientHash = 'hash123';
-    tracer.clientUid = 'uid123';
-    tracer.clientName = 'name123';
-    tracer.database = 'db123';
-    tracer.methodName = 'method';
-    const attributes = tracer.clientAttributes;
-    assert.strictEqual(
-      attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
-      'test-instance',
-    );
-    assert.strictEqual(
-      attributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG],
-      'config',
-    );
-    assert.strictEqual(
-      attributes[Constants.MONITORED_RES_LABEL_KEY_LOCATION],
-      'us-central1',
-    );
-    assert.strictEqual(
-      attributes[Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH],
-      'hash123',
-    );
-    assert.strictEqual(
-      attributes[Constants.METRIC_LABEL_KEY_CLIENT_UID],
-      'uid123',
-    );
-    assert.strictEqual(
-      attributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME],
-      'name123',
-    );
-    assert.strictEqual(
-      attributes[Constants.METRIC_LABEL_KEY_DATABASE],
-      'db123',
-    );
-    assert.strictEqual(attributes[Constants.METRIC_LABEL_KEY_METHOD], 'method');
-  });
-
   describe('extractGfeLatency', () => {
     let tracer: MetricsTracer;
     beforeEach(() => {
-      tracer = new MetricsTracer(null, null, null, null, null, null, true);
+      tracer = new MetricsTracer(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true,
+        DATABASE,
+        INSTANCE,
+        METHOD,
+        REQUEST,
+      );
     });
 
     it('should extract latency from a valid server-timing header', () => {

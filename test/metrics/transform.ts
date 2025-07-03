@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import {_TEST_ONLY} from '../../src/metrics/transform';
 import {
   AggregationTemporality,
@@ -40,6 +41,7 @@ import {
   METRIC_NAME_ATTEMPT_COUNT,
 } from '../../src/metrics/constants';
 import {MetricKind, ValueType} from '../../src/metrics/external-types';
+import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
 
 const {
   _normalizeLabelKey,
@@ -66,6 +68,8 @@ describe('transform', () => {
   let gaugeDataPoint: DataPoint<number>;
   let histogramDataPoint: DataPoint<Histogram>;
   let exponentialHistogramDataPoint: DataPoint<ExponentialHistogram>;
+  let sandbox;
+  let mockFactory;
 
   class InMemoryMetricReader extends MetricReader {
     protected async onShutdown(): Promise<void> {}
@@ -73,6 +77,12 @@ describe('transform', () => {
   }
 
   before(() => {
+    sandbox = sinon.createSandbox();
+    mockFactory = sandbox.createStubInstance(MetricsTracerFactory);
+    sandbox.stub(mockFactory, 'clientUid').get(() => 'test_uid');
+    sandbox.stub(mockFactory, 'clientName').get(() => 'test_name');
+    sandbox.stub(MetricsTracerFactory, 'getInstance').returns(mockFactory);
+
     reader = new InMemoryMetricReader();
     resource = new Resource({
       ['project_id']: 'project_id',
@@ -181,6 +191,10 @@ describe('transform', () => {
     };
   });
 
+  after(() => {
+    sandbox.restore();
+  });
+
   it('normalizes label keys', () => {
     [
       ['valid_key_1', 'valid_key_1'],
@@ -229,7 +243,6 @@ describe('transform', () => {
   });
 
   it('should extract metric and resource labels', () => {
-    // const {metricLabels, monitoredResourceLabels} =
     const dataLabels = _extractLabels(sumDataPoint);
     const resourceLabels = _extractLabels(resource);
 

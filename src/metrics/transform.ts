@@ -31,7 +31,11 @@ import {
   METRIC_LABELS,
   MONITORED_RESOURCE_LABELS,
   METRIC_NAMES,
+  METRIC_LABEL_KEY_CLIENT_UID,
+  METRIC_LABEL_KEY_CLIENT_NAME,
+  UNKNOWN_ATTRIBUTE,
 } from './constants';
+import {MetricsTracerFactory} from './metrics-tracer-factory';
 
 /** Transforms a OpenTelemetry instrument type to a GCM MetricKind. */
 function _transformMetricKind(metric: MetricData): MetricKind {
@@ -122,7 +126,6 @@ function _createTimeSeries<T>(
     ? _extractLabels(resource)
     : {metricLabels: {}, monitoredResourceLabels: {}};
 
-  // const {metricLabels: labels, monitoredResourceLabels} =
   const dataLabels = _extractLabels(dataPoint);
 
   const labels = {
@@ -203,6 +206,12 @@ function _transformPoint<T>(metric: MetricData, dataPoint: DataPoint<T>) {
 
 /** Extracts metric and monitored resource labels from data point */
 function _extractLabels<T>({attributes = {}}: DataPoint<T> | Resource) {
+  const factory = MetricsTracerFactory.getInstance();
+  // Add Client name and Client UID metric labels
+  attributes[METRIC_LABEL_KEY_CLIENT_UID] =
+    factory?.clientUid ?? UNKNOWN_ATTRIBUTE;
+  attributes[METRIC_LABEL_KEY_CLIENT_NAME] =
+    factory?.clientName ?? UNKNOWN_ATTRIBUTE;
   return Object.entries(attributes).reduce(
     (result, [key, value]) => {
       const normalizedKey = _normalizeLabelKey(key);

@@ -16,7 +16,12 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
-import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
+import {
+  MeterProvider,
+  MetricReader,
+  View,
+  ExplicitBucketHistogramAggregation,
+} from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram} from '@opentelemetry/api';
 import {detectResources, Resource} from '@opentelemetry/resources';
 import {GcpDetectorSync} from '@google-cloud/opentelemetry-resource-util';
@@ -119,6 +124,7 @@ export class MetricsTracerFactory {
       this._meterProvider = new MeterProvider({
         resource: resource,
         readers: readers,
+        views: Constants.METRIC_VIEWS,
       });
       this._createMetricInstruments();
     }
@@ -135,8 +141,12 @@ export class MetricsTracerFactory {
   /**
    * Resets the MeterProvider.
    */
-  public resetMeterProvider() {
+  public async resetMeterProvider() {
+    if (this._meterProvider !== null) {
+      await this._meterProvider!.shutdown();
+    }
     this._meterProvider = null;
+    this._currentOperationTracers = new Map();
   }
 
   /**
@@ -182,6 +192,20 @@ export class MetricsTracerFactory {
   }
 
   /**
+   * Returns the Client UID.
+   */
+  get clientUid(): string {
+    return this._clientUid;
+  }
+
+  /**
+   * Returns the Client Name.
+   */
+  get clientName(): string {
+    return this._clientName;
+  }
+
+  /**
    * Creates a new MetricsTracer for a given resource name and method, and stores it for later retrieval.
    * Returns null if metrics are disabled.
    * @param formattedName The formatted resource name (e.g., full database path).
@@ -189,17 +213,21 @@ export class MetricsTracerFactory {
    * @returns A new MetricsTracer instance or null if metrics are disabled.
    */
   public createMetricsTracer(
-    formattedName = '',
-    method = '',
+    method: string,
+    formattedName: string,
+    requestId: string,
   ): MetricsTracer | null {
     if (!MetricsTracerFactory.enabled) {
       return null;
     }
-    if (this._currentOperationTracers.has(method.toLowerCase())) {
-      return this._currentOperationTracers.get(method.toLowerCase());
-    }
-    const {database} = this.getInstanceAttributes(formattedName);
 
+    const operationRequest = this._extractOperationRequest(requestId);
+
+    if (this._currentOperationTracers.has(operationRequest)) {
+      return this._currentOperationTracers.get(operationRequest);
+    }
+
+    const {instance, database} = this.getInstanceAttributes(formattedName);
     const tracer = new MetricsTracer(
       this._instrumentAttemptCounter,
       this._instrumentAttemptLatency,
@@ -208,12 +236,12 @@ export class MetricsTracerFactory {
       this._instrumentGfeConnectivityErrorCount,
       this._instrumentGfeLatency,
       MetricsTracerFactory.enabled,
+      database,
+      instance,
+      method,
+      operationRequest,
     );
-    tracer.database = database;
-    tracer.clientName = this._clientName;
-    tracer.clientUid = this._clientUid;
-    tracer.methodName = method;
-    this._currentOperationTracers.set(method.toLowerCase(), tracer);
+    this._currentOperationTracers.set(operationRequest, tracer);
     return tracer;
   }
 
@@ -224,33 +252,37 @@ export class MetricsTracerFactory {
    */
   public getInstanceAttributes(formattedName: string) {
     if (typeof formattedName !== 'string' || formattedName === '') {
-      return {project: '', instance: '', database: ''};
+      return {
+        project: Constants.UNKNOWN_ATTRIBUTE,
+        instance: Constants.UNKNOWN_ATTRIBUTE,
+        database: Constants.UNKNOWN_ATTRIBUTE,
+      };
     }
     const regex =
       /projects\/(?<projectId>[^/]+)\/instances\/(?<instanceId>[^/]+)(?:\/databases\/(?<databaseId>[^/]+))?/;
     const match = formattedName.match(regex);
-    const project = match?.groups?.projectId || '';
-    const instance = match?.groups?.instanceId || '';
-    const database = match?.groups?.databaseId || '';
+    const project = match?.groups?.projectId || Constants.UNKNOWN_ATTRIBUTE;
+    const instance = match?.groups?.instanceId || Constants.UNKNOWN_ATTRIBUTE;
+    const database = match?.groups?.databaseId || Constants.UNKNOWN_ATTRIBUTE;
     return {project: project, instance: instance, database: database};
   }
 
   /**
-   * Retrieves the current MetricsTracer for a given formatted name (method).
-   * Returns null if no tracer exists for the method.
+   * Retrieves the current MetricsTracer for a given request id.
+   * Returns null if no tracer exists for the request.
    * Does not implicitly create MetricsTracers as that should be done
    * explicitly using the CreateMetricsTracer function.
-   * formattedName is expected to be as set in gRPC metadata.
-   * @param formattedName The formatted resource name or method path.
+   * request id is expected to be as set in the gRPC metadata.
+   * @param requestId The request id of the gRPC call set under 'x-goog-spanner-request-id'.
    * @returns The MetricsTracer instance or null if not found.
    */
-  public getCurrentTracer(formattedName: string): MetricsTracer | null {
-    const method = this._extractFormattedName(formattedName);
-    if (!this._currentOperationTracers.has(method)) {
+  public getCurrentTracer(requestId: string): MetricsTracer | null {
+    const operationRequest: string = this._extractOperationRequest(requestId);
+    if (!this._currentOperationTracers.has(operationRequest)) {
       // Attempting to retrieve tracer that doesn't exist.
       return null;
     }
-    return this._currentOperationTracers.get(method) ?? null;
+    return this._currentOperationTracers.get(operationRequest) ?? null;
   }
 
   /**
@@ -268,21 +300,16 @@ export class MetricsTracerFactory {
     this._currentOperationTracers.delete(methodKey);
   }
 
-  /**
-   * Extracts the method name from a formatted resource name or gRPC path.
-   * To be used for method names obtained in the Metrics Interceptor.
-   * @param formattedName The formatted resource name or gRPC method path.
-   * @returns The method name in lowercase, or an empty string if not found.
-   */
-  private _extractFormattedName(formattedName: string): string {
-    const regex = /\/([^/]+)$/;
-    const match = formattedName.match(regex);
+  private _extractOperationRequest(requestId: string): string {
+    const regex = /^(\d+\.[a-f0-9]+\.\d+\.\d+\.\d+)\.\d+$/i;
+    const match = requestId.match(regex);
 
     if (!match) {
       return '';
     }
-    const method = match[1].toLowerCase();
-    return method;
+
+    const request = match[1];
+    return request;
   }
 
   /**
@@ -298,6 +325,7 @@ export class MetricsTracerFactory {
       Constants.SPANNER_METER_NAME,
       version,
     );
+
     this._instrumentAttemptLatency = meter.createHistogram(
       Constants.METRIC_NAME_ATTEMPT_LATENCIES,
       {unit: 'ms', description: 'Time an individual attempt took.'},

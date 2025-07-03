@@ -26,6 +26,7 @@ import {
   MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG,
   MONITORED_RES_LABEL_KEY_LOCATION,
   MONITORED_RES_LABEL_KEY_PROJECT,
+  UNKNOWN_ATTRIBUTE,
 } from './constants';
 
 /**
@@ -41,7 +42,7 @@ class MetricAttemptTracer {
 
   constructor() {
     this._startTime = new Date(Date.now());
-    this.status = 'UNKNOWN';
+    this.status = Status[Status.UNKNOWN];
   }
 
   /**
@@ -73,14 +74,12 @@ class MetricAttemptTracer {
 class MetricOperationTracer {
   private _attemptCount: number;
   private _startTime: Date;
-  private _currentAttempt;
-  public status: string;
+  private _currentAttempt: MetricAttemptTracer | null;
 
   constructor() {
     this._attemptCount = 0;
     this._startTime = new Date(Date.now());
     this._currentAttempt = null;
-    this.status = 'UNKNOWN';
   }
 
   /**
@@ -142,11 +141,6 @@ export class MetricsTracer {
    */
   private _clientAttributes: {[key: string]: string} = {};
 
-  /**
-   * The gRPC Spanner method name associated with this tracer.
-   */
-  private _methodName = '';
-
   /*
    * The current GFE latency associated with this tracer.
    */
@@ -170,7 +164,15 @@ export class MetricsTracer {
     private _instrumentGfeConnectivityErrorCount: Counter | null,
     private _instrumentGfeLatency: Histogram | null,
     public enabled: boolean,
-  ) {}
+    private _database: string,
+    private _instance: string,
+    private _methodName: string,
+    private _request: string,
+  ) {
+    this._clientAttributes[METRIC_LABEL_KEY_DATABASE] = _database;
+    this._clientAttributes[METRIC_LABEL_KEY_METHOD] = _methodName;
+    this._clientAttributes[MONITORED_RES_LABEL_KEY_INSTANCE] = _instance;
+  }
 
   /**
    * Returns the difference in milliseconds between two Date objects.
@@ -233,13 +235,11 @@ export class MetricsTracer {
    */
   public recordAttemptCompletion(statusCode: Status = Status.OK) {
     if (!this.enabled) return;
-    this.currentOperation!.currentAttempt.status = Status[statusCode];
-    this.currentOperation!.status = Status[statusCode];
-
+    this.currentOperation!.currentAttempt!.status = Status[statusCode];
     const attemptAttributes = this._createAttemptOtelAttributes();
     const endTime = new Date(Date.now());
     const attemptLatencyMilliseconds = this._getMillisecondTimeDifference(
-      this.currentOperation!.currentAttempt.startTime,
+      this.currentOperation!.currentAttempt!.startTime,
       endTime,
     );
     this.instrumentAttemptLatency?.record(
@@ -253,7 +253,7 @@ export class MetricsTracer {
    */
   public recordOperationStart() {
     if (!this.enabled) return;
-    if (this.currentOperation) {
+    if (this.currentOperation !== null) {
       return; // Don't re-start an already started operation
     }
     this.currentOperation = new MetricOperationTracer();
@@ -339,8 +339,7 @@ export class MetricsTracer {
     if (!this.enabled) return {};
     const attributes = {...this._clientAttributes};
     attributes[METRIC_LABEL_KEY_STATUS] =
-      this.currentOperation!.status.toString();
-
+      this.currentOperation!.currentAttempt?.status ?? Status[Status.UNKNOWN];
     return attributes;
   }
 
@@ -353,93 +352,10 @@ export class MetricsTracer {
   private _createAttemptOtelAttributes() {
     if (!this.enabled) return {};
     const attributes = {...this._clientAttributes};
-    if (this.currentOperation!.currentAttempt === null) return attributes;
+    if (this.currentOperation?.currentAttempt === null) return attributes;
     attributes[METRIC_LABEL_KEY_STATUS] =
       this.currentOperation!.currentAttempt.status;
 
     return attributes;
-  }
-
-  /**
-   * Sets the project ID attribute if not already set.
-   */
-  set projectId(projectId: string) {
-    if (!(MONITORED_RES_LABEL_KEY_PROJECT in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_PROJECT] = projectId;
-    }
-  }
-
-  /**
-   * Sets the instance attribute if not already set.
-   */
-  set instance(instance: string) {
-    if (!(MONITORED_RES_LABEL_KEY_INSTANCE in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_INSTANCE] = instance;
-    }
-  }
-
-  /**
-   * Sets the instance config attribute if not already set.
-   */
-  set instanceConfig(instanceConfig: string) {
-    if (!(MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG] =
-        instanceConfig;
-    }
-  }
-
-  /**
-   * Sets the location attribute if not already set.
-   */
-  set location(location: string) {
-    if (!(MONITORED_RES_LABEL_KEY_LOCATION in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_LOCATION] = location;
-    }
-  }
-
-  /**
-   * Sets the client hash attribute if not already set.
-   */
-  set clientHash(clientHash: string) {
-    if (!(MONITORED_RES_LABEL_KEY_CLIENT_HASH in this._clientAttributes)) {
-      this._clientAttributes[MONITORED_RES_LABEL_KEY_CLIENT_HASH] = clientHash;
-    }
-  }
-
-  /**
-   * Sets the client UID attribute if not already set.
-   */
-  set clientUid(clientUid: string) {
-    if (!(METRIC_LABEL_KEY_CLIENT_UID in this._clientAttributes)) {
-      this._clientAttributes[METRIC_LABEL_KEY_CLIENT_UID] = clientUid;
-    }
-  }
-
-  /**
-   * Sets the client name attribute if not already set.
-   */
-  set clientName(clientName: string) {
-    if (!(METRIC_LABEL_KEY_CLIENT_NAME in this._clientAttributes)) {
-      this._clientAttributes[METRIC_LABEL_KEY_CLIENT_NAME] = clientName;
-    }
-  }
-
-  /**
-   * Sets the database attribute if not already set.
-   */
-  set database(database: string) {
-    if (!(METRIC_LABEL_KEY_DATABASE in this._clientAttributes)) {
-      this._clientAttributes[METRIC_LABEL_KEY_DATABASE] = database;
-    }
-  }
-
-  /**
-   * Sets the method name attribute if not already set, and stores it for later use.
-   */
-  set methodName(methodName: string) {
-    if (!(METRIC_LABEL_KEY_METHOD in this._clientAttributes)) {
-      this._methodName = methodName;
-      this._clientAttributes[METRIC_LABEL_KEY_METHOD] = methodName;
-    }
   }
 }

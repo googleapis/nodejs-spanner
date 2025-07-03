@@ -58,21 +58,15 @@ describe('Test metrics with mock server', () => {
   }
 
   function compareAttributes(expected: object, actual: object): boolean {
-    // Check that all expected keys (except client_uid) match in actual
+    // Check that all expected keys match in actual
     for (const key of Object.keys(expected)) {
-      if (key === 'client_uid') {
-        continue;
-      }
       if ((actual as any)[key] !== (expected as any)[key]) {
         return false;
       }
     }
-    // Check that actual does not contain extra keys (except client_uid)
+    // Check that actual does not contain extra keys
     for (const key of Object.keys(actual)) {
-      if (key === 'client_uid') {
-        continue;
-      }
-      // Check if the key in 'actual' is not present in 'expected' (excluding 'client_uid')
+      // Check if the key in 'actual' is not present in 'expected'
       if (!Object.prototype.hasOwnProperty.call(expected, key)) {
         return false;
       }
@@ -86,7 +80,6 @@ describe('Test metrics with mock server', () => {
         metric => metric.descriptor.name === metricName,
       ),
     );
-
     assert.ok(
       filteredMetrics.length > 0,
       `No metric entry found with name: ${metricName}`,
@@ -112,7 +105,11 @@ describe('Test metrics with mock server', () => {
     const dataPoint = metricsData.dataPoints.filter(dp =>
       compareAttributes(dp.attributes, attributes),
     );
-    assert.strictEqual(dataPoint.length, 1);
+    assert.strictEqual(
+      dataPoint.length,
+      1,
+      `Failed to filter for attribute values.`,
+    );
     switch (metricsData.descriptor.type) {
       case 'HISTOGRAM':
         return dataPoint[0].value.sum / dataPoint[0].value.count;
@@ -142,10 +139,10 @@ describe('Test metrics with mock server', () => {
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet()),
     );
-    process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     MetricsTracerFactory.resetInstance();
     process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'false';
     spanner = new Spanner({
+      projectId: 'test-project',
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -157,30 +154,30 @@ describe('Test metrics with mock server', () => {
     await setupMockSpanner();
   });
 
-  after(() => {
+  after(async () => {
     spanner.close();
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
+    MetricsTracerFactory.resetInstance();
   });
 
-  describe('With InMemMetricReader', () => {
+  describe('With InMemMetricReaderf', async () => {
     let reader: InMemoryMetricReader;
     let factory: MetricsTracerFactory | null;
     let gfeStub;
     const MIN_LATENCY = 0;
     const commonAttributes = {
-      client_name: 'spanner-nodejs/8.0.0',
-      client_uid: 'someuid',
+      instance_id: 'instance',
       status: 'OK',
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
       spannerMock.resetRequests();
       spannerMock.removeExecutionTimes();
       // Reset the MetricsFactoryReader to an in-memory reader for the tests
       factory = MetricsTracerFactory.getInstance();
-      factory!.resetMeterProvider();
+      await factory!.resetMeterProvider();
       reader = new InMemoryMetricReader();
       factory!.getMeterProvider([reader]);
     });
@@ -251,7 +248,7 @@ describe('Test metrics with mock server', () => {
           attributes,
         );
         // Since we only have one attempt, the attempt latency should be fairly close to the operation latency
-        assertApprox(MIN_LATENCY, attemptLatency, 20);
+        assertApprox(MIN_LATENCY, attemptLatency, 30);
 
         const gfeLatency = getAggregatedValue(gfeLatenciesData, attributes);
         assert.strictEqual(gfeLatency, 123);

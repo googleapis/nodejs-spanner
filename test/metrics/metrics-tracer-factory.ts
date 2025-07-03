@@ -68,7 +68,16 @@ describe('MetricsTracerFactory', () => {
 
     // metrics provider and related objects
     mockExporter = sandbox.createStubInstance(CloudMonitoringMetricsExporter);
+  });
 
+  after(async () => {
+    sandbox.restore();
+    await MetricsTracerFactory.getInstance()!.resetMeterProvider();
+    MetricsTracerFactory.resetInstance();
+  });
+
+  beforeEach(() => {
+    sandbox.resetHistory();
     MetricsTracerFactory.resetInstance();
     const provider =
       MetricsTracerFactory.getInstance('project-id')!.getMeterProvider();
@@ -79,20 +88,12 @@ describe('MetricsTracerFactory', () => {
     provider.addMetricReader(reader);
   });
 
-  after(() => {
-    sandbox.restore();
-    MetricsTracerFactory.getInstance()!.resetMeterProvider();
-    MetricsTracerFactory.resetInstance();
-  });
-
-  beforeEach(() => {
-    sandbox.resetHistory();
-  });
-
   it('should use the set meter provider', async () => {
     const factory = MetricsTracerFactory.getInstance();
     const tracer = factory!.createMetricsTracer(
+      'some-method',
       'projects/project/instances/instance/databases/database',
+      '1.1a2bc3d4.1.1.1.1',
     );
 
     const operations = 3;
@@ -145,21 +146,33 @@ describe('MetricsTracerFactory', () => {
 
   it('should create a MetricsTracer instance', () => {
     const factory = MetricsTracerFactory.getInstance();
-    const tracer = factory!.createMetricsTracer();
+    const tracer = factory!.createMetricsTracer(
+      'some-method',
+      'method-name',
+      '1.1a2bc3d4.1.1.1.1',
+    );
     assert.ok(tracer);
   });
 
   it('should correctly set default attributes', () => {
     const factory = MetricsTracerFactory.getInstance();
     const tracer = factory!.createMetricsTracer(
+      'test-method',
       'projects/project/instances/instance/databases/database',
+      '1.1a2bc3d4.1.1.1.1',
     );
     assert.strictEqual(
       tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_DATABASE],
       'database',
     );
-    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_NAME]);
-    assert.ok(tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_CLIENT_UID]);
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.METRIC_LABEL_KEY_METHOD],
+      'test-method',
+    );
+    assert.strictEqual(
+      tracer!.clientAttributes[Constants.MONITORED_RES_LABEL_KEY_INSTANCE],
+      'instance',
+    );
   });
 });
 
@@ -179,23 +192,31 @@ describe('getInstanceAttributes', () => {
     });
   });
 
-  it('should extract project and instance, and empty database if database is missing', () => {
+  it('should extract project and instance, and unknown database if database is missing', () => {
     const formattedName = 'projects/proj2/instances/inst2';
     const attrs = factory.getInstanceAttributes(formattedName);
     assert.deepStrictEqual(attrs, {
       project: 'proj2',
       instance: 'inst2',
-      database: '',
+      database: 'unknown',
     });
   });
 
-  it('should return empty strings for all if input is empty', () => {
+  it('should return unknown strings for all if input is empty', () => {
     const attrs = factory.getInstanceAttributes('');
-    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
+    assert.deepStrictEqual(attrs, {
+      project: 'unknown',
+      instance: 'unknown',
+      database: 'unknown',
+    });
   });
 
-  it('should return empty strings for all if input is malformed', () => {
+  it('should return unknown strings for all if input is malformed', () => {
     const attrs = factory.getInstanceAttributes('foo/bar/baz');
-    assert.deepStrictEqual(attrs, {project: '', instance: '', database: ''});
+    assert.deepStrictEqual(attrs, {
+      project: 'unknown',
+      instance: 'unknown',
+      database: 'unknown',
+    });
   });
 });

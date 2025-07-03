@@ -32,11 +32,11 @@ export const MetricInterceptor = (options, nextCall) => {
     start: function (metadata, listener, next) {
       // Record attempt metric on request start
       const factory = MetricsTracerFactory.getInstance();
+      const requestId = metadata.get('x-goog-spanner-request-id')[0] as string;
       const metricsTracer = factory?.getCurrentTracer(
-        options.method_definition.path,
+        requestId,
       ) as MetricsTracer;
       metricsTracer?.recordAttemptStart();
-
       const newListener = {
         onReceiveMetadata: function (metadata, next) {
           // Record GFE Metrics

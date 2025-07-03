@@ -315,7 +315,7 @@ class Spanner extends GrpcService {
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
   private _universeDomain: string;
-  isEmulatorEnabled: boolean;
+  private _isEmulatorEnabled: boolean;
   readonly _nthClientId: number;
 
   /**
@@ -452,7 +452,7 @@ class Spanner extends GrpcService {
       this.routeToLeaderEnabled = false;
     }
 
-    this.isEmulatorEnabled = isEmulatorEnabled;
+    this._isEmulatorEnabled = isEmulatorEnabled;
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
@@ -1589,7 +1589,7 @@ class Spanner extends GrpcService {
   configureMetrics_() {
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
-      !this.isEmulatorEnabled;
+      !this._isEmulatorEnabled;
     MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
       const factory = MetricsTracerFactory.getInstance(this.projectId);
@@ -1748,14 +1748,12 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (
-      config.method !== 'deleteSession' &&
-      config.client === 'SpannerClient'
-    ) {
+    if (config.client === 'SpannerClient') {
       metricsTracer =
         MetricsTracerFactory?.getInstance()?.createMetricsTracer(
-          config.reqOpts.session ?? config.reqOpts.database,
           config.method,
+          config.reqOpts.session ?? config.reqOpts.database,
+          config.headers['x-goog-spanner-request-id'],
         ) ?? null;
     }
     metricsTracer?.recordOperationStart();
@@ -1814,14 +1812,12 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestStream(config): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (
-      config.method !== 'deleteSession' &&
-      config.client === 'SpannerClient'
-    ) {
+    if (config.client === 'SpannerClient') {
       metricsTracer =
         MetricsTracerFactory?.getInstance()?.createMetricsTracer(
-          config.reqOpts.session ?? config.reqOpts.database,
           config.method,
+          config.reqOpts.session ?? config.reqOpts.database,
+          config.headers['x-goog-spanner-request-id'],
         ) ?? null;
     }
     metricsTracer?.recordOperationStart();
