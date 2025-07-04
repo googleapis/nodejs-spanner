@@ -434,6 +434,104 @@ describe('Spanner', () => {
     });
   });
 
+  describe('TPC tests', () => {
+    const UNIVERSE_DOMAIN_CONSTANT = 'fake-universe-domain';
+
+    it('should have default universe domain set to `googleapis.com`', () => {
+      try {
+        const spanner = new Spanner();
+        // get default universe domain from spanner object when
+        // neither of univserDomain and universe_domain are set
+        // nor env GOOGLE_CLOUD_UNIVERSE_DOMAIN is set
+        assert.strictEqual(spanner.universeDomain, 'googleapis.com');
+        // GoogleAuthOption's univserseDomain property must be undefined here
+        // as it will get configure to default value in the gax library
+        // please see: https://github.com/googleapis/gax-nodejs/blob/de43edd3524b7f995bd3cf5c34ddead03828b546/gax/src/grpc.ts#L431
+        assert.strictEqual(spanner.options.universeDomain, undefined);
+      } catch (err) {
+        assert.ifError(err);
+      }
+    });
+
+    it('should optionally accept universeDomain', () => {
+      const fakeOption = {
+        universeDomain: UNIVERSE_DOMAIN_CONSTANT,
+      };
+
+      try {
+        const spanner = new Spanner(fakeOption);
+        // get universe domain from spanner object
+        assert.strictEqual(spanner.universeDomain, fakeOption.universeDomain);
+        // GoogleAuthOption's univserseDomain property must be set
+        // to match it with the universe from Auth Client
+        assert.strictEqual(
+          spanner.options.universeDomain,
+          fakeOption.universeDomain,
+        );
+      } catch (err) {
+        assert.ifError(err);
+      }
+    });
+
+    it('should optionally accept universe_domain', () => {
+      const fakeOption = {
+        universe_domain: UNIVERSE_DOMAIN_CONSTANT,
+      };
+
+      try {
+        const spanner = new Spanner(fakeOption);
+        // get universe domain from spanner object
+        assert.strictEqual(spanner.universeDomain, fakeOption.universe_domain);
+        // GoogleAuthOption's univserseDomain property must be set
+        // to match it with the universe from Auth Client
+        assert.strictEqual(
+          spanner.options.universeDomain,
+          fakeOption.universe_domain,
+        );
+      } catch (err) {
+        assert.ifError(err);
+      }
+    });
+
+    it('should set universe domain upon setting env GOOGLE_CLOUD_UNIVERSE_DOMAIN', () => {
+      process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN = UNIVERSE_DOMAIN_CONSTANT;
+
+      try {
+        const spanner = new Spanner();
+        // get universe domain from spanner object
+        assert.strictEqual(spanner.universeDomain, UNIVERSE_DOMAIN_CONSTANT);
+        // GoogleAuthOption's univserseDomain property must be set
+        // to match it with the universe from Auth Client
+        assert.strictEqual(
+          spanner.options.universeDomain,
+          UNIVERSE_DOMAIN_CONSTANT,
+        );
+      } catch (err) {
+        assert.ifError(err);
+      }
+      delete process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
+    });
+
+    it('should throw an error if universe_domain and universeDomain both are set to different values', () => {
+      const fakeOption = {
+        universeDomain: 'fake-universe-domain-1',
+        universe_domain: 'fake-universe-domain-2',
+      };
+      const fakeError = new Error(
+        'Please set either universe_domain or universeDomain, but not both.',
+      );
+
+      try {
+        const spanner = new Spanner(fakeOption);
+        // this line should never reach client must throw an error.
+        throw new Error('should never reach this line');
+      } catch (err) {
+        assert.deepStrictEqual(err, fakeError);
+      }
+      delete process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN;
+    });
+  });
+
   describe('date', () => {
     it('should create a default SpannerDate instance', () => {
       const customValue = {};
@@ -1992,6 +2090,22 @@ describe('Spanner', () => {
 
       asAny(spanner).auth.getProjectId = callback => {
         callback(error);
+      };
+
+      spanner.prepareGapicRequest_(CONFIG, err => {
+        assert.strictEqual(err, error);
+        done();
+      });
+    });
+
+    it('should be able to catch any error from google-gax-library', done => {
+      const error = new Error('Error.');
+
+      fakeV1[CONFIG.client] = class {
+        constructor(options) {
+          assert.strictEqual(options, spanner.options);
+          throw error;
+        }
       };
 
       spanner.prepareGapicRequest_(CONFIG, err => {

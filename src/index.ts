@@ -156,6 +156,17 @@ export interface SpannerOptions extends GrpcClientOptions {
   defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
   interceptors?: any[];
+  /**
+   * The Trusted Cloud Domain (TPC) DNS of the service used to make requests.
+   * Defaults to `googleapis.com`.
+   * We support both camelCase and snake_case for the universe domain.
+   * Customer may set any of these as both the options are same,
+   * they both points to universe endpoint.
+   * There is no preference for any of these option; however exception will be
+   * thrown if both are set to different values.
+   */
+  universe_domain?: string;
+  universeDomain?: string;
 }
 export interface RequestConfig {
   client: string;
@@ -205,6 +216,45 @@ export type TranslateEnumKeys<
 > = {
   [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
+
+/**
+ * Retrieves the universe domain.
+ *
+ * This function checks for a universe domain in the following order:
+ * 1. The `universeDomain` property within the provided spanner options.
+ * 2. The `universe_domain` property within the provided spanner options.
+ * 3. The `GOOGLE_CLOUD_UNIVERSE_DOMAIN` environment variable.
+ * 4. If none of the above properties will be set, it will fallback to `googleapis.com`.
+ *
+ * For consistency with the Auth client, if the `universe_domain` option or the
+ * `GOOGLE_CLOUD_UNIVERSE_DOMAIN` env variable is used, this function will also set the
+ * `universeDomain` property within the provided `SpannerOptions` object. This ensures the
+ * Spanner client's universe domain aligns with the universe configured for authentication.
+ *
+ * @param {SpannerOptions} options - The Spanner client options.
+ * @returns {string} The universe domain.
+ */
+function getUniverseDomain(options: SpannerOptions): string {
+  const universeDomainEnvVar =
+    typeof process === 'object' && typeof process.env === 'object'
+      ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
+      : undefined;
+  const universeDomain =
+    options?.universeDomain ??
+    options?.universe_domain ??
+    universeDomainEnvVar ??
+    'googleapis.com';
+  // if the options.universe_domain/GOOGLE_CLOUD_UNIVERSE_DOMAIN env variable is set,
+  // set its value to the Spanner `universeDomain` options
+  // to match it with the universe from Auth Client
+  if (
+    !options?.universeDomain &&
+    (options?.universe_domain || process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN)
+  ) {
+    options.universeDomain = universeDomain;
+  }
+  return universeDomain;
+}
 
 /**
  * [Cloud Spanner](https://cloud.google.com/spanner) is a highly scalable,
@@ -259,6 +309,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
+  private _universeDomain: string;
   readonly _nthClientId: number;
 
   /**
@@ -351,6 +402,16 @@ class Spanner extends GrpcService {
         };
     delete options.defaultTransactionOptions;
 
+    if (
+      options?.universe_domain &&
+      options?.universeDomain &&
+      options?.universe_domain !== options?.universeDomain
+    ) {
+      throw new Error(
+        'Please set either universe_domain or universeDomain, but not both.',
+      );
+    }
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -361,12 +422,12 @@ class Spanner extends GrpcService {
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
     }
+
+    const universeEndpoint = getUniverseDomain(options);
+    const spannerUniverseEndpoint = 'spanner.' + universeEndpoint;
     const config = {
       baseUrl:
-        options.apiEndpoint ||
-        options.servicePath ||
-        // TODO: for TPC, this needs to support universeDomain
-        'spanner.googleapis.com',
+        options.apiEndpoint || options.servicePath || spannerUniverseEndpoint,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
@@ -399,6 +460,11 @@ class Spanner extends GrpcService {
     );
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
+    this._universeDomain = universeEndpoint;
+  }
+
+  get universeDomain() {
+    return this._universeDomain;
   }
 
   /**
@@ -1523,8 +1589,12 @@ class Spanner extends GrpcService {
         return;
       }
       const clientName = config.client;
-      if (!this.clients_.has(clientName)) {
-        this.clients_.set(clientName, new v1[clientName](this.options));
+      try {
+        if (!this.clients_.has(clientName)) {
+          this.clients_.set(clientName, new v1[clientName](this.options));
+        }
+      } catch (err) {
+        callback(err, null);
       }
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
