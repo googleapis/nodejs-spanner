@@ -57,6 +57,8 @@ export class MetricsTracerFactory {
   private _location = 'global';
   private _projectId: string;
   private _currentOperationTracers = new Map();
+  private _currentOperationLastUpdatedMs = new Map();
+  private _lastTracerCleanupMs = Date.now();
   public static _readers: MetricReader[] = [];
   public static enabled = true;
 
@@ -147,6 +149,7 @@ export class MetricsTracerFactory {
     }
     this._meterProvider = null;
     this._currentOperationTracers = new Map();
+    this._currentOperationLastUpdatedMs = new Map();
   }
 
   /**
@@ -220,6 +223,8 @@ export class MetricsTracerFactory {
     if (!MetricsTracerFactory.enabled) {
       return null;
     }
+    // Prune stale tracers
+    this._cleanMetricTracers();
 
     const operationRequest = this._extractOperationRequest(requestId);
 
@@ -242,6 +247,7 @@ export class MetricsTracerFactory {
       operationRequest,
     );
     this._currentOperationTracers.set(operationRequest, tracer);
+    this._currentOperationLastUpdatedMs.set(operationRequest, Date.now());
     return tracer;
   }
 
@@ -271,7 +277,7 @@ export class MetricsTracerFactory {
    * Retrieves the current MetricsTracer for a given request id.
    * Returns null if no tracer exists for the request.
    * Does not implicitly create MetricsTracers as that should be done
-   * explicitly using the CreateMetricsTracer function.
+   * explicitly using the createMetricsTracer function.
    * request id is expected to be as set in the gRPC metadata.
    * @param requestId The request id of the gRPC call set under 'x-goog-spanner-request-id'.
    * @returns The MetricsTracer instance or null if not found.
@@ -282,22 +288,21 @@ export class MetricsTracerFactory {
       // Attempting to retrieve tracer that doesn't exist.
       return null;
     }
+    this._currentOperationLastUpdatedMs.set(operationRequest, Date.now());
     return this._currentOperationTracers.get(operationRequest) ?? null;
   }
 
   /**
-   * Removes the MetricsTracer associated with the given method from the internal map.
-   * @param method The gRPC method name.
+   * Removes the MetricsTracer associated with the given request id.
+   * @param requestId The request id of the gRPC call set under 'x-goog-spanner-request-id'.
    */
-  public clearCurrentTracer(method: string) {
-    if (!method) {
+  public clearCurrentTracer(requestId: string) {
+    const operationRequest = this._extractOperationRequest(requestId);
+    if (!this._currentOperationTracers.has(operationRequest)) {
       return;
     }
-    const methodKey = method.toLowerCase();
-    if (!this._currentOperationTracers.has(methodKey)) {
-      return;
-    }
-    this._currentOperationTracers.delete(methodKey);
+    this._currentOperationTracers.delete(operationRequest);
+    this._currentOperationLastUpdatedMs.delete(operationRequest);
   }
 
   private _extractOperationRequest(requestId: string): string {
@@ -441,5 +446,23 @@ export class MetricsTracerFactory {
       console.warn('Unable to detect location.', err);
     }
     return defaultRegion;
+  }
+
+  private _cleanMetricTracers() {
+    if (
+      Date.now() - this._lastTracerCleanupMs <
+      Constants.TRACER_CLEANUP_INTERVAL_MS
+    ) {
+      return;
+    }
+    for (const [
+      operationTracer,
+      lastUpdated,
+    ] of this._currentOperationLastUpdatedMs.entries()) {
+      if (Date.now() - lastUpdated >= Constants.TRACER_CLEANUP_THRESHOLD_MS) {
+        this._currentOperationTracers.delete(operationTracer);
+        this._currentOperationLastUpdatedMs.delete(operationTracer);
+      }
+    }
   }
 }

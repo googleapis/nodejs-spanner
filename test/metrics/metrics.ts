@@ -108,7 +108,7 @@ describe('Test metrics with mock server', () => {
     assert.strictEqual(
       dataPoint.length,
       1,
-      `Failed to filter for attribute values.`,
+      'Failed to filter for attribute values.',
     );
     switch (metricsData.descriptor.type) {
       case 'HISTOGRAM':
@@ -332,20 +332,30 @@ describe('Test metrics with mock server', () => {
         database: `database-${dbCounter}`,
         method: 'executeStreamingSql',
       };
+      const executeUnavailableAttributes = {
+        ...commonAttributes,
+        database: `database-${dbCounter}`,
+        method: 'executeStreamingSql',
+        status: 'UNAVAILABLE'
+      };
       // Verify executeStreamingSql has 2 attempts and 1 operation
       assert.strictEqual(
-        getAggregatedValue(operationCountData, executeAttributes),
         1,
+        getAggregatedValue(operationCountData, executeAttributes),
       );
       getAggregatedValue(operationLatenciesData, executeAttributes);
       assert.strictEqual(
+        1,
         getAggregatedValue(attemptCountData, executeAttributes),
-        2,
+      );
+      assert.strictEqual(
+        1,
+        getAggregatedValue(attemptCountData, executeUnavailableAttributes),
       );
       getAggregatedValue(attemptLatenciesData, executeAttributes);
       assert.strictEqual(
-        getAggregatedValue(gfeLatenciesData, executeAttributes),
         123,
+        getAggregatedValue(gfeLatenciesData, executeAttributes),
       );
     });
 
@@ -402,6 +412,144 @@ describe('Test metrics with mock server', () => {
           1,
         );
       });
+    });
+
+    it('should increase attempts on retries for non streaming calls with gax options', async () => {
+      gfeStub = sandbox
+        .stub(MetricsTracer.prototype, 'extractGfeLatency')
+        .callsFake((header: string) => 123);
+      const database = newTestDatabase();
+      const err = {
+        message: 'Temporary unavailable',
+        code: grpc.status.UNAVAILABLE,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.commit,
+        SimulatedExecutionTime.ofError(err),
+      );
+
+      const GAX_OPTIONS = {
+        retry: {
+          retryCodes: [4, 8, 14],
+          backoffSettings: {
+            initialRetryDelayMillis: 1000,
+            retryDelayMultiplier: 1.3,
+            maxRetryDelayMillis: 32000,
+            initialRpcTimeoutMillis: 60000,
+            rpcTimeoutMultiplier: 1,
+            maxRpcTimeoutMillis: 60000,
+            totalTimeoutMillis: 600000,
+          },
+        },
+      };
+      await database.runTransactionAsync(async tx => {
+        await tx.run(selectSql);
+        // Commit RPC will be retried by GAX
+        await tx.commit({gaxOptions: GAX_OPTIONS});
+      });
+
+      const {resourceMetrics} = await reader.collect();
+
+      const operationCountData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_OPERATION_COUNT,
+      );
+      // Attempt count is correct here but status of attempts are not correct
+      const attemptCountData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_ATTEMPT_COUNT,
+      );
+      const operationLatenciesData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_OPERATION_LATENCIES,
+      );
+      const attemptLatenciesData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_ATTEMPT_LATENCIES,
+      );
+      const gfeLatenciesData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_GFE_LATENCIES,
+      );
+
+      const sessionAttributes = {
+        ...commonAttributes,
+        database: `database-${dbCounter}`,
+        method: 'batchCreateSessions',
+      };
+      // Verify batchCreateSession metrics are unaffected
+      assert.strictEqual(
+        1,
+        getAggregatedValue(operationCountData, sessionAttributes),
+      );
+      assert.ok(getAggregatedValue(operationLatenciesData, sessionAttributes));
+      assert.strictEqual(
+        1,
+        getAggregatedValue(attemptCountData, sessionAttributes),
+      );
+      assert.ok(getAggregatedValue(attemptLatenciesData, sessionAttributes));
+      assert.strictEqual(
+        123,
+        getAggregatedValue(gfeLatenciesData, sessionAttributes),
+      );
+
+      const executeAttributes = {
+        ...commonAttributes,
+        database: `database-${dbCounter}`,
+        method: 'executeStreamingSql',
+      };
+
+      // Verify executeStreamingSql metrics are unaffected
+      assert.strictEqual(
+        1,
+        getAggregatedValue(operationCountData, executeAttributes),
+      );
+      assert.ok(getAggregatedValue(operationLatenciesData, executeAttributes));
+      assert.strictEqual(
+        1,
+        getAggregatedValue(attemptCountData, executeAttributes),
+      );
+      assert.ok(getAggregatedValue(attemptLatenciesData, executeAttributes));
+      assert.strictEqual(
+        123,
+        getAggregatedValue(gfeLatenciesData, executeAttributes),
+      );
+
+      // Verify that commit metrics have 2 attempts and 1 operation
+      const commitOkAttributes = {
+        ...commonAttributes,
+        database: `database-${dbCounter}`,
+        method: 'commit',
+      };
+      const commitUnavailableAttributes = {
+        ...commitOkAttributes,
+        status: 'UNAVAILABLE',
+      };
+
+      assert.strictEqual(
+        getAggregatedValue(operationCountData, commitOkAttributes),
+        1,
+      );
+
+      assert.ok(getAggregatedValue(operationLatenciesData, commitOkAttributes));
+      assert.strictEqual(
+        1,
+        getAggregatedValue(attemptCountData, commitOkAttributes),
+        '1 of 2 attempts for Commit should have status: OK.',
+      );
+      assert.strictEqual(
+        1,
+        getAggregatedValue(attemptCountData, commitUnavailableAttributes),
+        '1 of 2 attempts for Commit should have status: Unavailable.',
+      );
+      assert.ok(getAggregatedValue(attemptLatenciesData, commitOkAttributes));
+      assert.ok(
+        getAggregatedValue(attemptLatenciesData, commitUnavailableAttributes),
+      );
+      assert.strictEqual(
+        123,
+        getAggregatedValue(gfeLatenciesData, commitOkAttributes),
+      );
     });
   });
 });

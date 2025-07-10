@@ -104,13 +104,6 @@ class MetricOperationTracer {
   }
 
   /**
-   * Resets the operation's start time to the current time.
-   */
-  public start() {
-    this._startTime = new Date(Date.now());
-  }
-
-  /**
    * Increments the attempt count and creates a new MetricAttemptTracer
    * for tracking the next attempt within this operation.
    */
@@ -246,6 +239,8 @@ export class MetricsTracer {
       attemptLatencyMilliseconds,
       attemptAttributes,
     );
+
+    this.instrumentAttemptCounter?.add(1, attemptAttributes);
   }
 
   /**
@@ -257,7 +252,6 @@ export class MetricsTracer {
       return; // Don't re-start an already started operation
     }
     this.currentOperation = new MetricOperationTracer();
-    this.currentOperation!.start();
   }
 
   /**
@@ -268,7 +262,6 @@ export class MetricsTracer {
     if (!this.enabled || !this.currentOperation) return;
     const endTime = new Date(Date.now());
     const operationAttributes = this._createOperationOtelAttributes();
-    const attemptAttributes = this._createAttemptOtelAttributes();
     const operationLatencyMilliseconds = this._getMillisecondTimeDifference(
       this.currentOperation!.startTime,
       endTime,
@@ -279,11 +272,7 @@ export class MetricsTracer {
       operationLatencyMilliseconds,
       operationAttributes,
     );
-    this.instrumentAttemptCounter?.add(
-      this.currentOperation!.attemptCount,
-      attemptAttributes,
-    );
-    MetricsTracerFactory.getInstance()!.clearCurrentTracer(this._methodName);
+    MetricsTracerFactory.getInstance()!.clearCurrentTracer(this._request);
   }
 
   /**

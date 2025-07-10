@@ -103,6 +103,7 @@ describe('MetricsTracer', () => {
       tracer.recordOperationStart();
       assert.ok(tracer.currentOperation!.startTime);
       tracer.recordAttemptStart();
+      tracer.recordAttemptCompletion(Status.OK);
       tracer.recordOperationCompletion();
 
       assert.strictEqual(fakeOperationCounter.add.calledOnce, true);
@@ -110,7 +111,7 @@ describe('MetricsTracer', () => {
       assert.strictEqual(fakeOperationLatency.record.calledOnce, true);
 
       const [[_, opAttrs]] = fakeOperationLatency.record.args;
-      assert.strictEqual(opAttrs[Constants.METRIC_LABEL_KEY_STATUS], 'UNKNOWN');
+      assert.strictEqual(opAttrs[Constants.METRIC_LABEL_KEY_STATUS], 'OK');
     });
 
     it('should do nothing if disabled', () => {

@@ -1764,8 +1764,8 @@ class Spanner extends GrpcService {
           metricsTracer?.recordOperationCompletion();
         } else {
           const wrappedCallback = (...args) => {
-            callback(...args);
             metricsTracer?.recordOperationCompletion();
+            callback(...args);
           };
           requestFn(wrappedCallback);
         }
@@ -1835,7 +1835,10 @@ class Spanner extends GrpcService {
           .pipe(stream);
       });
     });
-    stream.on('end', () => {
+    stream.on('finish', () => {
+      stream.destroy();
+    });
+    stream.on('close', () => {
       metricsTracer?.recordOperationCompletion();
     });
     return stream;
