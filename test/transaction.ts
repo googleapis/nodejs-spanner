@@ -1733,7 +1733,7 @@ describe('Transaction', () => {
             {multiplexed: true},
             SESSION,
           );
-          transaction = new Transaction(multiplexedSession);
+          const transaction = new Transaction(multiplexedSession);
           // transaction option must contain the previous transaction id for multiplexed session
           transaction.multiplexedSessionPreviousTransactionId =
             fakePreviousTransactionId;
@@ -1753,6 +1753,56 @@ describe('Transaction', () => {
           assert.strictEqual(method, 'beginTransaction');
           // request options should contain the multiplexedSessionPreviousTransactionId
           assert.deepStrictEqual(reqOpts.options, expectedOptions);
+          assert.deepStrictEqual(
+            headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.commonHeaders_,
+            ),
+          );
+        });
+
+        it('should send the correct options if _mutationKey is set in the transaction object', () => {
+          // session with multiplexed enabled
+          const multiplexedSession = Object.assign(
+            {multiplexed: true},
+            SESSION,
+          );
+
+          // fake mutation key
+          const fakeMutationKey = {
+            insertOrUpdate: {
+              table: 'my-table-123',
+              columns: ['Id', 'Name'],
+              values: [
+                {
+                  values: [{stringValue: 'Id3'}, {stringValue: 'Name3'}],
+                },
+              ],
+            },
+          } as google.spanner.v1.Mutation;
+
+          const transaction = new Transaction(multiplexedSession);
+
+          // stub the transaction request
+          const stub = sandbox.stub(transaction, 'request');
+
+          // set the _mutationKey in the transaction object
+          transaction._mutationKey = fakeMutationKey;
+
+          // make a call to begin
+          transaction.begin();
+
+          const expectedOptions = {isolationLevel: 0, readWrite: {}};
+          const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+          // assert on the begin transaction call
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'beginTransaction');
+          assert.deepStrictEqual(reqOpts.options, expectedOptions);
+          // assert that if the _mutationKey is set in the transaction object
+          // it is getting pass in the request as well along with request options
+          assert.deepStrictEqual(reqOpts.mutationKey, fakeMutationKey);
           assert.deepStrictEqual(
             headers,
             Object.assign(
@@ -1910,6 +1960,98 @@ describe('Transaction', () => {
         const {reqOpts} = stub.lastCall.args[0];
 
         assert.deepStrictEqual(reqOpts.singleUseTransaction, expectedOptions);
+      });
+
+      describe('when multiplexed session is enabled for read write', () => {
+        before(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+        });
+
+        after(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+            'false';
+        });
+
+        it('should call _setMutationKey when neither `id` is set nor `singleUseTransaction` is used', async () => {
+          // fake mutation key
+          const fakeMutations = [
+            {
+              insertOrUpdate: {
+                table: 'my-table-123',
+                columns: ['Id', 'Name'],
+                values: [
+                  {
+                    values: [{stringValue: 'Id1'}, {stringValue: 'Name1'}],
+                  },
+                ],
+              },
+            } as google.spanner.v1.Mutation,
+          ];
+
+          // fake transaction id
+          const fakeTransactionId = 'fake-tx-id-12345';
+
+          const database = {
+            formattedName_: 'formatted-database-name',
+            isMuxEnabledForRW_: true,
+            parent: INSTANCE,
+          };
+          const SESSION = {
+            parent: database,
+            formattedName_: SESSION_NAME,
+            request: REQUEST,
+            requestStream: REQUEST_STREAM,
+          };
+          // multiplexed session
+          const multiplexedSession = Object.assign(
+            {multiplexed: true},
+            SESSION,
+          );
+
+          // transaction object
+          const transaction = new Transaction(multiplexedSession);
+
+          // ensure transaction is not single use transaction
+          transaction._useInRunner = true;
+
+          // ensure transaction ID is not set
+          transaction.id = undefined;
+
+          // set the _queuedMutations with the fakeMutations list
+          transaction._queuedMutations = fakeMutations;
+
+          // spy on _setMutationKey
+          const setMutationKeySpy = sandbox.spy(transaction, '_setMutationKey');
+
+          // stub the begin method
+          const beginStub = sandbox.stub(transaction, 'begin').callsFake(() => {
+            transaction.id = fakeTransactionId;
+            return Promise.resolve();
+          });
+
+          // stub transaction request
+          sandbox.stub(transaction, 'request');
+
+          // make a call to commit
+          transaction.commit();
+
+          // ensure that _setMutationKey was got called once
+          sinon.assert.calledOnce(setMutationKeySpy);
+
+          // ensure that _setMutationKey got called with correct arguments
+          sinon.assert.calledWith(setMutationKeySpy, fakeMutations);
+
+          // ensure begin was called
+          sinon.assert.calledOnce(beginStub);
+
+          // ensure begin set the transaction id
+          assert.strictEqual(transaction.id, fakeTransactionId);
+
+          // ensure _mutationKey is set
+          assert.strictEqual(transaction._mutationKey, fakeMutations[0]);
+        });
       });
 
       it('should call `end` once complete', () => {
@@ -2373,6 +2515,175 @@ describe('Transaction', () => {
           /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns: \["id"\]/;
 
         assert.throws(() => transaction.insert(table, rows), errorRegExp);
+      });
+    });
+
+    describe('_setMutationKey', () => {
+      let transaction;
+      before(() => {
+        transaction = new Transaction(SESSION);
+      });
+
+      it('should have _mutationKey set to null, if mutations list is empty', () => {
+        // empty mutations list
+        const mutations: google.spanner.v1.Mutation[] = [];
+        // make a call to _setMutationKey
+        transaction._setMutationKey(mutations);
+        // ensure that the transaction's _mutationKey is null
+        assert.strictEqual(transaction._mutationKey, null);
+      });
+
+      it('should select a high-priority mutation when both types are present', () => {
+        // expected mutation objects
+        const insertMutation = {
+          insert: {
+            table: 'my-table-123',
+            columns: ['Id', 'Name'],
+            values: [
+              {
+                values: [
+                  {
+                    stringValue: 'Id1',
+                  },
+                  {
+                    stringValue: 'Name1',
+                  },
+                ],
+              },
+            ],
+          },
+        } as google.spanner.v1.Mutation;
+
+        const updateMutation = {
+          update: {
+            table: 'my-table-123',
+            columns: ['Id', 'Name'],
+            values: [
+              {
+                values: [
+                  {
+                    stringValue: 'Id2',
+                  },
+                  {
+                    stringValue: 'Name2',
+                  },
+                ],
+              },
+            ],
+          },
+        } as google.spanner.v1.Mutation;
+
+        const deleteMutation = {
+          delete: {
+            table: 'my-table-123',
+            keySet: {
+              keys: [
+                {
+                  values: [
+                    {
+                      stringValue: 'Id1',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        } as google.spanner.v1.Mutation;
+
+        const mutations = [insertMutation, updateMutation, deleteMutation];
+
+        transaction._setMutationKey(mutations);
+
+        // assert that _mutationKeys is not null
+        assert.notEqual(transaction._mutationKey, null);
+
+        // get the selected mutation key
+        const selectedKey = Object.keys(transaction._mutationKey!)[0];
+
+        // assert that chosen key is not insert
+        assert.notStrictEqual(
+          selectedKey,
+          'insert',
+          'The selected mutation should not be an insert',
+        );
+
+        // assert that chosen key is either insertOrUpdate or delete
+        assert.ok(
+          ['update', 'delete'].includes(selectedKey),
+          'The selected mutation should be a high-priority type',
+        );
+      });
+
+      it('should select a mutation with maximum number of rows when only insert keys are present', () => {
+        // insert mutation objects
+        const insertMutation1 = {
+          insert: {
+            table: 'my-table-123',
+            columns: ['Id', 'Name'],
+            values: [
+              // Row 1
+              {
+                values: [{stringValue: 'Id1'}, {stringValue: 'Name1'}],
+              },
+              // Row 2
+              {
+                values: [{stringValue: 'Id2'}, {stringValue: 'Name2'}],
+              },
+              // Row 3
+              {
+                values: [{stringValue: 'Id3'}, {stringValue: 'Name3'}],
+              },
+            ],
+          },
+        } as google.spanner.v1.Mutation;
+
+        const insertMutation2 = {
+          insert: {
+            table: 'my-table-123',
+            columns: ['Id', 'Name'],
+            values: [
+              // Row 1
+              {
+                values: [{stringValue: 'Id1'}, {stringValue: 'Name1'}],
+              },
+              // Row 2
+              {
+                values: [{stringValue: 'Id2'}, {stringValue: 'Name2'}],
+              },
+              // Row 3
+              {
+                values: [{stringValue: 'Id3'}, {stringValue: 'Name3'}],
+              },
+              // Row 4
+              {
+                values: [{stringValue: 'Id4'}, {stringValue: 'Name4'}],
+              },
+            ],
+          },
+        } as google.spanner.v1.Mutation;
+
+        const mutations = [insertMutation1, insertMutation2];
+
+        transaction._setMutationKey(mutations);
+
+        // assert that _mutationKeys is not null
+        assert.notEqual(transaction._mutationKey, null);
+
+        // get the selected mutation key
+        const selectedKey = Object.keys(transaction._mutationKey!)[0];
+
+        // assert that chosen key is insert
+        assert.strictEqual(
+          selectedKey,
+          'insert',
+          'The selected mutation should be an insert',
+        );
+        // assert that key with maximum of rows is selected
+        assert.strictEqual(
+          transaction._mutationKey,
+          insertMutation2,
+          'The mutation with the most rows should have been selected',
+        );
       });
     });
 
