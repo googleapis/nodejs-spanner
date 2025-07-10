@@ -302,6 +302,11 @@ describe('Spanner', () => {
           ),
         );
       }
+      const meterProvider = MetricsTracerFactory.getInstance()?.getMeterProvider();
+      if (meterProvider) {
+        await meterProvider.shutdown();
+      }
+      MetricsTracerFactory.resetInstance();
     } catch (err) {
       console.error('Cleanup failed:', err);
     }
