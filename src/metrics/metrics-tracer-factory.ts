@@ -58,7 +58,7 @@ export class MetricsTracerFactory {
   private _projectId: string;
   private _currentOperationTracers = new Map();
   private _currentOperationLastUpdatedMs = new Map();
-  private _lastTracerCleanupMs = Date.now();
+  private _lastTracerCleanupMs = 0;
   public static _readers: MetricReader[] = [];
   public static enabled = true;
 
@@ -289,6 +289,7 @@ export class MetricsTracerFactory {
       return null;
     }
     this._currentOperationLastUpdatedMs.set(operationRequest, Date.now());
+
     return this._currentOperationTracers.get(operationRequest) ?? null;
   }
 
@@ -310,7 +311,7 @@ export class MetricsTracerFactory {
       return '';
     }
 
-    const regex = /^(\d+\.[a-f0-9]+\.\d+\.\d+\.\d+)\.\d+$/i;
+    const regex = /^(\d+\.[a-z0-9]+\.\d+\.\d+\.\d+)\.\d+$/i;
     const match = requestId.match(regex);
 
     if (!match) {
@@ -455,6 +456,7 @@ export class MetricsTracerFactory {
     ) {
       return;
     }
+    this._lastTracerCleanupMs = Date.now();
     for (const [
       operationTracer,
       lastUpdated,

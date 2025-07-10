@@ -336,7 +336,7 @@ describe('Test metrics with mock server', () => {
         ...commonAttributes,
         database: `database-${dbCounter}`,
         method: 'executeStreamingSql',
-        status: 'UNAVAILABLE'
+        status: 'UNAVAILABLE',
       };
       // Verify executeStreamingSql has 2 attempts and 1 operation
       assert.strictEqual(

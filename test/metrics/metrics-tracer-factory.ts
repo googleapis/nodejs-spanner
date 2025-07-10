@@ -220,3 +220,70 @@ describe('getInstanceAttributes', () => {
     });
   });
 });
+
+describe('MetricsTracerFactory with set clock', () => {
+  let clock: sinon.SinonFakeTimers;
+
+  beforeEach(() => {
+    MetricsTracerFactory.resetInstance();
+    // Use fake timers to control the clock
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(() => {
+    // Restore the real timers
+    clock.restore();
+  });
+
+  describe('_cleanMetricTracers', () => {
+    it('should prune stale tracers', () => {
+      const factory = MetricsTracerFactory.getInstance('test-project');
+      assert(factory);
+
+      factory.createMetricsTracer(
+        'method1',
+        'projects/p/instances/i/databases/d',
+        '1.1a2b3c.1.1.1.1',
+      );
+
+      // Advance the clock to make the tracer stale
+      clock.tick(Constants.TRACER_CLEANUP_THRESHOLD_MS);
+
+      // Add another tracer to trigger pruning
+      factory.createMetricsTracer(
+        'method2',
+        'projects/p/instances/i/databases/d',
+        '2.1a2b3c.1.1.1.1',
+      );
+      // Only most recent tracer should remain
+      assert.strictEqual(factory['_currentOperationTracers'].size, 1);
+      assert.ok(factory['_currentOperationTracers'].has('2.1a2b3c.1.1.1'));
+    });
+
+    it('should not prune recent tracers', () => {
+      const factory = MetricsTracerFactory.getInstance('test-project');
+      assert(factory);
+
+      factory.createMetricsTracer(
+        'method1',
+        'projects/p/instances/i/databases/d',
+        '1.1a2b3c.1.1.1.1',
+      );
+
+      // Advance the clock, but not enough to hit the threshold
+      clock.tick(Constants.TRACER_CLEANUP_INTERVAL_MS);
+
+      // Add another tracer to trigger pruning
+      factory.createMetricsTracer(
+        'method2',
+        'projects/p/instances/i/databases/d',
+        '2.1a2b3c.1.1.1.1',
+      );
+
+      // Both tracers should be available
+      assert.strictEqual(factory['_currentOperationTracers'].size, 2);
+      assert.ok(factory['_currentOperationTracers'].has('1.1a2b3c.1.1.1'));
+      assert.ok(factory['_currentOperationTracers'].has('2.1a2b3c.1.1.1'));
+    });
+  });
+});
