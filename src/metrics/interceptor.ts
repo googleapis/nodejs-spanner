@@ -14,7 +14,6 @@
 
 import {grpc} from 'google-gax';
 import {MetricsTracerFactory} from './metrics-tracer-factory';
-import {MetricsTracer} from './metrics-tracer';
 
 /**
  * Interceptor for recording metrics on gRPC calls.

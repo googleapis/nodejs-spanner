@@ -16,12 +16,7 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
-import {
-  MeterProvider,
-  MetricReader,
-  View,
-  ExplicitBucketHistogramAggregation,
-} from '@opentelemetry/sdk-metrics';
+import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram} from '@opentelemetry/api';
 import {detectResources, Resource} from '@opentelemetry/resources';
 import {GcpDetectorSync} from '@google-cloud/opentelemetry-resource-util';
@@ -58,7 +53,7 @@ export class MetricsTracerFactory {
   private _projectId: string;
   private _currentOperationTracers = new Map();
   private _currentOperationLastUpdatedMs = new Map();
-  private _lastTracerCleanupMs = 0;
+  private _intervalTracerCleanup: NodeJS.Timeout;
   public static _readers: MetricReader[] = [];
   public static enabled = true;
 
@@ -85,6 +80,12 @@ export class MetricsTracerFactory {
 
     this._clientHash = MetricsTracerFactory._generateClientHash(
       this._clientUid,
+    );
+
+    // Start the Tracer cleanup task at an interval
+    this._intervalTracerCleanup = setInterval(
+      this._cleanMetricsTracers.bind(this),
+      Constants.TRACER_CLEANUP_INTERVAL_MS,
     );
   }
 
@@ -137,6 +138,7 @@ export class MetricsTracerFactory {
    * Resets the singleton instance of the MetricsTracerFactory.
    */
   public static resetInstance() {
+    clearInterval(MetricsTracerFactory._instance?._intervalTracerCleanup);
     MetricsTracerFactory._instance = null;
   }
 
@@ -223,9 +225,6 @@ export class MetricsTracerFactory {
     if (!MetricsTracerFactory.enabled) {
       return null;
     }
-    // Prune stale tracers
-    this._cleanMetricTracers();
-
     const operationRequest = this._extractOperationRequest(requestId);
 
     if (this._currentOperationTracers.has(operationRequest)) {
@@ -449,14 +448,11 @@ export class MetricsTracerFactory {
     return defaultRegion;
   }
 
-  private _cleanMetricTracers() {
-    if (
-      Date.now() - this._lastTracerCleanupMs <
-      Constants.TRACER_CLEANUP_INTERVAL_MS
-    ) {
+  private _cleanMetricsTracers() {
+    if (this._currentOperationLastUpdatedMs.size === 0) {
       return;
     }
-    this._lastTracerCleanupMs = Date.now();
+
     for (const [
       operationTracer,
       lastUpdated,

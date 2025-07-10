@@ -16,17 +16,10 @@ import {status as Status} from '@grpc/grpc-js';
 import {Counter, Histogram} from '@opentelemetry/api';
 import {MetricsTracerFactory} from './metrics-tracer-factory';
 import {
-  METRIC_LABEL_KEY_CLIENT_NAME,
-  METRIC_LABEL_KEY_CLIENT_UID,
   METRIC_LABEL_KEY_DATABASE,
   METRIC_LABEL_KEY_METHOD,
   METRIC_LABEL_KEY_STATUS,
-  MONITORED_RES_LABEL_KEY_CLIENT_HASH,
   MONITORED_RES_LABEL_KEY_INSTANCE,
-  MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG,
-  MONITORED_RES_LABEL_KEY_LOCATION,
-  MONITORED_RES_LABEL_KEY_PROJECT,
-  UNKNOWN_ATTRIBUTE,
 } from './constants';
 
 /**

@@ -417,7 +417,7 @@ describe('Test metrics with mock server', () => {
     it('should increase attempts on retries for non streaming calls with gax options', async () => {
       gfeStub = sandbox
         .stub(MetricsTracer.prototype, 'extractGfeLatency')
-        .callsFake((header: string) => 123);
+        .callsFake(() => 123);
       const database = newTestDatabase();
       const err = {
         message: 'Temporary unavailable',
