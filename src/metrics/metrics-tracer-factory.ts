@@ -137,8 +137,9 @@ export class MetricsTracerFactory {
   /**
    * Resets the singleton instance of the MetricsTracerFactory.
    */
-  public static resetInstance() {
+  public static async resetInstance() {
     clearInterval(MetricsTracerFactory._instance?._intervalTracerCleanup);
+    await MetricsTracerFactory._instance?.resetMeterProvider();
     MetricsTracerFactory._instance = null;
   }
 

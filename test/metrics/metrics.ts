@@ -139,6 +139,9 @@ describe('Test metrics with mock server', () => {
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet()),
     );
+    sandbox
+      .stub(MetricsTracerFactory as any, '_detectClientLocation')
+      .resolves('test-location');
     MetricsTracerFactory.resetInstance();
     process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'false';
     spanner = new Spanner({
@@ -184,6 +187,10 @@ describe('Test metrics with mock server', () => {
 
     afterEach(() => {
       gfeStub?.restore();
+    });
+
+    afterEach(async () => {
+      await MetricsTracerFactory.resetInstance();
     });
 
     it('should have correct latency values in metrics', async () => {

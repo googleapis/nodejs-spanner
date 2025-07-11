@@ -18,6 +18,8 @@ import * as sinon from 'sinon';
 import * as Constants from '../../src/metrics/constants';
 import {MetricsTracer} from '../../src/metrics/metrics-tracer';
 
+import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
+
 const DATABASE = 'test-db';
 const INSTANCE = 'instance';
 const METHOD = 'test-method';
@@ -31,7 +33,9 @@ describe('MetricsTracer', () => {
   let fakeOperationLatency: any;
   let fakeGfeCounter: any;
   let fakeGfeLatency: any;
+  let sandbox: sinon.SinonSandbox;
   beforeEach(() => {
+    sandbox = sinon.createSandbox();
     fakeAttemptCounter = {
       add: sinon.spy(),
     };
@@ -67,8 +71,12 @@ describe('MetricsTracer', () => {
       DATABASE,
       INSTANCE,
       METHOD,
-      REQUEST,
+      REQUEST
     );
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   describe('recordAttemptCompletion', () => {
@@ -100,6 +108,9 @@ describe('MetricsTracer', () => {
 
   describe('recordOperationCompletion', () => {
     it('should record operation and attempt metrics when enabled', () => {
+      const factory = sandbox.stub(MetricsTracerFactory, 'getInstance').returns({
+        clearCurrentTracer: sinon.spy(),
+      } as any);
       tracer.recordOperationStart();
       assert.ok(tracer.currentOperation!.startTime);
       tracer.recordAttemptStart();

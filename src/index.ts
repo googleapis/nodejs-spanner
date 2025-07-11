@@ -2138,6 +2138,7 @@ const cleanup = async () => {
       console.error('Error during meterProvider shutdown:', err);
     }
   }
+  MetricsTracerFactory.resetInstance();
 };
 
 // For signals (let process exit naturally)

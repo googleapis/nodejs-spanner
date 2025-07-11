@@ -18,6 +18,7 @@ import {ncp} from 'ncp';
 import * as tmp from 'tmp';
 import {promisify} from 'util';
 import {describe, it, after} from 'mocha';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 
 const keep = false;
 const mvp = promisify(mv) as {} as (...args: string[]) => Promise<void>;
@@ -51,6 +52,7 @@ describe('📦 pack and install', () => {
    * CLEAN UP - remove the staging directory when done.
    */
   after('cleanup staging', () => {
+    MetricsTracerFactory.resetInstance();
     if (!keep) {
       stagingDir.removeCallback();
     }

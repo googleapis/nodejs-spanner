@@ -72,13 +72,13 @@ describe('MetricsTracerFactory', () => {
 
   after(async () => {
     sandbox.restore();
-    await MetricsTracerFactory.getInstance()!.resetMeterProvider();
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    MetricsTracerFactory.enabled = true;
     sandbox.resetHistory();
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
     const provider =
       MetricsTracerFactory.getInstance('project-id')!.getMeterProvider();
     const reader = new PeriodicExportingMetricReader({
@@ -86,6 +86,10 @@ describe('MetricsTracerFactory', () => {
       exportIntervalMillis: 60000,
     });
     provider.addMetricReader(reader);
+  });
+
+  afterEach(async () => {
+    await MetricsTracerFactory.resetInstance();
   });
 
   it('should use the set meter provider', async () => {
@@ -178,8 +182,13 @@ describe('MetricsTracerFactory', () => {
 
 describe('getInstanceAttributes', () => {
   let factory: MetricsTracerFactory;
-  before(() => {
-    factory = MetricsTracerFactory.getInstance()!;
+  beforeEach(() => {
+    factory = new (MetricsTracerFactory as any)();
+  });
+
+  afterEach(() => {
+    factory.resetMeterProvider();
+    clearInterval(factory['_intervalTracerCleanup']);
   });
 
   it('should extract project, instance, and database from full resource path', () => {
@@ -224,8 +233,9 @@ describe('getInstanceAttributes', () => {
 describe('MetricsTracerFactory with set clock', () => {
   let clock: sinon.SinonFakeTimers;
 
-  beforeEach(() => {
-    MetricsTracerFactory.resetInstance();
+  beforeEach(async () => {
+    MetricsTracerFactory.enabled = true;
+    await MetricsTracerFactory.resetInstance();
     // Use fake timers to control the clock
     clock = sinon.useFakeTimers();
   });
