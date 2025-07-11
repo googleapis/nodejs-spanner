@@ -142,7 +142,7 @@ describe('Test metrics with mock server', () => {
     sandbox
       .stub(MetricsTracerFactory as any, '_detectClientLocation')
       .resolves('test-location');
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
     process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'false';
     spanner = new Spanner({
       projectId: 'test-project',
@@ -162,7 +162,7 @@ describe('Test metrics with mock server', () => {
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
   });
 
   describe('With InMemMetricReaderf', async () => {
@@ -196,7 +196,7 @@ describe('Test metrics with mock server', () => {
     it('should have correct latency values in metrics', async () => {
       gfeStub = sandbox
         .stub(MetricsTracer.prototype, 'extractGfeLatency')
-        .callsFake((header: string) => 123);
+        .callsFake(() => 123);
       const database = newTestDatabase();
       const startTime = new Date();
       await database.run(selectSql);
@@ -278,7 +278,7 @@ describe('Test metrics with mock server', () => {
     it('should increase attempts on retries', async () => {
       gfeStub = sandbox
         .stub(MetricsTracer.prototype, 'extractGfeLatency')
-        .callsFake((header: string) => 123);
+        .callsFake(() => 123);
       const database = newTestDatabase();
       const err = {
         message: 'Temporary unavailable',
@@ -369,7 +369,7 @@ describe('Test metrics with mock server', () => {
     it('should create connectivity error count metric if GFE latency is not in header', async () => {
       gfeStub = sandbox
         .stub(MetricsTracer.prototype, 'extractGfeLatency')
-        .callsFake((header: string) => null);
+        .callsFake(() => null);
       const database = newTestDatabase();
       await database.run(selectSql);
       const {resourceMetrics} = await reader.collect();

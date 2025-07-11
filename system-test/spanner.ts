@@ -232,7 +232,7 @@ describe('Spanner', () => {
   }
 
   before(async () => {
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
     await deleteOldTestInstances();
     if (generateInstanceForTest) {
       await createInstance(instanceId!);
@@ -302,11 +302,7 @@ describe('Spanner', () => {
           ),
         );
       }
-      const meterProvider = MetricsTracerFactory.getInstance()?.getMeterProvider();
-      if (meterProvider) {
-        await meterProvider.shutdown();
-      }
-      MetricsTracerFactory.resetInstance();
+      await MetricsTracerFactory.resetInstance();
     } catch (err) {
       console.error('Cleanup failed:', err);
     }

@@ -51,8 +51,8 @@ describe('📦 pack and install', () => {
   /**
    * CLEAN UP - remove the staging directory when done.
    */
-  after('cleanup staging', () => {
-    MetricsTracerFactory.resetInstance();
+  after('cleanup staging', async () => {
+    await MetricsTracerFactory.resetInstance();
     if (!keep) {
       stagingDir.removeCallback();
     }

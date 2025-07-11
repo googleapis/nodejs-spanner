@@ -186,8 +186,8 @@ describe('getInstanceAttributes', () => {
     factory = new (MetricsTracerFactory as any)();
   });
 
-  afterEach(() => {
-    factory.resetMeterProvider();
+  afterEach(async () => {
+    await factory.resetMeterProvider();
     clearInterval(factory['_intervalTracerCleanup']);
   });
 

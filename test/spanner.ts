@@ -328,7 +328,7 @@ describe('Spanner with mock server', () => {
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
     process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
-    MetricsTracerFactory.resetInstance();
+    await MetricsTracerFactory.resetInstance();
     process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'true';
     spanner = new Spanner({
       servicePath: 'localhost',
@@ -426,7 +426,7 @@ describe('Spanner with mock server', () => {
     });
 
     it('should execute read with requestOptions', async () => {
-      MetricsTracerFactory.resetInstance();
+      await MetricsTracerFactory.resetInstance();
       MetricsTracerFactory.enabled = false;
       const database = newTestDatabase();
       const [snapshot] = await database.getSnapshot();

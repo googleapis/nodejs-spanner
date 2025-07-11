@@ -71,7 +71,7 @@ describe('MetricsTracer', () => {
       DATABASE,
       INSTANCE,
       METHOD,
-      REQUEST
+      REQUEST,
     );
   });
 
@@ -108,9 +108,11 @@ describe('MetricsTracer', () => {
 
   describe('recordOperationCompletion', () => {
     it('should record operation and attempt metrics when enabled', () => {
-      const factory = sandbox.stub(MetricsTracerFactory, 'getInstance').returns({
-        clearCurrentTracer: sinon.spy(),
-      } as any);
+      const factory = sandbox
+        .stub(MetricsTracerFactory, 'getInstance')
+        .returns({
+          clearCurrentTracer: sinon.spy(),
+        } as any);
       tracer.recordOperationStart();
       assert.ok(tracer.currentOperation!.startTime);
       tracer.recordAttemptStart();

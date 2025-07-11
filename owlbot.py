@@ -66,6 +66,15 @@ common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library(source_location='build/src')
 s.copy(templates, excludes=[".kokoro/samples-test.sh", ".kokoro/trampoline_v2.sh", ".github/release-trigger.yml", ".github/sync-repo-settings.yaml"])
 
+s.replace(
+    ".github/workflows/ci.yaml",
+    """        env:
+          MOCHA_THROW_DEPRECATION: false""",
+    """        env:
+          MOCHA_THROW_DEPRECATION: false
+          SPANNER_DISABLE_BUILTIN_METRICS: true""",
+)
+
 node.postprocess_gapic_library_hermetic()
 
 # Remove generated samples from veneer library:

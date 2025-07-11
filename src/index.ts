@@ -2130,15 +2130,7 @@ let cleanupCalled = false;
 const cleanup = async () => {
   if (cleanupCalled) return;
   cleanupCalled = true;
-  const meterProvider = MetricsTracerFactory.getInstance()?.getMeterProvider();
-  if (meterProvider) {
-    try {
-      await meterProvider.shutdown();
-    } catch (err) {
-      console.error('Error during meterProvider shutdown:', err);
-    }
-  }
-  MetricsTracerFactory.resetInstance();
+  await MetricsTracerFactory.resetInstance();
 };
 
 // For signals (let process exit naturally)
