@@ -38,7 +38,6 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
-import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
@@ -195,7 +194,6 @@ describe('Spanner', () => {
     fakeV1.SpannerClient = fakeGapicClient;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
-    MetricsTracerFactory.enabled = false;
     spanner = new Spanner(OPTIONS);
     spanner.projectId = OPTIONS.projectId;
     replaceProjectIdTokenOverride = null;

@@ -535,6 +535,9 @@ class Spanner extends GrpcService {
       }
       client.close();
     });
+    cleanup().catch(err => {
+      console.error('Error occured during cleanup: ', err);
+    });
   }
 
   /**

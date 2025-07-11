@@ -14,7 +14,6 @@
 
 import * as sinon from 'sinon';
 import * as assert from 'assert';
-
 import {grpc} from 'google-gax';
 import * as mock from '../mockserver/mockspanner';
 import {MockError, SimulatedExecutionTime} from '../mockserver/mockspanner';
@@ -143,7 +142,16 @@ describe('Test metrics with mock server', () => {
       .stub(MetricsTracerFactory as any, '_detectClientLocation')
       .resolves('test-location');
     await MetricsTracerFactory.resetInstance();
-    process.env.SPANNER_DISABLE_BUILTIN_METRICS = 'false';
+    if (
+      Object.prototype.hasOwnProperty.call(
+        process.env,
+        'SPANNER_DISABLE_BUILTIN_METRICS',
+      )
+    ) {
+      sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'false');
+    } else {
+      sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'false');
+    }
     spanner = new Spanner({
       projectId: 'test-project',
       servicePath: 'localhost',
@@ -165,7 +173,7 @@ describe('Test metrics with mock server', () => {
     await MetricsTracerFactory.resetInstance();
   });
 
-  describe('With InMemMetricReaderf', async () => {
+  describe('With InMemMetricReader', async () => {
     let reader: InMemoryMetricReader;
     let factory: MetricsTracerFactory | null;
     let gfeStub;
@@ -185,11 +193,8 @@ describe('Test metrics with mock server', () => {
       factory!.getMeterProvider([reader]);
     });
 
-    afterEach(() => {
-      gfeStub?.restore();
-    });
-
     afterEach(async () => {
+      gfeStub?.restore();
       await MetricsTracerFactory.resetInstance();
     });
 

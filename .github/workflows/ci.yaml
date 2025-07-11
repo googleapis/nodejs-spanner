@@ -26,7 +26,6 @@ jobs:
       - run: npm test
         env:
           MOCHA_THROW_DEPRECATION: false
-          SPANNER_DISABLE_BUILTIN_METRICS: true
   test-script:
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +40,6 @@ jobs:
         working-directory: .github/scripts
         env:
           MOCHA_THROW_DEPRECATION: false
-          SPANNER_DISABLE_BUILTIN_METRICS: true
   windows:
     runs-on: windows-latest
     steps:
@@ -53,7 +51,6 @@ jobs:
       - run: npm test
         env:
           MOCHA_THROW_DEPRECATION: false
-          SPANNER_DISABLE_BUILTIN_METRICS: true
   lint:
     runs-on: ubuntu-latest
     steps:

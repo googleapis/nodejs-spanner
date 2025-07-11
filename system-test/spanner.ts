@@ -269,6 +269,7 @@ describe('Spanner', () => {
   });
 
   after(async () => {
+    await MetricsTracerFactory.resetInstance();
     try {
       if (generateInstanceForTest) {
         // Sleep for 30 seconds before cleanup, just in case
