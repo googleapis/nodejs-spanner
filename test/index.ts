@@ -38,6 +38,7 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
@@ -47,6 +48,21 @@ assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
+
+async function disableMetrics(sandbox: sinon.SinonSandbox) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      process.env,
+      'SPANNER_DISABLE_BUILTIN_METRICS',
+    )
+  ) {
+    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  } else {
+    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  }
+  await MetricsTracerFactory.resetInstance();
+  MetricsTracerFactory.enabled = false;
+}
 
 function getFake(obj: {}) {
   return obj as {
@@ -184,7 +200,7 @@ describe('Spanner', () => {
     }).Spanner;
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     sandbox = sinon.createSandbox();
     fakeGapicClient = util.noop;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,6 +210,7 @@ describe('Spanner', () => {
     fakeV1.SpannerClient = fakeGapicClient;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
+    await disableMetrics(sandbox);
     spanner = new Spanner(OPTIONS);
     spanner.projectId = OPTIONS.projectId;
     replaceProjectIdTokenOverride = null;

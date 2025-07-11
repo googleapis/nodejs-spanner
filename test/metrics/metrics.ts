@@ -21,6 +21,7 @@ import {Database, Instance, Spanner} from '../../src';
 import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
 import {MetricsTracer} from '../../src/metrics/metrics-tracer';
 import {MetricReader} from '@opentelemetry/sdk-metrics';
+import {CloudMonitoringMetricsExporter} from '../../src/metrics/spanner-metrics-exporter';
 import {
   METRIC_NAME_OPERATION_LATENCIES,
   METRIC_NAME_ATTEMPT_LATENCIES,
@@ -152,6 +153,8 @@ describe('Test metrics with mock server', () => {
     } else {
       sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'false');
     }
+    await MetricsTracerFactory.resetInstance();
+    MetricsTracerFactory.enabled = true;
     spanner = new Spanner({
       projectId: 'test-project',
       servicePath: 'localhost',
@@ -162,28 +165,44 @@ describe('Test metrics with mock server', () => {
   }
 
   before(async () => {
+    await MetricsTracerFactory.resetInstance();
     await setupMockSpanner();
   });
 
   after(async () => {
     spanner.close();
     server.tryShutdown(() => {});
-    delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
     await MetricsTracerFactory.resetInstance();
+    MetricsTracerFactory.enabled = false;
   });
 
   describe('With InMemMetricReader', async () => {
     let reader: InMemoryMetricReader;
     let factory: MetricsTracerFactory | null;
     let gfeStub;
+    let exporterStub;
     const MIN_LATENCY = 0;
     const commonAttributes = {
       instance_id: 'instance',
       status: 'OK',
     };
 
-    beforeEach(async () => {
+    before(() => {
+      exporterStub = sinon.stub(
+        CloudMonitoringMetricsExporter.prototype,
+        'export',
+      );
+    });
+
+    after(() => {
+      exporterStub.restore();
+    });
+
+    beforeEach(async function () {
+      // Increase the timeout because the MeterProvider shutdown exceed
+      // the default 10s timeout.
+      this.timeout(50000);
       spannerMock.resetRequests();
       spannerMock.removeExecutionTimes();
       // Reset the MetricsFactoryReader to an in-memory reader for the tests
@@ -195,6 +214,7 @@ describe('Test metrics with mock server', () => {
 
     afterEach(async () => {
       gfeStub?.restore();
+      await factory?.resetMeterProvider();
       await MetricsTracerFactory.resetInstance();
     });
 

@@ -80,6 +80,7 @@ import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {WriteAtLeastOnceOptions} from '../src/database';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 
 const {
   AlwaysOnSampler,
@@ -100,6 +101,21 @@ function numberToEnglishWord(num: number): string {
     default:
       throw new Error(`Unknown or unsupported number: ${num}`);
   }
+}
+
+async function disableMetrics(sandbox: sinon.SinonSandbox) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      process.env,
+      'SPANNER_DISABLE_BUILTIN_METRICS',
+    )
+  ) {
+    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  } else {
+    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  }
+  await MetricsTracerFactory.resetInstance();
+  MetricsTracerFactory.enabled = false;
 }
 
 class XGoogRequestHeaderInterceptor {
@@ -327,6 +343,7 @@ describe('Spanner with mock server', () => {
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
     process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
+    await disableMetrics(sandbox);
     spanner = new Spanner({
       servicePath: 'localhost',
       port,
