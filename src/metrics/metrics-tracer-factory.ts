@@ -87,6 +87,9 @@ export class MetricsTracerFactory {
       this._cleanMetricsTracers.bind(this),
       Constants.TRACER_CLEANUP_INTERVAL_MS,
     );
+    // unref the interval to prevent it from blocking app termination
+    // in the event loop
+    this._intervalTracerCleanup.unref();
   }
 
   /**
