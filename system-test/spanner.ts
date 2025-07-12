@@ -53,6 +53,7 @@ import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateIns
 const singer = require('../test/data/singer');
 const music = singer.examples.spanner.music;
 import {util} from 'protobufjs';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import Long = util.Long;
 import {
   CreateQueryPartitionsResponse,
@@ -231,6 +232,7 @@ describe('Spanner', () => {
   }
 
   before(async () => {
+    await MetricsTracerFactory.resetInstance();
     await deleteOldTestInstances();
     if (generateInstanceForTest) {
       await createInstance(instanceId!);
@@ -267,6 +269,7 @@ describe('Spanner', () => {
   });
 
   after(async () => {
+    await MetricsTracerFactory.resetInstance();
     try {
       if (generateInstanceForTest) {
         // Sleep for 30 seconds before cleanup, just in case
@@ -300,6 +303,7 @@ describe('Spanner', () => {
           ),
         );
       }
+      await MetricsTracerFactory.resetInstance();
     } catch (err) {
       console.error('Cleanup failed:', err);
     }
@@ -3021,7 +3025,7 @@ describe('Spanner', () => {
             CustomerId INT64 NOT NULL,
             CustomerName STRING(62) NOT NULL,
             CONSTRAINT FKShoppingCartsCustomerId FOREIGN KEY (CustomerId)
-            REFERENCES Customers (CustomerId) ON DELETE CASCADE,    
+            REFERENCES Customers (CustomerId) ON DELETE CASCADE,
           ) PRIMARY KEY (CartId)`,
       ];
       const fkadc_pg_schema = [
@@ -7116,7 +7120,7 @@ describe('Spanner', () => {
         const postgreSqlCreateTable = await postgreSqlTable.create(
           `
               CREATE TABLE ${TABLE_NAME} (
-                  "Key" VARCHAR NOT NULL PRIMARY KEY, 
+                  "Key" VARCHAR NOT NULL PRIMARY KEY,
                   "StringValue" VARCHAR
               )`,
           GAX_OPTIONS,

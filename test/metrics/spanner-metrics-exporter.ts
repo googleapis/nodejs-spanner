@@ -31,9 +31,12 @@ import {
 } from '../../src/metrics/constants';
 import {Counter, Meter, Histogram} from '@opentelemetry/api';
 import {ExportResult, ExportResultCode} from '@opentelemetry/core';
+import {Resource} from '@opentelemetry/resources';
 
 const PROJECT_ID = 'test-project';
 const INSTANCE_ID = 'test-instance';
+const CLIENT_HASH = 'test-hash';
+const INSTANCE_CONFIG = 'test-config';
 const DATABASE_ID = 'test-db';
 const LOCATION = 'test-location';
 
@@ -96,16 +99,19 @@ describe('Export', () => {
   beforeEach(() => {
     exporter = new CloudMonitoringMetricsExporter({auth});
     reader = new InMemoryMetricReader();
+    const resource = new Resource({
+      ['project_id']: PROJECT_ID,
+      ['client_hash']: CLIENT_HASH,
+      ['location']: LOCATION,
+      ['instance_id']: INSTANCE_ID,
+      ['instance_config']: INSTANCE_CONFIG,
+    });
     meterProvider = new MeterProvider({
+      resource: resource,
       readers: [reader],
     });
     meter = meterProvider.getMeter(SPANNER_METER_NAME);
     metricAttributes = {
-      project_id: PROJECT_ID,
-      instance_id: INSTANCE_ID,
-      instance_config: 'test_config',
-      location: LOCATION,
-      client_hash: 'test_hash',
       client_uid: 'test_uid',
       client_name: 'test_name',
       database: DATABASE_ID,

@@ -50,7 +50,7 @@ describe('📦 pack and install', () => {
   /**
    * CLEAN UP - remove the staging directory when done.
    */
-  after('cleanup staging', () => {
+  after('cleanup staging', async () => {
     if (!keep) {
       stagingDir.removeCallback();
     }

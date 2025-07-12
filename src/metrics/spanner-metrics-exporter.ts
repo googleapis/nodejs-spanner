@@ -18,6 +18,7 @@ import {ExporterOptions} from './external-types';
 import {MetricServiceClient} from '@google-cloud/monitoring';
 import {transformResourceMetricToTimeSeriesArray} from './transform';
 import {status} from '@grpc/grpc-js';
+import {MIN_EXPORT_FREQUENCY_MS} from './constants';
 
 // Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
 // CreateTimeSeries call.
@@ -28,7 +29,7 @@ export const MAX_BATCH_EXPORT_SIZE = 200;
  */
 export class CloudMonitoringMetricsExporter implements PushMetricExporter {
   private _projectId: string | void | Promise<string | void>;
-
+  private _lastExported: Date = new Date(0);
   private readonly _client: MetricServiceClient;
 
   constructor({auth}: ExporterOptions) {
@@ -46,13 +47,23 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
    * Calls the async wrapper method {@link _exportAsync} and
    * assures no rejected promises bubble up to the caller.
    *
-   * @param metrics Metrics to be sent to the Google Cloud Monitoring backend
+   * @param metrics Metrics to be sent to the Google Cloud 3Monitoring backend
    * @param resultCallback result callback to be called on finish
    */
   export(
     metrics: ResourceMetrics,
     resultCallback: (result: ExportResult) => void,
   ): void {
+    // Do not export metrics if we've already exported within the last 30s
+    const now = new Date();
+    if (
+      now.getTime() - this._lastExported.getTime() <=
+      MIN_EXPORT_FREQUENCY_MS
+    ) {
+      return;
+    }
+
+    this._lastExported = now;
     this._exportAsync(metrics).then(resultCallback, err => {
       console.error(err.message);
       resultCallback({code: ExportResultCode.FAILED, error: err});
