@@ -8,12 +8,63 @@ enable OpenTelemetry with appropriate exporters at the startup of your applicati
 **Table of contents:**
 
 * [Observability](#observability)
+  * [Metrics](#metrics)
+    * [Metrics Dependencies](#metrics-dependencies)
+    * [Disabling Metrics](#disabling-metrics)
+    * [Available Service Metrics](#available-service-metrics)
   * [Tracing](#tracing)
     * [OpenTelemetry Dependencies](#opentelemetry-dependencies)
     * [OpenTelemetry Configuration](#opentelemetry-configuration)
     * [SQL Statement span annotation](#sql-statement-span-annotation)
     * [OpenTelemetry gRCP instrumentation](#opentelemetry-grpc-instrumentation)
     * [Tracing Sample](#tracing-sample)
+
+### Metrics
+
+The spanner client emits service metrics to provide operational insight into the usage of the Spanner client. The metrics track the different operation requests made from the client, as well as the attempts made internally by the client to achieve this operation.
+
+Each metric contains attributes with identifying information for the client connection, including:
+
+Project
+Instance
+Database
+Session
+
+#### Metrics Dependencies
+
+Add the following dependencies in your `package.json` or install them directly.
+```javascript
+// Required packages for Google Cloud metric definition and interaction
+"@google-cloud/monitoring": "^5.0.0",
+"@google-cloud/opentelemetry-resource-util": "^2.4.0",
+
+// Required packages for Opentelemetry metrics
+"@opentelemetry/api": "^1.9.0",
+"@opentelemetry/core": "^2.0.0",
+"@opentelemetry/resources": "^1.8.0",
+"@opentelemetry/sdk-metrics": "^1.30.1",
+
+// gRPC server interactions
+"@grpc/grpc-js": "^1.13.2",
+"google-gax": "^5.0.1-rc.0",
+```
+#### Disabling Metrics
+
+By default, metrics are enabled, but they can be disabled by setting the environment variable `SPANNER_DISABLE_BUILTIN_METRICS` to `true`:
+```bash
+export SPANNER_DISABLE_BUILTIN_METRICS=true
+```
+
+Please note that if you are using the [Spanner Emulator](https://cloud.google.com/spanner/docs/emulator), the metrics will always be disabled regardless of the value of the environment variable flag.
+
+#### Available Service Metrics
+
+* `operation_latencies` - The total time until final operation success or failures, including retries and backoff.
+* `operation_count` - The number of operations made.
+* `attempt latencies` - The time an individual attempt took.
+* `attempt_count` - The number of attempts made.
+* `gfe_latencies` - The latency between Google's network receiving an RPC and reading back the first byte of the response.
+* `gfe_connectivity_error_count` - The number of requests that failed to reach the Google network.
 
 ### Tracing
 
