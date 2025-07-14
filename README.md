@@ -34,6 +34,7 @@ Google APIs Client Libraries, in [Client Libraries Explained][explained].
   * [Before you begin](#before-you-begin)
   * [Installing the client library](#installing-the-client-library)
   * [Using the client library](#using-the-client-library)
+* [Metrics](#metrics)
 * [Samples](#samples)
 * [Versioning](#versioning)
 * [Contributing](#contributing)
@@ -81,6 +82,36 @@ rows.forEach(row => console.log(row));
 
 ```
 
+## Metrics
+
+
+The spanner client emits service metrics to provide operational insight into the usage of the Spanner client. The metrics track the different operation requests made from the client, as well as the attempts made internally by the client to achieve this operation.
+
+
+Each metric contains attributes with identifying information for the client connection, including:
+- Project
+- Instance
+- Database
+- Session
+
+### Disabling Metrics
+
+By default, metrics are enabled, but they can be disabled by setting the environment variable `SPANNER_DISABLE_BUILTIN_METRICS` to `true`:
+```bash
+export SPANNER_DISABLE_BUILTIN_METRICS=true
+```
+
+Please note that if you are using the [Spanner Emulator](https://cloud.google.com/spanner/docs/emulator), the metrics will always be disabled regardless of the value of the environment variable flag.
+
+
+### Available service metrics
+
+* `operation_latencies` - The total time until final operation success or failues, including retries and backoff.
+* `operation_count` - The number of operations made.
+* `attempt latencies` - The time an individual attempt took.
+* `attempt_count` - The number of attempts made.
+* `gfe_latencies` - The latency between Google's network receiving an RPC and reading back the first byte of the response.
+* `gfe_connectivity_error_count` - The number of requests that failed to reach the Google network.
 
 
 ## Samples
