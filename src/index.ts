@@ -316,6 +316,7 @@ class Spanner extends GrpcService {
   _observabilityOptions: ObservabilityOptions | undefined;
   private _universeDomain: string;
   private _isEmulatorEnabled: boolean;
+  private static _isAFEServerTimingEnabled: boolean | undefined;
   readonly _nthClientId: number;
 
   /**
@@ -330,6 +331,30 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+
+  /**
+   * Returns whether AFE (Application Frontend Extension) server timing is enabled.
+   *
+   * This method checks the value of the environment variable
+   * `SPANNER_DISABLE_AFE_SERVER_TIMING`. If the variable is explicitly set to the
+   * string `'true'`, then AFE server timing is considered disabled, and this method
+   * returns `false`. For all other values (including if the variable is unset),
+   * the method returns `true`.
+   *
+   * @returns {boolean} `true` if AFE server timing is enabled; otherwise, `false`.
+   */
+  public static isAFEServerTimingEnabled = (): boolean => {
+    if (this._isAFEServerTimingEnabled === undefined) {
+      this._isAFEServerTimingEnabled =
+        process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] !== 'true';
+    }
+    return this._isAFEServerTimingEnabled;
+  };
+
+  /** Resets the cached value (use in tests if env changes). */
+  public static _resetAFEServerTimingForTest(): void {
+    this._isAFEServerTimingEnabled = undefined;
+  }
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.

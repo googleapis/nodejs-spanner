@@ -46,6 +46,8 @@ export class MetricsTracerFactory {
   private _instrumentOperationLatency!: Histogram;
   private _instrumentGfeConnectivityErrorCount!: Counter;
   private _instrumentGfeLatency!: Histogram;
+  private _instrumentAfeConnectivityErrorCount!: Counter;
+  private _instrumentAfeLatency!: Histogram;
   private _clientHash: string;
   private _clientName: string;
   private _clientUid: string;
@@ -243,6 +245,8 @@ export class MetricsTracerFactory {
       this._instrumentOperationLatency,
       this._instrumentGfeConnectivityErrorCount,
       this._instrumentGfeLatency,
+      this._instrumentAfeConnectivityErrorCount,
+      this._instrumentAfeLatency,
       MetricsTracerFactory.enabled,
       database,
       instance,
@@ -378,6 +382,24 @@ export class MetricsTracerFactory {
         unit: '1',
         description:
           'Number of requests that failed to reach the Google network.',
+      },
+    );
+
+    this._instrumentAfeLatency = meter.createHistogram(
+      Constants.METRIC_NAME_AFE_LATENCIES,
+      {
+        unit: 'ms',
+        description:
+          'Latency between Spanner API Frontend receiving an RPC and starting to write back the response',
+      },
+    );
+
+    this._instrumentAfeConnectivityErrorCount = meter.createCounter(
+      Constants.METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT,
+      {
+        unit: '1',
+        description:
+          'Number of requests that failed to reach the Spanner API Frontend.',
       },
     );
   }

@@ -19,6 +19,7 @@ import * as Constants from '../../src/metrics/constants';
 import {MetricsTracer} from '../../src/metrics/metrics-tracer';
 
 import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
+import {Spanner} from '../../src';
 
 const DATABASE = 'test-db';
 const INSTANCE = 'instance';
@@ -33,6 +34,8 @@ describe('MetricsTracer', () => {
   let fakeOperationLatency: any;
   let fakeGfeCounter: any;
   let fakeGfeLatency: any;
+  let fakeAfeCounter: any;
+  let fakeAfeLatency: any;
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -60,6 +63,14 @@ describe('MetricsTracer', () => {
       record: sinon.spy(),
     };
 
+    fakeAfeCounter = {
+      add: sinon.spy(),
+    };
+
+    fakeAfeLatency = {
+      record: sinon.spy(),
+    };
+
     tracer = new MetricsTracer(
       fakeAttemptCounter,
       fakeAttemptLatency,
@@ -67,6 +78,8 @@ describe('MetricsTracer', () => {
       fakeOperationLatency,
       fakeGfeCounter,
       fakeGfeLatency,
+      fakeAfeCounter,
+      fakeAfeLatency,
       true, // enabled,
       DATABASE,
       INSTANCE,
@@ -164,10 +177,69 @@ describe('MetricsTracer', () => {
     });
   });
 
-  describe('extractGfeLatency', () => {
+  describe('recordAfeLatency', () => {
+    afterEach(() => {
+      Spanner._resetAFEServerTimingForTest();
+      process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] = 'false';
+    });
+
+    it('should record AFE latency if enabled', () => {
+      tracer.enabled = true;
+      tracer.afeLatency = 123;
+      tracer.recordAfeLatency(Status.OK);
+      assert.strictEqual(fakeAfeLatency.record.calledOnce, true);
+    });
+
+    it('should not record if AFE server timing is disabled', () => {
+      tracer.enabled = true;
+      Spanner._resetAFEServerTimingForTest();
+      process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] = 'true';
+      tracer.afeLatency = 123;
+      tracer.recordAfeLatency(Status.OK);
+      assert.strictEqual(fakeAfeLatency.record.called, false);
+    });
+
+    it('should not record if metrics are disabled', () => {
+      tracer.enabled = false;
+      tracer.afeLatency = 123;
+      tracer.recordAfeLatency(Status.OK);
+      assert.strictEqual(fakeAfeLatency.record.called, false);
+    });
+  });
+
+  describe('recordGfeConnectivityErrorCount', () => {
+    afterEach(() => {
+      Spanner._resetAFEServerTimingForTest();
+      process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] = 'false';
+    });
+
+    it('should increment AFE error counter if enabled', () => {
+      tracer.enabled = true;
+      tracer.recordAfeConnectivityErrorCount(Status.OK);
+      assert.strictEqual(fakeAfeCounter.add.calledOnce, true);
+    });
+
+    it('should not increment if metrics are disabled', () => {
+      tracer.enabled = false;
+      tracer.recordAfeConnectivityErrorCount(Status.OK);
+      assert.strictEqual(fakeAfeCounter.add.called, false);
+    });
+
+    it('should not increment if AFE server timing is disabled', () => {
+      tracer.enabled = true;
+      Spanner._resetAFEServerTimingForTest();
+      process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] = 'true';
+      tracer.recordAfeConnectivityErrorCount(Status.OK);
+      assert.strictEqual(fakeAfeCounter.add.called, false);
+    });
+  });
+
+  describe('extractGfeLatency & extractAfeLatency', () => {
     let tracer: MetricsTracer;
     beforeEach(() => {
       tracer = new MetricsTracer(
+        null,
+        null,
         null,
         null,
         null,
@@ -182,27 +254,43 @@ describe('MetricsTracer', () => {
       );
     });
 
-    it('should extract latency from a valid server-timing header', () => {
-      const header = 'gfet4t7; dur=123';
-      const latency = tracer.extractGfeLatency(header);
-      assert.strictEqual(latency, 123);
+    it('should extract afe and gfe latency from a valid server-timing header', () => {
+      const header = 'gfet4t7; dur=123, afe; dur=30, other=value';
+      const gfeLatency = tracer.extractGfeLatency(header);
+      assert.strictEqual(gfeLatency, 123);
+      const afeLatency = tracer.extractAfeLatency(header);
+      assert.strictEqual(afeLatency, 30);
     });
 
     it('should return null if header is undefined', () => {
-      const latency = tracer.extractGfeLatency(undefined as any);
-      assert.strictEqual(latency, null);
+      const gfeLatency = tracer.extractGfeLatency(undefined as any);
+      assert.strictEqual(gfeLatency, null);
+      const afeLatency = tracer.extractAfeLatency(undefined as any);
+      assert.strictEqual(afeLatency, null);
     });
 
     it('should return null if header does not match expected format', () => {
       const header = 'some-other-header';
-      const latency = tracer.extractGfeLatency(header);
-      assert.strictEqual(latency, null);
+      const gfeLatency = tracer.extractGfeLatency(header);
+      assert.strictEqual(gfeLatency, null);
+      const afeLatency = tracer.extractAfeLatency(header);
+      assert.strictEqual(afeLatency, null);
     });
 
-    it('should extract only the first number if extra data is present', () => {
+    it('should extract only the gfe latency if extra data is present', () => {
       const header = 'gfet4t7; dur=456; other=value';
-      const latency = tracer.extractGfeLatency(header);
-      assert.strictEqual(latency, 456);
+      const gfeLatency = tracer.extractGfeLatency(header);
+      assert.strictEqual(gfeLatency, 456);
+      const afeLatency = tracer.extractAfeLatency(header);
+      assert.strictEqual(afeLatency, null);
+    });
+
+    it('should extract only the afe latency if extra data is present', () => {
+      const header = 'other=value, afe; dur=30; ';
+      const gfeLatency = tracer.extractGfeLatency(header);
+      assert.strictEqual(gfeLatency, null);
+      const afeLatency = tracer.extractAfeLatency(header);
+      assert.strictEqual(afeLatency, 30);
     });
   });
 });

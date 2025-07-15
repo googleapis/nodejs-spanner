@@ -27,7 +27,7 @@ describe('MetricInterceptor', () => {
   let mockNextCall: sinon.SinonStub;
   let mockInterceptingCall: any;
   let mockListener: any;
-  let gfeMetadata: any;
+  let serverTimingMetadata: any;
   let emptyMetadata: any;
   let mockStatus: any;
   let mockOptions: any;
@@ -47,8 +47,16 @@ describe('MetricInterceptor', () => {
     mockMetricsTracer.extractGfeLatency = sandbox
       .stub()
       .callsFake((header: string) => {
-        if (header === 'gfet4t7; dur=90') {
+        if (header === 'gfet4t7; dur=90, afe; dur=30') {
           return 90;
+        }
+        return null;
+      }) as sinon.SinonStub<[string], number | null>;
+    mockMetricsTracer.extractAfeLatency = sandbox
+      .stub()
+      .callsFake((header: string) => {
+        if (header === 'gfet4t7; dur=90, afe; dur=30') {
+          return 30;
         }
         return null;
       }) as sinon.SinonStub<[string], number | null>;
@@ -86,11 +94,11 @@ describe('MetricInterceptor', () => {
       onReceiveStatus: sandbox.stub(),
     };
 
-    gfeMetadata = new grpc.Metadata();
-    gfeMetadata.set('content-type', 'application/grpc');
-    gfeMetadata.set('date', 'Thu, 19 Jun 2020 00:01:02 GMT');
-    gfeMetadata.set('server-timing', 'gfet4t7; dur=90');
-    gfeMetadata.set(
+    serverTimingMetadata = new grpc.Metadata();
+    serverTimingMetadata.set('content-type', 'application/grpc');
+    serverTimingMetadata.set('date', 'Thu, 19 Jun 2020 00:01:02 GMT');
+    serverTimingMetadata.set('server-timing', 'gfet4t7; dur=90, afe; dur=30');
+    serverTimingMetadata.set(
       'alt-svc',
       'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
     );
@@ -136,7 +144,7 @@ describe('MetricInterceptor', () => {
       interceptingCall.start(testMetadata, mockListener);
 
       // duration value from the header's gfet4t7 value should be recorded as GFE latency
-      capturedListener.onReceiveMetadata(gfeMetadata);
+      capturedListener.onReceiveMetadata(serverTimingMetadata);
       capturedListener.onReceiveStatus(mockStatus);
       assert.equal(mockMetricsTracer.recordGfeLatency.callCount, 1);
       assert.equal(
@@ -145,6 +153,24 @@ describe('MetricInterceptor', () => {
       );
       assert.equal(
         mockMetricsTracer.recordGfeConnectivityErrorCount.callCount,
+        0,
+      );
+    });
+
+    it('AFE Metrics - Latency', () => {
+      const interceptingCall = MetricInterceptor(mockOptions, mockNextCall);
+      interceptingCall.start(testMetadata, mockListener);
+
+      // duration value from the header's afe value should be recorded as AFE latency
+      capturedListener.onReceiveMetadata(serverTimingMetadata);
+      capturedListener.onReceiveStatus(mockStatus);
+      assert.equal(mockMetricsTracer.recordAfeLatency.callCount, 1);
+      assert.equal(
+        mockMetricsTracer.recordAfeLatency.getCall(0).args,
+        Status.OK,
+      );
+      assert.equal(
+        mockMetricsTracer.recordAfeConnectivityErrorCount.callCount,
         0,
       );
     });
@@ -163,6 +189,24 @@ describe('MetricInterceptor', () => {
       );
       assert.equal(
         mockMetricsTracer.recordGfeConnectivityErrorCount.getCall(0).args,
+        Status.OK,
+      );
+    });
+
+    it('AFE Metrics - Connectivity Error Count', () => {
+      const interceptingCall = MetricInterceptor(mockOptions, mockNextCall);
+      interceptingCall.start(testMetadata, mockListener);
+
+      // Calls received without latency values should increase connectivity error count
+      capturedListener.onReceiveMetadata(emptyMetadata);
+      capturedListener.onReceiveStatus(mockStatus);
+      assert.equal(mockMetricsTracer.recordAfeLatency.callCount, 0);
+      assert.equal(
+        mockMetricsTracer.recordAfeConnectivityErrorCount.callCount,
+        1,
+      );
+      assert.equal(
+        mockMetricsTracer.recordAfeConnectivityErrorCount.getCall(0).args,
         Status.OK,
       );
     });

@@ -33,7 +33,7 @@ import {toArray} from '../src/helper';
 import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {CLOUD_RESOURCE_HEADER, AFE_SERVER_TIMING_HEADER} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -177,6 +177,7 @@ describe('Instance', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(instance.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: instance.formattedName_,
+        [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
   });
