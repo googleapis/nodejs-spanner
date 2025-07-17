@@ -409,4 +409,28 @@ describe('SessionFactory', () => {
       });
     });
   });
+
+  describe('isMultiplexedEnabledForRW', () => {
+    describe('when multiplexed session is enabled for read/write transactions', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+      it('should have enabled the multiplexed', () => {
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexedEnabledForRW(), true);
+      });
+    });
+
+    describe('when multiplexed session is disabled for read/write transactions', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+      it('should not have enabled the multiplexed', () => {
+        const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
+        assert.strictEqual(sessionFactory.isMultiplexedEnabledForRW(), false);
+      });
+    });
+  });
 });

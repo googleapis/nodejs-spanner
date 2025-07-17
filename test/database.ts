@@ -159,6 +159,16 @@ export class FakeSessionFactory extends EventEmitter {
       return true;
     }
   }
+  isMultiplexedEnabledForRW(): boolean {
+    if (
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true'
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 class FakeTable {
