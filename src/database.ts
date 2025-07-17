@@ -353,6 +353,7 @@ class Database extends common.GrpcServiceObject {
   pool_: SessionPoolInterface;
   sessionFactory_: SessionFactoryInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+  isMuxEnabledForRW_?: boolean;
   commonHeaders_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
@@ -496,6 +497,7 @@ class Database extends common.GrpcServiceObject {
     this.requestStream = instance.requestStream as any;
     this.sessionFactory_ = new SessionFactory(this, name, poolOptions);
     this.pool_ = this.sessionFactory_.getPool();
+    this.isMuxEnabledForRW_ = this.sessionFactory_.isMultiplexedEnabledForRW();
     const sessionPoolInstance = this.pool_ as SessionPool;
     if (sessionPoolInstance) {
       sessionPoolInstance._observabilityOptions =
