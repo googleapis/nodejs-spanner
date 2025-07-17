@@ -21,6 +21,7 @@ import {
   METRIC_LABEL_KEY_STATUS,
   MONITORED_RES_LABEL_KEY_INSTANCE,
 } from './constants';
+import {Spanner} from '..';
 
 /**
  * MetricAttemptTracer tracks the start time and status of a single gRPC attempt.
@@ -109,10 +110,10 @@ class MetricOperationTracer {
 /**
  * MetricsTracer is responsible for recording and managing metrics related to
  * gRPC Spanner operations and attempts counters, and latencies,
- * as well as Google Front End (GFE) metrics such as latency and connectivity errors.
+ * as well as Google Front End (GFE)/AFE metrics such as latency and connectivity errors.
  *
  * This class provides methods to record the start and completion of operations
- * and attempts, extract GFE latency from response headers.
+ * and attempts, extract GFE/AFE latency from response headers.
  * It also handles setting of required Spanner metric attributes to
  * be later consumed by the SpannerMetricsExporter.
  */
@@ -131,6 +132,12 @@ export class MetricsTracer {
    * The current GFE latency associated with this tracer.
    */
   public gfeLatency: number | null = null;
+
+  /*
+   * The current AFE latency associated with this tracer.
+   */
+  public afeLatency: number | null = null;
+
   /**
    * Constructs a new MetricsTracer.
    *
@@ -140,6 +147,8 @@ export class MetricsTracer {
    * @param _instrumentOperationLatency Histogram for operation latency metrics.
    * @param _instrumentGfeConnectivityErrorCount Counter for GFE connectivity errors.
    * @param _instrumentGfeLatency Histogram for GFE latency metrics.
+   * @param _instrumentAfeConnectivityErrorCount Counter for AFE connectivity errors.
+   * @param _instrumentAfeLatency Histogram for AFE latency metrics.
    * @param enabled Whether metrics recording is enabled.
    */
   constructor(
@@ -149,6 +158,8 @@ export class MetricsTracer {
     private _instrumentOperationLatency: Histogram | null,
     private _instrumentGfeConnectivityErrorCount: Counter | null,
     private _instrumentGfeLatency: Histogram | null,
+    private _instrumentAfeConnectivityErrorCount: Counter | null,
+    private _instrumentAfeLatency: Histogram | null,
     public enabled: boolean,
     private _database: string,
     private _instance: string,
@@ -284,6 +295,22 @@ export class MetricsTracer {
   }
 
   /**
+   * Extracts the AFE latency value (in milliseconds) from a 'server-timing' header string.
+   * Returns null if the header is missing or does not contain a valid latency value.
+   *
+   * @param header The 'server-timing' header string.
+   * @returns The extracted AFE latency in milliseconds, or null if not found.
+   */
+  public extractAfeLatency(header: string): number | null {
+    if (!Spanner.isAFEServerTimingEnabled()) return null;
+    const regex = /afe; dur=([0-9]+).*/;
+    if (header === undefined) return null;
+    const match = header.match(regex);
+    if (!match) return null;
+    return Number(match[1]);
+  }
+
+  /**
    * Records the provided GFE latency.
    * @param latency The GFE latency in milliseconds.
    */
@@ -311,6 +338,36 @@ export class MetricsTracer {
     const attributes = {...this._clientAttributes};
     attributes[METRIC_LABEL_KEY_STATUS] = Status[statusCode];
     this._instrumentGfeConnectivityErrorCount?.add(1, attributes);
+  }
+
+  /**
+   * Increments the AFE connectivity error count metric.
+   */
+  public recordAfeConnectivityErrorCount(statusCode: Status) {
+    if (!this.enabled || !Spanner.isAFEServerTimingEnabled()) return;
+    const attributes = {...this._clientAttributes};
+    attributes[METRIC_LABEL_KEY_STATUS] = Status[statusCode];
+    this._instrumentAfeConnectivityErrorCount?.add(1, attributes);
+  }
+
+  /**
+   * Records the provided AFE latency.
+   * @param latency The AFE latency in milliseconds.
+   */
+  public recordAfeLatency(statusCode: Status) {
+    if (!this.enabled || !Spanner.isAFEServerTimingEnabled()) return;
+    if (!this.afeLatency) {
+      console.error(
+        'ERROR: Attempted to record AFE metric with no latency value.',
+      );
+      return;
+    }
+
+    const attributes = {...this._clientAttributes};
+    attributes[METRIC_LABEL_KEY_STATUS] = Status[statusCode];
+
+    this._instrumentAfeLatency?.record(this.afeLatency, attributes);
+    this.afeLatency = null; // Reset latency value
   }
 
   /**

@@ -65,6 +65,9 @@ export const METRIC_NAME_ATTEMPT_COUNT = 'attempt_count';
 export const METRIC_NAME_GFE_LATENCIES = 'gfe_latencies';
 export const METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT =
   'gfe_connectivity_error_count';
+export const METRIC_NAME_AFE_LATENCIES = 'afe_latencies';
+export const METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT =
+  'afe_connectivity_error_count';
 export const METRIC_NAMES = new Set([
   METRIC_NAME_OPERATION_LATENCIES,
   METRIC_NAME_ATTEMPT_LATENCIES,
@@ -72,6 +75,8 @@ export const METRIC_NAMES = new Set([
   METRIC_NAME_OPERATION_COUNT,
   METRIC_NAME_ATTEMPT_COUNT,
   METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
+  METRIC_NAME_AFE_LATENCIES,
+  METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT,
 ]);
 
 export const UNKNOWN_ATTRIBUTE = 'unknown';
@@ -107,8 +112,16 @@ export const GFE_LATENCY_VIEW = new View({
   ),
 });
 
+export const AFE_LATENCY_VIEW = new View({
+  instrumentName: METRIC_NAME_AFE_LATENCIES,
+  aggregation: new ExplicitBucketHistogramAggregation(
+    HISTOGRAM_BUCKET_BOUNDARIES,
+  ),
+});
+
 export const METRIC_VIEWS = [
   OPERATION_LATENCY_VIEW,
   ATTEMPT_LATENCY_VIEW,
   GFE_LATENCY_VIEW,
+  AFE_LATENCY_VIEW,
 ];

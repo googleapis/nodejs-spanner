@@ -28,6 +28,7 @@ import {google} from '../protos/protos';
 import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
+  AFE_SERVER_TIMING_HEADER,
 } from '../src/common';
 import {
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
@@ -160,6 +161,7 @@ describe('Transaction', () => {
       it('should set the commonHeaders_', () => {
         assert.deepStrictEqual(snapshot.commonHeaders_, {
           [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
+          [AFE_SERVER_TIMING_HEADER]: 'true',
         });
       });
     });

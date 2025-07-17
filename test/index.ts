@@ -37,7 +37,7 @@ import {
   GetInstanceConfigsOptions,
   GetInstancesOptions,
 } from '../src';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {CLOUD_RESOURCE_HEADER, AFE_SERVER_TIMING_HEADER} from '../src/common';
 import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
@@ -371,6 +371,7 @@ describe('Spanner', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(spanner.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: spanner.projectFormattedName_,
+        [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
 
