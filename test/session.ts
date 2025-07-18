@@ -24,6 +24,7 @@ import * as proxyquire from 'proxyquire';
 import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
+  AFE_SERVER_TIMING_HEADER,
 } from '../src/common';
 import {Database, Instance, Spanner} from '../src';
 import {
@@ -154,6 +155,7 @@ describe('Session', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(session.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: session.parent.formattedName_,
+        [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
 

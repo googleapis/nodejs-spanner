@@ -80,6 +80,7 @@ import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {WriteAtLeastOnceOptions} from '../src/database';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 
 const {
   AlwaysOnSampler,
@@ -100,6 +101,21 @@ function numberToEnglishWord(num: number): string {
     default:
       throw new Error(`Unknown or unsupported number: ${num}`);
   }
+}
+
+async function disableMetrics(sandbox: sinon.SinonSandbox) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      process.env,
+      'SPANNER_DISABLE_BUILTIN_METRICS',
+    )
+  ) {
+    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  } else {
+    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  }
+  await MetricsTracerFactory.resetInstance();
+  MetricsTracerFactory.enabled = false;
 }
 
 class XGoogRequestHeaderInterceptor {
@@ -236,7 +252,7 @@ describe('Spanner with mock server', () => {
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
   const selectAllTypes = 'SELECT * FROM TABLE_WITH_ALL_TYPES';
-  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP) 
+  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP)
                                 VALUES (@bool, @int64, @float64, @numeric, @string, @bytes, @json, @date, @timestamp)`;
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
   const readPartitionsQuery = {
@@ -327,6 +343,7 @@ describe('Spanner with mock server', () => {
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
     process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
+    await disableMetrics(sandbox);
     spanner = new Spanner({
       servicePath: 'localhost',
       port,

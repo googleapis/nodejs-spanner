@@ -94,6 +94,11 @@ import {
   injectRequestIDIntoError,
   nextSpannerClientId,
 } from './request_id_header';
+import {PeriodicExportingMetricReader} from '@opentelemetry/sdk-metrics';
+import {MetricInterceptor} from './metrics/interceptor';
+import {CloudMonitoringMetricsExporter} from './metrics/spanner-metrics-exporter';
+import {MetricsTracerFactory} from './metrics/metrics-tracer-factory';
+import {MetricsTracer} from './metrics/metrics-tracer';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -310,6 +315,8 @@ class Spanner extends GrpcService {
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
   private _universeDomain: string;
+  private _isEmulatorEnabled: boolean;
+  private static _isAFEServerTimingEnabled: boolean | undefined;
   readonly _nthClientId: number;
 
   /**
@@ -324,6 +331,30 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+
+  /**
+   * Returns whether AFE (Application Frontend Extension) server timing is enabled.
+   *
+   * This method checks the value of the environment variable
+   * `SPANNER_DISABLE_AFE_SERVER_TIMING`. If the variable is explicitly set to the
+   * string `'true'`, then AFE server timing is considered disabled, and this method
+   * returns `false`. For all other values (including if the variable is unset),
+   * the method returns `true`.
+   *
+   * @returns {boolean} `true` if AFE server timing is enabled; otherwise, `false`.
+   */
+  public static isAFEServerTimingEnabled = (): boolean => {
+    if (this._isAFEServerTimingEnabled === undefined) {
+      this._isAFEServerTimingEnabled =
+        process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] !== 'true';
+    }
+    return this._isAFEServerTimingEnabled;
+  };
+
+  /** Resets the cached value (use in tests if env changes). */
+  public static _resetAFEServerTimingForTest(): void {
+    this._isAFEServerTimingEnabled = undefined;
+  }
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -412,12 +443,14 @@ class Spanner extends GrpcService {
       );
     }
 
+    let isEmulatorEnabled = false;
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
       emulatorHost.endpoint &&
       emulatorHost.endpoint.length > 0
     ) {
+      isEmulatorEnabled = true;
       options.servicePath = emulatorHost.endpoint;
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
@@ -444,6 +477,7 @@ class Spanner extends GrpcService {
       this.routeToLeaderEnabled = false;
     }
 
+    this._isEmulatorEnabled = isEmulatorEnabled;
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
@@ -461,6 +495,7 @@ class Spanner extends GrpcService {
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
     this._universeDomain = universeEndpoint;
+    this.configureMetrics_();
   }
 
   get universeDomain() {
@@ -524,6 +559,9 @@ class Spanner extends GrpcService {
         client.operationsClient.close();
       }
       client.close();
+    });
+    cleanup().catch(err => {
+      console.error('Error occured during cleanup: ', err);
     });
   }
 
@@ -1574,6 +1612,25 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
+   */
+  configureMetrics_() {
+    const metricsEnabled =
+      process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
+      !this._isEmulatorEnabled;
+    MetricsTracerFactory.enabled = metricsEnabled;
+    if (metricsEnabled) {
+      const factory = MetricsTracerFactory.getInstance(this.projectId);
+      const periodicReader = new PeriodicExportingMetricReader({
+        exporter: new CloudMonitoringMetricsExporter({auth: this.auth}),
+        exportIntervalMillis: 60000,
+      });
+      // Retrieve the MeterProvider to trigger construction
+      factory!.getMeterProvider([periodicReader]);
+    }
+  }
+
+  /**
    * Prepare a gapic request. This will cache the GAX client and replace
    * {{projectId}} placeholders, if necessary.
    *
@@ -1635,6 +1692,10 @@ class Spanner extends GrpcService {
       });
       // Attach the x-goog-spanner-request-id to the currently active span.
       attributeXGoogSpannerRequestIdToActiveSpan(config);
+      const interceptors: any[] = [];
+      if (MetricsTracerFactory.enabled) {
+        interceptors.push(MetricInterceptor);
+      }
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,
@@ -1642,6 +1703,9 @@ class Spanner extends GrpcService {
         extend(true, {}, config.gaxOpts, {
           otherArgs: {
             headers: config.headers,
+            options: {
+              interceptors: interceptors,
+            },
           },
         }),
       );
@@ -1711,21 +1775,51 @@ class Spanner extends GrpcService {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
+    let metricsTracer: MetricsTracer | null = null;
+    if (config.client === 'SpannerClient') {
+      metricsTracer =
+        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+          config.method,
+          config.reqOpts.session ?? config.reqOpts.database,
+          config.headers['x-goog-spanner-request-id'],
+        ) ?? null;
+    }
+    metricsTracer?.recordOperationStart();
     if (typeof callback === 'function') {
       this.prepareGapicRequest_(config, (err, requestFn) => {
         if (err) {
           callback(err);
+          metricsTracer?.recordOperationCompletion();
         } else {
-          requestFn(callback);
+          const wrappedCallback = (...args) => {
+            metricsTracer?.recordOperationCompletion();
+            callback(...args);
+          };
+          requestFn(wrappedCallback);
         }
       });
     } else {
       return new Promise((resolve, reject) => {
         this.prepareGapicRequest_(config, (err, requestFn) => {
           if (err) {
+            metricsTracer?.recordOperationCompletion();
             reject(err);
           } else {
-            resolve(requestFn());
+            const result = requestFn();
+            if (result && typeof result.then === 'function') {
+              result
+                .then(val => {
+                  metricsTracer?.recordOperationCompletion();
+                  resolve(val);
+                })
+                .catch(error => {
+                  metricsTracer?.recordOperationCompletion();
+                  reject(error);
+                });
+            } else {
+              metricsTracer?.recordOperationCompletion();
+              resolve(result);
+            }
           }
         });
       });
@@ -1745,6 +1839,16 @@ class Spanner extends GrpcService {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestStream(config): any {
+    let metricsTracer: MetricsTracer | null = null;
+    if (config.client === 'SpannerClient') {
+      metricsTracer =
+        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+          config.method,
+          config.reqOpts.session ?? config.reqOpts.database,
+          config.headers['x-goog-spanner-request-id'],
+        ) ?? null;
+    }
+    metricsTracer?.recordOperationStart();
     const stream = streamEvents(through.obj());
     stream.once('reading', () => {
       this.prepareGapicRequest_(config, (err, requestFn) => {
@@ -1758,6 +1862,12 @@ class Spanner extends GrpcService {
           })
           .pipe(stream);
       });
+    });
+    stream.on('finish', () => {
+      stream.destroy();
+    });
+    stream.on('close', () => {
+      metricsTracer?.recordOperationCompletion();
     });
     return stream;
   }
@@ -2043,6 +2153,32 @@ class Spanner extends GrpcService {
     return codec.Struct.fromJSON(value);
   }
 }
+
+let cleanupCalled = false;
+const cleanup = async () => {
+  if (cleanupCalled) return;
+  cleanupCalled = true;
+  await MetricsTracerFactory.resetInstance();
+};
+
+// For signals (let process exit naturally)
+process.on('SIGINT', async () => {
+  await cleanup();
+});
+process.on('SIGTERM', async () => {
+  await cleanup();
+});
+
+// For natural exit (Node will NOT wait for async, so we must block the event loop)
+process.on('beforeExit', () => {
+  const done = cleanup();
+  if (done && typeof done.then === 'function') {
+    // Handle promise rejection
+    done.catch(err => {
+      console.error('Cleanup error before exit:', err);
+    });
+  }
+});
 
 /*! Developer Documentation
  *

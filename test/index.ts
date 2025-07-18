@@ -37,7 +37,8 @@ import {
   GetInstanceConfigsOptions,
   GetInstancesOptions,
 } from '../src';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {CLOUD_RESOURCE_HEADER, AFE_SERVER_TIMING_HEADER} from '../src/common';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
@@ -47,6 +48,21 @@ assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const apiConfig = require('../src/spanner_grpc_config.json');
+
+async function disableMetrics(sandbox: sinon.SinonSandbox) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      process.env,
+      'SPANNER_DISABLE_BUILTIN_METRICS',
+    )
+  ) {
+    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  } else {
+    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+  }
+  await MetricsTracerFactory.resetInstance();
+  MetricsTracerFactory.enabled = false;
+}
 
 function getFake(obj: {}) {
   return obj as {
@@ -116,6 +132,7 @@ const fakeV1: any = {
 function fakeGoogleAuth() {
   return {
     calledWith_: arguments,
+    getProjectId: () => Promise.resolve('project-id'),
   };
 }
 
@@ -183,7 +200,7 @@ describe('Spanner', () => {
     }).Spanner;
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     sandbox = sinon.createSandbox();
     fakeGapicClient = util.noop;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -193,6 +210,7 @@ describe('Spanner', () => {
     fakeV1.SpannerClient = fakeGapicClient;
     fakeCodec.SpannerDate = util.noop;
     fakeCodec.Int = util.noop;
+    await disableMetrics(sandbox);
     spanner = new Spanner(OPTIONS);
     spanner.projectId = OPTIONS.projectId;
     replaceProjectIdTokenOverride = null;
@@ -353,6 +371,7 @@ describe('Spanner', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(spanner.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: spanner.projectFormattedName_,
+        [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
 
@@ -2175,7 +2194,11 @@ describe('Spanner', () => {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
         assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
         assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
-        assert.deepStrictEqual(gaxOpts, expectedGaxOpts);
+
+        // Check that gaxOpts has the expected structure
+        assert.ok(gaxOpts.otherArgs);
+        assert.deepStrictEqual(gaxOpts.otherArgs.headers, CONFIG.headers);
+
         arg(); // done()
       };
 

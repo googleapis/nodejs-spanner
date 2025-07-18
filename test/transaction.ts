@@ -28,6 +28,7 @@ import {google} from '../protos/protos';
 import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
+  AFE_SERVER_TIMING_HEADER,
 } from '../src/common';
 import {
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
@@ -160,6 +161,7 @@ describe('Transaction', () => {
       it('should set the commonHeaders_', () => {
         assert.deepStrictEqual(snapshot.commonHeaders_, {
           [CLOUD_RESOURCE_HEADER]: snapshot.session.parent.formattedName_,
+          [AFE_SERVER_TIMING_HEADER]: 'true',
         });
       });
     });
@@ -1701,6 +1703,64 @@ describe('Transaction', () => {
             transaction.commonHeaders_,
           ),
         );
+      });
+
+      describe('when multiplexed session is enabled for read/write', () => {
+        before(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+        });
+        after(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+            'false';
+        });
+        it('should pass multiplexedSessionPreviousTransactionId in the BeginTransactionRequest upon retrying an aborted transaction', () => {
+          const fakePreviousTransactionId = 'fake-previous-transaction-id';
+          const database = {
+            formattedName_: 'formatted-database-name',
+            isMuxEnabledForRW_: true,
+            parent: INSTANCE,
+          };
+          const SESSION = {
+            parent: database,
+            formattedName_: SESSION_NAME,
+            request: REQUEST,
+            requestStream: REQUEST_STREAM,
+          };
+          // multiplexed session
+          const multiplexedSession = Object.assign(
+            {multiplexed: true},
+            SESSION,
+          );
+          transaction = new Transaction(multiplexedSession);
+          // transaction option must contain the previous transaction id for multiplexed session
+          transaction.multiplexedSessionPreviousTransactionId =
+            fakePreviousTransactionId;
+          const stub = sandbox.stub(transaction, 'request');
+          transaction.begin();
+
+          const expectedOptions = {
+            isolationLevel: 0,
+            readWrite: {
+              multiplexedSessionPreviousTransactionId:
+                fakePreviousTransactionId,
+            },
+          };
+          const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'beginTransaction');
+          // request options should contain the multiplexedSessionPreviousTransactionId
+          assert.deepStrictEqual(reqOpts.options, expectedOptions);
+          assert.deepStrictEqual(
+            headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.commonHeaders_,
+            ),
+          );
+        });
       });
     });
 

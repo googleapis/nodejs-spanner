@@ -17,6 +17,7 @@
 import {grpc, CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
+import {Spanner} from '.';
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
@@ -86,6 +87,12 @@ export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
  */
 export const END_TO_END_TRACING_HEADER = 'x-goog-spanner-end-to-end-tracing';
 
+/*
+ * AFE SERVER TIMING header.
+ */
+export const AFE_SERVER_TIMING_HEADER =
+  'x-goog-spanner-enable-afe-server-timing';
+
 /**
  * Add Leader aware routing header to existing header list.
  * @param headers Existing header list.
@@ -109,6 +116,10 @@ export function getCommonHeaders(
     enableTracing
   ) {
     headers[END_TO_END_TRACING_HEADER] = 'true';
+  }
+
+  if (Spanner.isAFEServerTimingEnabled()) {
+    headers[AFE_SERVER_TIMING_HEADER] = 'true';
   }
 
   headers[CLOUD_RESOURCE_HEADER] = resourceName;

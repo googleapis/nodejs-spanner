@@ -297,6 +297,7 @@ export class Snapshot extends EventEmitter {
     | undefined
     | null;
   id?: Uint8Array | string;
+  multiplexedSessionPreviousTransactionId?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
   readTimestamp?: PreciseDate;
@@ -395,6 +396,27 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
+   * Modifies transaction selector to include the multiplexed session previous
+   * transaction id.
+   * This is essential for operations that use an `inline begin`.
+   * @protected
+   * @param transaction The transaction selector object that will be mutated
+   * to include the multiplexed session previous transaction id.
+   */
+  protected _setPreviousTransactionId(
+    transaction: spannerClient.spanner.v1.ITransactionSelector,
+  ): void {
+    transaction.begin!.readWrite! = Object.assign(
+      {},
+      transaction.begin!.readWrite! || {},
+      {
+        multiplexedSessionPreviousTransactionId:
+          this.multiplexedSessionPreviousTransactionId,
+      },
+    );
+  }
+
+  /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
    * @property {?google.protobuf.Timestamp} readTimestamp For snapshot read-only
@@ -452,6 +474,13 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
+    if (
+      this.multiplexedSessionPreviousTransactionId &&
+      (this.session.parent as Database).isMuxEnabledForRW_
+    ) {
+      options.readWrite!.multiplexedSessionPreviousTransactionId =
+        this.multiplexedSessionPreviousTransactionId;
+    }
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -700,6 +729,14 @@ export class Snapshot extends EventEmitter {
       transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
+    }
+
+    if (
+      !this.id &&
+      this._options.readWrite &&
+      (this.session.parent as Database).isMuxEnabledForRW_
+    ) {
+      this._setPreviousTransactionId(transaction);
     }
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1307,6 +1344,14 @@ export class Snapshot extends EventEmitter {
         transaction.begin = this._options;
       } else {
         transaction.singleUse = this._options;
+      }
+
+      if (
+        !this.id &&
+        this._options.readWrite &&
+        (this.session.parent as Database).isMuxEnabledForRW_
+      ) {
+        this._setPreviousTransactionId(transaction);
       }
       delete query.gaxOptions;
       delete query.json;
@@ -2013,6 +2058,14 @@ export class Transaction extends Dml {
       transaction.id = this.id as Uint8Array;
     } else {
       transaction.begin = this._options;
+    }
+
+    if (
+      !this.id &&
+      this._options.readWrite &&
+      (this.session.parent as Database).isMuxEnabledForRW_
+    ) {
+      this._setPreviousTransactionId(transaction);
     }
 
     const requestOptionsWithTag = this.configureTagOptions(

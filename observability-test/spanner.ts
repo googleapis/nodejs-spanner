@@ -27,6 +27,7 @@ import * as mockDatabaseAdmin from '../test/mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {Row} from '../src/partial-result-stream';
 import {END_TO_END_TRACING_HEADER} from '../src/common';
+import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 const {
   AlwaysOnSampler,
   NodeTracerProvider,
@@ -51,6 +52,23 @@ const {
 const {ObservabilityOptions} = require('../src/instrument');
 const selectSql = 'SELECT 1';
 const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
+
+async function disableMetrics(sandbox?: sinon.SinonSandbox) {
+  if (sandbox) {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        process.env,
+        'SPANNER_DISABLE_BUILTIN_METRICS',
+      )
+    ) {
+      sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+    } else {
+      sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
+    }
+  }
+  await MetricsTracerFactory.resetInstance();
+  MetricsTracerFactory.enabled = false;
+}
 
 /** A simple result set for SELECT 1. */
 function createSelect1ResultSet(): protobuf.ResultSet {
@@ -79,6 +97,7 @@ interface setupResults {
 
 async function setup(
   observabilityOptions?: typeof ObservabilityOptions,
+  sandbox?: sinon.SinonSandbox,
 ): Promise<setupResults> {
   const server = new grpc.Server();
 
@@ -109,6 +128,7 @@ async function setup(
     mock.StatementResult.updateCount(1),
   );
 
+  await disableMetrics(sandbox);
   const spanner = new Spanner({
     projectId: 'observability-project-id',
     servicePath: 'localhost',
@@ -125,6 +145,7 @@ async function setup(
 }
 
 describe('EndToEnd', async () => {
+  const sandbox = sinon.createSandbox();
   const contextManager = new AsyncHooksContextManager();
   setGlobalContextManager(contextManager);
   afterEach(() => {
@@ -139,10 +160,13 @@ describe('EndToEnd', async () => {
     spanProcessors: [new SimpleSpanProcessor(traceExporter)],
   });
 
-  const setupResult = await setup({
-    tracerProvider: tracerProvider,
-    enableExtendedTracing: false,
-  });
+  const setupResult = await setup(
+    {
+      tracerProvider: tracerProvider,
+      enableExtendedTracing: false,
+    },
+    sandbox,
+  );
 
   const server = setupResult.server;
   const spannerMock = setupResult.spannerMock;
@@ -152,6 +176,7 @@ describe('EndToEnd', async () => {
   after(async () => {
     spanner.close();
     await server.tryShutdown(() => {});
+    sandbox.restore();
   });
 
   afterEach(async () => {
@@ -397,6 +422,16 @@ describe('EndToEnd', async () => {
 });
 
 describe('ObservabilityOptions injection and propagation', async () => {
+  let sandbox;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it('Passed into Spanner, Instance and Database', async () => {
     const traceExporter = new InMemorySpanExporter();
     const tracerProvider = new NodeTracerProvider({
@@ -410,7 +445,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       enableExtendedTracing: true,
     };
 
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     const spanner = setupResult.spanner;
     const server = setupResult.server;
     const spannerMock = setupResult.spannerMock;
@@ -421,6 +456,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       spannerMock.resetRequests();
       spanner.close();
       server.tryShutdown(() => {});
+      sandbox.restore();
     });
 
     // Ensure that the same observability configuration is set on the Spanner client.
@@ -470,7 +506,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       tracerProvider: tracerProvider,
       enableExtendedTracing: true,
     };
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     const spanner = setupResult.spanner;
     const server = setupResult.server;
     const spannerMock = setupResult.spannerMock;
@@ -746,7 +782,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       tracerProvider: injectedTracerProvider,
       enableExtendedTracing: true,
     };
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     const spanner = setupResult.spanner;
     const server = setupResult.server;
     const spannerMock = setupResult.spannerMock;
@@ -832,8 +868,10 @@ describe('E2E traces with async/await', async () => {
   let traceExporter: typeof InMemorySpanExporter;
   let provider: typeof NodeTracerProvider;
   let observabilityOptions: typeof ObservabilityOptions;
+  let sandbox;
 
   beforeEach(async () => {
+    sandbox = sinon.createSandbox();
     traceExporter = new InMemorySpanExporter();
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
@@ -845,7 +883,7 @@ describe('E2E traces with async/await', async () => {
       tracerProvider: provider,
       enableExtendedTracing: true,
     };
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     spanner = setupResult.spanner;
     server = setupResult.server;
     spannerMock = setupResult.spannerMock;
@@ -857,6 +895,7 @@ describe('E2E traces with async/await', async () => {
     spannerMock.resetRequests();
     spanner.close();
     server.tryShutdown(() => {});
+    sandbox.restore();
   });
 
   function assertAsyncAwaitExpectations() {
@@ -1021,6 +1060,7 @@ describe('Negative cases', async () => {
   let traceExporter: typeof InMemorySpanExporter;
   let provider: typeof NodeTracerProvider;
   let observabilityOptions: typeof ObservabilityOptions;
+  let sandbox;
 
   const selectSql1p = 'SELECT 1p';
   const messageBadSelect1p = `Missing whitespace between literal and alias [at 1:9]
@@ -1032,6 +1072,7 @@ SELECT 1p
     'Failed to insert row with primary key ({pk#SingerId:1}) due to previously existing row';
 
   beforeEach(async () => {
+    sandbox = sinon.createSandbox();
     traceExporter = new InMemorySpanExporter();
     provider = new NodeTracerProvider({
       sampler: new AlwaysOnSampler(),
@@ -1043,7 +1084,7 @@ SELECT 1p
       tracerProvider: provider,
       enableExtendedTracing: true,
     };
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     spanner = setupResult.spanner;
     server = setupResult.server;
     spannerMock = setupResult.spannerMock;
@@ -1073,6 +1114,7 @@ SELECT 1p
     spannerMock.resetRequests();
     spanner.close();
     server.tryShutdown(() => {});
+    sandbox.restore();
   });
 
   function assertRunBadSyntaxExpectations() {
@@ -1930,17 +1972,19 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 });
 
 describe('End to end tracing headers', () => {
+  let sandbox;
   let server: grpc.Server;
   let spanner: Spanner;
   let spannerMock: mock.MockSpanner;
   let observabilityOptions: typeof ObservabilityOptions;
 
   beforeEach(async () => {
+    sandbox = sinon.createSandbox();
     observabilityOptions = {
       enableEndToEndTracing: true,
     };
 
-    const setupResult = await setup(observabilityOptions);
+    const setupResult = await setup(observabilityOptions, sandbox);
     spanner = setupResult.spanner;
     server = setupResult.server;
     spannerMock = setupResult.spannerMock;
@@ -1950,6 +1994,7 @@ describe('End to end tracing headers', () => {
     spannerMock.resetRequests();
     spanner.close();
     server.tryShutdown(() => {});
+    sandbox.restore();
   });
 
   it('run', done => {
