@@ -34,6 +34,7 @@ import {IOperation} from '../src/instance';
 import {
   CLOUD_RESOURCE_HEADER,
   LEADER_AWARE_ROUTING_HEADER,
+  AFE_SERVER_TIMING_HEADER,
 } from '../src/common';
 import {google} from '../protos/protos';
 import {protos} from '../src';
@@ -156,6 +157,16 @@ export class FakeSessionFactory extends EventEmitter {
       return false;
     } else {
       return true;
+    }
+  }
+  isMultiplexedEnabledForRW(): boolean {
+    if (
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true'
+    ) {
+      return true;
+    } else {
+      return false;
     }
   }
 }
@@ -401,6 +412,7 @@ describe('Database', () => {
     it('should set the commonHeaders_', () => {
       assert.deepStrictEqual(database.commonHeaders_, {
         [CLOUD_RESOURCE_HEADER]: database.formattedName_,
+        [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
   });

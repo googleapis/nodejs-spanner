@@ -24,11 +24,13 @@ import * as through from 'through2';
 import {RunTransactionOptions} from '../src/transaction-runner';
 import {google} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import {randomUUID} from 'crypto';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const concat = require('concat-stream');
 
 class FakeTransaction extends EventEmitter {
+  multiplexedSessionPreviousTransactionId;
   async begin(): Promise<void> {}
   request() {}
   requestStream() {}
@@ -229,11 +231,38 @@ describe('TransactionRunner', () => {
         await runner.getTransaction();
         assert.strictEqual(beginStub.callCount, 1);
       });
+
+      describe('when multiplexed session is enabled for read/write transaction', () => {
+        it('should set the multiplexedSessionPreviousTransactionId in the new transaction object', async () => {
+          const expectedTransaction = new FakeTransaction();
+          const fakePreviousTransactionId = 'fake-transaction-id';
+          sandbox.stub(expectedTransaction, 'begin').resolves();
+
+          sandbox.stub(SESSION, 'transaction').returns(expectedTransaction);
+          delete runner.transaction;
+
+          runner.multiplexedSessionPreviousTransactionId =
+            fakePreviousTransactionId;
+
+          // multiplexed session
+          runner.session = Object.assign({multiplexed: true}, SESSION);
+
+          const transaction = await runner.getTransaction();
+
+          assert.strictEqual(
+            transaction.multiplexedSessionPreviousTransactionId,
+            fakePreviousTransactionId,
+          );
+        });
+      });
     });
 
     describe('run', () => {
+      let getTransactionStub;
       beforeEach(() => {
-        sandbox.stub(runner, 'getTransaction').resolves(fakeTransaction);
+        getTransactionStub = sandbox
+          .stub(runner, 'getTransaction')
+          .resolves(fakeTransaction);
       });
 
       it('should run a transaction', async () => {
@@ -305,6 +334,72 @@ describe('TransactionRunner', () => {
             assert.deepStrictEqual(err.errors, [fakeError]);
             done();
           });
+      });
+
+      describe('when multiplexed session is enabled for read/write', () => {
+        it('should update the multiplexedSessionPreviousTransactionId before retrying aborted transaction', async () => {
+          const fakeReturnValue = 12;
+          const fakeError = new Error('err') as grpc.ServiceError;
+          fakeError.code = grpc.status.ABORTED;
+
+          const fakeTransaction1 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+          const fakeTransaction2 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+          const fakeTransaction3 = Object.assign(
+            {id: randomUUID()},
+            new FakeTransaction(),
+          );
+
+          getTransactionStub.onCall(0).resolves(fakeTransaction1);
+          getTransactionStub.onCall(1).resolves(fakeTransaction2);
+          getTransactionStub.onCall(2).resolves(fakeTransaction3);
+
+          runFn.onCall(0).callsFake(() => {
+            // assert on first call the multiplexedSessionPreviousTransactionId is set to undefined
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              undefined,
+            );
+            return Promise.reject(fakeError);
+          });
+
+          // first retry
+          runFn.onCall(1).callsFake(() => {
+            // assert on second call the multiplexedSessionPreviousTransactionId is set to first transaction id
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction1.id,
+            );
+            return Promise.reject(fakeError);
+          });
+
+          // second retry
+          runFn.onCall(2).callsFake(() => {
+            // assert on third call multiplexedSessionPreviousTransactionId is set to second transaction id
+            assert.strictEqual(
+              runner.multiplexedSessionPreviousTransactionId,
+              fakeTransaction2.id,
+            );
+            return Promise.resolve(fakeReturnValue);
+          });
+
+          const delayStub = sandbox
+            .stub(runner, 'getNextDelay')
+            .withArgs(fakeError)
+            .returns(0);
+
+          const returnValue = await runner.run();
+
+          assert.strictEqual(returnValue, fakeReturnValue);
+          // assert that retry happens twice
+          assert.strictEqual(runner.attempts, 2);
+          assert.strictEqual(delayStub.callCount, 2);
+        });
       });
     });
   });

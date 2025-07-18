@@ -19,7 +19,7 @@ import {MetricsTracerFactory} from './metrics-tracer-factory';
  * Interceptor for recording metrics on gRPC calls.
  *
  * This interceptor records attempt metrics at the start and completion of each gRPC call,
- * and also records Google Front End (GFE) metrics such as latency and connectivity errors
+ * and also records Google Front End (GFE), AFE metrics such as latency and connectivity errors
  * based on the presence and value of the 'server-timing' header in the response metadata.
  *
  * @param {object} options - The gRPC call options, including method definition.
@@ -36,13 +36,17 @@ export const MetricInterceptor = (options, nextCall) => {
       metricsTracer?.recordAttemptStart();
       const newListener = {
         onReceiveMetadata: function (metadata, next) {
-          // Record GFE Metrics
-          // GFE latency if available,
-          // or else increase the GFE connectivity error count
+          // Record GFE/AFE Metrics
+          // GFE/AFE latency if available,
+          // or else increase the GFE/AFE connectivity error count
           if (metricsTracer) {
-            const gfeHeader = metadata.getMap()['server-timing'];
-            const timing = metricsTracer?.extractGfeLatency(gfeHeader);
-            metricsTracer.gfeLatency = timing ?? null;
+            const serverTimingHeader = metadata.getMap()['server-timing'];
+            const gfeTiming =
+              metricsTracer?.extractGfeLatency(serverTimingHeader);
+            metricsTracer.gfeLatency = gfeTiming ?? null;
+            const afeTiming =
+              metricsTracer?.extractAfeLatency(serverTimingHeader);
+            metricsTracer.afeLatency = afeTiming ?? null;
           }
 
           next(metadata);
@@ -59,6 +63,11 @@ export const MetricInterceptor = (options, nextCall) => {
             metricsTracer?.recordGfeLatency(status.code);
           } else {
             metricsTracer?.recordGfeConnectivityErrorCount(status.code);
+          }
+          if (metricsTracer?.afeLatency) {
+            metricsTracer?.recordAfeLatency(status.code);
+          } else {
+            metricsTracer?.recordAfeConnectivityErrorCount(status.code);
           }
         },
       };
