@@ -8977,6 +8977,10 @@
                     "precommitToken": {
                       "type": "MultiplexedSessionPrecommitToken",
                       "id": 4
+                    },
+                    "snapshotTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 5
                     }
                   },
                   "nested": {
