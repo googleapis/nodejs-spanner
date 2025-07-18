@@ -81,6 +81,7 @@ import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {WriteAtLeastOnceOptions} from '../src/database';
 import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
+import {randomUUID} from 'crypto';
 
 const {
   AlwaysOnSampler,
@@ -3917,6 +3918,124 @@ describe('Spanner with mock server', () => {
         await database.close();
       });
     });
+
+    // TODO: enable when mux session support is available in public methods
+    describe.skip('when multiplexed session is enabled for R/W', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should select the insertOrUpdate(upsert)/delete(deleteRows) mutation key over insert', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          tx.upsert('foo', [
+            {id: 1, name: 'One'},
+            {id: 2, name: 'Two'},
+          ]);
+          tx.insert('foo', [{id: 3, name: 'Three'}]);
+          tx.insert('foo', [{id: 4, name: 'Four'}]);
+          tx.deleteRows('foo', ['3', '4']);
+          await tx.commit();
+        });
+
+        const beginTransactionRequest = spannerMock
+          .getRequests()
+          .filter(val => {
+            return (val as v1.BeginTransactionRequest).mutationKey;
+          }) as v1.BeginTransactionRequest[];
+
+        // assert on begin transaction request
+        assert.strictEqual(beginTransactionRequest.length, 1);
+
+        // selected mutation key
+        const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
+
+        // assert that mutation key have been selected
+        assert.ok(
+          selectedMutationKey,
+          'A mutation key should have been selected',
+        );
+
+        // get the type of mutation key
+        const mutationType = Object.keys(selectedMutationKey!)[0];
+
+        // assert that mutation key is not insert
+        assert.notStrictEqual(
+          mutationType,
+          'insert',
+          'The selected mutation key should not be "insert"',
+        );
+
+        // assert that mutation key is either insertOrUpdate or delete
+        assert.ok(
+          ['insertOrUpdate', 'delete'].includes(mutationType),
+          "Expected either 'insertOrUpdate' or 'delete' key.",
+        );
+
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
+
+        // assert on commit request
+        assert.strictEqual(commitRequest.length, 1);
+        await database.close();
+      });
+
+      it('should select the mutation key with highest number of values when insert key(s) are present', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', [
+            {id: randomUUID(), name: 'One'},
+            {id: randomUUID(), name: 'Two'},
+            {id: randomUUID(), name: 'Three'},
+          ]);
+          tx.insert('foo', {id: randomUUID(), name: 'Four'});
+          await tx.commit();
+        });
+
+        const beginTransactionRequest = spannerMock
+          .getRequests()
+          .filter(val => {
+            return (val as v1.BeginTransactionRequest).mutationKey;
+          }) as v1.BeginTransactionRequest[];
+
+        // assert on begin transaction request
+        assert.strictEqual(beginTransactionRequest.length, 1);
+
+        // selected mutation key
+        const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
+
+        // assert that mutation key have been selected
+        assert.ok(
+          selectedMutationKey,
+          'A mutation key should have been selected',
+        );
+
+        // assert that mutation key is insert
+        const mutationType = Object.keys(selectedMutationKey!)[0];
+        assert.ok(
+          ['insert'].includes(mutationType),
+          'insert key must have been selected',
+        );
+
+        // assert that insert mutation key with highest number of rows has been selected
+        assert.strictEqual(selectedMutationKey.insert?.values?.length, 3);
+
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
+
+        // assert on commit request
+        assert.strictEqual(commitRequest.length, 1);
+        await database.close();
+      });
+    });
   });
 
   describe('hand-crafted transaction', () => {
@@ -5012,6 +5131,68 @@ describe('Spanner with mock server', () => {
       }
 
       await database.close();
+    });
+
+    // TODO: enable when mux session support is available in public methods
+    describe.skip('when multiplexed session is enabled for R/W', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should pass the mutation key in begin transaction request in case of mutations only transactions', async () => {
+        const database = newTestDatabase();
+        await database.table('foo').upsert({id: 1, name: randomUUID()});
+        await database.table('foo').insert({id: 2, name: randomUUID()});
+        await database.table('foo').deleteRows(['2']);
+
+        const beginTransactionRequest = spannerMock
+          .getRequests()
+          .filter(val => {
+            return (val as v1.BeginTransactionRequest).mutationKey;
+          }) as v1.BeginTransactionRequest[];
+
+        // assert on begin transaction request
+        assert.strictEqual(beginTransactionRequest.length, 3);
+
+        // assert that on first begin transaction request insertOrUpdate is being selected as mutation key
+        assert.ok(
+          ['insertOrUpdate'].includes(
+            Object.keys(beginTransactionRequest[0]!.mutationKey!)[0],
+          ),
+          'insertOrUpdate key must have been selected',
+        );
+
+        // assert that on second begin transaction request insert is being selected as mutation key
+        assert.ok(
+          ['insert'].includes(
+            Object.keys(beginTransactionRequest[1]!.mutationKey!)[0],
+          ),
+          'insert key must have been selected',
+        );
+
+        // assert that on third begin transaction request delete is being selected as mutation key
+        assert.ok(
+          ['delete'].includes(
+            Object.keys(beginTransactionRequest[2]!.mutationKey!)[0],
+          ),
+          'delete key must have been selected',
+        );
+
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
+
+        // assert on commit request
+        assert.strictEqual(commitRequest.length, 3);
+
+        await database.close();
+      });
     });
   });
 

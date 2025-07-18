@@ -31,6 +31,7 @@ import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import NullValue = google.protobuf.NullValue;
 import {ExecuteSqlRequest, ReadRequest} from '../../src/transaction';
+import {randomInt} from 'crypto';
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -1232,9 +1233,17 @@ export class MockSpanner {
     const transactionId = id.toString().padStart(12, '0');
     const fullTransactionId = session.name + '/transactions/' + transactionId;
     const readTimestamp = options && options.readOnly ? now() : undefined;
+    const precommitToken =
+      session.multiplexed && options?.readWrite
+        ? {
+            precommitToken: Buffer.from('mock-precommit-token'),
+            seqNum: randomInt(1, 1000),
+          }
+        : null;
     const transaction = protobuf.Transaction.create({
       id: Buffer.from(transactionId),
       readTimestamp,
+      precommitToken,
     });
     this.transactions.set(fullTransactionId, transaction);
     this.transactionOptions.set(fullTransactionId, options);

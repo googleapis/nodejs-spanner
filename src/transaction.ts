@@ -311,6 +311,7 @@ export class Snapshot extends EventEmitter {
   _observabilityOptions?: ObservabilityOptions;
   _traceConfig: traceConfig;
   protected _dbName?: string;
+  protected _mutationKey: spannerClient.spanner.v1.Mutation | null;
 
   /**
    * The transaction ID.
@@ -383,6 +384,7 @@ export class Snapshot extends EventEmitter {
       dbName: this._dbName,
     };
     this._latestPreCommitToken = null;
+    this._mutationKey = null;
   }
 
   protected _updatePrecommitToken(resp: PrecommitTokenProvider): void {
@@ -392,6 +394,102 @@ export class Snapshot extends EventEmitter {
       this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
     ) {
       this._latestPreCommitToken = resp.precommitToken;
+    }
+  }
+
+  /**
+   * Selects a single representative mutation from a list to be used as the
+   * transaction's `mutationKey`.
+   *
+   * This key is required by Spanner and is sent in the `BeginTransactionRequest`
+   * for read-write transactions that only contain mutations. The selection follows
+   * a two-tiered heuristic to choose the most significant mutation.
+   *
+   * The selection heuristic is as follows:
+   *
+   * 1. Priority of Operation Type: High-priority mutations (`delete`, `update`,
+   * `replace`, `insertOrUpdate`) are always chosen over low-priority
+   * (`insert`) mutations.
+   *
+   * 2. Selection Strategy:
+   * - If any high-priority mutations exist, one is chosen randomly from
+   * that group, ignoring the number of rows.
+   * - If only `insert` mutations exist, the one(s) with the largest number
+   * of rows are identified, and one is chosen randomly from that subset.
+   *
+   * @protected
+   * @param mutations The list of mutations from which to select the key.
+   */
+  protected _setMutationKey(mutations: spannerClient.spanner.v1.Mutation[]) {
+    // return if the list is empty
+    if (mutations.length === 0) {
+      return;
+    }
+
+    // maintain a set of high priority keys
+    const HIGH_PRIORITY_KEYS = new Set([
+      'delete',
+      'update',
+      'replace',
+      'insertOrUpdate',
+    ]);
+
+    // maintain a variable for low priority key
+    const LOW_PRIORITY_KEY = 'insert';
+
+    // Partition mutations into high and low priority groups.
+    const [highPriority, lowPriority] = mutations.reduce(
+      (acc, mutation) => {
+        const key = Object.keys(mutation)[0] as keyof typeof mutation;
+        if (HIGH_PRIORITY_KEYS.has(key)) {
+          acc[0].push(mutation);
+        } else if (key === LOW_PRIORITY_KEY) {
+          acc[1].push(mutation);
+        }
+        // return accumulated mutations list
+        return acc;
+      },
+      [[], []] as [
+        spannerClient.spanner.v1.Mutation[],
+        spannerClient.spanner.v1.Mutation[],
+      ],
+    );
+
+    // Apply the selection logic based on the rules.
+    if (highPriority.length > 0) {
+      // RULE 1: If high-priority keys exist, pick one randomly.
+      const randomIndex = Math.floor(Math.random() * highPriority.length);
+      this._mutationKey = highPriority[randomIndex];
+    } else if (lowPriority.length > 0) {
+      // RULE 2: If only 'insert' key(s) exist, find the one with
+      // highest number of values
+      const {bestCandidates} = lowPriority.reduce(
+        (acc, mutation) => {
+          const size = mutation.insert?.values?.length || 0;
+
+          if (size > acc.maxSize) {
+            // New largest size found, start a new list
+            return {maxSize: size, bestCandidates: [mutation]};
+          }
+          if (size === acc.maxSize) {
+            // Same size as current max, add to list
+            acc.bestCandidates.push(mutation);
+          }
+          // return accumulated mutations list
+          return acc;
+        },
+        {
+          maxSize: -1,
+          bestCandidates: [] as spannerClient.spanner.v1.Mutation[],
+        },
+      );
+
+      // Pick randomly from the largest 'insert' mutation(s).
+      const randomIndex = Math.floor(Math.random() * bestCandidates.length);
+      this._mutationKey = bestCandidates[randomIndex];
+    } else {
+      // No mutations to select from.
+      this._mutationKey = null;
     }
   }
 
@@ -485,6 +583,10 @@ export class Snapshot extends EventEmitter {
       session,
       options,
     };
+
+    if (this._mutationKey) {
+      reqOpts.mutationKey = this._mutationKey;
+    }
 
     // Only hand crafted read-write transactions will be able to set a
     // transaction tag for the BeginTransaction RPC. Also, this.requestOptions
@@ -2286,6 +2388,9 @@ export class Transaction extends Dml {
         } else if (!this._useInRunner) {
           reqOpts.singleUseTransaction = this._options;
         } else {
+          if ((this.session.parent as Database).isMuxEnabledForRW_) {
+            this._setMutationKey(mutations);
+          }
           this.begin().then(
             () => {
               this.commit(options, (err, resp) => {
