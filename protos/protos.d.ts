@@ -32609,6 +32609,9 @@ export namespace google {
 
                 /** CommitResponse precommitToken */
                 precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** CommitResponse snapshotTimestamp */
+                snapshotTimestamp?: (google.protobuf.ITimestamp|null);
             }
 
             /** Represents a CommitResponse. */
@@ -32628,6 +32631,9 @@ export namespace google {
 
                 /** CommitResponse precommitToken. */
                 public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** CommitResponse snapshotTimestamp. */
+                public snapshotTimestamp?: (google.protobuf.ITimestamp|null);
 
                 /** CommitResponse MultiplexedSessionRetry. */
                 public MultiplexedSessionRetry?: "precommitToken";
