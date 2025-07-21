@@ -2285,26 +2285,28 @@ class Database extends common.GrpcServiceObject {
         transactionTag: options.requestOptions?.transactionTag,
       },
       span => {
-        this.pool_.getSession((err, session, transaction) => {
-          if (!err) {
-            if (options.requestOptions) {
-              transaction!.requestOptions = Object.assign(
-                transaction!.requestOptions || {},
-                options.requestOptions,
+        this.sessionFactory_.getSessionForReadWrite(
+          (err, session, transaction) => {
+            if (!err) {
+              if (options.requestOptions) {
+                transaction!.requestOptions = Object.assign(
+                  transaction!.requestOptions || {},
+                  options.requestOptions,
+                );
+              }
+              transaction?.setReadWriteTransactionOptions(
+                options as RunTransactionOptions,
               );
+              span.addEvent('Using Session', {'session.id': session?.id});
+              transaction!._observabilityOptions = this._observabilityOptions;
+              this._releaseOnEnd(session!, transaction!, span);
+            } else {
+              setSpanError(span, err);
             }
-            transaction?.setReadWriteTransactionOptions(
-              options as RunTransactionOptions,
-            );
-            span.addEvent('Using Session', {'session.id': session?.id});
-            transaction!._observabilityOptions = this._observabilityOptions;
-            this._releaseOnEnd(session!, transaction!, span);
-          } else {
-            setSpanError(span, err);
-          }
-          span.end();
-          cb!(err as grpc.ServiceError | null, transaction);
-        });
+            span.end();
+            cb!(err as grpc.ServiceError | null, transaction);
+          },
+        );
       },
     );
   }
@@ -3339,64 +3341,66 @@ class Database extends common.GrpcServiceObject {
         transactionTag: options.requestOptions?.transactionTag,
       },
       span => {
-        this.pool_.getSession((err, session?, transaction?) => {
-          if (err) {
-            setSpanError(span, err);
-          }
+        this.sessionFactory_.getSessionForReadWrite(
+          (err, session?, transaction?) => {
+            if (err) {
+              setSpanError(span, err);
+            }
 
-          if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
-            span.addEvent('No session available', {
-              'session.id': session?.id,
-            });
-            span.end();
-            this.runTransaction(options, runFn!);
-            return;
-          }
-
-          if (err) {
-            span.end();
-            runFn!(err as grpc.ServiceError);
-            return;
-          }
-
-          transaction!._observabilityOptions = this._observabilityOptions;
-
-          transaction!.requestOptions = Object.assign(
-            transaction!.requestOptions || {},
-            options.requestOptions,
-          );
-
-          transaction!.setReadWriteTransactionOptions(
-            options as RunTransactionOptions,
-          );
-
-          const release = () => {
-            this.pool_.release(session!);
-            span.end();
-          };
-
-          const runner = new TransactionRunner(
-            session!,
-            transaction!,
-            runFn!,
-            options,
-          );
-
-          runner.run().then(release, err => {
-            setSpanError(span, err!);
-
-            if (isSessionNotFoundError(err)) {
+            if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
               span.addEvent('No session available', {
                 'session.id': session?.id,
               });
-              release();
+              span.end();
               this.runTransaction(options, runFn!);
-            } else {
-              setImmediate(runFn!, err);
-              release();
+              return;
             }
-          });
-        });
+
+            if (err) {
+              span.end();
+              runFn!(err as grpc.ServiceError);
+              return;
+            }
+
+            transaction!._observabilityOptions = this._observabilityOptions;
+
+            transaction!.requestOptions = Object.assign(
+              transaction!.requestOptions || {},
+              options.requestOptions,
+            );
+
+            transaction!.setReadWriteTransactionOptions(
+              options as RunTransactionOptions,
+            );
+
+            const release = () => {
+              this.sessionFactory_.release(session!);
+              span.end();
+            };
+
+            const runner = new TransactionRunner(
+              session!,
+              transaction!,
+              runFn!,
+              options,
+            );
+
+            runner.run().then(release, err => {
+              setSpanError(span, err!);
+
+              if (isSessionNotFoundError(err)) {
+                span.addEvent('No session available', {
+                  'session.id': session?.id,
+                });
+                release();
+                this.runTransaction(options, runFn!);
+              } else {
+                setImmediate(runFn!, err);
+                release();
+              }
+            });
+          },
+        );
       },
     );
   }
@@ -3481,7 +3485,9 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     let sessionId = '';
-    const getSession = this.pool_.getSession.bind(this.pool_);
+    const getSession = this.sessionFactory_.getSessionForReadWrite.bind(
+      this.sessionFactory_,
+    );
 
     return startTrace(
       'Database.runTransactionAsync',
@@ -3519,7 +3525,7 @@ class Database extends common.GrpcServiceObject {
               throw e;
             } finally {
               span.end();
-              this.pool_.release(session);
+              this.sessionFactory_.release(session);
             }
           } catch (e) {
             if (isSessionNotFoundError(e as ServiceError)) {

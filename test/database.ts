@@ -148,26 +148,19 @@ export class FakeSessionFactory extends EventEmitter {
   }
   getSession() {}
   getSessionForPartitionedOps() {}
+  getSessionForReadWrite() {}
   getPool(): FakeSessionPool {
     return new FakeSessionPool();
   }
   release() {}
   isMultiplexedEnabled(): boolean {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
-      return false;
-    } else {
-      return true;
-    }
+    return process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true';
   }
   isMultiplexedEnabledForRW(): boolean {
-    if (
+    return (
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true'
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    );
   }
 }
 
@@ -2588,83 +2581,109 @@ describe('Database', () => {
   });
 
   describe('getTransaction', () => {
-    let fakePool: FakeSessionPool;
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
     let getSessionStub: sinon.SinonStub;
 
-    beforeEach(() => {
-      fakePool = database.pool_;
-      fakeSessionFactory = database.sessionFactory_;
-      fakeSession = new FakeSession();
-      fakeTransaction = new FakeTransaction(
-        {} as google.spanner.v1.TransactionOptions.ReadWrite,
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
+
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
+            fakeTransaction = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.ReadWrite,
+            );
+
+            getSessionStub = (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, fakeSession, fakeTransaction);
+            });
+          });
+
+          it('should get a read/write transaction', () => {
+            getSessionStub.callsFake(() => {});
+
+            database.getTransaction(assert.ifError);
+
+            assert.strictEqual(getSessionStub.callCount, 1);
+          });
+
+          it(`should return any ${isMuxEnabled[0] && isMuxEnabled[1] ? 'multiplexed session' : 'pool'} errors`, done => {
+            const fakeError = new Error('err');
+
+            getSessionStub.callsFake(callback => callback(fakeError));
+
+            database.getTransaction(err => {
+              assert.strictEqual(err, fakeError);
+              done();
+            });
+          });
+
+          it('should return the read/write transaction', done => {
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              assert.strictEqual(transaction, fakeTransaction);
+              done();
+            });
+          });
+
+          it('should propagate an error', done => {
+            const error = new Error('resource');
+            (sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub)
+              .withArgs(fakeSession)
+              .throws(error);
+
+            database.on('error', err => {
+              assert.deepStrictEqual(err, error);
+              done();
+            });
+
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              transaction.emit('end');
+            });
+          });
+
+          it('should release the session on transaction end', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(fakeSession);
+
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              transaction.emit('end');
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
+        },
       );
-
-      getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => {
-        callback(null, fakeSession, fakeTransaction);
-      });
-    });
-
-    it('should get a read/write transaction', () => {
-      getSessionStub.callsFake(() => {});
-
-      database.getTransaction(assert.ifError);
-
-      assert.strictEqual(getSessionStub.callCount, 1);
-    });
-
-    it('should return any pool errors', done => {
-      const fakeError = new Error('err');
-
-      getSessionStub.callsFake(callback => callback(fakeError));
-
-      database.getTransaction(err => {
-        assert.strictEqual(err, fakeError);
-        done();
-      });
-    });
-
-    it('should return the read/write transaction', done => {
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        assert.strictEqual(transaction, fakeTransaction);
-        done();
-      });
-    });
-
-    it('should propagate an error', done => {
-      const error = new Error('resource');
-      (sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub)
-        .withArgs(fakeSession)
-        .throws(error);
-
-      database.on('error', err => {
-        assert.deepStrictEqual(err, error);
-        done();
-      });
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-      });
-    });
-
-    it('should release the session on transaction end', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
     });
   });
 
@@ -3195,96 +3214,126 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
-    beforeEach(() => {
-      pool = database.pool_;
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+
+            (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, SESSION, TRANSACTION);
+            });
+          });
+
+          it('should return any errors getting a session', done => {
+            const fakeErr = new Error('err');
+
+            (
+              fakeSessionFactory.getSessionForReadWrite as sinon.SinonStub
+            ).callsFake(callback => callback(fakeErr));
+
+            database.runTransaction(err => {
+              assert.strictEqual(err, fakeErr);
+              done();
+            });
+          });
+
+          it('should create a `TransactionRunner`', () => {
+            const fakeRunFn = sandbox.spy();
+
+            database.runTransaction(fakeRunFn);
+
+            const [session, transaction, runFn, options] =
+              fakeTransactionRunner.calledWith_;
+
+            assert.strictEqual(session, SESSION);
+            assert.strictEqual(transaction, TRANSACTION);
+            // Given that we've wrapped the transaction runner with observability
+            // tracing, directly comparing values runFn and fakeRunFn.
+            // assert.strictEqual(runFn, fakeRunFn);
+            assert.deepStrictEqual(options, {});
+          });
+
+          it('should optionally accept runner `options`', () => {
+            const fakeOptions = {timeout: 1};
+
+            database.runTransaction(fakeOptions, assert.ifError);
+
+            const options = fakeTransactionRunner.calledWith_[3];
+
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should optionally accept runner `option` isolationLevel', async () => {
+            const fakeOptions = {
+              isolationLevel: IsolationLevel.REPEATABLE_READ,
+            };
+
+            await database.runTransaction(fakeOptions, assert.ifError);
+
+            const options = fakeTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should release the session when finished', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+
+            sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
+
+            database.runTransaction(assert.ifError);
+
+            setImmediate(() => {
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
+
+          it('should catch any run errors and return them', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+            const fakeError = new Error('err');
+
+            sandbox
+              .stub(FakeTransactionRunner.prototype, 'run')
+              .rejects(fakeError);
+
+            database.runTransaction(err => {
+              assert.strictEqual(err, fakeError);
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
         },
       );
-    });
-
-    it('should return any errors getting a session', done => {
-      const fakeErr = new Error('err');
-
-      (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr),
-      );
-
-      database.runTransaction(err => {
-        assert.strictEqual(err, fakeErr);
-        done();
-      });
-    });
-
-    it('should create a `TransactionRunner`', () => {
-      const fakeRunFn = sandbox.spy();
-
-      database.runTransaction(fakeRunFn);
-
-      const [session, transaction, runFn, options] =
-        fakeTransactionRunner.calledWith_;
-
-      assert.strictEqual(session, SESSION);
-      assert.strictEqual(transaction, TRANSACTION);
-      // Given that we've wrapped the transaction runner with observability
-      // tracing, directly comparing values runFn and fakeRunFn.
-      // assert.strictEqual(runFn, fakeRunFn);
-      assert.deepStrictEqual(options, {});
-    });
-
-    it('should optionally accept runner `options`', () => {
-      const fakeOptions = {timeout: 1};
-
-      database.runTransaction(fakeOptions, assert.ifError);
-
-      const options = fakeTransactionRunner.calledWith_[3];
-
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should optionally accept runner `option` isolationLevel', async () => {
-      const fakeOptions = {
-        isolationLevel: IsolationLevel.REPEATABLE_READ,
-      };
-
-      await database.runTransaction(fakeOptions, assert.ifError);
-
-      const options = fakeTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should release the session when finished', done => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
-
-      database.runTransaction(assert.ifError);
-
-      setImmediate(() => {
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
-
-    it('should catch any run errors and return them', done => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-      const fakeError = new Error('err');
-
-      sandbox.stub(FakeTransactionRunner.prototype, 'run').rejects(fakeError);
-
-      database.runTransaction(err => {
-        assert.strictEqual(err, fakeError);
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
     });
   });
 
@@ -3294,71 +3343,101 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
-    beforeEach(() => {
-      pool = database.pool_;
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+
+            (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, SESSION, TRANSACTION);
+            });
+          });
+
+          it('should create an `AsyncTransactionRunner`', async () => {
+            const fakeRunFn = sandbox.spy();
+
+            await database.runTransactionAsync(fakeRunFn);
+
+            const [session, transaction, runFn, options] =
+              fakeAsyncTransactionRunner.calledWith_;
+            assert.strictEqual(session, SESSION);
+            assert.strictEqual(transaction, TRANSACTION);
+            assert.strictEqual(runFn, fakeRunFn);
+            assert.deepStrictEqual(options, {});
+          });
+
+          it('should optionally accept runner `options`', async () => {
+            const fakeOptions = {timeout: 1};
+
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should optionally accept runner `option` isolationLevel', async () => {
+            const fakeOptions = {
+              isolationLevel: IsolationLevel.REPEATABLE_READ,
+            };
+
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should return the runners resolved value', async () => {
+            const fakeValue = {};
+
+            sandbox
+              .stub(FakeAsyncTransactionRunner.prototype, 'run')
+              .resolves(fakeValue);
+
+            const value = await database.runTransactionAsync(assert.ifError);
+            assert.strictEqual(value, fakeValue);
+          });
+
+          it('should release the session when finished', async () => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+
+            sandbox
+              .stub(FakeAsyncTransactionRunner.prototype, 'run')
+              .resolves();
+
+            await database.runTransactionAsync(assert.ifError);
+            assert.strictEqual(releaseStub.callCount, 1);
+          });
         },
       );
-    });
-
-    it('should create an `AsyncTransactionRunner`', async () => {
-      const fakeRunFn = sandbox.spy();
-
-      await database.runTransactionAsync(fakeRunFn);
-
-      const [session, transaction, runFn, options] =
-        fakeAsyncTransactionRunner.calledWith_;
-      assert.strictEqual(session, SESSION);
-      assert.strictEqual(transaction, TRANSACTION);
-      assert.strictEqual(runFn, fakeRunFn);
-      assert.deepStrictEqual(options, {});
-    });
-
-    it('should optionally accept runner `options`', async () => {
-      const fakeOptions = {timeout: 1};
-
-      await database.runTransactionAsync(fakeOptions, assert.ifError);
-
-      const options = fakeAsyncTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should optionally accept runner `option` isolationLevel', async () => {
-      const fakeOptions = {
-        isolationLevel: IsolationLevel.REPEATABLE_READ,
-      };
-
-      await database.runTransactionAsync(fakeOptions, assert.ifError);
-
-      const options = fakeAsyncTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should return the runners resolved value', async () => {
-      const fakeValue = {};
-
-      sandbox
-        .stub(FakeAsyncTransactionRunner.prototype, 'run')
-        .resolves(fakeValue);
-
-      const value = await database.runTransactionAsync(assert.ifError);
-      assert.strictEqual(value, fakeValue);
-    });
-
-    it('should release the session when finished', async () => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run').resolves();
-
-      await database.runTransactionAsync(assert.ifError);
-      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 

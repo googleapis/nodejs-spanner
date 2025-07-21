@@ -913,21 +913,24 @@ describe('Database', () => {
   });
 
   describe('getTransaction', () => {
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
     let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
-      fakePool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakeTransaction = new FakeTransaction(
         {} as google.spanner.v1.TransactionOptions.ReadWrite,
       );
 
       getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+        sandbox.stub(
+          fakeSessionFactory,
+          'getSessionForReadWrite',
+        ) as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession, fakeTransaction);
       });
@@ -1464,23 +1467,26 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
     beforeEach(() => {
-      pool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
 
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
-        },
-      );
+      (
+        sandbox.stub(
+          fakeSessionFactory,
+          'getSessionForReadWrite',
+        ) as sinon.SinonStub
+      ).callsFake(callback => {
+        callback(null, SESSION, TRANSACTION);
+      });
     });
 
     it('with error getting session', done => {
       const fakeErr = new Error('getting a session');
 
-      (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr),
+      (fakeSessionFactory.getSessionForReadWrite as sinon.SinonStub).callsFake(
+        callback => callback(fakeErr),
       );
 
       database.runTransaction(
@@ -1598,15 +1604,18 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
     beforeEach(() => {
-      pool = database.pool_;
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
-        },
-      );
+      fakeSessionFactory = database.sessionFactory_;
+      (
+        sandbox.stub(
+          fakeSessionFactory,
+          'getSessionForReadWrite',
+        ) as sinon.SinonStub
+      ).callsFake(callback => {
+        callback(null, SESSION, TRANSACTION);
+      });
     });
 
     it('with no error', async () => {
