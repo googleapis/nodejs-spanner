@@ -325,7 +325,6 @@ export class MockSpanner {
     string,
     protobuf.Session
   >();
-  private multiplexedSession: boolean | undefined;
   private begin: boolean;
   private transactionCounters: Map<string, number> = new Map<string, number>();
   private transactions: Map<string, protobuf.Transaction> = new Map<
@@ -473,7 +472,6 @@ export class MockSpanner {
       createTime: now(),
     });
     this.sessions.set(name, session);
-    this.multiplexedSession = multiplexed;
     return session;
   }
 
@@ -695,13 +693,14 @@ export class MockSpanner {
           }
         }
         const res = this.statementResults.get(call.request!.sql);
+        const session = this.sessions.get(call.request!.session);
         if (res) {
           if (call.request!.transaction?.begin) {
             const txn = this._updateTransaction(
               call.request!.session,
               call.request!.transaction.begin,
             );
-            const precommitToken = this.multiplexedSession
+            const precommitToken = session?.multiplexed
               ? protobuf.MultiplexedSessionPrecommitToken.create({
                   precommitToken: Buffer.from('mock-precommit-token'),
                   seqNum: randomInt(1, 1000),
@@ -1012,13 +1011,14 @@ export class MockSpanner {
         );
         const key = `${call.request!.table}|${keySet}`;
         const res = this.readRequestResults.get(key);
+        const session = this.sessions.get(call.request!.session);
         if (res) {
           if (call.request!.transaction?.begin) {
             const txn = this._updateTransaction(
               call.request!.session,
               call.request!.transaction.begin,
             );
-            const precommitToken = this.multiplexedSession
+            const precommitToken = session?.multiplexed
               ? protobuf.MultiplexedSessionPrecommitToken.create({
                   precommitToken: Buffer.from('mock-precommit-token'),
                   seqNum: randomInt(1, 1000),

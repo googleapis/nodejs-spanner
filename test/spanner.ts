@@ -2099,6 +2099,12 @@ describe('Spanner with mock server', () => {
           'false';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
       it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
         const database = newTestDatabase({min: 1, max: 1});
         const pool = (database.sessionFactory_ as SessionFactory)
@@ -2127,6 +2133,12 @@ describe('Spanner with mock server', () => {
           'true';
       });
 
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
       it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
         const database = newTestDatabase({min: 1, max: 1});
         const pool = (database.sessionFactory_ as SessionFactory)
@@ -2152,6 +2164,12 @@ describe('Spanner with mock server', () => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
           'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
       });
 
       it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
@@ -4450,6 +4468,86 @@ describe('Spanner with mock server', () => {
               transactionObjects[0].id,
             );
           });
+        });
+      });
+
+      // test(s) for commit retry logic
+      describe('Transaction Commit Retry Logic', () => {
+        let commitCallCount = 0;
+        let capturedCommitRequests: any[] = [];
+
+        it('should retry commit only once with a precommit token', async () => {
+          commitCallCount = 0;
+          capturedCommitRequests = [];
+
+          const database = newTestDatabase({min: 1, max: 1});
+          const fakeRetryToken = Buffer.from('mock-retry-token-123');
+
+          const commitRetryResponse = {
+            MultiplexedSessionRetry: 'precommitToken',
+            precommitToken: {
+              precommitToken: fakeRetryToken,
+              seqNum: 1,
+            },
+            commitTimestamp: mock.now(),
+          };
+
+          const commitSuccessResponse = {
+            commitTimestamp: mock.now(),
+          };
+
+          await database.runTransactionAsync(async tx => {
+            // mock commit request
+            tx.request = (config: any, callback: Function) => {
+              const cb = callback as (err: any, response: any) => void;
+
+              if (config.method !== 'commit') return;
+
+              commitCallCount++;
+              capturedCommitRequests.push(config.reqOpts);
+
+              if (commitCallCount === 1) {
+                cb(null, commitRetryResponse);
+              } else {
+                cb(null, commitSuccessResponse);
+              }
+            };
+
+            // perform read
+            await tx!.run(selectSql);
+
+            // perform mutations
+            await tx.upsert('foo', [
+              {id: 1, name: 'One'},
+              {id: 2, name: 'Two'},
+            ]);
+
+            // make a call to commit
+            await tx.commit();
+
+            // assert that retry heppen only once
+            assert.strictEqual(
+              commitCallCount,
+              2,
+              'The mock commit method should have been called exactly twice.',
+            );
+            const firstRequest = capturedCommitRequests[0];
+            // assert that during the first request to commit
+            // the precommitToken was missing
+            assert.ok(
+              !firstRequest.precommitToken,
+              'The first commit request should not have a precommitToken.',
+            );
+            const secondRequest = capturedCommitRequests[1];
+            // assert that during the second request to commit
+            // the precommitToken was present
+            assert.deepStrictEqual(
+              secondRequest.precommitToken,
+              commitRetryResponse.precommitToken,
+              'The second commit request should have the precommitToken from the retry response.',
+            );
+          });
+          await database.close();
         });
       });
     });

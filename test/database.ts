@@ -3274,9 +3274,6 @@ describe('Database', () => {
 
             assert.strictEqual(session, SESSION);
             assert.strictEqual(transaction, TRANSACTION);
-            // Given that we've wrapped the transaction runner with observability
-            // tracing, directly comparing values runFn and fakeRunFn.
-            // assert.strictEqual(runFn, fakeRunFn);
             assert.deepStrictEqual(options, {});
           });
 
