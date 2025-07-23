@@ -17,7 +17,6 @@
 import {GrpcService} from './common-grpc/service';
 import * as checkpointStream from 'checkpoint-stream';
 import * as eventsIntercept from 'events-intercept';
-import * as is from 'is';
 import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
@@ -28,6 +27,7 @@ import {DeadlineError, isRetryableInternalError} from './transaction-runner';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
 import * as stream from 'stream';
+import {isDefined, isEmpty, isString} from './helper';
 
 export type ResumeToken = string | Uint8Array;
 
@@ -241,7 +241,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
 
     let res = true;
-    if (!is.empty(chunk.values)) {
+    if (!isEmpty(chunk.values)) {
       res = this._addChunk(chunk);
     }
 
@@ -429,7 +429,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       return [PartialResultStream.mergeLists(type, head, tail)];
     }
 
-    if (is.string(head) && is.string(tail)) {
+    if (isString(head) && isString(tail)) {
       return [head + tail];
     }
 
@@ -540,7 +540,7 @@ export function partialResultStream(
     });
   };
   const makeRequest = (): void => {
-    if (is.defined(lastResumeToken) && lastResumeToken.length > 0) {
+    if (isDefined(lastResumeToken) && lastResumeToken.length > 0) {
       partialRSStream._resetPendingValues();
     }
     lastRequestStream = requestFn(lastResumeToken);
@@ -620,5 +620,5 @@ export function partialResultStream(
 }
 
 function _hasResumeToken(chunk: google.spanner.v1.PartialResultSet): boolean {
-  return is.defined(chunk.resumeToken) && chunk.resumeToken.length > 0;
+  return isDefined(chunk.resumeToken) && chunk.resumeToken.length > 0;
 }

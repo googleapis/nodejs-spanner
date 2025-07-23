@@ -25,9 +25,9 @@ import {google} from '../protos/protos';
 import {GoogleError} from 'google-gax';
 import {util} from 'protobufjs';
 import Long = util.Long;
+import {isString} from '../src/helper';
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
-const is = require('is');
 
 describe('codec', () => {
   let codec;
@@ -946,7 +946,7 @@ describe('codec', () => {
 
     it('should store value as string', () => {
       const protoEnum = new codec.ProtoEnum(enumParams);
-      assert(is.string(protoEnum.value));
+      assert(isString(protoEnum.value));
     });
 
     it('should throw an error when value is non numeric string and enumObject is not passed', () => {
