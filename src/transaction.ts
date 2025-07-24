@@ -16,11 +16,10 @@
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
-import {toArray} from './helper';
+import {isEmpty, toArray} from './helper';
 import Long = require('long');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError, Status, GoogleError} from 'google-gax';
-import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {finished, Readable, PassThrough, Stream} from 'stream';
 
@@ -1638,7 +1637,7 @@ export class Snapshot extends EventEmitter {
       });
     }
 
-    if (is.empty(keySet)) {
+    if (isEmpty(keySet)) {
       keySet.all = true;
     }
 
@@ -1686,7 +1685,7 @@ export class Snapshot extends EventEmitter {
 
     // If we didn't detect a convenience format, we'll just assume that
     // they passed in a protobuf timestamp.
-    if (is.empty(readOnly)) {
+    if (isEmpty(readOnly)) {
       Object.assign(readOnly, options);
     }
 
@@ -1725,7 +1724,7 @@ export class Snapshot extends EventEmitter {
       params.fields = fields;
     }
 
-    if (!is.empty(typeMap)) {
+    if (!isEmpty(typeMap)) {
       Object.keys(typeMap).forEach(param => {
         const type = typeMap[param];
         paramTypes[param] = codec.createTypeObject(type);
