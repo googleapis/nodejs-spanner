@@ -4176,13 +4176,6 @@ describe('Spanner with mock server', () => {
           // get the type of mutation key
           const mutationType = Object.keys(selectedMutationKey!)[0];
 
-          // assert that mutation key is not insert
-          assert.notStrictEqual(
-            mutationType,
-            'insert',
-            'The selected mutation key should not be "insert"',
-          );
-
           // assert that mutation key is either insertOrUpdate or delete
           assert.ok(
             ['insertOrUpdate', 'delete'].includes(mutationType),

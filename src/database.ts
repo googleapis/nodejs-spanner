@@ -2528,7 +2528,7 @@ class Database extends common.GrpcServiceObject {
     callback?: PoolRequestCallback,
   ): void | Promise<Session> {
     const sessionFactory_ = this.sessionFactory_;
-    sessionFactory_.getSessionForPooledRequest((err, session) => {
+    sessionFactory_.getSessionForReadWrite((err, session) => {
       if (err) {
         callback!(err as ServiceError, null);
         return;

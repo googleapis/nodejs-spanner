@@ -1651,7 +1651,7 @@ describe('Database', () => {
 
       database.sessionFactory_ = SESSIONFACTORY;
 
-      SESSIONFACTORY.getSessionForPooledRequest = callback => {
+      SESSIONFACTORY.getSessionForReadWrite = callback => {
         callback(null, SESSION);
       };
 
@@ -1659,7 +1659,7 @@ describe('Database', () => {
     });
 
     it('should get a session', done => {
-      SESSIONFACTORY.getSessionForPooledRequest = () => {
+      SESSIONFACTORY.getSessionForReadWrite = () => {
         done();
       };
 
@@ -1669,7 +1669,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      SESSIONFACTORY.getSessionForPooledRequest = callback => {
+      SESSIONFACTORY.getSessionForReadWrite = callback => {
         callback(error);
       };
 
@@ -2695,6 +2695,12 @@ describe('Database', () => {
             process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
               isMuxEnabled[1].toString();
           });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
@@ -3106,6 +3112,12 @@ describe('Database', () => {
               isMuxEnabled[1].toString();
           });
 
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env
+              .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
@@ -3324,6 +3336,12 @@ describe('Database', () => {
             process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
               isMuxEnabled[1].toString();
           });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
 
@@ -3450,9 +3468,14 @@ describe('Database', () => {
             process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
               isMuxEnabled[1].toString();
           });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
-
             (
               sandbox.stub(
                 fakeSessionFactory,
