@@ -1032,77 +1032,98 @@ describe('Database', () => {
     const SESSION = {};
     const RESPONSE = {a: 'b'};
 
-    beforeEach(() => {
-      database.pool_ = {
-        getSession(callback) {
-          callback(null, SESSION);
+    const muxEnabled = [true, false];
+
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+                  'false');
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+          });
+
+          beforeEach(() => {
+            database.sessionFactory_ = {
+              getSession(callback) {
+                callback(null, SESSION);
+              },
+            };
+          });
+
+          it('should return any get session errors', done => {
+            const error = new Error('err');
+
+            database.sessionFactory_ = {
+              getSession(callback) {
+                callback(error);
+              },
+            };
+
+            database.createBatchTransaction((err, transaction, resp) => {
+              assert.strictEqual(err, error);
+              assert.strictEqual(transaction, null);
+              assert.strictEqual(resp, undefined);
+              done();
+            });
+          });
+
+          it('should create a transaction', done => {
+            const opts = {a: 'b'};
+
+            const fakeTransaction = {
+              begin(callback) {
+                callback(null, RESPONSE);
+              },
+
+              once() {},
+            };
+
+            database.batchTransaction = (identifier, options) => {
+              assert.deepStrictEqual(identifier, {session: SESSION});
+              assert.strictEqual(options, opts);
+              return fakeTransaction;
+            };
+
+            database.createBatchTransaction(opts, (err, transaction, resp) => {
+              assert.strictEqual(err, null);
+              assert.strictEqual(transaction, fakeTransaction);
+              assert.strictEqual(resp, RESPONSE);
+              done();
+            });
+          });
+
+          it('should return any transaction errors', done => {
+            const error = new Error('err');
+
+            const fakeTransaction = {
+              begin(callback) {
+                callback(error, RESPONSE);
+              },
+
+              once() {},
+            };
+
+            database.batchTransaction = () => {
+              return fakeTransaction;
+            };
+
+            database.createBatchTransaction((err, transaction, resp) => {
+              assert.strictEqual(err, error);
+              assert.strictEqual(transaction, null);
+              assert.strictEqual(resp, RESPONSE);
+              done();
+            });
+          });
         },
-      };
-    });
-
-    it('should return any get session errors', done => {
-      const error = new Error('err');
-
-      database.pool_ = {
-        getSession(callback) {
-          callback(error);
-        },
-      };
-
-      database.createBatchTransaction((err, transaction, resp) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, undefined);
-        done();
-      });
-    });
-
-    it('should create a transaction', done => {
-      const opts = {a: 'b'};
-
-      const fakeTransaction = {
-        begin(callback) {
-          callback(null, RESPONSE);
-        },
-
-        once() {},
-      };
-
-      database.batchTransaction = (identifier, options) => {
-        assert.deepStrictEqual(identifier, {session: SESSION});
-        assert.strictEqual(options, opts);
-        return fakeTransaction;
-      };
-
-      database.createBatchTransaction(opts, (err, transaction, resp) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(transaction, fakeTransaction);
-        assert.strictEqual(resp, RESPONSE);
-        done();
-      });
-    });
-
-    it('should return any transaction errors', done => {
-      const error = new Error('err');
-
-      const fakeTransaction = {
-        begin(callback) {
-          callback(error, RESPONSE);
-        },
-
-        once() {},
-      };
-
-      database.batchTransaction = () => {
-        return fakeTransaction;
-      };
-
-      database.createBatchTransaction((err, transaction, resp) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, RESPONSE);
-        done();
-      });
+      );
     });
   });
 

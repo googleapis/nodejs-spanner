@@ -705,7 +705,7 @@ describe('Database', () => {
     const RESPONSE = {a: 'b'};
 
     beforeEach(() => {
-      database.pool_ = {
+      database.sessionFactory_ = {
         getSession(callback) {
           callback(null, SESSION);
         },
@@ -715,7 +715,7 @@ describe('Database', () => {
     it('with session error', done => {
       const error = new Error('with session error');
 
-      database.pool_ = {
+      database.sessionFactory_ = {
         getSession(callback) {
           callback(error);
         },

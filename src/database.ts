@@ -906,7 +906,7 @@ class Database extends common.GrpcServiceObject {
       'Database.createBatchTransaction',
       this._traceConfig,
       span => {
-        this.pool_.getSession((err, session) => {
+        this.sessionFactory_.getSession((err, session) => {
           if (err) {
             setSpanError(span, err);
             span.end();

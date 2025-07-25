@@ -3945,6 +3945,30 @@ describe('Spanner with mock server', () => {
           assert.ok(err instanceof SessionLeakError);
         }
       });
+
+      describe('when multiplexed session is enabled', () => {
+        before(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        });
+        after(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        });
+        it('should use multiplexed session', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const pool = database.pool_ as SessionPool;
+          const multiplexedSession = (
+            database.sessionFactory_ as SessionFactory
+          ).multiplexedSession_ as MultiplexedSession;
+          // pool is empty before call to createBatchTransaction
+          assert.strictEqual(pool.size, 0);
+          const [transaction] = await database.createBatchTransaction();
+          // pool is empty after call to createBatchTransaction
+          assert.strictEqual(pool.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          transaction.close();
+          await database.close();
+        });
+      });
     });
 
     describe('batch-transactions', () => {

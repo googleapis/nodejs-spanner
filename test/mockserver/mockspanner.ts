@@ -325,7 +325,7 @@ export class MockSpanner {
     string,
     protobuf.Session
   >();
-  private begin: boolean;
+  private mutationOnly: boolean;
   private transactionCounters: Map<string, number> = new Map<string, number>();
   private transactions: Map<string, protobuf.Transaction> = new Map<
     string,
@@ -370,7 +370,7 @@ export class MockSpanner {
     this.streamingRead = this.streamingRead.bind(this);
     this.partitionRead = this.partitionRead.bind(this);
     this.batchWrite = this.batchWrite.bind(this);
-    this.begin = false;
+    this.mutationOnly = false;
   }
 
   /**
@@ -1112,7 +1112,7 @@ export class MockSpanner {
     this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.beginTransaction.name)
       .then(() => {
-        this.begin = call.request.mutationKey ? true : false;
+        this.mutationOnly = call.request.mutationKey ? true : false;
         const res = this._updateTransaction(
           call.request!.session,
           call.request!.options,
@@ -1274,7 +1274,7 @@ export class MockSpanner {
     const fullTransactionId = session.name + '/transactions/' + transactionId;
     const readTimestamp = options && options.readOnly ? now() : undefined;
     const precommitToken =
-      this.begin && session.multiplexed && options?.readWrite
+      this.mutationOnly && session.multiplexed && options?.readWrite
         ? {
             precommitToken: Buffer.from('mock-precommit-token'),
             seqNum: randomInt(1, 1000),
