@@ -148,26 +148,19 @@ export class FakeSessionFactory extends EventEmitter {
   }
   getSession() {}
   getSessionForPartitionedOps() {}
+  getSessionForReadWrite() {}
   getPool(): FakeSessionPool {
     return new FakeSessionPool();
   }
   release() {}
   isMultiplexedEnabled(): boolean {
-    if (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false') {
-      return false;
-    } else {
-      return true;
-    }
+    return process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true';
   }
   isMultiplexedEnabledForRW(): boolean {
-    if (
+    return (
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
       process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true'
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    );
   }
 }
 
@@ -664,7 +657,7 @@ describe('Database', () => {
 
     const mutationGroups = [mutationGroup1, mutationGroup2];
 
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeDataStream: Transform;
     let getSessionStub: sinon.SinonStub;
@@ -678,161 +671,201 @@ describe('Database', () => {
       gaxOptions: {autoPaginate: false},
     } as BatchWriteOptions;
 
-    beforeEach(() => {
-      fakePool = database.pool_;
-      fakeSession = new FakeSession();
-      fakeDataStream = through.obj();
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
-      getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => callback(null, fakeSession));
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
 
-      requestStreamStub = sandbox
-        .stub(database, 'requestStream')
-        .returns(fakeDataStream);
-    });
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
 
-    it('should get a session via `getSession`', done => {
-      getSessionStub.callsFake(() => {});
-      database.batchWriteAtLeastOnce(mutationGroups, options);
-      assert.strictEqual(getSessionStub.callCount, 1);
-      done();
-    });
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
+            fakeDataStream = through.obj();
 
-    it('should destroy the stream if `getSession` errors', done => {
-      const fakeError = new Error('err');
+            getSessionStub = (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => callback(null, fakeSession));
 
-      getSessionStub.callsFake(callback => callback(fakeError));
-      database
-        .batchWriteAtLeastOnce(mutationGroups, options)
-        .on('error', err => {
-          assert.strictEqual(err, fakeError);
-          done();
-        });
-    });
+            requestStreamStub = sandbox
+              .stub(database, 'requestStream')
+              .returns(fakeDataStream);
+          });
 
-    it('should call `requestStream` with correct arguments', () => {
-      const expectedGaxOpts = extend(true, {}, options?.gaxOptions);
-      const expectedReqOpts = Object.assign(
-        {} as google.spanner.v1.BatchWriteRequest,
-        {
-          session: fakeSession!.formattedName_!,
-          mutationGroups: mutationGroups.map(mg => mg.proto()),
-          requestOptions: options?.requestOptions,
-          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+          it('should get a session via `getSessionForReadWrite`', done => {
+            getSessionStub.callsFake(() => {});
+            database.batchWriteAtLeastOnce(mutationGroups, options);
+            assert.strictEqual(getSessionStub.callCount, 1);
+            done();
+          });
+
+          it('should destroy the stream if `getSessionForReadWrite` errors', done => {
+            const fakeError = new Error('err');
+
+            getSessionStub.callsFake(callback => callback(fakeError));
+            database
+              .batchWriteAtLeastOnce(mutationGroups, options)
+              .on('error', err => {
+                assert.strictEqual(err, fakeError);
+                done();
+              });
+          });
+
+          it('should call `requestStream` with correct arguments', () => {
+            const expectedGaxOpts = extend(true, {}, options?.gaxOptions);
+            const expectedReqOpts = Object.assign(
+              {} as google.spanner.v1.BatchWriteRequest,
+              {
+                session: fakeSession!.formattedName_!,
+                mutationGroups: mutationGroups.map(mg => mg.proto()),
+                requestOptions: options?.requestOptions,
+                excludeTxnFromChangeStream:
+                  options?.excludeTxnFromChangeStreams,
+              },
+            );
+
+            database.batchWriteAtLeastOnce(mutationGroups, options);
+
+            assert.strictEqual(requestStreamStub.callCount, 1);
+            const args = requestStreamStub.firstCall.args[0];
+            assert.strictEqual(args.client, 'SpannerClient');
+            assert.strictEqual(args.method, 'batchWrite');
+            assert.deepStrictEqual(args.reqOpts, expectedReqOpts);
+            assert.deepStrictEqual(args.gaxOpts, expectedGaxOpts);
+            assert.deepStrictEqual(args.headers, database.commonHeaders_);
+          });
+
+          it('should return error when passing an empty list of mutationGroups', done => {
+            const fakeError = new Error('err');
+            database.batchWriteAtLeastOnce([], options).on('error', error => {
+              assert.strictEqual(error, fakeError);
+              done();
+            });
+            fakeDataStream.emit('error', fakeError);
+          });
+
+          it('should return data when passing a valid list of mutationGroups', done => {
+            database
+              .batchWriteAtLeastOnce(mutationGroups, options)
+              .on('data', data => {
+                assert.strictEqual(data, 'test');
+                done();
+              });
+            fakeDataStream.emit('data', 'test');
+          });
+
+          it('should emit correct event based on valid/invalid list of mutationGroups', done => {
+            const fakeError = new Error('err');
+            const FakeMutationGroup1 = new MutationGroup();
+            FakeMutationGroup1.insert('Singers', {
+              SingerId: 1,
+              FirstName: 'Scarlet',
+              LastName: 'Terry',
+            });
+            FakeMutationGroup1.insert('Singers', {
+              SingerId: 1000000000000000000000000000000000,
+              FirstName: 'Scarlet',
+              LastName: 'Terry',
+            });
+
+            const FakeMutationGroup2 = new MutationGroup();
+            FakeMutationGroup2.insert('Singers', {
+              SingerId: 2,
+              FirstName: 'Marc',
+            });
+            FakeMutationGroup2.insert('Singers', {
+              SingerId: 3,
+              FirstName: 'Catalina',
+              LastName: 'Smith',
+            });
+            FakeMutationGroup2.insert('Albums', {
+              AlbumId: 1,
+              SingerId: 2,
+              AlbumTitle: 'Total Junk',
+            });
+            FakeMutationGroup2.insert('Albums', {
+              AlbumId: 2,
+              SingerId: 3,
+              AlbumTitle: 'Go, Go, Go',
+            });
+            database
+              .batchWriteAtLeastOnce(
+                [FakeMutationGroup1, FakeMutationGroup2],
+                options,
+              )
+              .on('data', data => {
+                assert.strictEqual(data, 'testData');
+              })
+              .on('error', err => {
+                assert.strictEqual(err, fakeError);
+              });
+            fakeDataStream.emit('data', 'testData');
+            fakeDataStream.emit('error', fakeError);
+            done();
+          });
+
+          it('should retry on "Session not found" error', done => {
+            const sessionNotFoundError = {
+              code: grpc.status.NOT_FOUND,
+              message: 'Session not found',
+            } as grpc.ServiceError;
+            let retryCount = 0;
+
+            database
+              .batchWriteAtLeastOnce(mutationGroups, options)
+              .on('data', () => {})
+              .on('error', err => {
+                assert.fail(err);
+              })
+              .on('end', () => {
+                assert.strictEqual(retryCount, 1);
+                done();
+              });
+
+            fakeDataStream.emit('error', sessionNotFoundError);
+            retryCount++;
+          });
+
+          if (isMuxEnabled[0] === false && isMuxEnabled[1] === false) {
+            it('should release session on stream end', () => {
+              const releaseStub = sandbox.stub(
+                fakeSessionFactory,
+                'release',
+              ) as sinon.SinonStub;
+
+              database.batchWriteAtLeastOnce(mutationGroups, options);
+              fakeDataStream.emit('end');
+
+              assert.strictEqual(releaseStub.callCount, 1);
+              assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
+            });
+          }
         },
       );
-
-      database.batchWriteAtLeastOnce(mutationGroups, options);
-
-      assert.strictEqual(requestStreamStub.callCount, 1);
-      const args = requestStreamStub.firstCall.args[0];
-      assert.strictEqual(args.client, 'SpannerClient');
-      assert.strictEqual(args.method, 'batchWrite');
-      assert.deepStrictEqual(args.reqOpts, expectedReqOpts);
-      assert.deepStrictEqual(args.gaxOpts, expectedGaxOpts);
-      assert.deepStrictEqual(args.headers, database.commonHeaders_);
-    });
-
-    it('should return error when passing an empty list of mutationGroups', done => {
-      const fakeError = new Error('err');
-      database.batchWriteAtLeastOnce([], options).on('error', error => {
-        assert.strictEqual(error, fakeError);
-        done();
-      });
-      fakeDataStream.emit('error', fakeError);
-    });
-
-    it('should return data when passing a valid list of mutationGroups', done => {
-      database
-        .batchWriteAtLeastOnce(mutationGroups, options)
-        .on('data', data => {
-          assert.strictEqual(data, 'test');
-          done();
-        });
-      fakeDataStream.emit('data', 'test');
-    });
-
-    it('should emit correct event based on valid/invalid list of mutationGroups', done => {
-      const fakeError = new Error('err');
-      const FakeMutationGroup1 = new MutationGroup();
-      FakeMutationGroup1.insert('Singers', {
-        SingerId: 1,
-        FirstName: 'Scarlet',
-        LastName: 'Terry',
-      });
-      FakeMutationGroup1.insert('Singers', {
-        SingerId: 1000000000000000000000000000000000,
-        FirstName: 'Scarlet',
-        LastName: 'Terry',
-      });
-
-      const FakeMutationGroup2 = new MutationGroup();
-      FakeMutationGroup2.insert('Singers', {
-        SingerId: 2,
-        FirstName: 'Marc',
-      });
-      FakeMutationGroup2.insert('Singers', {
-        SingerId: 3,
-        FirstName: 'Catalina',
-        LastName: 'Smith',
-      });
-      FakeMutationGroup2.insert('Albums', {
-        AlbumId: 1,
-        SingerId: 2,
-        AlbumTitle: 'Total Junk',
-      });
-      FakeMutationGroup2.insert('Albums', {
-        AlbumId: 2,
-        SingerId: 3,
-        AlbumTitle: 'Go, Go, Go',
-      });
-      database
-        .batchWriteAtLeastOnce(
-          [FakeMutationGroup1, FakeMutationGroup2],
-          options,
-        )
-        .on('data', data => {
-          assert.strictEqual(data, 'testData');
-        })
-        .on('error', err => {
-          assert.strictEqual(err, fakeError);
-        });
-      fakeDataStream.emit('data', 'testData');
-      fakeDataStream.emit('error', fakeError);
-      done();
-    });
-
-    it('should retry on "Session not found" error', done => {
-      const sessionNotFoundError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as grpc.ServiceError;
-      let retryCount = 0;
-
-      database
-        .batchWriteAtLeastOnce(mutationGroups, options)
-        .on('data', () => {})
-        .on('error', err => {
-          assert.fail(err);
-        })
-        .on('end', () => {
-          assert.strictEqual(retryCount, 1);
-          done();
-        });
-
-      fakeDataStream.emit('error', sessionNotFoundError);
-      retryCount++;
-    });
-
-    it('should release session on stream end', () => {
-      const releaseStub = sandbox.stub(fakePool, 'release') as sinon.SinonStub;
-
-      database.batchWriteAtLeastOnce(mutationGroups, options);
-      fakeDataStream.emit('end');
-
-      assert.strictEqual(releaseStub.callCount, 1);
-      assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
     });
   });
 
@@ -999,77 +1032,98 @@ describe('Database', () => {
     const SESSION = {};
     const RESPONSE = {a: 'b'};
 
-    beforeEach(() => {
-      database.pool_ = {
-        getSession(callback) {
-          callback(null, SESSION);
+    const muxEnabled = [true, false];
+
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+                  'false');
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+          });
+
+          beforeEach(() => {
+            database.sessionFactory_ = {
+              getSession(callback) {
+                callback(null, SESSION);
+              },
+            };
+          });
+
+          it('should return any get session errors', done => {
+            const error = new Error('err');
+
+            database.sessionFactory_ = {
+              getSession(callback) {
+                callback(error);
+              },
+            };
+
+            database.createBatchTransaction((err, transaction, resp) => {
+              assert.strictEqual(err, error);
+              assert.strictEqual(transaction, null);
+              assert.strictEqual(resp, undefined);
+              done();
+            });
+          });
+
+          it('should create a transaction', done => {
+            const opts = {a: 'b'};
+
+            const fakeTransaction = {
+              begin(callback) {
+                callback(null, RESPONSE);
+              },
+
+              once() {},
+            };
+
+            database.batchTransaction = (identifier, options) => {
+              assert.deepStrictEqual(identifier, {session: SESSION});
+              assert.strictEqual(options, opts);
+              return fakeTransaction;
+            };
+
+            database.createBatchTransaction(opts, (err, transaction, resp) => {
+              assert.strictEqual(err, null);
+              assert.strictEqual(transaction, fakeTransaction);
+              assert.strictEqual(resp, RESPONSE);
+              done();
+            });
+          });
+
+          it('should return any transaction errors', done => {
+            const error = new Error('err');
+
+            const fakeTransaction = {
+              begin(callback) {
+                callback(error, RESPONSE);
+              },
+
+              once() {},
+            };
+
+            database.batchTransaction = () => {
+              return fakeTransaction;
+            };
+
+            database.createBatchTransaction((err, transaction, resp) => {
+              assert.strictEqual(err, error);
+              assert.strictEqual(transaction, null);
+              assert.strictEqual(resp, RESPONSE);
+              done();
+            });
+          });
         },
-      };
-    });
-
-    it('should return any get session errors', done => {
-      const error = new Error('err');
-
-      database.pool_ = {
-        getSession(callback) {
-          callback(error);
-        },
-      };
-
-      database.createBatchTransaction((err, transaction, resp) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, undefined);
-        done();
-      });
-    });
-
-    it('should create a transaction', done => {
-      const opts = {a: 'b'};
-
-      const fakeTransaction = {
-        begin(callback) {
-          callback(null, RESPONSE);
-        },
-
-        once() {},
-      };
-
-      database.batchTransaction = (identifier, options) => {
-        assert.deepStrictEqual(identifier, {session: SESSION});
-        assert.strictEqual(options, opts);
-        return fakeTransaction;
-      };
-
-      database.createBatchTransaction(opts, (err, transaction, resp) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(transaction, fakeTransaction);
-        assert.strictEqual(resp, RESPONSE);
-        done();
-      });
-    });
-
-    it('should return any transaction errors', done => {
-      const error = new Error('err');
-
-      const fakeTransaction = {
-        begin(callback) {
-          callback(error, RESPONSE);
-        },
-
-        once() {},
-      };
-
-      database.batchTransaction = () => {
-        return fakeTransaction;
-      };
-
-      database.createBatchTransaction((err, transaction, resp) => {
-        assert.strictEqual(err, error);
-        assert.strictEqual(transaction, null);
-        assert.strictEqual(resp, RESPONSE);
-        done();
-      });
+      );
     });
   });
 
@@ -1588,24 +1642,24 @@ describe('Database', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const POOL: any = {};
+    const SESSIONFACTORY: any = {};
 
     beforeEach(() => {
       CONFIG = {
         reqOpts: {},
       };
 
-      database.pool_ = POOL;
+      database.sessionFactory_ = SESSIONFACTORY;
 
-      POOL.getSession = callback => {
+      SESSIONFACTORY.getSessionForReadWrite = callback => {
         callback(null, SESSION);
       };
 
-      POOL.release = util.noop;
+      SESSIONFACTORY.release = util.noop;
     });
 
     it('should get a session', done => {
-      POOL.getSession = () => {
+      SESSIONFACTORY.getSessionForReadWrite = () => {
         done();
       };
 
@@ -1615,7 +1669,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      POOL.getSession = callback => {
+      SESSIONFACTORY.getSessionForReadWrite = callback => {
         callback(error);
       };
 
@@ -1644,7 +1698,7 @@ describe('Database', () => {
     });
 
     it('should release the session after calling the method', done => {
-      POOL.release = session => {
+      SESSIONFACTORY.release = session => {
         assert.deepStrictEqual(session, SESSION);
         done();
       };
@@ -1679,186 +1733,211 @@ describe('Database', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const POOL: any = {};
+    const SESSIONFACTORY: any = {};
 
-    beforeEach(() => {
-      REQUEST_STREAM = through();
+    const muxEnabled = [true, false];
 
-      CONFIG = {
-        reqOpts: {},
-      };
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            isMuxEnabled
+              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
+              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+                  'false');
+          });
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+          });
+          beforeEach(() => {
+            REQUEST_STREAM = through();
 
-      database.pool_ = POOL;
+            CONFIG = {
+              reqOpts: {},
+            };
 
-      database.requestStream = () => {
-        return REQUEST_STREAM;
-      };
+            database.sessionFactory_ = SESSIONFACTORY;
 
-      POOL.getSession = callback => {
-        callback(null, SESSION);
-      };
+            database.requestStream = () => {
+              return REQUEST_STREAM;
+            };
 
-      POOL.release = util.noop;
-    });
+            SESSIONFACTORY.getSession = callback => {
+              callback(null, SESSION);
+            };
 
-    it('should get a session when stream opens', done => {
-      POOL.getSession = () => {
-        done();
-      };
+            SESSIONFACTORY.release = util.noop;
+          });
 
-      database.makePooledStreamingRequest_(CONFIG).emit('reading');
-    });
+          it('should get a session when stream opens', done => {
+            SESSIONFACTORY.getSession = () => {
+              done();
+            };
 
-    describe('could not get session', () => {
-      const ERROR = new Error('Error.');
+            database.makePooledStreamingRequest_(CONFIG).emit('reading');
+          });
 
-      beforeEach(() => {
-        POOL.getSession = callback => {
-          callback(ERROR);
-        };
-      });
+          describe('could not get session', () => {
+            const ERROR = new Error('Error.');
 
-      it('should destroy the stream', done => {
-        database
-          .makePooledStreamingRequest_(CONFIG)
-          .on('error', err => {
-            assert.strictEqual(err, ERROR);
-            done();
-          })
-          .emit('reading');
-      });
-    });
+            beforeEach(() => {
+              SESSIONFACTORY.getSession = callback => {
+                callback(ERROR);
+              };
+            });
 
-    describe('session retrieved successfully', () => {
-      beforeEach(() => {
-        POOL.getSession = callback => {
-          callback(null, SESSION);
-        };
-      });
+            it('should destroy the stream', done => {
+              database
+                .makePooledStreamingRequest_(CONFIG)
+                .on('error', err => {
+                  assert.strictEqual(err, ERROR);
+                  done();
+                })
+                .emit('reading');
+            });
+          });
 
-      it('should assign session to request options', done => {
-        database.requestStream = config => {
-          assert.strictEqual(config.reqOpts.session, SESSION.formattedName_);
-          setImmediate(done);
-          return through.obj();
-        };
+          describe('session retrieved successfully', () => {
+            beforeEach(() => {
+              SESSIONFACTORY.getSession = callback => {
+                callback(null, SESSION);
+              };
+            });
 
-        database.makePooledStreamingRequest_(CONFIG).emit('reading');
-      });
+            it('should assign session to request options', done => {
+              database.requestStream = config => {
+                assert.strictEqual(
+                  config.reqOpts.session,
+                  SESSION.formattedName_,
+                );
+                setImmediate(done);
+                return through.obj();
+              };
 
-      it('should make request and pipe to the stream', done => {
-        const responseData = Buffer.from('response-data');
+              database.makePooledStreamingRequest_(CONFIG).emit('reading');
+            });
 
-        database.makePooledStreamingRequest_(CONFIG).on('data', data => {
-          assert.deepStrictEqual(data, responseData);
-          done();
-        });
+            it('should make request and pipe to the stream', done => {
+              const responseData = Buffer.from('response-data');
 
-        REQUEST_STREAM.end(responseData);
-      });
+              database.makePooledStreamingRequest_(CONFIG).on('data', data => {
+                assert.deepStrictEqual(data, responseData);
+                done();
+              });
 
-      it('should release session when request stream ends', done => {
-        POOL.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
+              REQUEST_STREAM.end(responseData);
+            });
 
-        database.makePooledStreamingRequest_(CONFIG).emit('reading');
+            it('should release session when request stream ends', done => {
+              SESSIONFACTORY.release = session => {
+                assert.strictEqual(session, SESSION);
+                done();
+              };
 
-        REQUEST_STREAM.end();
-      });
+              database.makePooledStreamingRequest_(CONFIG).emit('reading');
 
-      it('should release session when request stream errors', done => {
-        POOL.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
+              REQUEST_STREAM.end();
+            });
 
-        database.makePooledStreamingRequest_(CONFIG).emit('reading');
+            it('should release session when request stream errors', done => {
+              SESSIONFACTORY.release = session => {
+                assert.strictEqual(session, SESSION);
+                done();
+              };
 
-        setImmediate(() => {
-          REQUEST_STREAM.emit('error');
-        });
-      });
+              database.makePooledStreamingRequest_(CONFIG).emit('reading');
 
-      it('should error user stream when request stream errors', done => {
-        const error = new Error('Error.');
+              setImmediate(() => {
+                REQUEST_STREAM.emit('error');
+              });
+            });
 
-        database
-          .makePooledStreamingRequest_(CONFIG)
-          .on('error', err => {
-            assert.strictEqual(err, error);
-            done();
-          })
-          .emit('reading');
+            it('should error user stream when request stream errors', done => {
+              const error = new Error('Error.');
 
-        setImmediate(() => {
-          REQUEST_STREAM.destroy(error);
-        });
-      });
-    });
+              database
+                .makePooledStreamingRequest_(CONFIG)
+                .on('error', err => {
+                  assert.strictEqual(err, error);
+                  done();
+                })
+                .emit('reading');
 
-    describe('abort', () => {
-      let SESSION;
+              setImmediate(() => {
+                REQUEST_STREAM.destroy(error);
+              });
+            });
+          });
 
-      beforeEach(() => {
-        REQUEST_STREAM.cancel = util.noop;
+          describe('abort', () => {
+            let SESSION;
 
-        SESSION = {
-          cancel: util.noop,
-        };
+            beforeEach(() => {
+              REQUEST_STREAM.cancel = util.noop;
 
-        POOL.getSession = callback => {
-          callback(null, SESSION);
-        };
-      });
+              SESSION = {
+                cancel: util.noop,
+              };
 
-      it('should release the session', done => {
-        POOL.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
+              SESSIONFACTORY.getSession = callback => {
+                callback(null, SESSION);
+              };
+            });
 
-        const requestStream = database.makePooledStreamingRequest_(CONFIG);
+            it('should release the session', done => {
+              SESSIONFACTORY.release = session => {
+                assert.strictEqual(session, SESSION);
+                done();
+              };
 
-        requestStream.emit('reading');
+              const requestStream =
+                database.makePooledStreamingRequest_(CONFIG);
 
-        setImmediate(() => {
-          requestStream.abort();
-        });
-      });
+              requestStream.emit('reading');
 
-      it('should not release the session more than once', done => {
-        let numTimesReleased = 0;
+              setImmediate(() => {
+                requestStream.abort();
+              });
+            });
 
-        POOL.release = session => {
-          numTimesReleased++;
-          assert.strictEqual(session, SESSION);
-        };
+            it('should not release the session more than once', done => {
+              let numTimesReleased = 0;
 
-        const requestStream = database.makePooledStreamingRequest_(CONFIG);
+              SESSIONFACTORY.release = session => {
+                numTimesReleased++;
+                assert.strictEqual(session, SESSION);
+              };
 
-        requestStream.emit('reading');
+              const requestStream =
+                database.makePooledStreamingRequest_(CONFIG);
 
-        setImmediate(() => {
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
+              requestStream.emit('reading');
 
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
+              setImmediate(() => {
+                requestStream.abort();
+                assert.strictEqual(numTimesReleased, 1);
 
-          done();
-        });
-      });
+                requestStream.abort();
+                assert.strictEqual(numTimesReleased, 1);
 
-      it('should cancel the request stream', done => {
-        REQUEST_STREAM.cancel = done;
-        const requestStream = database.makePooledStreamingRequest_(CONFIG);
-        requestStream.emit('reading');
-        setImmediate(() => {
-          requestStream.abort();
-        });
-      });
+                done();
+              });
+            });
+
+            it('should cancel the request stream', done => {
+              REQUEST_STREAM.cancel = done;
+              const requestStream =
+                database.makePooledStreamingRequest_(CONFIG);
+              requestStream.emit('reading');
+              setImmediate(() => {
+                requestStream.abort();
+              });
+            });
+          });
+        },
+      );
     });
   });
 
@@ -2588,83 +2667,115 @@ describe('Database', () => {
   });
 
   describe('getTransaction', () => {
-    let fakePool: FakeSessionPool;
     let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
     let getSessionStub: sinon.SinonStub;
 
-    beforeEach(() => {
-      fakePool = database.pool_;
-      fakeSessionFactory = database.sessionFactory_;
-      fakeSession = new FakeSession();
-      fakeTransaction = new FakeTransaction(
-        {} as google.spanner.v1.TransactionOptions.ReadWrite,
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
+
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            fakeSession = new FakeSession();
+            fakeTransaction = new FakeTransaction(
+              {} as google.spanner.v1.TransactionOptions.ReadWrite,
+            );
+
+            getSessionStub = (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, fakeSession, fakeTransaction);
+            });
+          });
+
+          it('should get a read/write transaction', () => {
+            getSessionStub.callsFake(() => {});
+
+            database.getTransaction(assert.ifError);
+
+            assert.strictEqual(getSessionStub.callCount, 1);
+          });
+
+          it(`should return any ${isMuxEnabled[0] && isMuxEnabled[1] ? 'multiplexed session' : 'pool'} errors`, done => {
+            const fakeError = new Error('err');
+
+            getSessionStub.callsFake(callback => callback(fakeError));
+
+            database.getTransaction(err => {
+              assert.strictEqual(err, fakeError);
+              done();
+            });
+          });
+
+          it('should return the read/write transaction', done => {
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              assert.strictEqual(transaction, fakeTransaction);
+              done();
+            });
+          });
+
+          it('should propagate an error', done => {
+            const error = new Error('resource');
+            (sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub)
+              .withArgs(fakeSession)
+              .throws(error);
+
+            database.on('error', err => {
+              assert.deepStrictEqual(err, error);
+              done();
+            });
+
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              transaction.emit('end');
+            });
+          });
+
+          it('should release the session on transaction end', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(fakeSession);
+
+            database.getTransaction((err, transaction) => {
+              assert.ifError(err);
+              transaction.emit('end');
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
+        },
       );
-
-      getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => {
-        callback(null, fakeSession, fakeTransaction);
-      });
-    });
-
-    it('should get a read/write transaction', () => {
-      getSessionStub.callsFake(() => {});
-
-      database.getTransaction(assert.ifError);
-
-      assert.strictEqual(getSessionStub.callCount, 1);
-    });
-
-    it('should return any pool errors', done => {
-      const fakeError = new Error('err');
-
-      getSessionStub.callsFake(callback => callback(fakeError));
-
-      database.getTransaction(err => {
-        assert.strictEqual(err, fakeError);
-        done();
-      });
-    });
-
-    it('should return the read/write transaction', done => {
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        assert.strictEqual(transaction, fakeTransaction);
-        done();
-      });
-    });
-
-    it('should propagate an error', done => {
-      const error = new Error('resource');
-      (sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub)
-        .withArgs(fakeSession)
-        .throws(error);
-
-      database.on('error', err => {
-        assert.deepStrictEqual(err, error);
-        done();
-      });
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-      });
-    });
-
-    it('should release the session on transaction end', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
     });
   });
 
@@ -3001,6 +3112,12 @@ describe('Database', () => {
               isMuxEnabled[1].toString();
           });
 
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env
+              .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
@@ -3195,96 +3312,129 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
-    beforeEach(() => {
-      pool = database.pool_;
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+
+            (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, SESSION, TRANSACTION);
+            });
+          });
+
+          it('should return any errors getting a session', done => {
+            const fakeErr = new Error('err');
+
+            (
+              fakeSessionFactory.getSessionForReadWrite as sinon.SinonStub
+            ).callsFake(callback => callback(fakeErr));
+
+            database.runTransaction(err => {
+              assert.strictEqual(err, fakeErr);
+              done();
+            });
+          });
+
+          it('should create a `TransactionRunner`', () => {
+            const fakeRunFn = sandbox.spy();
+
+            database.runTransaction(fakeRunFn);
+
+            const [session, transaction, runFn, options] =
+              fakeTransactionRunner.calledWith_;
+
+            assert.strictEqual(session, SESSION);
+            assert.strictEqual(transaction, TRANSACTION);
+            assert.deepStrictEqual(options, {});
+          });
+
+          it('should optionally accept runner `options`', () => {
+            const fakeOptions = {timeout: 1};
+
+            database.runTransaction(fakeOptions, assert.ifError);
+
+            const options = fakeTransactionRunner.calledWith_[3];
+
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should optionally accept runner `option` isolationLevel', async () => {
+            const fakeOptions = {
+              isolationLevel: IsolationLevel.REPEATABLE_READ,
+            };
+
+            await database.runTransaction(fakeOptions, assert.ifError);
+
+            const options = fakeTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should release the session when finished', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+
+            sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
+
+            database.runTransaction(assert.ifError);
+
+            setImmediate(() => {
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
+
+          it('should catch any run errors and return them', done => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+            const fakeError = new Error('err');
+
+            sandbox
+              .stub(FakeTransactionRunner.prototype, 'run')
+              .rejects(fakeError);
+
+            database.runTransaction(err => {
+              assert.strictEqual(err, fakeError);
+              assert.strictEqual(releaseStub.callCount, 1);
+              done();
+            });
+          });
         },
       );
-    });
-
-    it('should return any errors getting a session', done => {
-      const fakeErr = new Error('err');
-
-      (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr),
-      );
-
-      database.runTransaction(err => {
-        assert.strictEqual(err, fakeErr);
-        done();
-      });
-    });
-
-    it('should create a `TransactionRunner`', () => {
-      const fakeRunFn = sandbox.spy();
-
-      database.runTransaction(fakeRunFn);
-
-      const [session, transaction, runFn, options] =
-        fakeTransactionRunner.calledWith_;
-
-      assert.strictEqual(session, SESSION);
-      assert.strictEqual(transaction, TRANSACTION);
-      // Given that we've wrapped the transaction runner with observability
-      // tracing, directly comparing values runFn and fakeRunFn.
-      // assert.strictEqual(runFn, fakeRunFn);
-      assert.deepStrictEqual(options, {});
-    });
-
-    it('should optionally accept runner `options`', () => {
-      const fakeOptions = {timeout: 1};
-
-      database.runTransaction(fakeOptions, assert.ifError);
-
-      const options = fakeTransactionRunner.calledWith_[3];
-
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should optionally accept runner `option` isolationLevel', async () => {
-      const fakeOptions = {
-        isolationLevel: IsolationLevel.REPEATABLE_READ,
-      };
-
-      await database.runTransaction(fakeOptions, assert.ifError);
-
-      const options = fakeTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should release the session when finished', done => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
-
-      database.runTransaction(assert.ifError);
-
-      setImmediate(() => {
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
-
-    it('should catch any run errors and return them', done => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-      const fakeError = new Error('err');
-
-      sandbox.stub(FakeTransactionRunner.prototype, 'run').rejects(fakeError);
-
-      database.runTransaction(err => {
-        assert.strictEqual(err, fakeError);
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
     });
   });
 
@@ -3294,71 +3444,106 @@ describe('Database', () => {
       {} as google.spanner.v1.TransactionOptions.ReadWrite,
     );
 
-    let pool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
 
-    beforeEach(() => {
-      pool = database.pool_;
+    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    const muxEnabled = [
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ];
 
-      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
-          callback(null, SESSION, TRANSACTION);
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(
+        'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
+          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
+          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+        () => {
+          before(() => {
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
+              isMuxEnabled[0].toString();
+            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+              isMuxEnabled[1].toString();
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+          });
+
+          beforeEach(() => {
+            fakeSessionFactory = database.sessionFactory_;
+            (
+              sandbox.stub(
+                fakeSessionFactory,
+                'getSessionForReadWrite',
+              ) as sinon.SinonStub
+            ).callsFake(callback => {
+              callback(null, SESSION, TRANSACTION);
+            });
+          });
+
+          it('should create an `AsyncTransactionRunner`', async () => {
+            const fakeRunFn = sandbox.spy();
+
+            await database.runTransactionAsync(fakeRunFn);
+
+            const [session, transaction, runFn, options] =
+              fakeAsyncTransactionRunner.calledWith_;
+            assert.strictEqual(session, SESSION);
+            assert.strictEqual(transaction, TRANSACTION);
+            assert.strictEqual(runFn, fakeRunFn);
+            assert.deepStrictEqual(options, {});
+          });
+
+          it('should optionally accept runner `options`', async () => {
+            const fakeOptions = {timeout: 1};
+
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should optionally accept runner `option` isolationLevel', async () => {
+            const fakeOptions = {
+              isolationLevel: IsolationLevel.REPEATABLE_READ,
+            };
+
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should return the runners resolved value', async () => {
+            const fakeValue = {};
+
+            sandbox
+              .stub(FakeAsyncTransactionRunner.prototype, 'run')
+              .resolves(fakeValue);
+
+            const value = await database.runTransactionAsync(assert.ifError);
+            assert.strictEqual(value, fakeValue);
+          });
+
+          it('should release the session when finished', async () => {
+            const releaseStub = (
+              sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
+            ).withArgs(SESSION);
+
+            sandbox
+              .stub(FakeAsyncTransactionRunner.prototype, 'run')
+              .resolves();
+
+            await database.runTransactionAsync(assert.ifError);
+            assert.strictEqual(releaseStub.callCount, 1);
+          });
         },
       );
-    });
-
-    it('should create an `AsyncTransactionRunner`', async () => {
-      const fakeRunFn = sandbox.spy();
-
-      await database.runTransactionAsync(fakeRunFn);
-
-      const [session, transaction, runFn, options] =
-        fakeAsyncTransactionRunner.calledWith_;
-      assert.strictEqual(session, SESSION);
-      assert.strictEqual(transaction, TRANSACTION);
-      assert.strictEqual(runFn, fakeRunFn);
-      assert.deepStrictEqual(options, {});
-    });
-
-    it('should optionally accept runner `options`', async () => {
-      const fakeOptions = {timeout: 1};
-
-      await database.runTransactionAsync(fakeOptions, assert.ifError);
-
-      const options = fakeAsyncTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should optionally accept runner `option` isolationLevel', async () => {
-      const fakeOptions = {
-        isolationLevel: IsolationLevel.REPEATABLE_READ,
-      };
-
-      await database.runTransactionAsync(fakeOptions, assert.ifError);
-
-      const options = fakeAsyncTransactionRunner.calledWith_[3];
-      assert.strictEqual(options, fakeOptions);
-    });
-
-    it('should return the runners resolved value', async () => {
-      const fakeValue = {};
-
-      sandbox
-        .stub(FakeAsyncTransactionRunner.prototype, 'run')
-        .resolves(fakeValue);
-
-      const value = await database.runTransactionAsync(assert.ifError);
-      assert.strictEqual(value, fakeValue);
-    });
-
-    it('should release the session when finished', async () => {
-      const releaseStub = (
-        sandbox.stub(pool, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run').resolves();
-
-      await database.runTransactionAsync(assert.ifError);
-      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 
