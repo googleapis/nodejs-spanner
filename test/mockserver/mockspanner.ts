@@ -369,6 +369,7 @@ export class MockSpanner {
     this.read = this.read.bind(this);
     this.streamingRead = this.streamingRead.bind(this);
     this.partitionRead = this.partitionRead.bind(this);
+    this.batchWrite = this.batchWrite.bind(this);
     this.begin = false;
   }
 
@@ -1237,6 +1238,24 @@ export class MockSpanner {
       .catch(err => callback(err));
   }
 
+  batchWrite(
+    call: grpc.ServerWritableStream<
+      protobuf.BatchWriteRequest,
+      protobuf.BatchWriteResponse
+    >,
+  ) {
+    this.pushRequest(call.request, call.metadata);
+    this.simulateExecutionTime(this.batchWrite.name)
+      .then(() => {
+        const response = protobuf.BatchWriteResponse.create({
+          commitTimestamp: now(),
+        });
+        call.write(response);
+        call.end();
+      })
+      .catch(err => call.destroy(err));
+  }
+
   private _updateTransaction(
     sessionName: string,
     options: google.spanner.v1.ITransactionOptions | null | undefined,
@@ -1293,6 +1312,7 @@ export function createMockSpanner(server: grpc.Server): MockSpanner {
     rollback: mock.rollback,
     partitionQuery: mock.partitionQuery,
     partitionRead: mock.partitionRead,
+    batchWrite: mock.batchWrite,
   });
   return mock;
 }

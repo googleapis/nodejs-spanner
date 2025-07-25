@@ -73,6 +73,14 @@ export interface SessionFactoryInterface {
   getSessionForReadWrite(callback: GetSessionCallback): void;
 
   /**
+   * When called returns a session for pooled request.
+   *
+   * @name SessionFactoryInterface#getSessionForPooledRequest
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForPooledRequest(callback: GetSessionCallback): void;
+
+  /**
    * When called returns the pool object.
    *
    * @name SessionFactoryInterface#getPool
@@ -209,6 +217,26 @@ export class SessionFactory
     this.isMultiplexedRW
       ? this.getSession(callback)
       : this.pool_.getSession(callback);
+  }
+
+  /**
+   * Retrieves a session for pooled request(via, makePooledRequest_), selecting the appropriate session type
+   * based on whether multiplexed sessions are enabled.
+   *
+   * If the multiplexed sessions are disabled, a session is retrieved from the regular session pool.
+   *
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSessionForPooledRequest(callback: GetSessionCallback): void {
+    const getSessionFn = this.isMultiplexedRW
+      ? this.getSessionForReadWrite
+      : this.isMultiplexedPartitionOps
+        ? this.getSessionForPartitionedOps
+        : this.isMultiplexed
+          ? this.getSession
+          : this.pool_.getSession.bind(this.pool_);
+
+    getSessionFn(callback);
   }
 
   /**

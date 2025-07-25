@@ -334,6 +334,167 @@ describe('SessionFactory', () => {
     });
   });
 
+  describe('getSessionForPooledRequest', () => {
+    describe('when multiplexed session is enabled for read only', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      it('should return the multiplexed session', done => {
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(null, fakeMuxSession));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(resp, fakeMuxSession);
+          assert.strictEqual(resp?.metadata.multiplexed, true);
+          assert.strictEqual(fakeMuxSession.metadata.multiplexed, true);
+          done();
+        });
+      });
+
+      it('should propagate error when multiplexed session return fails', done => {
+        const fakeError = new Error();
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(fakeError, null));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, fakeError);
+          assert.strictEqual(resp, null);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is enabled for partitioned ops', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
+      it('should return the multiplexed session', done => {
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(null, fakeMuxSession));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(resp, fakeMuxSession);
+          assert.strictEqual(resp?.metadata.multiplexed, true);
+          assert.strictEqual(fakeMuxSession.metadata.multiplexed, true);
+          done();
+        });
+      });
+
+      it('should propagate error when multiplexed session return fails', done => {
+        const fakeError = new Error();
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(fakeError, null));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, fakeError);
+          assert.strictEqual(resp, null);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is enabled for read write', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should return the multiplexed session', done => {
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(null, fakeMuxSession));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(resp, fakeMuxSession);
+          assert.strictEqual(resp?.metadata.multiplexed, true);
+          assert.strictEqual(fakeMuxSession.metadata.multiplexed, true);
+          done();
+        });
+      });
+
+      it('should propagate error when multiplexed session return fails', done => {
+        const fakeError = new Error();
+        (
+          sandbox.stub(
+            sessionFactory,
+            'getSessionForPooledRequest',
+          ) as sinon.SinonStub
+        ).callsFake(callback => callback(fakeError, null));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, fakeError);
+          assert.strictEqual(resp, null);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      it('should retrieve a regular session from the pool', done => {
+        (
+          sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
+        ).callsFake(callback => callback(null, fakeSession));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(resp, fakeSession);
+          assert.strictEqual(resp?.metadata.multiplexed, false);
+          done();
+        });
+      });
+
+      it('should propagate errors when regular session retrieval fails', done => {
+        const fakeError = new Error();
+        (
+          sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
+        ).callsFake(callback => callback(fakeError, null));
+        sessionFactory.getSessionForPooledRequest((err, resp) => {
+          assert.strictEqual(err, fakeError);
+          assert.strictEqual(resp, null);
+          done();
+        });
+      });
+    });
+  });
+
   describe('getPool', () => {
     it('should return the session pool object', () => {
       const pool = sessionFactory.getPool();

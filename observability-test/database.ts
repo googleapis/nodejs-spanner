@@ -1258,7 +1258,7 @@ describe('Database', () => {
 
     const mutationGroups = [mutationGroup1, mutationGroup2];
 
-    let fakePool: FakeSessionPool;
+    let fakeSessionFactory: FakeSessionFactory;
     let fakeSession: FakeSession;
     let fakeDataStream: Transform;
     let getSessionStub: sinon.SinonStub;
@@ -1272,12 +1272,15 @@ describe('Database', () => {
     } as BatchWriteOptions;
 
     beforeEach(() => {
-      fakePool = database.pool_;
+      fakeSessionFactory = database.sessionFactory_;
       fakeSession = new FakeSession();
       fakeDataStream = through.obj();
 
       getSessionStub = (
-        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+        sandbox.stub(
+          fakeSessionFactory,
+          'getSessionForReadWrite',
+        ) as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
       sandbox.stub(database, 'requestStream').returns(fakeDataStream);

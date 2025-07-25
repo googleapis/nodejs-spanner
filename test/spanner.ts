@@ -22,6 +22,7 @@ import * as grpcModule from '@grpc/grpc-js';
 import {
   Database,
   Instance,
+  MutationGroup,
   MutationSet,
   SessionPool,
   Snapshot,
@@ -2212,6 +2213,172 @@ describe('Spanner with mock server', () => {
           assert.ifError(err);
           done();
         });
+      });
+    });
+  });
+
+  describe('batch write', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should use regular session from pool', done => {
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert('FOO', {
+          Id: '1',
+          Name: 'One',
+        });
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.commonHeaders_ = {
+          'x-goog-spanner-request-id': `1.${randIdForProcess}.1.1.5.1`,
+        };
+        database
+          .batchWriteAtLeastOnce([mutationGroup])
+          .on('error', done)
+          .on('data', response => {
+            // ensure that response is coming
+            assert.notEqual(response.commitTimestamp, null);
+            assert.strictEqual(
+              Array.from(pool._inventory.borrowed)[0].metadata.multiplexed,
+              false,
+            );
+            assert.strictEqual(pool._inventory.borrowed.size, 1);
+            // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
+            assert.notEqual(multiplexedSession._multiplexedSession, null);
+          })
+          .on('end', done);
+      });
+    });
+
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is enabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should use regular session from pool', done => {
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert('FOO', {
+          Id: '1',
+          Name: 'One',
+        });
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.commonHeaders_ = {
+          'x-goog-spanner-request-id': `1.${randIdForProcess}.1.1.5.1`,
+        };
+        database
+          .batchWriteAtLeastOnce([mutationGroup])
+          .on('error', done)
+          .on('data', response => {
+            // ensure that response is not null
+            assert.notEqual(response.commitTimestamp, null);
+            assert.strictEqual(
+              Array.from(pool._inventory.borrowed)[0].metadata.multiplexed,
+              false,
+            );
+            assert.strictEqual(pool._inventory.borrowed.size, 1);
+            // multiplexed session will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled
+            assert.strictEqual(multiplexedSession._multiplexedSession, null);
+          })
+          .on('end', done);
+      });
+    });
+
+    describe('when multiplexed session is enabled for r/w', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      });
+
+      after(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should use multiplexed session', done => {
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert('FOO', {
+          Id: '1',
+          Name: 'One',
+        });
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.commonHeaders_ = {
+          'x-goog-spanner-request-id': `1.${randIdForProcess}.1.1.5.1`,
+        };
+        database
+          .batchWriteAtLeastOnce([mutationGroup])
+          .on('error', done)
+          .on('data', response => {
+            // ensure that response is not null
+            assert.notEqual(response.commitTimestamp, null);
+            assert.strictEqual(pool._inventory.sessions.length, 1);
+            assert.strictEqual(pool._inventory.borrowed.size, 0);
+            // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
+            assert.notEqual(multiplexedSession._multiplexedSession, null);
+          })
+          .on('end', done);
+      });
+    });
+
+    describe('when multiplexed session is not enabled for r/w', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      it('should use regular session from pool', done => {
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert('FOO', {
+          Id: '1',
+          Name: 'One',
+        });
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.commonHeaders_ = {
+          'x-goog-spanner-request-id': `1.${randIdForProcess}.1.1.5.1`,
+        };
+        database
+          .batchWriteAtLeastOnce([mutationGroup])
+          .on('error', done)
+          .on('data', response => {
+            // ensure that response is coming
+            assert.notEqual(response.commitTimestamp, null);
+            assert.strictEqual(
+              Array.from(pool._inventory.borrowed)[0].metadata.multiplexed,
+              false,
+            );
+            assert.strictEqual(pool._inventory.borrowed.size, 1);
+            // multiplexed session will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled
+            assert.strictEqual(multiplexedSession._multiplexedSession, null);
+          })
+          .on('end', done);
       });
     });
   });
