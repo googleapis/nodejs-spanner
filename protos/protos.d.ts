@@ -10541,6 +10541,20 @@ export namespace google {
                          * @returns Promise
                          */
                         public listBackupSchedules(request: google.spanner.admin.database.v1.IListBackupSchedulesRequest): Promise<google.spanner.admin.database.v1.ListBackupSchedulesResponse>;
+
+                        /**
+                         * Calls InternalUpdateGraphOperation.
+                         * @param request InternalUpdateGraphOperationRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and InternalUpdateGraphOperationResponse
+                         */
+                        public internalUpdateGraphOperation(request: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.InternalUpdateGraphOperationCallback): void;
+
+                        /**
+                         * Calls InternalUpdateGraphOperation.
+                         * @param request InternalUpdateGraphOperationRequest message or plain object
+                         * @returns Promise
+                         */
+                        public internalUpdateGraphOperation(request: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest): Promise<google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse>;
                     }
 
                     namespace DatabaseAdmin {
@@ -10726,6 +10740,13 @@ export namespace google {
                          * @param [response] ListBackupSchedulesResponse
                          */
                         type ListBackupSchedulesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupSchedulesResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|internalUpdateGraphOperation}.
+                         * @param error Error, if any
+                         * @param [response] InternalUpdateGraphOperationResponse
+                         */
+                        type InternalUpdateGraphOperationCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse) => void;
                     }
 
                     /** Properties of a RestoreInfo. */
@@ -13824,6 +13845,218 @@ export namespace google {
                              */
                             public static getTypeUrl(typeUrlPrefix?: string): string;
                         }
+                    }
+
+                    /** Properties of an InternalUpdateGraphOperationRequest. */
+                    interface IInternalUpdateGraphOperationRequest {
+
+                        /** InternalUpdateGraphOperationRequest database */
+                        database?: (string|null);
+
+                        /** InternalUpdateGraphOperationRequest operationId */
+                        operationId?: (string|null);
+
+                        /** InternalUpdateGraphOperationRequest vmIdentityToken */
+                        vmIdentityToken?: (string|null);
+
+                        /** InternalUpdateGraphOperationRequest progress */
+                        progress?: (number|null);
+
+                        /** InternalUpdateGraphOperationRequest status */
+                        status?: (google.rpc.IStatus|null);
+                    }
+
+                    /** Represents an InternalUpdateGraphOperationRequest. */
+                    class InternalUpdateGraphOperationRequest implements IInternalUpdateGraphOperationRequest {
+
+                        /**
+                         * Constructs a new InternalUpdateGraphOperationRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest);
+
+                        /** InternalUpdateGraphOperationRequest database. */
+                        public database: string;
+
+                        /** InternalUpdateGraphOperationRequest operationId. */
+                        public operationId: string;
+
+                        /** InternalUpdateGraphOperationRequest vmIdentityToken. */
+                        public vmIdentityToken: string;
+
+                        /** InternalUpdateGraphOperationRequest progress. */
+                        public progress: number;
+
+                        /** InternalUpdateGraphOperationRequest status. */
+                        public status?: (google.rpc.IStatus|null);
+
+                        /**
+                         * Creates a new InternalUpdateGraphOperationRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns InternalUpdateGraphOperationRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest): google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+
+                        /**
+                         * Encodes the specified InternalUpdateGraphOperationRequest message. Does not implicitly {@link google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest.verify|verify} messages.
+                         * @param message InternalUpdateGraphOperationRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified InternalUpdateGraphOperationRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest.verify|verify} messages.
+                         * @param message InternalUpdateGraphOperationRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an InternalUpdateGraphOperationRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns InternalUpdateGraphOperationRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+
+                        /**
+                         * Decodes an InternalUpdateGraphOperationRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns InternalUpdateGraphOperationRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+
+                        /**
+                         * Verifies an InternalUpdateGraphOperationRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an InternalUpdateGraphOperationRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns InternalUpdateGraphOperationRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest;
+
+                        /**
+                         * Creates a plain object from an InternalUpdateGraphOperationRequest message. Also converts values to other types if specified.
+                         * @param message InternalUpdateGraphOperationRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this InternalUpdateGraphOperationRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for InternalUpdateGraphOperationRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an InternalUpdateGraphOperationResponse. */
+                    interface IInternalUpdateGraphOperationResponse {
+                    }
+
+                    /** Represents an InternalUpdateGraphOperationResponse. */
+                    class InternalUpdateGraphOperationResponse implements IInternalUpdateGraphOperationResponse {
+
+                        /**
+                         * Constructs a new InternalUpdateGraphOperationResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse);
+
+                        /**
+                         * Creates a new InternalUpdateGraphOperationResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns InternalUpdateGraphOperationResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse): google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
+
+                        /**
+                         * Encodes the specified InternalUpdateGraphOperationResponse message. Does not implicitly {@link google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse.verify|verify} messages.
+                         * @param message InternalUpdateGraphOperationResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified InternalUpdateGraphOperationResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse.verify|verify} messages.
+                         * @param message InternalUpdateGraphOperationResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an InternalUpdateGraphOperationResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns InternalUpdateGraphOperationResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
+
+                        /**
+                         * Decodes an InternalUpdateGraphOperationResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns InternalUpdateGraphOperationResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
+
+                        /**
+                         * Verifies an InternalUpdateGraphOperationResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an InternalUpdateGraphOperationResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns InternalUpdateGraphOperationResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse;
+
+                        /**
+                         * Creates a plain object from an InternalUpdateGraphOperationResponse message. Also converts values to other types if specified.
+                         * @param message InternalUpdateGraphOperationResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this InternalUpdateGraphOperationResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for InternalUpdateGraphOperationResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
                 }
             }

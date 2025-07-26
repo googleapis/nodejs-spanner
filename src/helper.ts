@@ -116,3 +116,163 @@ export function toArray(value: any) {
 
   return [value];
 }
+
+/**
+ * Checks if a value is defined.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is NOT `undefined`, otherwise `false`.
+ */
+export function isDefined(value: any): boolean {
+  return typeof value !== 'undefined';
+}
+
+/**
+ * Checks if a value is null.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is null, otherwise `false`.
+ */
+export function isNull(value: any): boolean {
+  return value === null;
+}
+
+/**
+ * Checks if a value is undefined.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is `undefined`, otherwise `false`.
+ */
+export function isUndefined(value: any): boolean {
+  return typeof value === 'undefined';
+}
+
+/**
+ * Checks if a value is empty.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is empty, otherwise `false`.
+ */
+export function isEmpty(value: any): boolean {
+  const type = Object.prototype.toString.call(value);
+  if (
+    type === '[object Array]' ||
+    type === '[object Arguments]' ||
+    type === '[object String]'
+  ) {
+    return value.length === 0;
+  }
+  if (type === '[object Object]') {
+    for (const key in value) {
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return !value;
+}
+
+/**
+ * Checks if a value is a plain javascript object.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is an object, otherwise `false`.
+ */
+export function isObject(value: any): boolean {
+  return Object.prototype.toString.call(value) === '[object Object]';
+}
+
+/**
+ * Checks if a value is a string.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is string, otherwise `false`.
+ */
+export function isString(value: any): boolean {
+  return Object.prototype.toString.call(value) === '[object String]';
+}
+
+/**
+ * Checks if a value is an array.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is an array, otherwise `false`.
+ */
+export function isArray(value: any): boolean {
+  return Array.isArray(value);
+}
+
+/**
+ * Checks if a value is a Date object.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is a `Date` object, otherwise `false`.
+ */
+export function isDate(value: any): boolean {
+  return Object.prototype.toString.call(value) === '[object Date]';
+}
+
+/**
+ * Checks if a value is a boolean.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is boolean, otherwise `false`.
+ */
+export function isBoolean(value: any): boolean {
+  return Object.prototype.toString.call(value) === '[object Boolean]';
+}
+
+/**
+ * Checks if a value is a number.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is a number, otherwise `false`.
+ */
+export function isNumber(value: any): boolean {
+  return Object.prototype.toString.call(value) === '[object Number]';
+}
+
+/**
+ * Checks if a value is an integer.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is an integer, otherwise `false`.
+ */
+export function isInteger(value: any): boolean {
+  return Number.isInteger(value);
+}
+
+/**
+ * Checks if a value is `NaN`.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is `NaN`, otherwise `false`.
+ */
+export function isActualNaN(value: any): boolean {
+  return value !== value;
+}
+
+/**
+ * Checks if a value is a non-integer (decimal) number.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is a decimal number, otherwise `false`.
+ */
+export function isDecimal(value: any): boolean {
+  // A number is a decimal if it's a number but not an integer.
+  return (
+    isNumber(value) &&
+    !isInfinite(value) &&
+    !isActualNaN(value) &&
+    value % 1 !== 0
+  );
+}
+
+/**
+ * Checks if a value is `Infinity` or `-Infinity`.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is infinite, otherwise `false`.
+ */
+export function isInfinite(value: any): boolean {
+  return value === Infinity || value === -Infinity;
+}
+
+/**
+ * Checks if a value is an `Error` object.
+ * @param {*} value The value to check.
+ * @returns {Boolean} `true` if the value is an `Error` object, otherwise `false`.
+ */
+export function isError(value: any): boolean {
+  return (
+    value instanceof Error ||
+    Object.prototype.toString.call(value) === '[object Error]'
+  );
+}
