@@ -17,7 +17,6 @@
 import {PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
-import * as is from 'is';
 import {
   ExecuteSqlRequest,
   ReadCallback,
@@ -36,6 +35,7 @@ import {
 } from '../src/common';
 import {startTrace, setSpanError, traceConfig} from './instrument';
 import {injectRequestIDIntoHeaders} from './request_id_header';
+import {isString} from './helper';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -450,7 +450,7 @@ class BatchTransaction extends Snapshot {
    */
   executeStream(partition) {
     // TODO: Instrument the streams with Otel.
-    if (is.string(partition.table)) {
+    if (isString(partition.table)) {
       return this.createReadStream(partition.table, partition);
     }
     return this.runStream(partition);

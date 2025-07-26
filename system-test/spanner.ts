@@ -21,7 +21,6 @@ import pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
 import * as extend from 'extend';
-import * as is from 'is';
 import * as uuid from 'uuid';
 import {
   Backup,
@@ -59,6 +58,7 @@ import {
   CreateQueryPartitionsResponse,
   CreateReadPartitionsResponse,
 } from '../src/batch-transaction';
+import {isNull, isNumber} from '../src/helper';
 const fs = require('fs');
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
@@ -5069,7 +5069,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? {value: String(val)} : val;
+                return isNumber(val) ? {value: String(val)} : val;
               });
 
               assert.strictEqual(
@@ -5290,7 +5290,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? Spanner.float32(val) : val;
+                return isNumber(val) ? Spanner.float32(val) : val;
               });
 
               for (let i = 0; i < rows[0][0].value.length; i++) {
@@ -5448,7 +5448,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? {value: val + ''} : val;
+                return isNumber(val) ? {value: val + ''} : val;
               });
 
               assert.strictEqual(
@@ -5533,7 +5533,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? {value: val} : val;
+                return isNumber(val) ? {value: val} : val;
               });
 
               assert.strictEqual(
@@ -5662,7 +5662,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? {value: val + ''} : val;
+                return isNumber(val) ? {value: val + ''} : val;
               });
 
               assert.strictEqual(
@@ -6107,7 +6107,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               const returnedValues = rows[0][0].value.map(val => {
-                return is.null(val) ? val : Spanner.date(val);
+                return isNull(val) ? val : Spanner.date(val);
               });
 
               assert.deepStrictEqual(returnedValues, values);

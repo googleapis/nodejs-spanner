@@ -2206,6 +2206,98 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('internalUpdateGraphOperation', () => {
+    it('invokes internalUpdateGraphOperation without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      await client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest(),
+      );
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse(),
+      );
+      client.innerApiCalls.internalUpdateGraphOperation =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.internalUpdateGraphOperation(request);
+      assert.deepStrictEqual(response, expectedResponse);
+    });
+
+    it('invokes internalUpdateGraphOperation without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      await client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest(),
+      );
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse(),
+      );
+      client.innerApiCalls.internalUpdateGraphOperation =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.internalUpdateGraphOperation(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse | null,
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          },
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+    });
+
+    it('invokes internalUpdateGraphOperation with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      await client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest(),
+      );
+      const expectedError = new Error('expected');
+      client.innerApiCalls.internalUpdateGraphOperation = stubSimpleCall(
+        undefined,
+        expectedError,
+      );
+      await assert.rejects(
+        client.internalUpdateGraphOperation(request),
+        expectedError,
+      );
+    });
+
+    it('invokes internalUpdateGraphOperation with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      await client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationRequest(),
+      );
+      const expectedError = new Error('The client has already been closed.');
+      client.close().catch(err => {
+        throw err;
+      });
+      await assert.rejects(
+        client.internalUpdateGraphOperation(request),
+        expectedError,
+      );
+    });
+  });
+
   describe('createDatabase', () => {
     it('invokes createDatabase without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({

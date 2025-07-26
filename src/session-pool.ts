@@ -15,7 +15,6 @@
  */
 
 import {EventEmitter} from 'events';
-import * as is from 'is';
 import PQueue from 'p-queue';
 
 import {Database} from './database';
@@ -37,6 +36,7 @@ import {
   isDefaultCredentialsNotSetError,
   isProjectIdNotSetInEnvironmentError,
   isCreateSessionPermissionError,
+  isInfinite,
 } from './helper';
 
 /**
@@ -870,7 +870,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const timeout = this.options.acquireTimeout;
 
     let removeTimeoutListener = () => {};
-    if (!is.infinite(timeout!)) {
+    if (!isInfinite(timeout!)) {
       const elapsed = Date.now() - startTime!;
       const remaining = timeout! - elapsed;
 

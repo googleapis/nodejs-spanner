@@ -37,10 +37,19 @@ import * as duplexify from 'duplexify';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import {grpc, GrpcClient} from 'google-gax';
-import * as is from 'is';
 import {Request, Response} from 'teeny-request';
 import * as retryRequest from 'retry-request';
 import {Duplex, PassThrough} from 'stream';
+import {
+  isArray,
+  isBoolean,
+  isError,
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+} from '../helper';
 
 const gaxProtoPath = path.join(
   path.dirname(require.resolve('google-gax')),
@@ -265,7 +274,7 @@ export class ObjectToStructConverter {
     for (const prop in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, prop)) {
         const value = obj[prop];
-        if (is.undefined(value)) {
+        if (isUndefined(value)) {
           continue;
         }
         convertedObject.fields[prop] = this.encodeValue_(value);
@@ -292,19 +301,19 @@ export class ObjectToStructConverter {
   encodeValue_(value: {}) {
     let convertedValue;
 
-    if (is.null(value)) {
+    if (isNull(value)) {
       convertedValue = {
         nullValue: 0,
       };
-    } else if (is.number(value)) {
+    } else if (isNumber(value)) {
       convertedValue = {
         numberValue: value,
       };
-    } else if (is.string(value)) {
+    } else if (isString(value)) {
       convertedValue = {
         stringValue: value,
       };
-    } else if (is.boolean(value)) {
+    } else if (isBoolean(value)) {
       convertedValue = {
         boolValue: value,
       };
@@ -312,7 +321,7 @@ export class ObjectToStructConverter {
       convertedValue = {
         blobValue: value,
       };
-    } else if (is.object(value)) {
+    } else if (isObject(value)) {
       if (this.seenObjects.has(value)) {
         // Circular reference.
         if (!this.removeCircular) {
@@ -331,7 +340,7 @@ export class ObjectToStructConverter {
           structValue: this.convert(value),
         };
       }
-    } else if (is.array(value)) {
+    } else if (isArray(value)) {
       convertedValue = {
         listValue: {
           values: (value as Array<{}>).map(this.encodeValue_.bind(this)),
@@ -723,7 +732,7 @@ export class GrpcService extends Service {
     const grpcMetadata = this.grpcMetadata;
     const grpcOpts: GrpcOptions = {};
 
-    if (is.number(protoOpts.timeout)) {
+    if (isNumber(protoOpts.timeout)) {
       grpcOpts.deadline = GrpcService.createDeadline_(protoOpts.timeout);
     }
 
@@ -821,7 +830,7 @@ export class GrpcService extends Service {
    * @return {error|null}
    */
   static decorateError_(err: Error): Error | null {
-    const errorObj = is.error(err) ? err : {};
+    const errorObj = isError(err) ? err : {};
     return GrpcService.decorateGrpcResponse_(errorObj, err);
   }
 
