@@ -61,7 +61,7 @@
     "@google-cloud/projectify": "^5.0.0",
     "@google-cloud/promisify": "^5.0.0",
     "@grpc/grpc-js": "^1.13.2",
-    "@grpc/proto-loader": "^0.7.13",
+    "@grpc/proto-loader": "^0.8.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/core": "^2.0.0",
