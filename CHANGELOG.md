@@ -4,6 +4,37 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.1.0](https://github.com/googleapis/nodejs-spanner/compare/v8.0.0...v8.1.0) (2025-07-28)
+
+
+### Features
+
+* Add Custom OpenTelemetry Exporter in for Service Metrics ([#2272](https://github.com/googleapis/nodejs-spanner/issues/2272)) ([610d1b9](https://github.com/googleapis/nodejs-spanner/commit/610d1b989ba186c0758791343deaa7f683c4bd26))
+* Add methods from gax to cache proto root and process custom error details ([#2330](https://github.com/googleapis/nodejs-spanner/issues/2330)) ([1b3931a](https://github.com/googleapis/nodejs-spanner/commit/1b3931a799bdd052adc91703e59e1d0c83270065))
+* Add metrics tracers ([#2319](https://github.com/googleapis/nodejs-spanner/issues/2319)) ([192bf2b](https://github.com/googleapis/nodejs-spanner/commit/192bf2bb603bca4ac481fcfd1f04974173adc6a1))
+* Add support for AFE latency metrics ([#2348](https://github.com/googleapis/nodejs-spanner/issues/2348)) ([0666f05](https://github.com/googleapis/nodejs-spanner/commit/0666f05d589e2f229b44dffae8e9649220bccf8b))
+* Add throughput_mode to UpdateDatabaseDdlRequest to be used by Spanner Migration Tool. See https://github.com/GoogleCloudPlatform/spanner-migration-tool ([#2304](https://github.com/googleapis/nodejs-spanner/issues/2304)) ([a29af56](https://github.com/googleapis/nodejs-spanner/commit/a29af56ae3c31f07115cb938bcf3f0f77241b725))
+* Operation, Attempt, and GFE metrics ([#2328](https://github.com/googleapis/nodejs-spanner/issues/2328)) ([646e6ea](https://github.com/googleapis/nodejs-spanner/commit/646e6ea6f1dc5fa1937e512ae9e81ae4d2637ed0))
+* Proto changes for an internal api ([#2356](https://github.com/googleapis/nodejs-spanner/issues/2356)) ([380e770](https://github.com/googleapis/nodejs-spanner/commit/380e7705a23a692168db386ba5426c91bf1587b6))
+* **spanner:** A new field `snapshot_timestamp` is added to message `.google.spanner.v1.CommitResponse` ([#2350](https://github.com/googleapis/nodejs-spanner/issues/2350)) ([0875cd8](https://github.com/googleapis/nodejs-spanner/commit/0875cd82e99fa6c95ab38807e09c5921303775f8))
+* **spanner:** Add new change_stream.proto ([#2315](https://github.com/googleapis/nodejs-spanner/issues/2315)) ([57d67be](https://github.com/googleapis/nodejs-spanner/commit/57d67be2e3b6d6ac2a8a903acf8613b27a049c3b))
+* **spanner:** Add tpc support ([#2333](https://github.com/googleapis/nodejs-spanner/issues/2333)) ([a381cab](https://github.com/googleapis/nodejs-spanner/commit/a381cab92c31373a6a10edca0f8a8bdfc4415e4b))
+* Track precommit token in r/w apis(multiplexed session) ([#2312](https://github.com/googleapis/nodejs-spanner/issues/2312)) ([3676bfa](https://github.com/googleapis/nodejs-spanner/commit/3676bfa60725c43f85a04ead87943be92e4a99f0))
+
+
+### Bug Fixes
+
+* Docs-test ([#2297](https://github.com/googleapis/nodejs-spanner/issues/2297)) ([61c571c](https://github.com/googleapis/nodejs-spanner/commit/61c571c729c2a065df6ff166db784a6e6eaef74d))
+* Ensure context propagation works in Node.js 22 with async/await ([#2326](https://github.com/googleapis/nodejs-spanner/issues/2326)) ([e8cdbed](https://github.com/googleapis/nodejs-spanner/commit/e8cdbedd55f049b8c7766e97388ed045fedd1b4e))
+* Pass the Span correctly ([#2332](https://github.com/googleapis/nodejs-spanner/issues/2332)) ([edaee77](https://github.com/googleapis/nodejs-spanner/commit/edaee7791b2d814f749ed35119dd705924984a78))
+* System test against emulator ([#2339](https://github.com/googleapis/nodejs-spanner/issues/2339)) ([2a6af4c](https://github.com/googleapis/nodejs-spanner/commit/2a6af4c36484f44929a2fac80d8f225dad5d702c))
+* Unhandled exceptions from gax ([#2338](https://github.com/googleapis/nodejs-spanner/issues/2338)) ([6428bcd](https://github.com/googleapis/nodejs-spanner/commit/6428bcd2980852c1bdbc4c3d0ab210a139e5f193))
+
+
+### Performance Improvements
+
+* Skip gRPC trailers for StreamingRead & ExecuteStreamingSql ([#2313](https://github.com/googleapis/nodejs-spanner/issues/2313)) ([8bd0781](https://github.com/googleapis/nodejs-spanner/commit/8bd0781e8b434a421f0e0f3395439a5a86c7847c))
+
 ## [8.0.0](https://github.com/googleapis/nodejs-spanner/compare/v7.21.0...v8.0.0) (2025-05-12)
 
 

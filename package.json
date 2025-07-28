@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -86,7 +86,7 @@
     "split-array-stream": "^2.0.0",
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.5",
-    "teeny-request": "^10.0.0", 
+    "teeny-request": "^10.0.0",
     "through2": "^4.0.2",
     "@babel/traverse": "7.27.7",
     "@babel/core": "7.27.7",
