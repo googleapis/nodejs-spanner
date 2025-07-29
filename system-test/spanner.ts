@@ -9668,6 +9668,32 @@ describe('Spanner', () => {
           );
         });
       });
+
+      const handleReadAndMutation = (done, database) => {
+        database.runTransaction(async (err, transaction) => {
+          assert.ifError(err);
+          try {
+            await transaction.run('SELECT abc');
+          } catch (err) {
+            // add a sleep to let the explicit begin call finish
+            await new Promise<void>(resolve => {
+              setTimeout(() => {
+                resolve();
+              }, 4000);
+            });
+          }
+          transaction!.insert('TxnTable', {
+            Key: 'k1003',
+            StringValue: 'mutation',
+          });
+          await transaction.commit();
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should handle commit retry based on multiplexed enable or not', done => {
+        handleReadAndMutation(done, DATABASE);
+      });
     });
 
     describe('batch transactions', () => {
