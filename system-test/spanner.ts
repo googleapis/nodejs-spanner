@@ -288,7 +288,9 @@ describe('Spanner', () => {
         await Promise.all(
           RESOURCES_TO_CLEAN.filter(
             resource => resource instanceof Instance,
-          ).map(instance => instance.delete(GAX_OPTIONS)),
+          ).map(async instance => {
+            await deleteInstance(instance);
+          }),
         );
       } else {
         /**
