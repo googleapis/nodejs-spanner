@@ -289,11 +289,7 @@ describe('Spanner', () => {
           RESOURCES_TO_CLEAN.filter(
             resource => resource instanceof Instance,
           ).map(async instance => {
-            const [backups] = await instance.getBackups();
-            await Promise.all(
-              backups.map(backup => backup.delete(GAX_OPTIONS)),
-            );
-            await instance.delete(GAX_OPTIONS);
+            await deleteInstance(instance);
           }),
         );
       } else {
