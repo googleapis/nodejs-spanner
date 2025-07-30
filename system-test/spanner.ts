@@ -3358,12 +3358,13 @@ describe('Spanner', () => {
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
     before(async function () {
+      console.log('Current time:', new Date().toISOString());
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
-        this.skip();
-      }
+      // if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
+      //   this.skip();
+      // }
       googleSqlDatabase1 = DATABASE;
       postgreSqlDatabase1 = PG_DATABASE;
 
@@ -3391,17 +3392,27 @@ describe('Spanner', () => {
         RESOURCES_TO_CLEAN.push(postgreSqlDatabase2);
       }
 
+      console.log('Databases created');
+      console.log('Current time:', new Date().toISOString());
+
       // Create backups.
       await createBackup(
         googleSqlDatabase1,
         googleSqlBackup1Name,
         backupExpiryDate,
       );
+
+      console.log('backup 1 created');
+      console.log('Current time:', new Date().toISOString());
+
       await createBackup(
         googleSqlDatabase2,
         googleSqlBackup2Name,
         backupExpiryDate,
       );
+
+      console.log('backup 2 created');
+      console.log('Current time:', new Date().toISOString());
 
       googleSqlBackup1 = instance.backup(googleSqlBackup1Name);
       googleSqlBackup2 = instance.backup(googleSqlBackup2Name);
@@ -3414,16 +3425,22 @@ describe('Spanner', () => {
           postgreSqlBackup1Name,
           backupExpiryDate,
         );
+
+        console.log('Postgres backup 1 created');
         await createBackup(
           postgreSqlDatabase2,
           postgreSqlBackup2Name,
           backupExpiryDate,
         );
 
+        console.log('Postgres backup 2 created');
+
         postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
         postgreSqlBackup2 = instance.backup(postgreSqlBackup2Name);
 
         RESOURCES_TO_CLEAN.push(...[postgreSqlBackup1, postgreSqlBackup2]);
+
+        console.log('Completed before');
       }
     });
 
