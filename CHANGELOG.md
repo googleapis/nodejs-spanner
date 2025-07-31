@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.2.0](https://github.com/googleapis/nodejs-spanner/compare/v8.1.0...v8.2.0) (2025-07-31)
+
+
+### Features
+
+* **spanner:** Add support for multiplexed session for r/w transactions ([#2351](https://github.com/googleapis/nodejs-spanner/issues/2351)) ([6a9f1a2](https://github.com/googleapis/nodejs-spanner/commit/6a9f1a2b2c0dad955593571c71e9d4b6c9e7eeee))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.1 ([#2362](https://github.com/googleapis/nodejs-spanner/issues/2362)) ([9223470](https://github.com/googleapis/nodejs-spanner/commit/922347014ac3966ec4a48116b61ba4850edf0b50))
+
 ## [8.1.0](https://github.com/googleapis/nodejs-spanner/compare/v8.0.0...v8.1.0) (2025-07-28)
 
 
