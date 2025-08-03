@@ -426,7 +426,7 @@ export class SpannerExecutorProxyClient {
    *   An object stream which is both readable and writable. It accepts objects
    *   representing {@link protos.google.spanner.executor.v1.SpannerAsyncActionRequest|SpannerAsyncActionRequest} for write() method, and
    *   will emit objects representing {@link protos.google.spanner.executor.v1.SpannerAsyncActionResponse|SpannerAsyncActionResponse} on 'data' event asynchronously.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming | documentation }
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#bi-directional-streaming | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1/spanner_executor_proxy.execute_action_async.js</caption>
    * region_tag:spanner-cloud-executor_v1_generated_SpannerExecutorProxy_ExecuteActionAsync_async
