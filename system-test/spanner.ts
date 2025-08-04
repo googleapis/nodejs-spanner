@@ -9191,6 +9191,101 @@ describe('Spanner', () => {
         commitTransaction(done, PG_DATABASE, postgreSqlTable);
       });
 
+      describe('when multiplexed session is enabled for read write', async () => {
+        before(() => {
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+        });
+
+        after(() => {
+          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+        });
+
+        async function insertAndCommitTransaction(database, sync, table, key) {
+          return database.runTransaction(async (err, transaction) => {
+            assert.ifError(err);
+
+            // insert data
+            transaction!.insert(table.name, {
+              Key: key,
+              StringValue: 'v6',
+            });
+
+            // increament the shared counter
+            sync.count++;
+            if (sync.count === sync.target) {
+              sync.openPromise();
+            }
+
+            // both the transactions will pause till count equals target
+            // (or wait for the both the transaction to ready for commit)
+            await sync.promise;
+
+            // commit the transaction once both the transactions are ready to commit
+            await transaction!.commit();
+          });
+        }
+
+        it('GOOGLE_STANDARD_SQL should insert and commit transaction when running parallely', async () => {
+          const promises: Promise<void>[] = [];
+          let resolvePromise;
+          const commitPromise = new Promise(
+            resolve => (resolvePromise = resolve),
+          );
+          const sync = {
+            target: 2, // both the transactions to be ready
+            count: 0, // 0 transactions are so far
+            promise: commitPromise, // the promise both the transactions wait at
+            openPromise: () => resolvePromise(),
+          };
+          // run the transactions in parallel
+          promises.push(
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k6'),
+          );
+          promises.push(
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k7'),
+          );
+
+          // wait for both the transactions to complete the execution
+          await Promise.all(promises);
+        });
+
+        it('POSTGRESQL should insert and commit transactions when running parallely', async () => {
+          const promises: Promise<void>[] = [];
+          let resolvePromise;
+          const commitPromise = new Promise(
+            resolve => (resolvePromise = resolve),
+          );
+          const sync = {
+            target: 2, // both the transactions to be ready
+            count: 0, // 0 transactions are so far
+            promise: commitPromise, // the promise both the transactions wait at
+            openPromise: () => resolvePromise(),
+          };
+          // run the transactions in parallel
+          promises.push(
+            insertAndCommitTransaction(
+              PG_DATABASE,
+              sync,
+              postgreSqlTable,
+              'k6',
+            ),
+          );
+          promises.push(
+            insertAndCommitTransaction(
+              PG_DATABASE,
+              sync,
+              postgreSqlTable,
+              'k7',
+            ),
+          );
+
+          // wait for both the transactions to complete the execution
+          await Promise.all(promises);
+        });
+      });
+
       const rollbackTransaction = (done, database) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
