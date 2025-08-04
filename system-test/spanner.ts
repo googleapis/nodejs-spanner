@@ -9192,37 +9192,28 @@ describe('Spanner', () => {
       });
 
       describe('when multiplexed session is enabled for read write', async () => {
-        before(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-        });
-
-        after(() => {
-          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
-          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
-        });
-
         async function insertAndCommitTransaction(database, sync, table, key) {
-          return database.runTransaction(async (err, transaction) => {
-            assert.ifError(err);
+          await database.runTransactionAsync(async transaction => {
+            // read from table TxnTable
+            await transaction.run('SELECT * FROM TxnTable');
 
-            // insert data
+            // insert mutation
             transaction!.insert(table.name, {
               Key: key,
               StringValue: 'v6',
             });
 
-            // increament the shared counter
+            // increment the shared counter
             sync.count++;
             if (sync.count === sync.target) {
-              sync.openPromise();
+              // resolve the commit promise so that both the threads can continue to commit the transaction
+              sync.resolveCommitPromise();
             }
 
-            // both the transactions will pause till count equals target
-            // (or wait for the both the transaction to ready for commit)
+            // wait till the commit promise is resolved
             await sync.promise;
 
-            // commit the transaction once both the transactions are ready to commit
+            // commit transaction once both the transactions are ready to commit
             await transaction!.commit();
           });
         }
@@ -9235,19 +9226,19 @@ describe('Spanner', () => {
           );
           const sync = {
             target: 2, // both the transactions to be ready
-            count: 0, // 0 transactions are so far
+            count: 0, // 0 transactions are ready so far
             promise: commitPromise, // the promise both the transactions wait at
-            openPromise: () => resolvePromise(),
+            resolveCommitPromise: () => resolvePromise(), // the function to resolve the commit promise
           };
           // run the transactions in parallel
           promises.push(
-            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k6'),
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k1100'),
           );
           promises.push(
-            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k7'),
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k1101'),
           );
 
-          // wait for both the transactions to complete the execution
+          // wait for both the transactions to complete their execution
           await Promise.all(promises);
         });
 
@@ -9259,9 +9250,9 @@ describe('Spanner', () => {
           );
           const sync = {
             target: 2, // both the transactions to be ready
-            count: 0, // 0 transactions are so far
+            count: 0, // 0 transactions are ready so far
             promise: commitPromise, // the promise both the transactions wait at
-            openPromise: () => resolvePromise(),
+            resolveCommitPromise: () => resolvePromise(), // the function to resolve the commit promise
           };
           // run the transactions in parallel
           promises.push(
@@ -9269,7 +9260,7 @@ describe('Spanner', () => {
               PG_DATABASE,
               sync,
               postgreSqlTable,
-              'k6',
+              'k1102',
             ),
           );
           promises.push(
@@ -9277,11 +9268,11 @@ describe('Spanner', () => {
               PG_DATABASE,
               sync,
               postgreSqlTable,
-              'k7',
+              'k1103',
             ),
           );
 
-          // wait for both the transactions to complete the execution
+          // wait for both the transactions to complete their execution
           await Promise.all(promises);
         });
       });

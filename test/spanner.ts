@@ -4734,6 +4734,65 @@ describe('Spanner with mock server', () => {
           await database.close();
         });
       });
+
+      // parallel transactions
+      describe('parallel transactions', async () => {
+        async function insertAndCommit() {
+          const database = newTestDatabase();
+          await database.runTransactionAsync(async tx => {
+            tx.upsert('foo', [
+              {id: 1, name: 'One'},
+              {id: 2, name: 'Two'},
+            ]);
+            await tx.commit();
+          });
+        }
+        it('should have different precommit tokens for each transactions when running parallely', async () => {
+          const promises: Promise<void>[] = [];
+
+          // run the transactions parallely
+          promises.push(insertAndCommit());
+          promises.push(insertAndCommit());
+
+          // wait for the transaction to complete its execution
+          await Promise.all(promises);
+
+          const commitRequest = spannerMock.getRequests().filter(val => {
+            return (val as v1.CommitRequest).precommitToken;
+          }) as v1.CommitRequest[];
+
+          // assert that there are two commit requests one for each transaction
+          assert.strictEqual(commitRequest.length, 2);
+
+          // assert that precommitToken is not null during first request to commit
+          assert.notEqual(commitRequest[0].precommitToken, null);
+
+          // assert that precommitToken is instance of Buffer
+          assert.ok(
+            commitRequest[0].precommitToken?.precommitToken instanceof Buffer,
+          );
+
+          // assert that precommitToken is not null during second request to commit
+          assert.notEqual(commitRequest[1].precommitToken, null);
+
+          // assert that precommitToken is instance of Buffer
+          assert.ok(
+            commitRequest[1].precommitToken?.precommitToken instanceof Buffer,
+          );
+
+          // assert that precommitToken is different in both the commit request
+          assert.notEqual(
+            commitRequest[0].precommitToken.precommitToken,
+            commitRequest[1].precommitToken.precommitToken,
+          );
+
+          // assert that seqNum is different in both the commit request
+          assert.notEqual(
+            commitRequest[0].precommitToken.seqNum,
+            commitRequest[1].precommitToken.seqNum,
+          );
+        });
+      });
     });
   });
 
