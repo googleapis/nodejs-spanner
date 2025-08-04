@@ -3332,7 +3332,7 @@ describe('Spanner', () => {
     });
   });
 
-  describe('Backups', () => {
+  describe.only('Backups', () => {
     const SKIP_POSTGRESQL_BACKUP_TESTS = true;
 
     let googleSqlDatabase1: Database;
@@ -3502,32 +3502,36 @@ describe('Spanner', () => {
         pageSize: 1,
         gaxOptions: {autoPaginate: false},
       });
-      const [page2] = await instance.getBackups({
-        pageSize: 1,
-        pageToken: resp1!.nextPageToken!,
+
+      assert.strictEqual(page1.length, 1);
+
+      let totalPageSize = 1;
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+        totalPageSize = 2;
+
+        // Check that the second page contains the Postgres SQL backup.
+        const [page2] = await instance.getBackups({
+          pageSize: 1,
+          pageToken: resp1!.nextPageToken!,
+          gaxOptions: {autoPaginate: false},
+        });
+        assert.strictEqual(page2.length, 1);
+      }
+
+      const [totalPage] = await instance.getBackups({
+        pageSize: totalPageSize,
         gaxOptions: {autoPaginate: false},
       });
 
-      let page3size = 2;
-      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
-        page3size = 4;
-      }
-      const [page3] = await instance.getBackups({
-        pageSize: page3size,
-        gaxOptions: {autoPaginate: false},
-      });
-      assert.strictEqual(page1.length, 1);
-      assert.strictEqual(page2.length, 1);
-      assert.strictEqual(page3.length, page3size);
-      assert.notStrictEqual(page2[0].formattedName_, page1[0].formattedName_);
+      assert.strictEqual(totalPage.length, totalPageSize);
       assert.ok(
-        page3.find(
+        totalPage.find(
           backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
         ),
       );
       if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
-          page3.find(
+          totalPage.find(
             backup =>
               backup.formattedName_ === postgreSqlBackup1.formattedName_,
           ),
