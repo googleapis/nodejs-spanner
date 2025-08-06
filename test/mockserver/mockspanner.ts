@@ -321,6 +321,7 @@ export class MockSpanner {
   private metadata: Metadata[] = [];
   private frozen = 0;
   private sessionCounter = 0;
+  private _seqNum = 0;
   private sessions: Map<string, protobuf.Session> = new Map<
     string,
     protobuf.Session
@@ -371,6 +372,7 @@ export class MockSpanner {
     this.partitionRead = this.partitionRead.bind(this);
     this.batchWrite = this.batchWrite.bind(this);
     this.mutationOnly = false;
+    this._seqNum = 1;
   }
 
   /**
@@ -704,7 +706,7 @@ export class MockSpanner {
             const precommitToken = session?.multiplexed
               ? protobuf.MultiplexedSessionPrecommitToken.create({
                   precommitToken: Buffer.from('mock-precommit-token'),
-                  seqNum: randomInt(1, 1000),
+                  seqNum: this._seqNum++,
                 })
               : null;
             if (txn instanceof Error) {
@@ -816,6 +818,7 @@ export class MockSpanner {
       const partial = protobuf.PartialResultSet.create({
         resumeToken: Buffer.from(token),
         values: [],
+        precommitToken: resultSet.precommitToken,
       });
       for (
         let row = i;
@@ -1022,7 +1025,7 @@ export class MockSpanner {
             const precommitToken = session?.multiplexed
               ? protobuf.MultiplexedSessionPrecommitToken.create({
                   precommitToken: Buffer.from('mock-precommit-token'),
-                  seqNum: randomInt(1, 1000),
+                  seqNum: this._seqNum++,
                 })
               : null;
             if (txn instanceof Error) {
@@ -1277,7 +1280,7 @@ export class MockSpanner {
       this.mutationOnly && session.multiplexed && options?.readWrite
         ? {
             precommitToken: Buffer.from('mock-precommit-token'),
-            seqNum: randomInt(1, 1000),
+            seqNum: this._seqNum++,
           }
         : null;
     const transaction = protobuf.Transaction.create({

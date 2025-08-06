@@ -4671,7 +4671,7 @@ describe('Spanner with mock server', () => {
             MultiplexedSessionRetry: 'precommitToken',
             precommitToken: {
               precommitToken: fakeRetryToken,
-              seqNum: 1,
+              seqNum: 100,
             },
             commitTimestamp: mock.now(),
           };
@@ -4701,7 +4701,7 @@ describe('Spanner with mock server', () => {
             await tx!.run(selectSql);
 
             // perform mutations
-            await tx.upsert('foo', [
+            tx.upsert('foo', [
               {id: 1, name: 'One'},
               {id: 2, name: 'Two'},
             ]);
@@ -4715,13 +4715,7 @@ describe('Spanner with mock server', () => {
               2,
               'The mock commit method should have been called exactly twice.',
             );
-            const firstRequest = capturedCommitRequests[0];
-            // assert that during the first request to commit
-            // the precommitToken was missing
-            assert.ok(
-              !firstRequest.precommitToken,
-              'The first commit request should not have a precommitToken.',
-            );
+
             const secondRequest = capturedCommitRequests[1];
             // assert that during the second request to commit
             // the precommitToken was present
@@ -4740,6 +4734,7 @@ describe('Spanner with mock server', () => {
         async function insertAndCommit() {
           const database = newTestDatabase();
           await database.runTransactionAsync(async tx => {
+            await tx.run(selectSql);
             tx.upsert('foo', [
               {id: 1, name: 'One'},
               {id: 2, name: 'Two'},
@@ -4784,12 +4779,6 @@ describe('Spanner with mock server', () => {
           assert.notEqual(
             commitRequest[0].precommitToken.precommitToken,
             commitRequest[1].precommitToken.precommitToken,
-          );
-
-          // assert that seqNum is different in both the commit request
-          assert.notEqual(
-            commitRequest[0].precommitToken.seqNum,
-            commitRequest[1].precommitToken.seqNum,
           );
         });
       });

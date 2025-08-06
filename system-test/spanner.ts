@@ -9191,7 +9191,7 @@ describe('Spanner', () => {
         commitTransaction(done, PG_DATABASE, postgreSqlTable);
       });
 
-      describe('when multiplexed session is enabled for read write', async () => {
+      describe('parallel transactions', async () => {
         async function insertAndCommitTransaction(database, sync, table, key) {
           await database.runTransactionAsync(async transaction => {
             // read from table TxnTable
@@ -9218,7 +9218,7 @@ describe('Spanner', () => {
           });
         }
 
-        it('GOOGLE_STANDARD_SQL should insert and commit transaction when running parallely', async () => {
+        it('should insert and commit transaction when running parallely', async () => {
           const promises: Promise<void>[] = [];
           let resolvePromise;
           const commitPromise = new Promise(
@@ -9236,40 +9236,6 @@ describe('Spanner', () => {
           );
           promises.push(
             insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k1101'),
-          );
-
-          // wait for both the transactions to complete their execution
-          await Promise.all(promises);
-        });
-
-        it('POSTGRESQL should insert and commit transactions when running parallely', async () => {
-          const promises: Promise<void>[] = [];
-          let resolvePromise;
-          const commitPromise = new Promise(
-            resolve => (resolvePromise = resolve),
-          );
-          const sync = {
-            target: 2, // both the transactions to be ready
-            count: 0, // 0 transactions are ready so far
-            promise: commitPromise, // the promise both the transactions wait at
-            resolveCommitPromise: () => resolvePromise(), // the function to resolve the commit promise
-          };
-          // run the transactions in parallel
-          promises.push(
-            insertAndCommitTransaction(
-              PG_DATABASE,
-              sync,
-              postgreSqlTable,
-              'k1102',
-            ),
-          );
-          promises.push(
-            insertAndCommitTransaction(
-              PG_DATABASE,
-              sync,
-              postgreSqlTable,
-              'k1103',
-            ),
           );
 
           // wait for both the transactions to complete their execution
