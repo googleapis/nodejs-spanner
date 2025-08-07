@@ -321,12 +321,12 @@ export class MockSpanner {
   private metadata: Metadata[] = [];
   private frozen = 0;
   private sessionCounter = 0;
-  private _seqNum = 0;
   private sessions: Map<string, protobuf.Session> = new Map<
     string,
     protobuf.Session
   >();
   private mutationOnly: boolean;
+  private transactionSeqNum: Map<string, number> = new Map<string, number>();
   private transactionCounters: Map<string, number> = new Map<string, number>();
   private transactions: Map<string, protobuf.Transaction> = new Map<
     string,
@@ -372,7 +372,6 @@ export class MockSpanner {
     this.partitionRead = this.partitionRead.bind(this);
     this.batchWrite = this.batchWrite.bind(this);
     this.mutationOnly = false;
-    this._seqNum = 1;
   }
 
   /**
@@ -681,10 +680,13 @@ export class MockSpanner {
     this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
+        let transactionKey;
         if (call.request!.transaction) {
           const fullTransactionId = `${call.request!.session}/transactions/${
             call.request!.transaction.id
           }`;
+          // unique key for a transaction
+          transactionKey = `${call.request!.session}/${call.request!.transaction.id?.toString('hex')}`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.sendMetadata(new Metadata());
             call.emit(
@@ -703,29 +705,39 @@ export class MockSpanner {
               call.request!.session,
               call.request!.transaction.begin,
             );
-            const precommitToken = session?.multiplexed
-              ? protobuf.MultiplexedSessionPrecommitToken.create({
-                  precommitToken: Buffer.from('mock-precommit-token'),
-                  seqNum: this._seqNum++,
-                })
-              : null;
             if (txn instanceof Error) {
               call.sendMetadata(new Metadata());
               call.emit('error', txn);
               call.end();
               return;
             }
+
+            // unique key for a transaction
+            transactionKey = `${call.request!.session}/${txn.id.toString('hex')}`;
             if (res.type === StatementResultType.RESULT_SET) {
               (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
-              (res.resultSet as protobuf.ResultSet).precommitToken =
-                precommitToken;
             }
           }
+
+          // get the current seqNum
+          const currentSeqNum = this.transactionSeqNum.get(transactionKey) || 0;
+          const nextSeqNum = currentSeqNum + 1;
+
+          // set the next seqNum
+          this.transactionSeqNum.set(transactionKey, nextSeqNum);
+          const precommitToken = session?.multiplexed
+            ? protobuf.MultiplexedSessionPrecommitToken.create({
+                precommitToken: Buffer.from('mock-precommit-token'),
+                seqNum: nextSeqNum,
+              })
+            : null;
           let partialResultSets;
           let resumeIndex;
           let streamErr;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
+              (res.resultSet as protobuf.ResultSet).precommitToken =
+                precommitToken;
               if (Array.isArray(res.resultSet)) {
                 partialResultSets = res.resultSet;
               } else {
@@ -760,6 +772,7 @@ export class MockSpanner {
             case StatementResultType.UPDATE_COUNT:
               call.write(
                 MockSpanner.emptyPartialResultSet(
+                  precommitToken,
                   Buffer.from('1'.padStart(8, '0')),
                 ),
               );
@@ -772,7 +785,9 @@ export class MockSpanner {
                 call.emit('error', streamErr);
                 break;
               }
-              call.write(MockSpanner.toPartialResultSet(res.updateCount));
+              call.write(
+                MockSpanner.toPartialResultSet(precommitToken, res.updateCount),
+              );
               break;
             case StatementResultType.ERROR:
               call.sendMetadata(new Metadata());
@@ -844,14 +859,23 @@ export class MockSpanner {
   }
 
   private static emptyPartialResultSet(
+    precommitToken:
+      | protobuf.IMultiplexedSessionPrecommitToken
+      | null
+      | undefined,
     resumeToken: Uint8Array,
   ): protobuf.PartialResultSet {
     return protobuf.PartialResultSet.create({
       resumeToken,
+      precommitToken: precommitToken,
     });
   }
 
   private static toPartialResultSet(
+    precommitToken:
+      | protobuf.IMultiplexedSessionPrecommitToken
+      | null
+      | undefined,
     rowCount: number,
   ): protobuf.PartialResultSet {
     const stats = {
@@ -860,6 +884,7 @@ export class MockSpanner {
     };
     return protobuf.PartialResultSet.create({
       stats,
+      precommitToken: precommitToken,
     });
   }
 
@@ -995,10 +1020,14 @@ export class MockSpanner {
 
     this.simulateExecutionTime(this.streamingRead.name)
       .then(() => {
+        let transactionKey;
         if (call.request!.transaction) {
           const fullTransactionId = `${call.request!.session}/transactions/${
             call.request!.transaction.id
           }`;
+
+          // unique key for a transaction
+          transactionKey = `${call.request!.session}/${call.request!.transaction.id?.toString('hex')}`;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.sendMetadata(new Metadata());
             call.emit(
@@ -1022,29 +1051,39 @@ export class MockSpanner {
               call.request!.session,
               call.request!.transaction.begin,
             );
-            const precommitToken = session?.multiplexed
-              ? protobuf.MultiplexedSessionPrecommitToken.create({
-                  precommitToken: Buffer.from('mock-precommit-token'),
-                  seqNum: this._seqNum++,
-                })
-              : null;
             if (txn instanceof Error) {
               call.sendMetadata(new Metadata());
               call.emit('error', txn);
               call.end();
               return;
             }
+
+            // unique key for a transaction
+            transactionKey = `${call.request!.session}/${txn.id.toString('hex')}`;
             if (res.type === ReadRequestResultType.RESULT_SET) {
               call.sendMetadata(new Metadata());
               (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
-              (res.resultSet as protobuf.ResultSet).precommitToken =
-                precommitToken;
             }
           }
+
+          // get the current seqNum
+          const currentSeqNum = this.transactionSeqNum.get(transactionKey) || 0;
+          const nextSeqNum = currentSeqNum + 1;
+
+          // set the next SeqNum
+          this.transactionSeqNum.set(transactionKey, nextSeqNum);
+          const precommitToken = session?.multiplexed
+            ? protobuf.MultiplexedSessionPrecommitToken.create({
+                precommitToken: Buffer.from('mock-precommit-token'),
+                seqNum: nextSeqNum,
+              })
+            : null;
           let partialResultSets;
           let resumeIndex;
           switch (res.type) {
             case ReadRequestResultType.RESULT_SET:
+              (res.resultSet as protobuf.ResultSet).precommitToken =
+                precommitToken;
               if (Array.isArray(res.resultSet)) {
                 partialResultSets = res.resultSet;
               } else {
@@ -1156,6 +1195,11 @@ export class MockSpanner {
               session.name + '/transactions/' + transactionId;
             const transaction = this.transactions.get(fullTransactionId);
             if (transaction) {
+              // unique transaction key
+              const transactionKey = `${call.request.session}/${call.request.transactionId.toString('hex')}`;
+
+              // delete the transaction key
+              this.transactionSeqNum.delete(transactionKey);
               this.transactions.delete(fullTransactionId);
               this.transactionOptions.delete(fullTransactionId);
               callback(
@@ -1200,6 +1244,10 @@ export class MockSpanner {
       const fullTransactionId = session.name + '/transactions/' + transactionId;
       const transaction = this.transactions.get(fullTransactionId);
       if (transaction) {
+        // unique transaction key
+        const transactionKey = `${call.request.session}/${call.request.transactionId.toString('hex')}`;
+        // delete the key
+        this.transactionSeqNum.delete(transactionKey);
         this.transactions.delete(fullTransactionId);
         this.transactionOptions.delete(fullTransactionId);
         callback(null, google.protobuf.Empty.create());
@@ -1276,13 +1324,19 @@ export class MockSpanner {
     const transactionId = id.toString().padStart(12, '0');
     const fullTransactionId = session.name + '/transactions/' + transactionId;
     const readTimestamp = options && options.readOnly ? now() : undefined;
-    const precommitToken =
-      this.mutationOnly && session.multiplexed && options?.readWrite
-        ? {
-            precommitToken: Buffer.from('mock-precommit-token'),
-            seqNum: this._seqNum++,
-          }
-        : null;
+    let precommitToken;
+    if (this.mutationOnly && session.multiplexed && options?.readWrite) {
+      const transactionKey = `${session.name}/${transactionId}`;
+      // get the current seqNum
+      const currentSeqNum = this.transactionSeqNum.get(transactionKey) || 0;
+      const nextSeqNum = currentSeqNum + 1;
+      // set the next seqNum
+      this.transactionSeqNum.set(transactionKey, nextSeqNum);
+      precommitToken = {
+        precommitToken: Buffer.from('mock-precommit-token'),
+        seqNum: nextSeqNum,
+      };
+    }
     const transaction = protobuf.Transaction.create({
       id: Buffer.from(transactionId),
       readTimestamp,

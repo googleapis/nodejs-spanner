@@ -4671,7 +4671,7 @@ describe('Spanner with mock server', () => {
             MultiplexedSessionRetry: 'precommitToken',
             precommitToken: {
               precommitToken: fakeRetryToken,
-              seqNum: 100,
+              seqNum: 2,
             },
             commitTimestamp: mock.now(),
           };
@@ -4731,9 +4731,10 @@ describe('Spanner with mock server', () => {
 
       // parallel transactions
       describe('parallel transactions', async () => {
-        async function insertAndCommit() {
+        async function readAndMutations() {
           const database = newTestDatabase();
           await database.runTransactionAsync(async tx => {
+            await tx.run(selectSql);
             await tx.run(selectSql);
             tx.upsert('foo', [
               {id: 1, name: 'One'},
@@ -4746,8 +4747,8 @@ describe('Spanner with mock server', () => {
           const promises: Promise<void>[] = [];
 
           // run the transactions parallely
-          promises.push(insertAndCommit());
-          promises.push(insertAndCommit());
+          promises.push(readAndMutations());
+          promises.push(readAndMutations());
 
           // wait for the transaction to complete its execution
           await Promise.all(promises);
