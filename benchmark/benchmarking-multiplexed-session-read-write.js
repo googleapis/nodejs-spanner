@@ -48,7 +48,6 @@ async function main(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  // generate random queries
   function generateReadQuery() {
     const id = Math.floor(Math.random() * 10000) + 1;
     const query = {
@@ -76,6 +75,7 @@ async function main(
     await database.run(generateReadQuery());
   }
 
+  // case: read and DML
   async function readAndDML() {
     const startThreadTime = performance.now();
 
@@ -85,7 +85,9 @@ async function main(
         const [rows] = await tx.run(generateReadQuery());
         rows.forEach(row => {
           const json = row.toJSON();
-          console.log(`SingerId: ${json.SingerId}, FullName: ${json.FullName}`);
+          console.log(
+            `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}`,
+          );
         });
         await tx.runUpdate(generateUpdateQuery());
         await tx.commit();
@@ -102,6 +104,7 @@ async function main(
     );
   }
 
+  // case: mutations only
   async function mutationsOnly() {
     const startThreadTime = performance.now();
 
@@ -125,7 +128,7 @@ async function main(
     );
   }
 
-  // multi use transaction
+  // case: read and mutations
   async function readAndMutations() {
     const startThreadTime = performance.now();
 
@@ -135,7 +138,7 @@ async function main(
         const [rows] = await tx.run(generateReadQuery());
         rows.forEach(row => {
           const json = row.toJSON();
-          console.log(`SingerId: ${json.SingerId}, FullName: ${json.FullName}`);
+          console.log(`SingerId: ${json.SingerId}, FirstName: ${json.FirstName}`);
         });
         const id = Math.floor(Math.random() * 10000) + 1;
         const name = randomUUID();
@@ -196,9 +199,9 @@ async function main(
   async function runConcurrently() {
     const promises = [];
     for (let i = 0; i < numThreads; i++) {
-      method === 'readAndDml'
+      method === 'readAndDML'
         ? promises.push(readAndDML())
-        : method === 'readAndMutatons'
+        : method === 'readAndMutations'
           ? promises.push(readAndMutations())
           : promises.push(mutationsOnly());
     }
