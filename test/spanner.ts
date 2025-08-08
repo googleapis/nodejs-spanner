@@ -4731,8 +4731,7 @@ describe('Spanner with mock server', () => {
 
       // parallel transactions
       describe('parallel transactions', async () => {
-        async function readAndMutations() {
-          const database = newTestDatabase();
+        async function readAndMutations(database) {
           await database.runTransactionAsync(async tx => {
             await tx.run(selectSql);
             await tx.run(selectSql);
@@ -4745,10 +4744,11 @@ describe('Spanner with mock server', () => {
         }
         it('should have different precommit tokens for each transactions when running parallely', async () => {
           const promises: Promise<void>[] = [];
+          const database = newTestDatabase();
 
           // run the transactions parallely
-          promises.push(readAndMutations());
-          promises.push(readAndMutations());
+          promises.push(readAndMutations(database));
+          promises.push(readAndMutations(database));
 
           // wait for the transaction to complete its execution
           await Promise.all(promises);

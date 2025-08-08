@@ -685,8 +685,7 @@ export class MockSpanner {
           const fullTransactionId = `${call.request!.session}/transactions/${
             call.request!.transaction.id
           }`;
-          // unique key for a transaction
-          transactionKey = `${call.request!.session}/${call.request!.transaction.id?.toString('hex')}`;
+          transactionKey = fullTransactionId;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.sendMetadata(new Metadata());
             call.emit(
@@ -711,9 +710,7 @@ export class MockSpanner {
               call.end();
               return;
             }
-
-            // unique key for a transaction
-            transactionKey = `${call.request!.session}/${txn.id.toString('hex')}`;
+            transactionKey = `${call.request!.session}/transactions/${txn.id.toString()}`;
             if (res.type === StatementResultType.RESULT_SET) {
               (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
             }
@@ -1025,9 +1022,7 @@ export class MockSpanner {
           const fullTransactionId = `${call.request!.session}/transactions/${
             call.request!.transaction.id
           }`;
-
-          // unique key for a transaction
-          transactionKey = `${call.request!.session}/${call.request!.transaction.id?.toString('hex')}`;
+          transactionKey = fullTransactionId;
           if (this.abortedTransactions.has(fullTransactionId)) {
             call.sendMetadata(new Metadata());
             call.emit(
@@ -1057,9 +1052,7 @@ export class MockSpanner {
               call.end();
               return;
             }
-
-            // unique key for a transaction
-            transactionKey = `${call.request!.session}/${txn.id.toString('hex')}`;
+            transactionKey = `${call.request!.session}/transactions/${txn.id.toString()}`;
             if (res.type === ReadRequestResultType.RESULT_SET) {
               call.sendMetadata(new Metadata());
               (res.resultSet as protobuf.ResultSet).metadata!.transaction = txn;
@@ -1196,8 +1189,7 @@ export class MockSpanner {
             const transaction = this.transactions.get(fullTransactionId);
             if (transaction) {
               // unique transaction key
-              const transactionKey = `${call.request.session}/${call.request.transactionId.toString('hex')}`;
-
+              const transactionKey = `${call.request.session}/transactions/${call.request.transactionId}`;
               // delete the transaction key
               this.transactionSeqNum.delete(transactionKey);
               this.transactions.delete(fullTransactionId);
@@ -1245,7 +1237,7 @@ export class MockSpanner {
       const transaction = this.transactions.get(fullTransactionId);
       if (transaction) {
         // unique transaction key
-        const transactionKey = `${call.request.session}/${call.request.transactionId.toString('hex')}`;
+        const transactionKey = `${call.request.session}/transactions/${call.request.transactionId}`;
         // delete the key
         this.transactionSeqNum.delete(transactionKey);
         this.transactions.delete(fullTransactionId);
@@ -1326,12 +1318,11 @@ export class MockSpanner {
     const readTimestamp = options && options.readOnly ? now() : undefined;
     let precommitToken;
     if (this.mutationOnly && session.multiplexed && options?.readWrite) {
-      const transactionKey = `${session.name}/${transactionId}`;
       // get the current seqNum
-      const currentSeqNum = this.transactionSeqNum.get(transactionKey) || 0;
+      const currentSeqNum = this.transactionSeqNum.get(fullTransactionId) || 0;
       const nextSeqNum = currentSeqNum + 1;
       // set the next seqNum
-      this.transactionSeqNum.set(transactionKey, nextSeqNum);
+      this.transactionSeqNum.set(fullTransactionId, nextSeqNum);
       precommitToken = {
         precommitToken: Buffer.from('mock-precommit-token'),
         seqNum: nextSeqNum,
