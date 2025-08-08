@@ -177,13 +177,18 @@ export class MultiplexedSession
    */
   getSession(callback: GetSessionCallback): void {
     this._acquire().then(
-      session => callback(null, session, session?.txn),
+      session =>
+        callback(
+          null,
+          session,
+          session!.transaction((session!.parent as Database).queryOptions_),
+        ),
       callback,
     );
   }
 
   /**
-   * Acquires a session asynchronously, and prepares the transaction for the session.
+   * Acquires a session asynchronously.
    *
    * Once a session is successfully acquired, it returns the session object (which may be `null` if unsuccessful).
    *
@@ -193,10 +198,6 @@ export class MultiplexedSession
    */
   async _acquire(): Promise<Session | null> {
     const session = await this._getSession();
-    // Prepare a transaction for a session
-    session!.txn = session!.transaction(
-      (session!.parent as Database).queryOptions_,
-    );
     return session;
   }
 

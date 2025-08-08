@@ -390,7 +390,8 @@ export class Snapshot extends EventEmitter {
     if (
       this._latestPreCommitToken === null ||
       this._latestPreCommitToken === undefined ||
-      this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!
+      (resp.precommitToken &&
+        this._latestPreCommitToken!.seqNum! < resp.precommitToken!.seqNum!)
     ) {
       this._latestPreCommitToken = resp.precommitToken;
     }

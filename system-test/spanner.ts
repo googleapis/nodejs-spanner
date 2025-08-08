@@ -9191,6 +9191,58 @@ describe('Spanner', () => {
         commitTransaction(done, PG_DATABASE, postgreSqlTable);
       });
 
+      describe('parallel transactions', async () => {
+        async function insertAndCommitTransaction(database, sync, table, key) {
+          await database.runTransactionAsync(async transaction => {
+            // read from table TxnTable
+            await transaction.run('SELECT * FROM TxnTable');
+
+            // insert mutation
+            transaction!.insert(table.name, {
+              Key: key,
+              StringValue: 'v6',
+            });
+
+            // increment the shared counter
+            sync.count++;
+            if (sync.count === sync.target) {
+              // resolve the commit promise so that both the threads can continue to commit the transaction
+              sync.resolveCommitPromise();
+            }
+
+            // wait till the commit promise is resolved
+            await sync.promise;
+
+            // commit transaction once both the transactions are ready to commit
+            await transaction!.commit();
+          });
+        }
+
+        it('should insert and commit transaction when running parallely', async () => {
+          const promises: Promise<void>[] = [];
+          let resolvePromise;
+          const commitPromise = new Promise(
+            resolve => (resolvePromise = resolve),
+          );
+          const sync = {
+            target: 2, // both the transactions to be ready
+            count: 0, // 0 transactions are ready so far
+            promise: commitPromise, // the promise both the transactions wait at
+            resolveCommitPromise: () => resolvePromise(), // the function to resolve the commit promise
+          };
+          // run the transactions in parallel
+          promises.push(
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k1100'),
+          );
+          promises.push(
+            insertAndCommitTransaction(DATABASE, sync, googleSqlTable, 'k1101'),
+          );
+
+          // wait for both the transactions to complete their execution
+          await Promise.all(promises);
+        });
+      });
+
       const rollbackTransaction = (done, database) => {
         database.runTransaction((err, transaction) => {
           assert.ifError(err);
