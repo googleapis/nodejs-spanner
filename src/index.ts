@@ -150,6 +150,7 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * Indicates which replicas or regions should be used for non-transactional reads or queries.
  * DirectedReadOptions won't be set for readWrite transactions"
  * @property {ObservabilityOptions} [observabilityOptions] Sets the observability options to be used for OpenTelemetry tracing
+ * @property {boolean} [disableBuiltInMetrics=True] If set to true, built-in metrics will be disabled.
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -160,6 +161,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
   observabilityOptions?: ObservabilityOptions;
+  disableBuiltInMetrics?: boolean;
   interceptors?: any[];
   /**
    * The Trusted Cloud Domain (TPC) DNS of the service used to make requests.
@@ -495,7 +497,7 @@ class Spanner extends GrpcService {
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
     this._universeDomain = universeEndpoint;
-    this.configureMetrics_();
+    this.configureMetrics_(options.disableBuiltInMetrics ? options.disableBuiltInMetrics : false);
   }
 
   get universeDomain() {
@@ -1614,10 +1616,11 @@ class Spanner extends GrpcService {
   /**
    * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
    */
-  configureMetrics_() {
+  configureMetrics_(disableBuiltInMetrics: boolean) {
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
-      !this._isEmulatorEnabled;
+      disableBuiltInMetrics !== true &&
+      this.options.credentials === grpc.credentials.createInsecure() ;
     MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
       const factory = MetricsTracerFactory.getInstance(this.projectId);
