@@ -327,6 +327,12 @@ describe('Spanner', () => {
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
     });
 
+    it('should optionally accept disableBuiltInMetrics', () => {
+      const spanner = new Spanner({disableBuiltInMetrics: true});
+      assert.strictEqual(MetricsTracerFactory.enabled, false);
+      MetricsTracerFactory.enabled = true; // Reset for other tests.
+    });
+
     it('should optionally accept directedReadOptions', () => {
       const fakeDirectedReadOptions = {
         includeReplicas: {
