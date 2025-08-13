@@ -497,9 +497,7 @@ class Spanner extends GrpcService {
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
     this._universeDomain = universeEndpoint;
-    this.configureMetrics_(
-      options.disableBuiltInMetrics ? options.disableBuiltInMetrics : false,
-    );
+    this.configureMetrics_(options.disableBuiltInMetrics);
   }
 
   get universeDomain() {
@@ -1618,10 +1616,10 @@ class Spanner extends GrpcService {
   /**
    * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
    */
-  configureMetrics_(disableBuiltInMetrics: boolean) {
+  configureMetrics_(disableBuiltInMetrics?: boolean) {
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
-      disableBuiltInMetrics !== true &&
+      !disableBuiltInMetrics &&
       this.options.credentials === grpc.credentials.createInsecure();
     MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
