@@ -497,7 +497,9 @@ class Spanner extends GrpcService {
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
     this._universeDomain = universeEndpoint;
-    this.configureMetrics_(options.disableBuiltInMetrics ? options.disableBuiltInMetrics : false);
+    this.configureMetrics_(
+      options.disableBuiltInMetrics ? options.disableBuiltInMetrics : false,
+    );
   }
 
   get universeDomain() {
@@ -1620,7 +1622,7 @@ class Spanner extends GrpcService {
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
       disableBuiltInMetrics !== true &&
-      this.options.credentials === grpc.credentials.createInsecure() ;
+      this.options.credentials === grpc.credentials.createInsecure();
     MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
       const factory = MetricsTracerFactory.getInstance(this.projectId);
