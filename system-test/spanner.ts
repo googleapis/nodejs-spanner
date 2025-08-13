@@ -3352,9 +3352,9 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      // if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
-      //   this.skip();
-      // }
+      if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
+        this.skip();
+      }
       googleSqlDatabase1 = DATABASE;
       postgreSqlDatabase1 = PG_DATABASE;
 
