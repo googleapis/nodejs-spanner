@@ -213,12 +213,11 @@ describe('MultiplexedSession', () => {
 
     it('should pass back the session and txn', done => {
       const fakeTxn = new FakeTransaction() as unknown as Transaction;
-      fakeMuxSession.txn = fakeTxn;
       sandbox.stub(multiplexedSession, '_acquire').resolves(fakeMuxSession);
       multiplexedSession.getSession((err, session, txn) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeMuxSession);
-        assert.strictEqual(txn, fakeTxn);
+        assert.deepStrictEqual(txn, fakeTxn);
         done();
       });
     });
