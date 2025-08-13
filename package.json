@@ -90,7 +90,8 @@
     "through2": "^4.0.2",
     "@babel/traverse": "7.27.7",
     "@babel/core": "7.27.7",
-    "@babel/helpers": "7.27.6"
+    "@babel/helpers": "7.27.6",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@opentelemetry/sdk-trace-base": "^2.0.0",
@@ -133,7 +134,6 @@
     "time-span": "4.0.0",
     "tmp": "^0.2.3",
     "typescript": "^5.8.2",
-    "uuid": "^11.1.0",
     "yargs": "^17.7.2"
   }
 }

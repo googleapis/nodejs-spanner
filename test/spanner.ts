@@ -4671,7 +4671,7 @@ describe('Spanner with mock server', () => {
             MultiplexedSessionRetry: 'precommitToken',
             precommitToken: {
               precommitToken: fakeRetryToken,
-              seqNum: 1,
+              seqNum: 2,
             },
             commitTimestamp: mock.now(),
           };
@@ -4701,7 +4701,7 @@ describe('Spanner with mock server', () => {
             await tx!.run(selectSql);
 
             // perform mutations
-            await tx.upsert('foo', [
+            tx.upsert('foo', [
               {id: 1, name: 'One'},
               {id: 2, name: 'Two'},
             ]);
@@ -4715,13 +4715,7 @@ describe('Spanner with mock server', () => {
               2,
               'The mock commit method should have been called exactly twice.',
             );
-            const firstRequest = capturedCommitRequests[0];
-            // assert that during the first request to commit
-            // the precommitToken was missing
-            assert.ok(
-              !firstRequest.precommitToken,
-              'The first commit request should not have a precommitToken.',
-            );
+
             const secondRequest = capturedCommitRequests[1];
             // assert that during the second request to commit
             // the precommitToken was present
@@ -4732,6 +4726,61 @@ describe('Spanner with mock server', () => {
             );
           });
           await database.close();
+        });
+      });
+
+      // parallel transactions
+      describe('parallel transactions', async () => {
+        async function readAndMutations(database) {
+          await database.runTransactionAsync(async tx => {
+            await tx.run(selectSql);
+            await tx.run(selectSql);
+            tx.upsert('foo', [
+              {id: 1, name: 'One'},
+              {id: 2, name: 'Two'},
+            ]);
+            await tx.commit();
+          });
+        }
+        it('should have different precommit tokens for each transactions when running parallely', async () => {
+          const promises: Promise<void>[] = [];
+          const database = newTestDatabase();
+
+          // run the transactions parallely
+          promises.push(readAndMutations(database));
+          promises.push(readAndMutations(database));
+
+          // wait for the transaction to complete its execution
+          await Promise.all(promises);
+
+          const commitRequest = spannerMock.getRequests().filter(val => {
+            return (val as v1.CommitRequest).precommitToken;
+          }) as v1.CommitRequest[];
+
+          // assert that there are two commit requests one for each transaction
+          assert.strictEqual(commitRequest.length, 2);
+
+          // assert that precommitToken is not null during first request to commit
+          assert.notEqual(commitRequest[0].precommitToken, null);
+
+          // assert that precommitToken is instance of Buffer
+          assert.ok(
+            commitRequest[0].precommitToken?.precommitToken instanceof Buffer,
+          );
+
+          // assert that precommitToken is not null during second request to commit
+          assert.notEqual(commitRequest[1].precommitToken, null);
+
+          // assert that precommitToken is instance of Buffer
+          assert.ok(
+            commitRequest[1].precommitToken?.precommitToken instanceof Buffer,
+          );
+
+          // assert that precommitToken is different in both the commit request
+          assert.notEqual(
+            commitRequest[0].precommitToken.precommitToken,
+            commitRequest[1].precommitToken.precommitToken,
+          );
         });
       });
     });
