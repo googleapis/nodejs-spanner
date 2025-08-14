@@ -317,7 +317,7 @@ class Spanner extends GrpcService {
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
   private _universeDomain: string;
-  private _isEmulatorEnabled: boolean;
+  private _isInSecureCredentials: boolean;
   private static _isAFEServerTimingEnabled: boolean | undefined;
   readonly _nthClientId: number;
 
@@ -445,14 +445,12 @@ class Spanner extends GrpcService {
       );
     }
 
-    let isEmulatorEnabled = false;
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
       emulatorHost.endpoint &&
       emulatorHost.endpoint.length > 0
     ) {
-      isEmulatorEnabled = true;
       options.servicePath = emulatorHost.endpoint;
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
@@ -479,7 +477,7 @@ class Spanner extends GrpcService {
       this.routeToLeaderEnabled = false;
     }
 
-    this._isEmulatorEnabled = isEmulatorEnabled;
+    this._isInSecureCredentials = options.sslCreds?._isSecure() === false;
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
@@ -1620,7 +1618,7 @@ class Spanner extends GrpcService {
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
       !disableBuiltInMetrics &&
-      this.options.credentials === grpc.credentials.createInsecure();
+      !this._isInSecureCredentials;
     MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
       const factory = MetricsTracerFactory.getInstance(this.projectId);
