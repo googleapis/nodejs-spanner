@@ -209,6 +209,7 @@ describe('Test metrics with mock server', () => {
       spannerMock.resetRequests();
       spannerMock.removeExecutionTimes();
       // Reset the MetricsFactoryReader to an in-memory reader for the tests
+      MetricsTracerFactory.enabled = true;
       factory = MetricsTracerFactory.getInstance();
       await factory!.resetMeterProvider();
       reader = new InMemoryMetricReader();
