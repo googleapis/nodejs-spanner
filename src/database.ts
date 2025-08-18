@@ -43,6 +43,7 @@ import {
   google as spannerClient,
 } from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {
   CreateDatabaseCallback,
   CreateDatabaseOptions,
@@ -265,7 +266,7 @@ export interface GetIamPolicyOptions {
 
 /**
  * @typedef {object} GetTransactionOptions
- * * @property {boolean} [optimisticLock] The optimistic lock a
+ * * @property {boolean} [readLockMode] The read lock mode a
  *     {@link Transaction} should use while running.
  */
 export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
@@ -325,6 +326,7 @@ export interface RestoreOptions {
 }
 
 export interface WriteAtLeastOnceOptions extends CallOptions {
+  readLockMode?: ReadLockMode;
   isolationLevel?: IsolationLevel;
 }
 

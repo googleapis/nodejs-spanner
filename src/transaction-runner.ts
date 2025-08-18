@@ -27,6 +27,7 @@ import {Database} from './database';
 import {google} from '../protos/protos';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
@@ -45,9 +46,9 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 export interface RunTransactionOptions {
   timeout?: number;
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
-  optimisticLock?: boolean;
   excludeTxnFromChangeStreams?: boolean;
   isolationLevel?: IsolationLevel;
+  readLockMode?: ReadLockMode;
 }
 
 /**
@@ -130,6 +131,7 @@ export abstract class Runner<T> {
     const defaults = {
       timeout: 3600000,
       isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+      readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
     };
 
     this.options = Object.assign(defaults, options);
