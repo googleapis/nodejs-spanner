@@ -3535,9 +3535,9 @@ describe('Database', () => {
               readLockMode: ReadLockMode.PESSIMISTIC,
             };
 
-            await database.runTransaction(fakeOptions, assert.ifError);
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
 
-            const options = fakeTransactionRunner.calledWith_[3];
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
             assert.strictEqual(options, fakeOptions);
           });
 

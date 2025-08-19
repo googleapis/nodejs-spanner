@@ -46,6 +46,10 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 export interface RunTransactionOptions {
   timeout?: number;
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
+  /**
+   * @deprecated Use readLockMode instead.
+   */
+  optimisticLock?: boolean;
   excludeTxnFromChangeStreams?: boolean;
   isolationLevel?: IsolationLevel;
   readLockMode?: ReadLockMode;

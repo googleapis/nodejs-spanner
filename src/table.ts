@@ -1122,6 +1122,7 @@ class Table {
           requestOptions: requestOptions,
           excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
           isolationLevel: isolationLevel,
+          readLockMode: readLockMode,
         },
         (err, transaction) => {
           if (err) {

@@ -266,8 +266,6 @@ export interface GetIamPolicyOptions {
 
 /**
  * @typedef {object} GetTransactionOptions
- * * @property {boolean} [readLockMode] The read lock mode a
- *     {@link Transaction} should use while running.
  */
 export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
 
