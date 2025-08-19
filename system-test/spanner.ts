@@ -3732,14 +3732,12 @@ describe('Spanner', () => {
       );
     };
 
-    it('GOOGLE_STANDARD_SQL should delete backup', async () => {
+    it('GOOGLE_STANDARD_SQL should list backup operations', async () => {
       await listBackupOperations(googleSqlBackup1, googleSqlDatabase1);
-      await deleteBackup(googleSqlBackup1);
     });
 
-    it.skip('POSTGRESQL should delete backup', async () => {
+    it.skip('POSTGRESQL should list backup operations', async () => {
       await listBackupOperations(postgreSqlBackup1, postgreSqlDatabase1);
-      await deleteBackup(postgreSqlBackup1);
     });
   });
 
