@@ -3345,9 +3345,6 @@ describe('Spanner', () => {
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
-    let googleSqlBackupCreated = false;
-    let postgreSqlBackupCreated = false;
-
     before(async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
@@ -3416,7 +3413,6 @@ describe('Spanner', () => {
         googleSqlBackup1Name,
         backupExpiryDate,
       );
-      googleSqlBackupCreated = true;
       await completedBackup(
         googleSqlBackup1,
         googleSqlBackup1Name,
@@ -3430,7 +3426,6 @@ describe('Spanner', () => {
         postgreSqlBackup1Name,
         backupExpiryDate,
       );
-      postgreSqlBackupCreated = true;
       await completedBackup(
         postgreSqlBackup1,
         postgreSqlBackup1Name,
@@ -3461,12 +3456,10 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should return error for backup expiration time in the past', async () => {
-      assert.ok(googleSqlBackupCreated);
       await pastBackupExpirationTimeError(googleSqlDatabase1);
     });
 
     it.skip('POSTGRESQL should return error for backup expiration time in the past', async () => {
-      assert.ok(postgreSqlBackupCreated);
       await pastBackupExpirationTimeError(postgreSqlDatabase1);
     });
 
