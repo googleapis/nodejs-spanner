@@ -3349,9 +3349,9 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      // if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
-      //   this.skip();
-      // }
+      if (SKIP_BACKUPS === 'true' || KOKORO_JOB_NAME?.includes('presubmit')) {
+        this.skip();
+      }
       googleSqlDatabase1 = DATABASE;
       postgreSqlDatabase1 = PG_DATABASE;
 
@@ -3480,7 +3480,7 @@ describe('Spanner', () => {
           backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
         ),
       );
-      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           backups.find(
             backup =>
@@ -3502,7 +3502,7 @@ describe('Spanner', () => {
       });
 
       let page3size = 2;
-      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
         page3size = 4;
       }
       const [page3] = await instance.getBackups({
@@ -3518,7 +3518,7 @@ describe('Spanner', () => {
           backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
         ),
       );
-      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           page3.find(
             backup =>
