@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -61,7 +61,7 @@
     "@google-cloud/projectify": "^5.0.0",
     "@google-cloud/promisify": "^5.0.0",
     "@grpc/grpc-js": "^1.13.2",
-    "@grpc/proto-loader": "^0.7.13",
+    "@grpc/proto-loader": "^0.8.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/core": "^2.0.0",
@@ -76,9 +76,8 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
     "google-auth-library": "^10.0.0-rc.1",
-    "google-gax": "^5.0.1-rc.0",
+    "google-gax": "5.0.1",
     "grpc-gcp": "^1.0.1",
-    "is": "^3.3.0",
     "lodash.snakecase": "^4.1.1",
     "merge-stream": "^2.0.0",
     "p-queue": "^6.0.2",
@@ -88,7 +87,11 @@
     "stack-trace": "0.0.10",
     "stream-events": "^1.0.5",
     "teeny-request": "^10.0.0",
-    "through2": "^4.0.2"
+    "through2": "^4.0.2",
+    "@babel/traverse": "7.27.7",
+    "@babel/core": "7.27.7",
+    "@babel/helpers": "7.27.6",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@opentelemetry/sdk-trace-base": "^2.0.0",
@@ -115,7 +118,7 @@
     "gapic-tools": "^1.0.1",
     "gts": "^6.0.2",
     "jsdoc": "^4.0.4",
-    "jsdoc-fresh": "^3.0.0",
+    "jsdoc-fresh": "^4.0.0",
     "jsdoc-region-tag": "^3.0.0",
     "linkinator": "^6.1.2",
     "lodash.random": "^3.2.0",
@@ -131,7 +134,6 @@
     "time-span": "4.0.0",
     "tmp": "^0.2.3",
     "typescript": "^5.8.2",
-    "uuid": "^11.1.0",
     "yargs": "^17.7.2"
   }
 }

@@ -3205,6 +3205,18 @@
                                   "(google.api.method_signature)": "parent"
                                 }
                               ]
+                            },
+                            "InternalUpdateGraphOperation": {
+                              "requestType": "InternalUpdateGraphOperationRequest",
+                              "responseType": "InternalUpdateGraphOperationResponse",
+                              "options": {
+                                "(google.api.method_signature)": "database,operation_id"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.method_signature)": "database,operation_id"
+                                }
+                              ]
                             }
                           }
                         },
@@ -3886,6 +3898,49 @@
                               }
                             }
                           }
+                        },
+                        "InternalUpdateGraphOperationRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "operationId": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "vmIdentityToken": {
+                              "type": "string",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "progress": {
+                              "type": "double",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "status": {
+                              "type": "google.rpc.Status",
+                              "id": 6,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "InternalUpdateGraphOperationResponse": {
+                          "fields": {}
                         }
                       }
                     }
@@ -8977,6 +9032,10 @@
                     "precommitToken": {
                       "type": "MultiplexedSessionPrecommitToken",
                       "id": 4
+                    },
+                    "snapshotTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 5
                     }
                   },
                   "nested": {

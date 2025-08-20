@@ -472,6 +472,7 @@ export class DatabaseAdminClient {
       'updateBackupSchedule',
       'deleteBackupSchedule',
       'listBackupSchedules',
+      'internalUpdateGraphOperation',
     ];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
@@ -2553,6 +2554,152 @@ export class DatabaseAdminClient {
           {} | undefined,
         ]) => {
           this._log.info('deleteBackupSchedule response %j', response);
+          return [response, options, rawResponse];
+        },
+      )
+      .catch((error: any) => {
+        if (
+          error &&
+          'statusDetails' in error &&
+          error.statusDetails instanceof Array
+        ) {
+          const protos = this._gaxModule.protobuf.Root.fromJSON(
+            jsonProtos,
+          ) as unknown as gax.protobuf.Type;
+          error.statusDetails = decodeAnyProtosInArray(
+            error.statusDetails,
+            protos,
+          );
+        }
+        throw error;
+      });
+  }
+  /**
+   * This is an internal API called by Spanner Graph jobs. You should never need
+   * to call this API directly.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.database
+   *   Internal field, do not use directly.
+   * @param {string} request.operationId
+   *   Internal field, do not use directly.
+   * @param {string} request.vmIdentityToken
+   *   Internal field, do not use directly.
+   * @param {number} [request.progress]
+   *   Internal field, do not use directly.
+   * @param {google.rpc.Status} [request.status]
+   *   Internal field, do not use directly.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.InternalUpdateGraphOperationResponse|InternalUpdateGraphOperationResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  internalUpdateGraphOperation(
+    request?: protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest,
+    options?: CallOptions,
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+      (
+        | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  internalUpdateGraphOperation(
+    request: protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+      | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >,
+  ): void;
+  internalUpdateGraphOperation(
+    request: protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+      | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >,
+  ): void;
+  internalUpdateGraphOperation(
+    request?: protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+          | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+      | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >,
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+      (
+        | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    this.initialize().catch(err => {
+      throw err;
+    });
+    this._log.info('internalUpdateGraphOperation request %j', request);
+    const wrappedCallback:
+      | Callback<
+          protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+          | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >
+      | undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('internalUpdateGraphOperation response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls
+      .internalUpdateGraphOperation(request, options, wrappedCallback)
+      ?.then(
+        ([response, options, rawResponse]: [
+          protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationResponse,
+          (
+            | protos.google.spanner.admin.database.v1.IInternalUpdateGraphOperationRequest
+            | undefined
+          ),
+          {} | undefined,
+        ]) => {
+          this._log.info('internalUpdateGraphOperation response %j', response);
           return [response, options, rawResponse];
         },
       )

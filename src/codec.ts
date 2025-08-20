@@ -15,9 +15,21 @@
  */
 import {GrpcService} from './common-grpc/service';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {toArray} from './helper';
+import {
+  isArray,
+  isBoolean,
+  isDate,
+  isDecimal,
+  isInfinite,
+  isInteger,
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+  toArray,
+} from './helper';
 import {Big} from 'big.js';
-import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
 import {GoogleError} from 'google-gax';
@@ -440,19 +452,19 @@ export class Interval {
    * @param nanoseconds nanoseconds part of the `Interval`
    */
   constructor(months: number, days: number, nanoseconds: bigint) {
-    if (!is.integer(months)) {
+    if (!isInteger(months)) {
       throw new GoogleError(
         `Invalid months: ${months}, months should be an integral value`,
       );
     }
 
-    if (!is.integer(days)) {
+    if (!isInteger(days)) {
       throw new GoogleError(
         `Invalid days: ${days}, days should be an integral value`,
       );
     }
 
-    if (is.null(nanoseconds) || is.undefined(nanoseconds)) {
+    if (isNull(nanoseconds) || isUndefined(nanoseconds)) {
       throw new GoogleError(
         `Invalid nanoseconds: ${nanoseconds}, nanoseconds should be a valid bigint value`,
       );
@@ -502,7 +514,7 @@ export class Interval {
    * Constructs an `Interval` with specified seconds.
    */
   static fromSeconds(seconds: number): Interval {
-    if (!is.integer(seconds)) {
+    if (!isInteger(seconds)) {
       throw new GoogleError(
         `Invalid seconds: ${seconds}, seconds should be an integral value`,
       );
@@ -518,7 +530,7 @@ export class Interval {
    * Constructs an `Interval` with specified milliseconds.
    */
   static fromMilliseconds(milliseconds: number): Interval {
-    if (!is.integer(milliseconds)) {
+    if (!isInteger(milliseconds)) {
       throw new GoogleError(
         `Invalid milliseconds: ${milliseconds}, milliseconds should be an integral value`,
       );
@@ -534,7 +546,7 @@ export class Interval {
    * Constructs an `Interval` with specified microseconds.
    */
   static fromMicroseconds(microseconds: number): Interval {
-    if (!is.integer(microseconds)) {
+    if (!isInteger(microseconds)) {
       throw new GoogleError(
         `Invalid microseconds: ${microseconds}, microseconds should be an integral value`,
       );
@@ -817,7 +829,7 @@ function decode(
   type: spannerClient.spanner.v1.Type,
   columnMetadata?: object,
 ): Value {
-  if (is.null(value)) {
+  if (isNull(value)) {
     return null;
   }
 
@@ -954,11 +966,11 @@ function encode(value: Value): p.IValue {
  * @returns {*}
  */
 function encodeValue(value: Value): Value {
-  if (is.number(value) && !is.decimal(value)) {
+  if (isNumber(value) && !isDecimal(value)) {
     return value.toString();
   }
 
-  if (is.date(value)) {
+  if (isDate(value)) {
     return value.toJSON();
   }
 
@@ -990,7 +1002,7 @@ function encodeValue(value: Value): Value {
     return Array.from(value).map(field => encodeValue(field.value));
   }
 
-  if (is.array(value)) {
+  if (isArray(value)) {
     return value.map(encodeValue);
   }
 
@@ -1002,7 +1014,7 @@ function encodeValue(value: Value): Value {
     return value.toISO8601();
   }
 
-  if (is.object(value)) {
+  if (isObject(value)) {
     return JSON.stringify(value);
   }
 
@@ -1099,17 +1111,17 @@ interface FieldType extends Type {
  */
 function getType(value: Value): Type {
   const isSpecialNumber =
-    is.infinite(value) || (is.number(value) && isNaN(value));
+    isInfinite(value) || (isNumber(value) && isNaN(value));
 
   if (value instanceof Float32) {
     return {type: 'float32'};
   }
 
-  if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
+  if (isDecimal(value) || isSpecialNumber || value instanceof Float) {
     return {type: 'float64'};
   }
 
-  if (is.number(value) || value instanceof Int) {
+  if (isNumber(value) || value instanceof Int) {
     return {type: 'int64'};
   }
 
@@ -1141,11 +1153,11 @@ function getType(value: Value): Type {
     return {type: 'enum', fullName: value.fullName};
   }
 
-  if (is.boolean(value)) {
+  if (isBoolean(value)) {
     return {type: 'bool'};
   }
 
-  if (is.string(value)) {
+  if (isString(value)) {
     return {type: 'string'};
   }
 
@@ -1157,7 +1169,7 @@ function getType(value: Value): Type {
     return {type: 'date'};
   }
 
-  if (is.date(value)) {
+  if (isDate(value)) {
     return {type: 'timestamp'};
   }
 
@@ -1170,13 +1182,13 @@ function getType(value: Value): Type {
     };
   }
 
-  if (is.array(value)) {
+  if (isArray(value)) {
     let child;
 
     for (let i = 0; i < value.length; i++) {
       child = value[i];
 
-      if (!is.null(child)) {
+      if (!isNull(child)) {
         break;
       }
     }
@@ -1187,7 +1199,7 @@ function getType(value: Value): Type {
     };
   }
 
-  if (is.object(value)) {
+  if (isObject(value)) {
     return {type: 'json'};
   }
 

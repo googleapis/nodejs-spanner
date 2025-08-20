@@ -7,6 +7,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - "ci/kokoro: Samples test"
       - "ci/kokoro: System test"
+      - "ci/kokoro: System test with Multiplexed Session"
       - lint
       - test (18)
       - test (20)
@@ -14,6 +15,7 @@ branchProtectionRules:
       - cla/google
       - windows
       - OwlBot Post Processor
+      - Build with Airlock
 permissionRules:
   - team: yoshi-admins
     permission: admin
