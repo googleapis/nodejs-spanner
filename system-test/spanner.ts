@@ -1245,7 +1245,9 @@ describe('Spanner', () => {
 
       const numericInsertOutOfBounds = (done, dialect, value) => {
         insert({NumericValue: value}, dialect, err => {
-          assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
+          KOKORO_JOB_NAME?.includes('system-test-multiplexed-session')
+            ? assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT)
+            : assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
           done();
         });
       };
