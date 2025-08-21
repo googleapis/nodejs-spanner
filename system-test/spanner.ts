@@ -3334,11 +3334,12 @@ describe('Spanner', () => {
     });
   });
 
-  describe('Backups', () => {
+  describe.only('Backups', () => {
     const SKIP_POSTGRESQL_BACKUP_TESTS = true;
 
     let googleSqlDatabase1: Database;
-    let restoreDatabase: Database;
+    let googleSqlRestoreDatabase: Database;
+    let postgreSqlRestoreDatabase: Database;
     let postgreSqlDatabase1: Database;
     let googleSqlBackup1: Backup;
     let postgreSqlBackup1: Backup;
@@ -3535,7 +3536,7 @@ describe('Spanner', () => {
       // Wait for restore to complete.
       await restoreOperation.promise();
 
-      restoreDatabase = instance.database(restoreDatabaseId);
+      const restoreDatabase = instance.database(restoreDatabaseId);
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(
@@ -3574,11 +3575,13 @@ describe('Spanner', () => {
         filter: 'metadata.@type:RestoreDatabaseMetadata',
       });
       assert.strictEqual(restoreOperations.length, 1);
+
+      return restoreDatabase;
     };
 
     it('GOOGLE_STANDARD_SQL should restore a backup', async () => {
       const googleSqlRestoreDatabaseId = generateName('database');
-      await restoreBackup(
+      googleSqlRestoreDatabase = await restoreBackup(
         googleSqlRestoreDatabaseId,
         googleSqlBackup1,
         googleSqlDatabase1,
@@ -3587,7 +3590,7 @@ describe('Spanner', () => {
 
     it.skip('POSTGRESQL should restore a backup', async () => {
       const postgreSqlRestoreDatabaseId = generateName('pg-db');
-      await restoreBackup(
+      postgreSqlRestoreDatabase = await restoreBackup(
         postgreSqlRestoreDatabaseId,
         postgreSqlBackup1,
         postgreSqlDatabase1,
@@ -3609,11 +3612,17 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should not be able to restore to an existing database', async () => {
-      await restoreExistingDatabaseFail(restoreDatabase, googleSqlBackup1);
+      await restoreExistingDatabaseFail(
+        googleSqlRestoreDatabase,
+        googleSqlBackup1,
+      );
     });
 
     it.skip('POSTGRESQL should not be able to restore to an existing database', async () => {
-      await restoreExistingDatabaseFail(restoreDatabase, postgreSqlBackup1);
+      await restoreExistingDatabaseFail(
+        postgreSqlRestoreDatabase,
+        postgreSqlBackup1,
+      );
     });
 
     const updateBackupExpiry = async backup1 => {
@@ -3727,11 +3736,14 @@ describe('Spanner', () => {
     });
 
     it('GOOGLE_STANDARD_SQL should delete backups', async () => {
-      await restoreDatabase.delete();
+      // Delete the restored database before deleting the backup, as backup deletion can fail if the restored database remains in the READY_OPTIMIZING state.
+      await googleSqlRestoreDatabase.delete();
       await deleteBackup(googleSqlBackup1);
     });
 
     it.skip('POSTGRESQL should delete backups', async () => {
+      // Delete the restored database before deleting the backup, as backup deletion can fail if the restored database remains in the READY_OPTIMIZING state.
+      await postgreSqlRestoreDatabase.delete();
       await deleteBackup(postgreSqlBackup1);
     });
   });
