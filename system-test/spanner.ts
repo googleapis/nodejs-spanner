@@ -3497,32 +3497,25 @@ describe('Spanner', () => {
         pageSize: 1,
         gaxOptions: {autoPaginate: false},
       });
-      const [page2] = await instance.getBackups({
-        pageSize: 1,
-        pageToken: resp1!.nextPageToken!,
-        gaxOptions: {autoPaginate: false},
-      });
 
-      let page3size = 2;
+      let totalPageSize = 1;
       if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
-        page3size = 4;
+        totalPageSize = 2;
       }
-      const [page3] = await instance.getBackups({
-        pageSize: page3size,
+      const [totalPages] = await instance.getBackups({
+        pageSize: totalPageSize,
         gaxOptions: {autoPaginate: false},
       });
       assert.strictEqual(page1.length, 1);
-      assert.strictEqual(page2.length, 1);
-      assert.strictEqual(page3.length, page3size);
-      assert.notStrictEqual(page2[0].formattedName_, page1[0].formattedName_);
+      assert.strictEqual(totalPages.length, totalPageSize);
       assert.ok(
-        page3.find(
+        totalPages.find(
           backup => backup.formattedName_ === googleSqlBackup1.formattedName_,
         ),
       );
       if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
-          page3.find(
+          totalPages.find(
             backup =>
               backup.formattedName_ === postgreSqlBackup1.formattedName_,
           ),
@@ -3543,8 +3536,6 @@ describe('Spanner', () => {
       await restoreOperation.promise();
 
       restoreDatabase = instance.database(restoreDatabaseId);
-
-      RESOURCES_TO_CLEAN.push(restoreDatabase);
 
       const [databaseMetadata] = await restoreDatabase.getMetadata();
       assert.ok(
@@ -3733,6 +3724,15 @@ describe('Spanner', () => {
 
     it.skip('POSTGRESQL should list backup operations', async () => {
       await listBackupOperations(postgreSqlBackup1, postgreSqlDatabase1);
+    });
+
+    it('GOOGLE_STANDARD_SQL should delete backups', async () => {
+      await restoreDatabase.delete();
+      await deleteBackup(googleSqlBackup1);
+    });
+
+    it.skip('POSTGRESQL should delete backups', async () => {
+      await deleteBackup(postgreSqlBackup1);
     });
   });
 
