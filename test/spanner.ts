@@ -78,6 +78,7 @@ import Priority = google.spanner.v1.RequestOptions.Priority;
 import TypeCode = google.spanner.v1.TypeCode;
 import NullValue = google.protobuf.NullValue;
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {SessionFactory} from '../src/session-factory';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {WriteAtLeastOnceOptions} from '../src/database';
@@ -601,7 +602,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
         {
-          optimisticLock: true,
+          readLockMode: ReadLockMode.OPTIMISTIC,
           requestOptions: {transactionTag: 'transaction-tag'},
         },
         async tx => {
@@ -5000,7 +5001,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
         {
-          optimisticLock: true,
+          readLockMode: ReadLockMode.OPTIMISTIC,
         },
         async tx => {
           await tx!.run(selectSql);
@@ -5105,7 +5106,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
         {
-          optimisticLock: true,
+          readLockMode: ReadLockMode.OPTIMISTIC,
           excludeTxnFromChangeStreams: true,
         },
         async tx => {
@@ -5167,22 +5168,27 @@ describe('Spanner with mock server', () => {
 
     it('should use optimistic lock for runTransaction', done => {
       const database = newTestDatabase();
-      database.runTransaction({optimisticLock: true}, async (err, tx) => {
-        assert.ifError(err);
-        await tx!.run(selectSql);
-        await tx!.commit();
-        await database.close();
+      database.runTransaction(
+        {
+          readLockMode: ReadLockMode.OPTIMISTIC,
+        },
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
 
-        const request = spannerMock.getRequests().find(val => {
-          return (val as v1.ExecuteSqlRequest).sql;
-        }) as v1.ExecuteSqlRequest;
-        assert.ok(request, 'no ExecuteSqlRequest found');
-        assert.strictEqual(
-          request.transaction!.begin!.readWrite!.readLockMode,
-          'OPTIMISTIC',
-        );
-        done();
-      });
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.readWrite!.readLockMode,
+            'OPTIMISTIC',
+          );
+          done();
+        },
+      );
     });
 
     it('should use exclude transaction from change stream for runTransaction', done => {
@@ -5234,7 +5240,7 @@ describe('Spanner with mock server', () => {
     it('should use optimistic lock and transaction tag for getTransaction', async () => {
       const database = newTestDatabase();
       const promise = await database.getTransaction({
-        optimisticLock: true,
+        readLockMode: ReadLockMode.OPTIMISTIC,
         requestOptions: {transactionTag: 'transaction-tag'},
       });
       const transaction = promise[0];
@@ -5275,11 +5281,16 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase({min: 1, max: 1});
       let session1;
       let session2;
-      await database.runTransactionAsync({optimisticLock: true}, async tx => {
-        session1 = tx!.session.id;
-        await tx!.run(selectSql);
-        await tx.commit();
-      });
+      await database.runTransactionAsync(
+        {
+          readLockMode: ReadLockMode.OPTIMISTIC,
+        },
+        async tx => {
+          session1 = tx!.session.id;
+          await tx!.run(selectSql);
+          await tx.commit();
+        },
+      );
       spannerMock.resetRequests();
       await database.runTransactionAsync(async tx => {
         session2 = tx!.session.id;
@@ -5435,15 +5446,20 @@ describe('Spanner with mock server', () => {
     it('should use beginTransaction on retry with optimistic lock', async () => {
       const database = newTestDatabase();
       let attempts = 0;
-      await database.runTransactionAsync({optimisticLock: true}, async tx => {
-        await tx!.run(selectSql);
-        if (!attempts) {
-          spannerMock.abortTransaction(tx);
-        }
-        attempts++;
-        await tx!.run(insertSql);
-        await tx.commit();
-      });
+      await database.runTransactionAsync(
+        {
+          readLockMode: ReadLockMode.OPTIMISTIC,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          if (!attempts) {
+            spannerMock.abortTransaction(tx);
+          }
+          attempts++;
+          await tx!.run(insertSql);
+          await tx.commit();
+        },
+      );
       await database.close();
 
       const beginTxnRequest = spannerMock
