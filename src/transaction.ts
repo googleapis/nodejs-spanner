@@ -2946,6 +2946,8 @@ export class Transaction extends Dml {
    * (when any needed locks are acquired). The validation process succeeds only
    * if there are no conflicting committed transactions (that committed
    * mutations to the read data at a commit timestamp after the read timestamp).
+   *
+   * @deprecated Set readLockMode through setReadWriteTransactionOptions instead.
    */
   useOptimisticLock(): void {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
@@ -2965,12 +2967,6 @@ export class Transaction extends Dml {
 
   setReadWriteTransactionOptions(options: RunTransactionOptions) {
     /**
-     * Set optimistic concurrency control for the transaction.
-     */
-    if (options?.optimisticLock) {
-      this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
-    }
-    /**
      * Set option excludeTxnFromChangeStreams=true to exclude read/write transactions
      * from being tracked in change streams.
      */
@@ -2978,11 +2974,18 @@ export class Transaction extends Dml {
       this._options.excludeTxnFromChangeStreams = true;
     }
     /**
-     * Set isolation level .
+     * Set isolation level.
      */
     this._options.isolationLevel = options?.isolationLevel
       ? options?.isolationLevel
       : this._getSpanner().defaultTransactionOptions.isolationLevel;
+
+    /**
+     * Set read lock mode.
+     */
+    this._options.readWrite!.readLockMode = options?.readLockMode
+      ? options?.readLockMode
+      : this._getSpanner().defaultTransactionOptions.readLockMode;
   }
 }
 

@@ -40,6 +40,7 @@ import {
 import {CLOUD_RESOURCE_HEADER, AFE_SERVER_TIMING_HEADER} from '../src/common';
 import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = protos.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
 
@@ -357,6 +358,7 @@ describe('Spanner', () => {
       const fakeDefaultTxnOptions = {
         defaultTransactionOptions: {
           isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.PESSIMISTIC,
         },
       };
 
