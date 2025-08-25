@@ -3366,15 +3366,12 @@ describe('Spanner', () => {
 
       googleSqlBackup1 = instance.backup(googleSqlBackup1Name);
 
-      RESOURCES_TO_CLEAN.push(...[googleSqlBackup1]);
-
       if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
         await postgreSqlDatabase1.table(TABLE_NAME).insert({
           SingerId: generateName('id'),
           Name: generateName('name'),
         });
         postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
-        RESOURCES_TO_CLEAN.push(...[postgreSqlBackup1]);
       }
     });
 
