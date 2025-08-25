@@ -39,6 +39,7 @@ import {
 } from './instrument';
 import {google} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 export type Key = string | string[];
 
@@ -56,6 +57,7 @@ interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
   excludeTxnFromChangeStreams?: boolean;
   isolationLevel?: IsolationLevel;
+  readLockMode?: ReadLockMode;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -1110,11 +1112,17 @@ class Table {
           ? options.isolationLevel
           : IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED;
 
+      const readLockMode =
+        'readLockMode' in options
+          ? options.readLockMode
+          : ReadLockMode.READ_LOCK_MODE_UNSPECIFIED;
+
       this.database.runTransaction(
         {
           requestOptions: requestOptions,
           excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
           isolationLevel: isolationLevel,
+          readLockMode: readLockMode,
         },
         (err, transaction) => {
           if (err) {
