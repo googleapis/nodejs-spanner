@@ -3402,6 +3402,17 @@ describe('Database', () => {
             assert.strictEqual(options, fakeOptions);
           });
 
+          it('should optionally accept runner `option` readLockMode', async () => {
+            const fakeOptions = {
+              readLockMode: ReadLockMode.PESSIMISTIC,
+            };
+
+            await database.runTransaction(fakeOptions, assert.ifError);
+
+            const options = fakeTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
           it('should release the session when finished', done => {
             const releaseStub = (
               sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
@@ -3511,6 +3522,17 @@ describe('Database', () => {
           it('should optionally accept runner `option` isolationLevel', async () => {
             const fakeOptions = {
               isolationLevel: IsolationLevel.REPEATABLE_READ,
+            };
+
+            await database.runTransactionAsync(fakeOptions, assert.ifError);
+
+            const options = fakeAsyncTransactionRunner.calledWith_[3];
+            assert.strictEqual(options, fakeOptions);
+          });
+
+          it('should optionally accept runner `option` readLockMode', async () => {
+            const fakeOptions = {
+              readLockMode: ReadLockMode.PESSIMISTIC,
             };
 
             await database.runTransactionAsync(fakeOptions, assert.ifError);

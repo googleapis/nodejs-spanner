@@ -56,6 +56,7 @@ describe('Transaction', () => {
     directedReadOptions: {},
     defaultTransactionOptions: {
       isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+      readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
     },
   };
 
@@ -452,6 +453,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -494,6 +496,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -884,6 +887,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -930,6 +934,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -1655,12 +1660,14 @@ describe('Transaction', () => {
         transaction.begin(assert.ifError);
       });
 
-      it('should set optimistic lock using useOptimisticLock', () => {
+      it('should set optimistic lock using setReadWriteTransactionOptions', () => {
         const rw = {
           readLockMode: ReadLockMode.OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
-        transaction.useOptimisticLock();
+        transaction.setReadWriteTransactionOptions({
+          readLockMode: ReadLockMode.OPTIMISTIC,
+        });
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 
@@ -1679,18 +1686,45 @@ describe('Transaction', () => {
         );
       });
 
-      it('should set optimistic lock using setReadWriteTransactionOptions', () => {
+      it('should set repeatable read using setReadWriteTransactionOptions', () => {
         const rw = {
-          readLockMode: ReadLockMode.OPTIMISTIC,
+          readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
         };
         transaction = new Transaction(SESSION);
         transaction.setReadWriteTransactionOptions({
-          optimisticLock: ReadLockMode.OPTIMISTIC,
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
         });
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 
-        const expectedOptions = {isolationLevel: 0, readWrite: rw};
+        const expectedOptions = {isolationLevel: 2, readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_,
+          ),
+        );
+      });
+
+      it('should set repeatable read isolation and pessimistic lock using setReadWriteTransactionOptions', () => {
+        const rw = {
+          readLockMode: ReadLockMode.PESSIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.setReadWriteTransactionOptions({
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.PESSIMISTIC,
+        });
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {isolationLevel: 2, readWrite: rw};
         const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
