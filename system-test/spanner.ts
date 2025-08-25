@@ -49,6 +49,7 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 const singer = require('../test/data/singer');
 const music = singer.examples.spanner.music;
 import {util} from 'protobufjs';
@@ -1245,7 +1246,9 @@ describe('Spanner', () => {
 
       const numericInsertOutOfBounds = (done, dialect, value) => {
         insert({NumericValue: value}, dialect, err => {
-          assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
+          KOKORO_JOB_NAME?.includes('system-test-multiplexed-session')
+            ? assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT)
+            : assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
           done();
         });
       };
@@ -9150,7 +9153,7 @@ describe('Spanner', () => {
 
       it('GOOGLE_STANDARD_SQL should use getTransaction for executing sql', async () => {
         const transaction = (
-          await DATABASE.getTransaction({optimisticLock: true})
+          await DATABASE.getTransaction({readLockMode: ReadLockMode.OPTIMISTIC})
         )[0];
 
         try {

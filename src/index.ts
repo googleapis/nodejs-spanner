@@ -63,6 +63,7 @@ import {
 } from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {
   PagedOptions,
   PagedResponse,
@@ -159,7 +160,10 @@ export interface SpannerOptions extends GrpcClientOptions {
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
-  defaultTransactionOptions?: Pick<RunTransactionOptions, 'isolationLevel'>;
+  defaultTransactionOptions?: Pick<
+    RunTransactionOptions,
+    'isolationLevel' | 'readLockMode'
+  >;
   observabilityOptions?: ObservabilityOptions;
   disableBuiltInMetrics?: boolean;
   interceptors?: any[];
@@ -432,6 +436,7 @@ class Spanner extends GrpcService {
       ? options.defaultTransactionOptions
       : {
           isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
         };
     delete options.defaultTransactionOptions;
 
