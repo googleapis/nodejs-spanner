@@ -80,7 +80,25 @@ console.log(`Query: ${rows.length} found.`);
 rows.forEach(row => console.log(row));
 
 ```
+## Multiplexed Sessions
 
+Spanner's Multiplexed Sessions can now be used as an efficient alternative to the default session pool. This feature helps reduce
+session management overhead and minimize session-related errors. Multiplexed sessions can be enabled for all transaction types via environment variables.
+
+### Configuration
+
+To enable this feature, set the following environment variables to `true`:
+
+* **For Read-Only Transactions:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+* **For Partitioned Operations:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS`
+* **For Read-Write Transactions:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW`
+
+For a detailed explanation of this feature, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
 
 
 ## Samples
