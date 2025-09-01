@@ -8263,7 +8263,9 @@
                 "Session": {
                   "options": {
                     "(google.api.resource).type": "spanner.googleapis.com/Session",
-                    "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/sessions/{session}"
+                    "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/sessions/{session}",
+                    "(google.api.resource).plural": "sessions",
+                    "(google.api.resource).singular": "session"
                   },
                   "fields": {
                     "name": {
