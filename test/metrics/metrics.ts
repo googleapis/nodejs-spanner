@@ -426,7 +426,7 @@ describe('Test metrics with mock server', () => {
       );
     });
 
-    it('should create connectivity error count metric if GFE/AFE latency is not in header', async () => {
+    it('should not create connectivity error count metric if GFE/AFE latency is not in header and status is not connectivity error', async () => {
       gfeStub = sandbox
         .stub(MetricsTracer.prototype, 'extractGfeLatency')
         .callsFake(() => null);
@@ -435,6 +435,86 @@ describe('Test metrics with mock server', () => {
         .callsFake(() => null);
       const database = newTestDatabase();
       await database.run(selectSql);
+      const {resourceMetrics} = await reader.collect();
+
+      const operationCountData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_OPERATION_COUNT,
+      );
+      const attemptCountData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_ATTEMPT_COUNT,
+      );
+      const operationLatenciesData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_OPERATION_LATENCIES,
+      );
+      const attemptLatenciesData = getMetricData(
+        resourceMetrics,
+        METRIC_NAME_ATTEMPT_LATENCIES,
+      );
+
+      // Verify GFE AFE latency and connectity error metricsdoesn't exist
+      assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_GFE_LATENCIES));
+      assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_AFE_LATENCIES));
+      assert.ok(
+        !hasMetricData(
+          resourceMetrics,
+          METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
+        ),
+      );
+      assert.ok(
+        !hasMetricData(
+          resourceMetrics,
+          METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT,
+        ),
+      );
+
+      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      methods.forEach(method => {
+        const attributes = {
+          ...commonAttributes,
+          database: `database-${dbCounter}`,
+          method: method,
+        };
+        // Verify attempt and operational metrics are unaffected
+        assert.strictEqual(
+          getAggregatedValue(operationCountData, attributes),
+          1,
+        );
+        getAggregatedValue(operationLatenciesData, attributes);
+        assert.strictEqual(getAggregatedValue(attemptCountData, attributes), 1);
+        getAggregatedValue(attemptLatenciesData, attributes);
+      });
+    });
+
+    it('should create connectivity error count metric if GFE/AFE latency is not in header and status is connectivity error', async () => {
+      gfeStub = sandbox
+        .stub(MetricsTracer.prototype, 'extractGfeLatency')
+        .callsFake(() => null);
+      afeStub = sandbox
+        .stub(MetricsTracer.prototype, 'extractAfeLatency')
+        .callsFake(() => null);
+      const err = {
+        message: 'Cancelled',
+        code: grpc.status.CANCELLED,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.commit,
+        SimulatedExecutionTime.ofError(err),
+      );
+      const database = newTestDatabase();
+      try {
+        await database.runTransactionAsync(async tx => {
+          await tx.run(selectSql);
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as grpc.ServiceError).code,
+          grpc.status.CANCELLED,
+        );
+      }
       const {resourceMetrics} = await reader.collect();
 
       const operationCountData = getMetricData(
@@ -465,32 +545,27 @@ describe('Test metrics with mock server', () => {
       // Verify GFE AFE latency doesn't exist
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_GFE_LATENCIES));
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_AFE_LATENCIES));
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
-      methods.forEach(method => {
-        const attributes = {
-          ...commonAttributes,
-          database: `database-${dbCounter}`,
-          method: method,
-        };
-        // Verify attempt and operational metrics are unaffected
-        assert.strictEqual(
-          getAggregatedValue(operationCountData, attributes),
-          1,
-        );
-        getAggregatedValue(operationLatenciesData, attributes);
-        assert.strictEqual(getAggregatedValue(attemptCountData, attributes), 1);
-        getAggregatedValue(attemptLatenciesData, attributes);
+      const attributes = {
+        ...commonAttributes,
+        database: `database-${dbCounter}`,
+        method: 'commit',
+        status: 'CANCELLED',
+      };
+      // Verify attempt and operational metrics are unaffected
+      assert.strictEqual(getAggregatedValue(operationCountData, attributes), 1);
+      getAggregatedValue(operationLatenciesData, attributes);
+      assert.strictEqual(getAggregatedValue(attemptCountData, attributes), 1);
+      getAggregatedValue(attemptLatenciesData, attributes);
 
-        // Verify that GFE AFE connectivity error count increased
-        assert.strictEqual(
-          getAggregatedValue(connectivityErrorCountData, attributes),
-          1,
-        );
-        assert.strictEqual(
-          getAggregatedValue(afeConnectivityErrorCountData, attributes),
-          1,
-        );
-      });
+      // Verify that GFE AFE connectivity error count increased
+      assert.strictEqual(
+        getAggregatedValue(connectivityErrorCountData, attributes),
+        1,
+      );
+      assert.strictEqual(
+        getAggregatedValue(afeConnectivityErrorCountData, attributes),
+        1,
+      );
     });
 
     it('should increase attempts on retries for non streaming calls with gax options', async () => {

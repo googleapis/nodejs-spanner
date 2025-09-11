@@ -165,9 +165,14 @@ describe('MetricsTracer', () => {
   });
 
   describe('recordGfeConnectivityErrorCount', () => {
-    it('should increment GFE error counter if enabled', () => {
-      tracer.recordGfeConnectivityErrorCount(Status.OK);
+    it('should increment GFE error counter if enabled and connectivity error status code', () => {
+      tracer.recordGfeConnectivityErrorCount(Status.DEADLINE_EXCEEDED);
       assert.strictEqual(fakeGfeCounter.add.calledOnce, true);
+    });
+
+    it('should not increment GFE error counter if enabled and non-connectivity error status code', () => {
+      tracer.recordGfeConnectivityErrorCount(Status.OK);
+      assert.strictEqual(fakeGfeCounter.add.calledOnce, false);
     });
 
     it('should not increment if disabled', () => {
@@ -213,10 +218,16 @@ describe('MetricsTracer', () => {
       process.env['SPANNER_DISABLE_AFE_SERVER_TIMING'] = 'false';
     });
 
-    it('should increment AFE error counter if enabled', () => {
+    it('should increment AFE error counter if enabled and connectivity error status code', () => {
+      tracer.enabled = true;
+      tracer.recordAfeConnectivityErrorCount(Status.DEADLINE_EXCEEDED);
+      assert.strictEqual(fakeAfeCounter.add.calledOnce, true);
+    });
+
+    it('should increment AFE error counter if enabled and non-connectivity error status code', () => {
       tracer.enabled = true;
       tracer.recordAfeConnectivityErrorCount(Status.OK);
-      assert.strictEqual(fakeAfeCounter.add.calledOnce, true);
+      assert.strictEqual(fakeAfeCounter.add.calledOnce, false);
     });
 
     it('should not increment if metrics are disabled', () => {

@@ -16,6 +16,7 @@ import {status as Status} from '@grpc/grpc-js';
 import {Counter, Histogram} from '@opentelemetry/api';
 import {MetricsTracerFactory} from './metrics-tracer-factory';
 import {
+  CONNECTIVITY_ERROR_STATUSES,
   METRIC_LABEL_KEY_DATABASE,
   METRIC_LABEL_KEY_METHOD,
   METRIC_LABEL_KEY_STATUS,
@@ -334,7 +335,8 @@ export class MetricsTracer {
    * Increments the GFE connectivity error count metric.
    */
   public recordGfeConnectivityErrorCount(statusCode: Status) {
-    if (!this.enabled) return;
+    if (!this.enabled || !CONNECTIVITY_ERROR_STATUSES.has(Status[statusCode]))
+      return;
     const attributes = {...this._clientAttributes};
     attributes[METRIC_LABEL_KEY_STATUS] = Status[statusCode];
     this._instrumentGfeConnectivityErrorCount?.add(1, attributes);
@@ -344,7 +346,12 @@ export class MetricsTracer {
    * Increments the AFE connectivity error count metric.
    */
   public recordAfeConnectivityErrorCount(statusCode: Status) {
-    if (!this.enabled || !Spanner.isAFEServerTimingEnabled()) return;
+    if (
+      !this.enabled ||
+      !Spanner.isAFEServerTimingEnabled() ||
+      !CONNECTIVITY_ERROR_STATUSES.has(Status[statusCode])
+    )
+      return;
     const attributes = {...this._clientAttributes};
     attributes[METRIC_LABEL_KEY_STATUS] = Status[statusCode];
     this._instrumentAfeConnectivityErrorCount?.add(1, attributes);

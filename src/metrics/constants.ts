@@ -56,6 +56,10 @@ export const METRIC_LABELS = new Set([
   METRIC_LABEL_KEY_METHOD,
   METRIC_LABEL_KEY_STATUS,
 ]);
+export const CONNECTIVITY_ERROR_STATUSES = new Set([
+  'DEADLINE_EXCEEDED',
+  'CANCELLED',
+]);
 
 // Metric names
 export const METRIC_NAME_OPERATION_LATENCIES = 'operation_latencies';
