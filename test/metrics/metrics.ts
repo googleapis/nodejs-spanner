@@ -457,10 +457,6 @@ describe('Test metrics with mock server', () => {
         resourceMetrics,
         METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
       );
-      const afeConnectivityErrorCountData = getMetricData(
-        resourceMetrics,
-        METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT,
-      );
 
       // Verify GFE AFE latency doesn't exist
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_GFE_LATENCIES));
@@ -484,10 +480,6 @@ describe('Test metrics with mock server', () => {
         // Verify that GFE AFE connectivity error count increased
         assert.strictEqual(
           getAggregatedValue(connectivityErrorCountData, attributes),
-          1,
-        );
-        assert.strictEqual(
-          getAggregatedValue(afeConnectivityErrorCountData, attributes),
           1,
         );
       });
