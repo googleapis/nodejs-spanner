@@ -106,9 +106,9 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
     ).catch(e => {
       if (!this._metricsExportFailureLogged) {
         const error = e as {code: number};
-        let msg = "Send TimeSeries failed:";
+        let msg = 'Send TimeSeries failed:';
         if (error.code === status.PERMISSION_DENIED) {
-           msg += ` Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`;
+          msg += ` Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`;
         }
         console.warn(msg);
         this._metricsExportFailureLogged = true;
