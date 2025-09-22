@@ -228,7 +228,7 @@ describe('Export', () => {
     assert.strictEqual(callbackResult.code, ExportResultCode.FAILED);
     assert.strictEqual(
       callbackResult.error.message,
-      'Send TimeSeries failed: Network error',
+      'Network error',
     );
 
     assert(sendTimeSeriesStub.calledOnce);
