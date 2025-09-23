@@ -4,6 +4,31 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.2.1](https://github.com/googleapis/nodejs-spanner/compare/v8.2.0...v8.2.1) (2025-09-12)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.3 ([#2371](https://github.com/googleapis/nodejs-spanner/issues/2371)) ([8a175e2](https://github.com/googleapis/nodejs-spanner/commit/8a175e2e5cc8d0ed81faee7b24b59b5026758a59))
+* Disable afe_connectivity_error_count metric ([af72d70](https://github.com/googleapis/nodejs-spanner/commit/af72d707c8857d5596bd2b93830e52c8e152967f))
+
+## [8.2.0](https://github.com/googleapis/nodejs-spanner/compare/v8.1.0...v8.2.0) (2025-08-26)
+
+
+### Features
+
+* **spanner:** Add support for multiplexed session for r/w transactions ([#2351](https://github.com/googleapis/nodejs-spanner/issues/2351)) ([6a9f1a2](https://github.com/googleapis/nodejs-spanner/commit/6a9f1a2b2c0dad955593571c71e9d4b6c9e7eeee))
+* **spanner:** Support setting read lock mode ([#2388](https://github.com/googleapis/nodejs-spanner/issues/2388)) ([bd66f61](https://github.com/googleapis/nodejs-spanner/commit/bd66f61f3ecac65678d31cbc841c11cd0fb7c3da))
+
+
+### Bug Fixes
+
+* **deps:** Add uuid to dependencies ([#2376](https://github.com/googleapis/nodejs-spanner/issues/2376)) ([0b2060b](https://github.com/googleapis/nodejs-spanner/commit/0b2060b4ad7302ab23ac757e79fe760e34e81083))
+* **deps:** Update dependency @grpc/proto-loader to ^0.8.0 ([#2354](https://github.com/googleapis/nodejs-spanner/issues/2354)) ([75dc4da](https://github.com/googleapis/nodejs-spanner/commit/75dc4daf114cbc4eb4669ed6cb042af051cdce63))
+* **deps:** Update dependency google-gax to v5.0.1 ([#2362](https://github.com/googleapis/nodejs-spanner/issues/2362)) ([9223470](https://github.com/googleapis/nodejs-spanner/commit/922347014ac3966ec4a48116b61ba4850edf0b50))
+* Provide option to disable built in metrics ([#2380](https://github.com/googleapis/nodejs-spanner/issues/2380)) ([b378e2e](https://github.com/googleapis/nodejs-spanner/commit/b378e2ed6739acf76f3f3f27090311129dd83473))
+* Race condition among transactions when running parallely ([#2369](https://github.com/googleapis/nodejs-spanner/issues/2369)) ([f8b6f63](https://github.com/googleapis/nodejs-spanner/commit/f8b6f6340f4f04e04213fdf0a9665d643f474eeb))
+
 ## [8.1.0](https://github.com/googleapis/nodejs-spanner/compare/v8.0.0...v8.1.0) (2025-07-28)
 
 
