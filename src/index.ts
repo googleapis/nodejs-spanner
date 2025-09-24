@@ -1620,19 +1620,49 @@ class Spanner extends GrpcService {
    * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
    */
   configureMetrics_(disableBuiltInMetrics?: boolean) {
-    const metricsEnabled =
-      process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
-      !disableBuiltInMetrics &&
-      !this._isInSecureCredentials;
-    MetricsTracerFactory.enabled = metricsEnabled;
-    if (metricsEnabled) {
-      const factory = MetricsTracerFactory.getInstance(this.projectId);
-      const periodicReader = new PeriodicExportingMetricReader({
-        exporter: new CloudMonitoringMetricsExporter({auth: this.auth}),
-        exportIntervalMillis: 60000,
+    try {
+      this.auth.getProjectId((err, projectId) => {
+        if (err) {
+          console.error(
+            'Unable to get Project Id for client side metrics, will skip exporting client' +
+              ' side metrics' +
+              err,
+          );
+          return;
+        }
+        // Only enable metrics if not explicitly disabled and we are not using
+        // insecure credentials.
+        const metricsEnabled =
+          process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
+          !disableBuiltInMetrics &&
+          !this._isInSecureCredentials;
+        MetricsTracerFactory.enabled = metricsEnabled;
+        if (projectId === null || projectId === '') {
+          console.error(
+            'Unable to get Project Id for client side metrics, will skip exporting client' +
+              ' side metrics',
+          );
+          return;
+        }
+        if (metricsEnabled) {
+          const factory = MetricsTracerFactory.getInstance(projectId);
+          const periodicReader = new PeriodicExportingMetricReader({
+            exporter: new CloudMonitoringMetricsExporter(
+              {auth: this.auth},
+              projectId,
+            ),
+            exportIntervalMillis: 60000,
+          });
+          // Retrieve the MeterProvider to trigger construction
+          factory!.getMeterProvider([periodicReader]);
+        }
       });
-      // Retrieve the MeterProvider to trigger construction
-      factory!.getMeterProvider([periodicReader]);
+    } catch (err) {
+      console.error(
+        'Unable to configure client side metrics, will skip exporting client' +
+          ' side metrics' +
+          err,
+      );
     }
   }
 
