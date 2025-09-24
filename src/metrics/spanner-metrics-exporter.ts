@@ -31,6 +31,7 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
   private _projectId: string | void | Promise<string | void>;
   private _lastExported: Date = new Date(0);
   private readonly _client: MetricServiceClient;
+  private _metricsExportFailureLogged = false;
 
   constructor({auth}: ExporterOptions) {
     this._client = new MetricServiceClient({auth: auth});
@@ -65,7 +66,6 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
 
     this._lastExported = now;
     this._exportAsync(metrics).then(resultCallback, err => {
-      console.error(err.message);
       resultCallback({code: ExportResultCode.FAILED, error: err});
     });
   }
@@ -104,17 +104,21 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
         async batchedTimeSeries => this._sendTimeSeries(batchedTimeSeries),
       ),
     ).catch(e => {
-      const error = e as {code: number};
-      if (error.code === status.PERMISSION_DENIED) {
-        console.warn(
-          `Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`,
-        );
+      if (!this._metricsExportFailureLogged) {
+        const error = e as {code: number};
+        let msg = 'Send TimeSeries failed:';
+        if (error.code === status.PERMISSION_DENIED) {
+          msg += ` Need monitoring metric writer permission on project ${this._projectId}. Follow https://cloud.google.com/spanner/docs/view-manage-client-side-metrics#access-client-side-metrics to set up permissions`;
+        }
+        console.warn(msg);
+        this._metricsExportFailureLogged = true;
       }
-      const err = asError(e);
-      err.message = `Send TimeSeries failed: ${err.message}`;
-      failure = {sendFailed: true, error: err};
-      console.error(`ERROR: ${err.message}`);
+      failure = {sendFailed: true, error: asError(e)};
     });
+
+    if (!failure.sendFailed && this._metricsExportFailureLogged) {
+      this._metricsExportFailureLogged = false;
+    }
 
     return failure.sendFailed
       ? {
