@@ -222,10 +222,7 @@ describe('Export', () => {
 
     const callbackResult = resultCallbackSpy.getCall(0).args[0];
     assert.strictEqual(callbackResult.code, ExportResultCode.FAILED);
-    assert.strictEqual(
-      callbackResult.error.message,
-      'Send TimeSeries failed: Network error',
-    );
+    assert.strictEqual(callbackResult.error.message, 'Network error');
 
     assert(sendTimeSeriesStub.calledOnce);
   });
