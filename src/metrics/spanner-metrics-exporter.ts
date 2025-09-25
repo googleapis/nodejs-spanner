@@ -28,12 +28,12 @@ export const MAX_BATCH_EXPORT_SIZE = 200;
  * Format and sends metrics information to Google Cloud Monitoring.
  */
 export class CloudMonitoringMetricsExporter implements PushMetricExporter {
-  private _projectId: string | undefined;
+  private _projectId: string;
   private _lastExported: Date = new Date(0);
   private readonly _client: MetricServiceClient;
   private _metricsExportFailureLogged = false;
 
-  constructor({auth}: ExporterOptions, projectId: string | undefined) {
+  constructor({auth}: ExporterOptions, projectId: string) {
     this._client = new MetricServiceClient({auth: auth});
 
     this._projectId = projectId;
@@ -79,8 +79,10 @@ export class CloudMonitoringMetricsExporter implements PushMetricExporter {
   private async _exportAsync(
     resourceMetrics: ResourceMetrics,
   ): Promise<ExportResult> {
-    const timeSeriesList =
-      transformResourceMetricToTimeSeriesArray(resourceMetrics);
+    const timeSeriesList = transformResourceMetricToTimeSeriesArray(
+      resourceMetrics,
+      this._projectId,
+    );
 
     let failure: {sendFailed: false} | {sendFailed: true; error: Error} = {
       sendFailed: false,

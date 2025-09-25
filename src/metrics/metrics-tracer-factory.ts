@@ -56,7 +56,6 @@ export class MetricsTracerFactory {
   private _currentOperationTracers = new Map();
   private _currentOperationLastUpdatedMs = new Map();
   private _intervalTracerCleanup: NodeJS.Timeout;
-  public static _readers: MetricReader[] = [];
   public static enabled = true;
 
   /**
@@ -101,7 +100,7 @@ export class MetricsTracerFactory {
    * @param projectId Optional GCP project ID for the factory instantiation. Does nothing for subsequent calls.
    * @returns The singleton MetricsTracerFactory instance or null if disabled.
    */
-  public static getInstance(projectId = ''): MetricsTracerFactory | null {
+  public static getInstance(projectId: string): MetricsTracerFactory | null {
     if (!MetricsTracerFactory.enabled) {
       return null;
     }
@@ -110,6 +109,7 @@ export class MetricsTracerFactory {
     if (MetricsTracerFactory._instance === null) {
       MetricsTracerFactory._instance = new MetricsTracerFactory(projectId);
     }
+
     return MetricsTracerFactory!._instance;
   }
 
@@ -128,7 +128,6 @@ export class MetricsTracerFactory {
         [Constants.MONITORED_RES_LABEL_KEY_INSTANCE]: 'unknown',
         [Constants.MONITORED_RES_LABEL_KEY_INSTANCE_CONFIG]: 'unknown',
       });
-      MetricsTracerFactory._readers = readers;
       this._meterProvider = new MeterProvider({
         resource: resource,
         readers: readers,
@@ -142,7 +141,7 @@ export class MetricsTracerFactory {
   /**
    * Resets the singleton instance of the MetricsTracerFactory.
    */
-  public static async resetInstance() {
+  public static async resetInstance(projectId?: string) {
     clearInterval(MetricsTracerFactory._instance?._intervalTracerCleanup);
     await MetricsTracerFactory._instance?.resetMeterProvider();
     MetricsTracerFactory._instance = null;
@@ -250,6 +249,7 @@ export class MetricsTracerFactory {
       MetricsTracerFactory.enabled,
       database,
       instance,
+      this._projectId,
       method,
       operationRequest,
     );
