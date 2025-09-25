@@ -163,6 +163,7 @@ export class MetricsTracer {
     public enabled: boolean,
     private _database: string,
     private _instance: string,
+    private _projectId: string,
     private _methodName: string,
     private _request: string,
   ) {
@@ -276,7 +277,9 @@ export class MetricsTracer {
       operationLatencyMilliseconds,
       operationAttributes,
     );
-    MetricsTracerFactory.getInstance()!.clearCurrentTracer(this._request);
+    MetricsTracerFactory.getInstance(this._projectId)!.clearCurrentTracer(
+      this._request,
+    );
   }
 
   /**

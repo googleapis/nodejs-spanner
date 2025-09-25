@@ -314,6 +314,7 @@ class Spanner extends GrpcService {
   instances_: Map<string, Instance>;
   instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
+  projectId_?: string;
   projectFormattedName_: string;
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
@@ -1622,7 +1623,7 @@ class Spanner extends GrpcService {
   configureMetrics_(disableBuiltInMetrics?: boolean) {
     try {
       this.auth.getProjectId((err, projectId) => {
-        if (err) {
+        if (err || !projectId) {
           console.error(
             'Unable to get Project Id for client side metrics, will skip exporting client' +
               ' side metrics' +
@@ -1637,13 +1638,7 @@ class Spanner extends GrpcService {
           !disableBuiltInMetrics &&
           !this._isInSecureCredentials;
         MetricsTracerFactory.enabled = metricsEnabled;
-        if (projectId === null || projectId === '') {
-          console.error(
-            'Unable to get Project Id for client side metrics, will skip exporting client' +
-              ' side metrics',
-          );
-          return;
-        }
+        this.projectId_ = projectId;
         if (metricsEnabled) {
           const factory = MetricsTracerFactory.getInstance(projectId);
           const periodicReader = new PeriodicExportingMetricReader({
@@ -1812,9 +1807,9 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (config.client === 'SpannerClient') {
+    if (config.client === 'SpannerClient' && this.projectId_) {
       metricsTracer =
-        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+        MetricsTracerFactory?.getInstance(this.projectId_)?.createMetricsTracer(
           config.method,
           config.reqOpts.session ?? config.reqOpts.database,
           config.headers['x-goog-spanner-request-id'],
@@ -1876,9 +1871,9 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestStream(config): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (config.client === 'SpannerClient') {
+    if (config.client === 'SpannerClient' && this.projectId_) {
       metricsTracer =
-        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+        MetricsTracerFactory?.getInstance(this.projectId_)?.createMetricsTracer(
           config.method,
           config.reqOpts.session ?? config.reqOpts.database,
           config.headers['x-goog-spanner-request-id'],
