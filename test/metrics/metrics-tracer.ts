@@ -23,6 +23,7 @@ import {Spanner} from '../../src';
 
 const DATABASE = 'test-db';
 const INSTANCE = 'instance';
+const PROJECT_ID = 'project_id';
 const METHOD = 'test-method';
 const REQUEST = 'test-request';
 
@@ -83,6 +84,7 @@ describe('MetricsTracer', () => {
       true, // enabled,
       DATABASE,
       INSTANCE,
+      PROJECT_ID,
       METHOD,
       REQUEST,
     );
@@ -249,6 +251,7 @@ describe('MetricsTracer', () => {
         true,
         DATABASE,
         INSTANCE,
+        PROJECT_ID,
         METHOD,
         REQUEST,
       );

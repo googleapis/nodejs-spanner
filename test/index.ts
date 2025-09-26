@@ -51,18 +51,14 @@ assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
 const apiConfig = require('../src/spanner_grpc_config.json');
 
 async function disableMetrics(sandbox: sinon.SinonSandbox) {
-  if (
-    Object.prototype.hasOwnProperty.call(
-      process.env,
-      'SPANNER_DISABLE_BUILTIN_METRICS',
-    )
-  ) {
-    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
-  } else {
-    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
-  }
+  sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('true');
   await MetricsTracerFactory.resetInstance();
   MetricsTracerFactory.enabled = false;
+}
+
+async function enableMetrics(sandbox: sinon.SinonSandbox) {
+  sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('false');
+  await MetricsTracerFactory.resetInstance();
 }
 
 function getFake(obj: {}) {
@@ -133,7 +129,14 @@ const fakeV1: any = {
 function fakeGoogleAuth() {
   return {
     calledWith_: arguments,
-    getProjectId: () => Promise.resolve('project-id'),
+    getProjectId: function (callback) {
+      if (callback) {
+        callback(null, 'project-id');
+        return;
+      } else {
+        return Promise.resolve('project-id');
+      }
+    },
   };
 }
 
@@ -326,6 +329,13 @@ describe('Spanner', () => {
     it('should optionally accept routeToLeaderEnabled', () => {
       const spanner = new Spanner({routeToLeaderEnabled: false});
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
+    });
+
+    it('should configure metrics if project Id is not passed', async () => {
+      await enableMetrics(sandbox);
+      const spanner = new Spanner();
+      assert.strictEqual(MetricsTracerFactory.enabled, true);
+      await disableMetrics(sandbox);
     });
 
     it('should optionally accept disableBuiltInMetrics', () => {
