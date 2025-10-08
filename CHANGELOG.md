@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.2.2](https://github.com/googleapis/nodejs-spanner/compare/v8.2.1...v8.2.2) (2025-10-07)
+
+
+### Bug Fixes
+
+* Correctly determine project ID for metrics export ([#2427](https://github.com/googleapis/nodejs-spanner/issues/2427)) ([0d63312](https://github.com/googleapis/nodejs-spanner/commit/0d633126a87c1274abfd59550cb94052a819fcaa))
+* Metrics Export Error log ([#2425](https://github.com/googleapis/nodejs-spanner/issues/2425)) ([110923e](https://github.com/googleapis/nodejs-spanner/commit/110923ea1dc6f6c891e0f70406b3839224a25b9e))
+
 ## [8.2.1](https://github.com/googleapis/nodejs-spanner/compare/v8.2.0...v8.2.1) (2025-09-12)
 
 
