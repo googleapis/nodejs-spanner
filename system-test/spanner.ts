@@ -119,7 +119,7 @@ describe('Spanner', () => {
   let DATABASE_DROP_PROTECTION;
   const TABLE_NAME = 'Singers';
   const INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
+    config: 'regional-u-us-prp1',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
