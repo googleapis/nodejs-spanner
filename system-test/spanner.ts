@@ -73,6 +73,7 @@ const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
+  universeDomain: "apis-tpczero.goog"
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
