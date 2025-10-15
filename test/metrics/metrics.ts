@@ -42,6 +42,7 @@ describe('Test metrics with mock server', () => {
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
   const server = new grpc.Server();
   const spannerMock = mock.createMockSpanner(server);
+  const PROJECT_ID = 'test-project';
 
   class InMemoryMetricReader extends MetricReader {
     protected async onForceFlush(): Promise<void> {}
@@ -158,7 +159,7 @@ describe('Test metrics with mock server', () => {
     await MetricsTracerFactory.resetInstance();
     MetricsTracerFactory.enabled = true;
     spanner = new Spanner({
-      projectId: 'test-project',
+      projectId: PROJECT_ID,
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -210,7 +211,7 @@ describe('Test metrics with mock server', () => {
       spannerMock.removeExecutionTimes();
       // Reset the MetricsFactoryReader to an in-memory reader for the tests
       MetricsTracerFactory.enabled = true;
-      factory = MetricsTracerFactory.getInstance();
+      factory = MetricsTracerFactory.getInstance(PROJECT_ID);
       await factory!.resetMeterProvider();
       reader = new InMemoryMetricReader();
       factory!.getMeterProvider([reader]);

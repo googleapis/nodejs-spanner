@@ -117,6 +117,10 @@ describe('MetricInterceptor', () => {
       },
     };
     testMetadata = new grpc.Metadata();
+    testMetadata.set(
+      'google-cloud-resource-prefix',
+      'projects/test-project/instances/instance/databases/database-1',
+    );
   });
 
   afterEach(() => {
