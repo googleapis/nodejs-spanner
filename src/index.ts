@@ -713,7 +713,7 @@ class Spanner extends GrpcService {
     delete reqOpts.instance.nodes;
     delete reqOpts.instance.gaxOptions;
 
-    if (config.config!.indexOf('/') === -1) {
+    if (config.config && config.config.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
     this.request(
