@@ -41,12 +41,11 @@ const DATABASE_ID = 'test-db';
 const LOCATION = 'test-location';
 
 const auth = new GoogleAuth();
-auth.getProjectId = sinon.stub().resolves(PROJECT_ID);
 
 // Ensure custom exporter is valid
 describe('CustomExporter', () => {
   it('should construct an exporter', () => {
-    const exporter = new CloudMonitoringMetricsExporter({auth});
+    const exporter = new CloudMonitoringMetricsExporter({auth}, PROJECT_ID);
     assert.ok(typeof exporter.export === 'function');
     assert.ok(typeof exporter.shutdown === 'function');
   });
@@ -59,21 +58,18 @@ describe('CustomExporter', () => {
       },
     });
     auth.getProjectId = sinon.stub().resolves(PROJECT_ID);
-    const exporter = new CloudMonitoringMetricsExporter({auth});
+    const exporter = new CloudMonitoringMetricsExporter({auth}, PROJECT_ID);
 
     assert(exporter);
-    return (exporter['_projectId'] as Promise<string>).then(id => {
-      assert.deepStrictEqual(id, PROJECT_ID);
-    });
   });
 
   it('should be able to shutdown', async () => {
-    const exporter = new CloudMonitoringMetricsExporter({auth});
+    const exporter = new CloudMonitoringMetricsExporter({auth}, PROJECT_ID);
     await assert.doesNotReject(exporter.shutdown());
   });
 
   it('should be able to force flush', async () => {
-    const exporter = new CloudMonitoringMetricsExporter({auth});
+    const exporter = new CloudMonitoringMetricsExporter({auth}, PROJECT_ID);
     await assert.doesNotReject(exporter.forceFlush());
   });
 });
@@ -97,7 +93,7 @@ describe('Export', () => {
   let exporter: CloudMonitoringMetricsExporter;
 
   beforeEach(() => {
-    exporter = new CloudMonitoringMetricsExporter({auth});
+    exporter = new CloudMonitoringMetricsExporter({auth}, PROJECT_ID);
     reader = new InMemoryMetricReader();
     const resource = new Resource({
       ['project_id']: PROJECT_ID,
@@ -226,10 +222,7 @@ describe('Export', () => {
 
     const callbackResult = resultCallbackSpy.getCall(0).args[0];
     assert.strictEqual(callbackResult.code, ExportResultCode.FAILED);
-    assert.strictEqual(
-      callbackResult.error.message,
-      'Send TimeSeries failed: Network error',
-    );
+    assert.strictEqual(callbackResult.error.message, 'Network error');
 
     assert(sendTimeSeriesStub.calledOnce);
   });
