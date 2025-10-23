@@ -25,19 +25,9 @@ async function main(
   databaseId,
   projectId,
   method,
-  multiplexedEnabled,
   numThreads,
   numQueries,
 ) {
-  // enable the env variable
-  multiplexedEnabled === 'true'
-    ? ((process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = true),
-      (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = true),
-      (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = true))
-    : ((process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = false),
-      (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = false),
-      (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS = false));
-
   const {Spanner} = require('../build/src');
   const {performance} = require('perf_hooks');
   const spanner = new Spanner({
@@ -48,7 +38,7 @@ async function main(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  // generate read and update queries for random id's
+  // generate random read queries
   function generateReadQuery() {
     const id = Math.floor(Math.random() * 10000) + 1;
     const query = {
@@ -58,6 +48,7 @@ async function main(
     return query;
   }
 
+  // generate random update queries
   function generateUpdateQuery() {
     const id = Math.floor(Math.random() * 10000) + 1;
     const name = randomUUID();
@@ -70,8 +61,8 @@ async function main(
     };
     return query;
   }
-  // warm up queries
-  for (let i = 0; i < 1000; i++) {
+  // warm up queries(~5-6 min)
+  for (let i = 0; i < 60000; i++) {
     await database.run(generateReadQuery());
   }
 
@@ -90,14 +81,6 @@ async function main(
         await tx.runUpdate(generateUpdateQuery());
         await tx.commit();
         console.log('transaction done.');
-        await new Promise(resolve => {
-          setTimeout(
-            () => {
-              resolve();
-            },
-            Math.floor(Math.random() * 10) + 1,
-          );
-        });
       });
       const operationTime = performance.now() - startTime;
       // push the time taken by transaction to the array
@@ -163,7 +146,7 @@ async function main(
     );
   }
 
-  // single use transaction
+  // case: single use transaction
   async function singleUseTxn() {
     const startThreadTime = performance.now();
 
@@ -181,7 +164,7 @@ async function main(
     );
   }
 
-  // multi use transaction
+  // case: multi use transaction
   async function multiUseTxn() {
     const startThreadTime = performance.now();
 
@@ -256,11 +239,8 @@ async function main(
   }
 
   try {
-    // run the benchmark three times
-    for (let i = 0; i < 3; i++) {
-      // wait for all the threads to complete the execution
-      await runConcurrently();
-    }
+    // wait for all the threads to complete the execution
+    await runConcurrently();
     // calculate percentiles
     const percentiles = calculatePercentiles(transaction_times);
     // print percentiles results
