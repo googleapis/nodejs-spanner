@@ -228,8 +228,7 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.keepalive_time_ms': 30000,
-      'grpc.keepalive_timeout_ms': 10000,
+      'grpc.keepalive_time_ms': 120000,
       'grpc.callInvocationTransformer':
         fakeGrpcGcp().gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
