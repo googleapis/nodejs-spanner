@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.2.3](https://github.com/googleapis/nodejs-spanner/compare/v8.2.2...v8.2.3) (2025-10-24)
+
+
+### Bug Fixes
+
+* Configure gRPC keep alive as 120 sec ([#2445](https://github.com/googleapis/nodejs-spanner/issues/2445)) ([f280e7c](https://github.com/googleapis/nodejs-spanner/commit/f280e7ca7cc60a67da8a5a0b3ada5f414c9e9a5f))
+
 ## [8.2.2](https://github.com/googleapis/nodejs-spanner/compare/v8.2.1...v8.2.2) (2025-10-07)
 
 
