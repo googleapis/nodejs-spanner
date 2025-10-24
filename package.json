@@ -88,9 +88,9 @@
     "stream-events": "^1.0.5",
     "teeny-request": "^10.0.0",
     "through2": "^4.0.2",
-    "@babel/traverse": "7.27.7",
-    "@babel/core": "7.27.7",
-    "@babel/helpers": "7.27.6",
+    "@babel/traverse": "7.28.5",
+    "@babel/core": "7.28.5",
+    "@babel/helpers": "7.28.4",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
