@@ -314,6 +314,7 @@ class Spanner extends GrpcService {
   instances_: Map<string, Instance>;
   instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
+  projectId_?: string;
   projectFormattedName_: string;
   commonHeaders_: {[k: string]: string};
   routeToLeaderEnabled = true;
@@ -416,8 +417,7 @@ class Spanner extends GrpcService {
         libVersion: require('../../package.json').version,
         scopes,
         // Add grpc keep alive setting
-        'grpc.keepalive_time_ms': 30000,
-        'grpc.keepalive_timeout_ms': 10000,
+        'grpc.keepalive_time_ms': 120000,
         // Enable grpc-gcp support
         'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
         'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
@@ -500,6 +500,7 @@ class Spanner extends GrpcService {
     ensureInitialContextManagerSet();
     this._nthClientId = nextSpannerClientId();
     this._universeDomain = universeEndpoint;
+    this.projectId_ = options.projectId;
     this.configureMetrics_(options.disableBuiltInMetrics);
   }
 
@@ -1620,19 +1621,44 @@ class Spanner extends GrpcService {
    * Setup the OpenTelemetry metrics capturing for service metrics to Google Cloud Monitoring.
    */
   configureMetrics_(disableBuiltInMetrics?: boolean) {
+    // Only enable metrics if not explicitly disabled and we are not using
+    // insecure credentials.
     const metricsEnabled =
       process.env.SPANNER_DISABLE_BUILTIN_METRICS !== 'true' &&
       !disableBuiltInMetrics &&
       !this._isInSecureCredentials;
-    MetricsTracerFactory.enabled = metricsEnabled;
     if (metricsEnabled) {
-      const factory = MetricsTracerFactory.getInstance(this.projectId);
-      const periodicReader = new PeriodicExportingMetricReader({
-        exporter: new CloudMonitoringMetricsExporter({auth: this.auth}),
-        exportIntervalMillis: 60000,
-      });
-      // Retrieve the MeterProvider to trigger construction
-      factory!.getMeterProvider([periodicReader]);
+      try {
+        this.auth.getProjectId((err, projectId) => {
+          if (err || !projectId) {
+            console.error(
+              'Unable to get Project Id for client side metrics, will skip exporting client' +
+                ' side metrics' +
+                err,
+            );
+            return;
+          }
+
+          MetricsTracerFactory.enabled = metricsEnabled;
+          this.projectId_ = projectId;
+          const factory = MetricsTracerFactory.getInstance(projectId);
+          const periodicReader = new PeriodicExportingMetricReader({
+            exporter: new CloudMonitoringMetricsExporter(
+              {auth: this.auth},
+              projectId,
+            ),
+            exportIntervalMillis: 60000,
+          });
+          // Retrieve the MeterProvider to trigger construction
+          factory!.getMeterProvider([periodicReader]);
+        });
+      } catch (err) {
+        console.error(
+          'Unable to configure client side metrics, will skip exporting client' +
+            ' side metrics' +
+            err,
+        );
+      }
     }
   }
 
@@ -1782,9 +1808,9 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request(config: any, callback?: any): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (config.client === 'SpannerClient') {
+    if (config.client === 'SpannerClient' && this.projectId_) {
       metricsTracer =
-        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+        MetricsTracerFactory?.getInstance(this.projectId_)?.createMetricsTracer(
           config.method,
           config.reqOpts.session ?? config.reqOpts.database,
           config.headers['x-goog-spanner-request-id'],
@@ -1846,9 +1872,9 @@ class Spanner extends GrpcService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestStream(config): any {
     let metricsTracer: MetricsTracer | null = null;
-    if (config.client === 'SpannerClient') {
+    if (config.client === 'SpannerClient' && this.projectId_) {
       metricsTracer =
-        MetricsTracerFactory?.getInstance()?.createMetricsTracer(
+        MetricsTracerFactory?.getInstance(this.projectId_)?.createMetricsTracer(
           config.method,
           config.reqOpts.session ?? config.reqOpts.database,
           config.headers['x-goog-spanner-request-id'],

@@ -90,6 +90,7 @@ function _transformValueType(metric: MetricData): ValueType {
  */
 export function transformResourceMetricToTimeSeriesArray(
   resourceMetrics: ResourceMetrics,
+  projectId: string,
 ) {
   const resource = resourceMetrics?.resource;
   const scopeMetrics = resourceMetrics?.scopeMetrics;
@@ -107,7 +108,7 @@ export function transformResourceMetricToTimeSeriesArray(
       // Flatmap the data points in each metric to create a TimeSeries for each point
       .flatMap(metric =>
         metric.dataPoints.flatMap(dataPoint =>
-          _createTimeSeries(metric, dataPoint, resource),
+          _createTimeSeries(metric, dataPoint, resource, projectId),
         ),
       )
   );
@@ -119,14 +120,15 @@ export function transformResourceMetricToTimeSeriesArray(
 function _createTimeSeries<T>(
   metric: MetricData,
   dataPoint: DataPoint<T>,
-  resource?: Resource,
+  resource: Resource,
+  projectId: string,
 ) {
   const type = path.posix.join(CLIENT_METRICS_PREFIX, metric.descriptor.name);
   const resourceLabels = resource
-    ? _extractLabels(resource)
+    ? _extractLabels(resource, projectId)
     : {metricLabels: {}, monitoredResourceLabels: {}};
 
-  const dataLabels = _extractLabels(dataPoint);
+  const dataLabels = _extractLabels(dataPoint, projectId);
 
   const labels = {
     ...resourceLabels.metricLabels,
@@ -205,8 +207,11 @@ function _transformPoint<T>(metric: MetricData, dataPoint: DataPoint<T>) {
 }
 
 /** Extracts metric and monitored resource labels from data point */
-function _extractLabels<T>({attributes = {}}: DataPoint<T> | Resource) {
-  const factory = MetricsTracerFactory.getInstance();
+function _extractLabels<T>(
+  {attributes = {}}: DataPoint<T> | Resource,
+  projectId: string,
+) {
+  const factory = MetricsTracerFactory.getInstance(projectId);
   // Add Client name and Client UID metric labels
   attributes[METRIC_LABEL_KEY_CLIENT_UID] =
     factory?.clientUid ?? UNKNOWN_ATTRIBUTE;

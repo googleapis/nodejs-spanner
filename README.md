@@ -5,7 +5,7 @@
 # [Cloud Spanner: Node.js Client](https://github.com/googleapis/nodejs-spanner)
 
 [![release level](https://img.shields.io/badge/release%20level-stable-brightgreen.svg?style=flat)](https://cloud.google.com/terms/launch-stages)
-[![npm version](https://img.shields.io/npm/v/@google-cloud/spanner.svg)](https://www.npmjs.org/package/@google-cloud/spanner)
+[![npm version](https://img.shields.io/npm/v/@google-cloud/spanner.svg)](https://www.npmjs.com/package/@google-cloud/spanner)
 
 
 
@@ -209,6 +209,7 @@ Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tre
 | Queryoptions | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/queryoptions.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/queryoptions.js,samples/README.md) |
 | Quickstart | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/quickstart.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/quickstart.js,samples/README.md) |
 | Read data with database role | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-data-with-database-role.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-data-with-database-role.js,samples/README.md) |
+| Performs a read-write transaction with isolation level option | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/repeatable-reads.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/repeatable-reads.js,samples/README.md) |
 | Sets a request tag for a single query | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/request-tag.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/request-tag.js,samples/README.md) |
 | Run Batch update with RPC priority | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-batch-dml.js,samples/README.md) |
 | Run partitioned update with RPC priority | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-partitioned-dml.js,samples/README.md) |
