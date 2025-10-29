@@ -5317,6 +5317,13 @@
                               "type": "int32",
                               "id": 6
                             },
+                            "autoscalingConfig": {
+                              "type": "AutoscalingConfig",
+                              "id": 13,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
                             "state": {
                               "type": "State",
                               "id": 7,
