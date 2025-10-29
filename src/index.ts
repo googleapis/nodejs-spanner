@@ -417,8 +417,7 @@ class Spanner extends GrpcService {
         libVersion: require('../../package.json').version,
         scopes,
         // Add grpc keep alive setting
-        'grpc.keepalive_time_ms': 30000,
-        'grpc.keepalive_timeout_ms': 10000,
+        'grpc.keepalive_time_ms': 120000,
         // Enable grpc-gcp support
         'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
         'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
