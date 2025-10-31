@@ -238,7 +238,7 @@ describe('Test metrics with mock server', () => {
 
       const elapsedTime = endTime.valueOf() - startTime.valueOf();
 
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
 
       const {resourceMetrics} = await reader.collect();
       const operationCountData = getMetricData(
@@ -369,7 +369,7 @@ describe('Test metrics with mock server', () => {
       const sessionAttributes = {
         ...commonAttributes,
         database: `database-${dbCounter}`,
-        method: 'batchCreateSessions',
+        method: 'createSession',
       };
       // Verify batchCreateSession metrics are unaffected
       assert.strictEqual(
@@ -462,7 +462,7 @@ describe('Test metrics with mock server', () => {
       // Verify GFE AFE latency doesn't exist
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_GFE_LATENCIES));
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_AFE_LATENCIES));
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
       methods.forEach(method => {
         const attributes = {
           ...commonAttributes,
@@ -554,9 +554,9 @@ describe('Test metrics with mock server', () => {
       const sessionAttributes = {
         ...commonAttributes,
         database: `database-${dbCounter}`,
-        method: 'batchCreateSessions',
+        method: 'createSession',
       };
-      // Verify batchCreateSession metrics are unaffected
+      // Verify createSession metrics are unaffected
       assert.strictEqual(
         1,
         getAggregatedValue(operationCountData, sessionAttributes),
@@ -659,7 +659,7 @@ describe('Test metrics with mock server', () => {
 
       const elapsedTime = endTime.valueOf() - startTime.valueOf();
 
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
 
       const {resourceMetrics} = await reader.collect();
       const operationCountData = getMetricData(

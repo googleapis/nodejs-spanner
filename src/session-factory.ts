@@ -135,34 +135,37 @@ export class SessionFactory
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(database, null)
         : new SessionPool(database, poolOptions);
-    this.pool_.on('error', this.emit.bind(database, 'error'));
-    this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
-    // set the isMultiplexed property to true if multiplexed session is enabled, otherwise set the property to false
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
-      ? (this.isMultiplexed = true)
-      : (this.isMultiplexed = false);
-    // set the isMultiplexedPartitionedOps property to true if multiplexed session is enabled for paritioned ops, otherwise set the property to false
-    this.isMultiplexedPartitionOps =
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
-        'true';
+    this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
+    this.multiplexedSession_.createSession();
+    // set the isMultiplexed property to false if multiplexed session is disabled, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false'
+      ? (this.isMultiplexed = false)
+      : (this.isMultiplexed = true);
+    // set the isMultiplexedPartitionedOps property to false if multiplexed session is disabled for paritioned ops, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
+      'false'
+      ? (this.isMultiplexedPartitionOps = false)
+      : (this.isMultiplexedPartitionOps = true);
 
-    this.isMultiplexedRW =
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true';
-    // Multiplexed sessions should only be created if its enabled.
-    if (this.isMultiplexed) {
-      this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
-      this.multiplexedSession_.createSession();
+    // set the isMultiplexedRW property to false if multiplexed session is disabled for read/write, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'false'
+      ? (this.isMultiplexedRW = false)
+      : (this.isMultiplexedRW = true);
+    // Regular sessions should only be created if mux is disabled.
+    if (!this.isMultiplexed) {
+      this.pool_.on('error', this.emit.bind(database, 'error'));
+      this.pool_.open();
     }
   }
 
   /**
    * Retrieves a session, either a regular session or a multiplexed session, based on the environment variable configuration.
    *
-   * If the environment variable `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS` is set to `true`, the method will attempt to
-   * retrieve a multiplexed session. Otherwise, it will retrieve a session from the regular pool.
+   * If the environment variable `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS` is set to `false`, the method will attempt to
+   * retrieve a regular session. Otherwise, it will return a multiplexed session.
    *
    * @param {GetSessionCallback} callback The callback function.
    */
@@ -179,12 +182,13 @@ export class SessionFactory
 
   /**
    * Retrieves a session for partitioned operations, selecting the appropriate session type
-   * based on whether multiplexed sessions are enabled.
+   * based on whether multiplexed sessions are disabled or not.
    *
-   * If multiplexed sessions are enabled for partitioned ops this methods delegates the request to `getSession()`, which returns
-   * either a multiplexed session or a regular session based on the configuration.
+   * If multiplexed sessions are disabled for partitioned ops this methods delegates the request to `getSession()`, which returns
+   * either a multiplexed session or a regular session based on the env configuration.
    *
-   * If the multiplexed sessions are disabled, a session is retrieved from the regular session pool.
+   * If the multiplexed sessions are disabled, a session will get retrieved from the regular session pool.
+   * Otherwise a multiplexed session will be used.
    *
    * @param {GetSessionCallback} callback The callback function.
    */
@@ -198,10 +202,11 @@ export class SessionFactory
    * Retrieves a session for read write operations, selecting the appropriate session type
    * based on whether multiplexed sessions are enabled.
    *
-   * If multiplexed sessions are enabled for read write this methods delegates the request to `getSession()`, which returns
-   * either a multiplexed session or a regular session based on the configuration.
+   * If multiplexed sessions are disabled for read write this methods delegates the request to `getSession()`, which returns
+   * either a multiplexed session or a regular session based on the env configuration.
    *
-   * If the multiplexed sessions are disabled, a session is retrieved from the regular session pool.
+   * If the multiplexed sessions are disabled, a session will get retrieved from the regular session pool.
+   * Otherise a multiplexed session will be used.
    *
    * @param {GetSessionCallback} callback The callback function.
    */
