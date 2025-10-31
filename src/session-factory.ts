@@ -135,26 +135,29 @@ export class SessionFactory
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(database, null)
         : new SessionPool(database, poolOptions);
-    this.pool_.on('error', this.emit.bind(database, 'error'));
-    this.pool_.open();
     this.multiplexedSession_ = new MultiplexedSession(database);
-    // set the isMultiplexed property to true if multiplexed session is enabled, otherwise set the property to false
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true'
-      ? (this.isMultiplexed = true)
-      : (this.isMultiplexed = false);
-    // set the isMultiplexedPartitionedOps property to true if multiplexed session is enabled for paritioned ops, otherwise set the property to false
-    this.isMultiplexedPartitionOps =
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
-        'true';
+    this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
+    this.multiplexedSession_.createSession();
+    // set the isMultiplexed property to false if multiplexed session is disabled, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false'
+      ? (this.isMultiplexed = false)
+      : (this.isMultiplexed = true);
+    // set the isMultiplexedPartitionedOps property to false if multiplexed session is disabled for paritioned ops, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
+      'false'
+      ? (this.isMultiplexedPartitionOps = false)
+      : (this.isMultiplexedPartitionOps = true);
 
-    this.isMultiplexedRW =
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true';
+    // set the isMultiplexedRW property to false if multiplexed session is disabled for read/write, otherwise set the property to true
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'false'
+      ? (this.isMultiplexedRW = false)
+      : (this.isMultiplexedRW = true);
     // Multiplexed sessions should only be created if its enabled.
-    if (this.isMultiplexed) {
-      this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
-      this.multiplexedSession_.createSession();
+    if (!this.isMultiplexed) {
+      this.pool_.on('error', this.emit.bind(database, 'error'));
+      this.pool_.open();
     }
   }
 

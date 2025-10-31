@@ -369,697 +369,722 @@ describe('Spanner with mock server', () => {
   });
 
   describe('basics', () => {
-    it('should return different database instances when the same database is requested twice with different session pool options', async () => {
-      const dbWithDefaultOptions = newTestDatabase();
-      const dbWithWriteSessions = instance.database(dbWithDefaultOptions.id!, {
-        fail: false,
-      });
-      assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
-    });
+    const muxEnabled = [true, false];
 
-    it('should execute query', async () => {
-      // The query to execute
-      const query = {
-        sql: selectSql,
-      };
-      const database = newTestDatabase();
-      try {
-        const [rows] = await database.run(query);
-        assert.strictEqual(rows.length, 3);
-        let i = 0;
-        (rows as Row[]).forEach(row => {
-          i++;
-          const [numCol, nameCol] = row;
-          assert.strictEqual(numCol.name, 'NUM');
-          assert.strictEqual(numCol.value.valueOf(), i);
-          assert.strictEqual(nameCol.name, 'NAME');
-          assert.strictEqual(nameCol.value.valueOf(), numberToEnglishWord(i));
+    muxEnabled.forEach(isMuxEnabled => {
+      describe(`when multiplexed session is ${isMuxEnabled ? 'default' : 'disabled'}`, () => {
+        before(() => {
+          isMuxEnabled
+            ? delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
+            : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false');
         });
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should replace {{projectId}} in resource header', async () => {
-      const query = {
-        sql: selectSql,
-      };
-      const database = newTestDatabase();
-      try {
-        await database.run(query);
-        spannerMock.getMetadata().forEach(metadata => {
-          assert.strictEqual(
-            metadata.get(CLOUD_RESOURCE_HEADER)[0],
-            `projects/test-project/instances/instance/databases/${database.id}`,
-          );
+        after(() => {
+          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
         });
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should execute query with requestOptions', async () => {
-      const priority = RequestOptions.Priority.PRIORITY_HIGH;
-      const database = newTestDatabase();
-      try {
-        const [rows] = await database.run({
-          sql: selectSql,
-          requestOptions: {priority: priority, requestTag: 'request-tag'},
-        });
-        assert.strictEqual(rows.length, 3);
-      } finally {
-        await database.close();
-      }
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteSqlRequest).sql;
-      }) as v1.ExecuteSqlRequest;
-      assert.ok(request, 'no ExecuteSqlRequest found');
-      assert.ok(
-        request.requestOptions,
-        'no requestOptions found on ExecuteSqlRequest',
-      );
-      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_HIGH');
-      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-    });
-
-    it('should execute read with requestOptions', async () => {
-      const database = newTestDatabase();
-      const [snapshot] = await database.getSnapshot();
-      try {
-        await snapshot.read('foo', {
-          keySet: {all: true},
-          requestOptions: {
-            priority: Priority.PRIORITY_MEDIUM,
-            requestTag: 'request-tag',
-          },
-        });
-      } catch (e) {
-        assert.strictEqual((e as ServiceError).code, Status.UNKNOWN);
-        assert.deepStrictEqual(
-          (e as RequestIDError).requestID,
-          `1.${randIdForProcess}.1.1.3.1`,
-        );
-      } finally {
-        snapshot.end();
-        await database.close();
-      }
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ReadRequest).table === 'foo';
-      }) as v1.ReadRequest;
-      assert.ok(request, 'no ReadRequest found');
-      assert.ok(
-        request.requestOptions,
-        'no requestOptions found on ReadRequest',
-      );
-      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
-      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-    });
-
-    it('should execute batchUpdate with requestOptions', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(
-        {requestOptions: {transactionTag: 'transaction-tag'}},
-        async tx => {
-          await tx!.batchUpdate([insertSql, insertSql], {
-            requestOptions: {
-              priority: RequestOptions.Priority.PRIORITY_MEDIUM,
-              requestTag: 'request-tag',
-            },
+        if (!isMuxEnabled) {
+          it('should return different database instances when the same database is requested twice with different session pool options', async () => {
+            const dbWithDefaultOptions = newTestDatabase();
+            const dbWithWriteSessions = instance.database(
+              dbWithDefaultOptions.id!,
+              {
+                fail: false,
+              },
+            );
+            assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
           });
-          await tx!.batchUpdate([insertSql, insertSql]);
-          return await tx.commit();
-        },
-      );
-      await database.close();
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteBatchDmlRequest).statements;
-      }) as v1.ExecuteBatchDmlRequest;
-      assert.ok(request, 'no ExecuteBatchDmlRequest found');
-      assert.ok(
-        request.requestOptions,
-        'no requestOptions found on ExecuteBatchDmlRequest',
-      );
-      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
-      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-      assert.strictEqual(
-        request.requestOptions!.transactionTag,
-        'transaction-tag',
-      );
-      assert.ok(request.transaction?.begin, 'transaction is not empty');
-      const nextBatchRequest = spannerMock
-        .getRequests()
-        .reverse()
-        .find(val => {
-          return (val as v1.ExecuteBatchDmlRequest).statements;
-        }) as v1.ExecuteBatchDmlRequest;
-      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
-      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
+        }
 
-      const commitRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.CommitRequest).mutations;
-      }) as v1.CommitRequest;
-      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
-      assert.strictEqual(
-        commitRequest.requestOptions!.transactionTag,
-        'transaction-tag',
-      );
-    });
-
-    it('should use txn ID from batchUpdate if non-ok status', async () => {
-      const sql = "INSERT INTO TBL (NUM, NAME) VALUES (14, 'Four')";
-      const database = newTestDatabase();
-      const err = {
-        message: 'Not OK',
-      } as MockError;
-      spannerMock.putStatementResult(
-        sql,
-        mock.StatementResult.updateCount(1, err),
-      );
-
-      await database.runTransactionAsync(async tx => {
-        await tx!.batchUpdate([sql, insertSql]);
-        await tx!.batchUpdate([sql, insertSql]);
-        return await tx.commit();
-      });
-      await database.close();
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteBatchDmlRequest).statements;
-      }) as v1.ExecuteBatchDmlRequest;
-      assert.ok(request, 'no ExecuteBatchDmlRequest found');
-      assert.ok(request.transaction?.begin, 'transaction is not empty');
-      const nextBatchRequest = spannerMock
-        .getRequests()
-        .reverse()
-        .find(val => {
-          return (val as v1.ExecuteBatchDmlRequest).statements;
-        }) as v1.ExecuteBatchDmlRequest;
-      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
-      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
-    });
-
-    it('should execute update with requestOptions', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(
-        {requestOptions: {transactionTag: 'transaction-tag'}},
-        async tx => {
-          await tx!.runUpdate({
-            sql: insertSql,
-            requestOptions: {
-              priority: RequestOptions.Priority.PRIORITY_LOW,
-              requestTag: 'request-tag',
-            },
-          });
-          return await tx.commit();
-        },
-      );
-      await database.close();
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteSqlRequest).sql;
-      }) as v1.ExecuteSqlRequest;
-      assert.ok(request, 'no ExecuteSqlRequest found');
-      assert.ok(
-        request.requestOptions,
-        'no requestOptions found on ExecuteSqlRequest',
-      );
-      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
-      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
-      assert.strictEqual(
-        request.requestOptions!.transactionTag,
-        'transaction-tag',
-      );
-      const commitRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.CommitRequest).mutations;
-      }) as v1.CommitRequest;
-      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
-      assert.strictEqual(
-        commitRequest.requestOptions!.transactionTag,
-        'transaction-tag',
-      );
-    });
-
-    it('should execute read with requestOptions in a read/write transaction', async () => {
-      const database = newTestDatabase();
-      await database.runTransactionAsync(
-        {
-          readLockMode: ReadLockMode.OPTIMISTIC,
-          requestOptions: {transactionTag: 'transaction-tag'},
-        },
-        async tx => {
+        it('should execute query', async () => {
+          // The query to execute
+          const query = {
+            sql: selectSql,
+          };
+          const database = newTestDatabase();
           try {
-            return await tx.read('foo', {
+            const [rows] = await database.run(query);
+            assert.strictEqual(rows.length, 3);
+            let i = 0;
+            (rows as Row[]).forEach(row => {
+              i++;
+              const [numCol, nameCol] = row;
+              assert.strictEqual(numCol.name, 'NUM');
+              assert.strictEqual(numCol.value.valueOf(), i);
+              assert.strictEqual(nameCol.name, 'NAME');
+              assert.strictEqual(
+                nameCol.value.valueOf(),
+                numberToEnglishWord(i),
+              );
+            });
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should replace {{projectId}} in resource header', async () => {
+          const query = {
+            sql: selectSql,
+          };
+          const database = newTestDatabase();
+          try {
+            await database.run(query);
+            spannerMock.getMetadata().forEach(metadata => {
+              assert.strictEqual(
+                metadata.get(CLOUD_RESOURCE_HEADER)[0],
+                `projects/test-project/instances/instance/databases/${database.id}`,
+              );
+            });
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should execute query with requestOptions', async () => {
+          const priority = RequestOptions.Priority.PRIORITY_HIGH;
+          const database = newTestDatabase();
+          try {
+            const [rows] = await database.run({
+              sql: selectSql,
+              requestOptions: {priority: priority, requestTag: 'request-tag'},
+            });
+            assert.strictEqual(rows.length, 3);
+          } finally {
+            await database.close();
+          }
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.ok(
+            request.requestOptions,
+            'no requestOptions found on ExecuteSqlRequest',
+          );
+          assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_HIGH');
+          assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+        });
+
+        it('should execute read with requestOptions', async () => {
+          const database = newTestDatabase();
+          const [snapshot] = await database.getSnapshot();
+          try {
+            await snapshot.read('foo', {
               keySet: {all: true},
               requestOptions: {
-                priority: Priority.PRIORITY_LOW,
+                priority: Priority.PRIORITY_MEDIUM,
                 requestTag: 'request-tag',
               },
             });
           } catch (e) {
             assert.strictEqual((e as ServiceError).code, Status.UNKNOWN);
-            assert.deepStrictEqual(
-              (e as RequestIDError).requestID,
-              `1.${randIdForProcess}.1.1.2.1`,
-            );
-            return undefined;
+            isMuxEnabled
+              ? assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.3.1`,
+                )
+              : assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.4.1`,
+                );
           } finally {
-            tx.end();
+            snapshot.end();
+            await database.close();
           }
-        },
-      );
-      await database.close();
-      const request = spannerMock.getRequests().find(val => {
-        return (val as v1.ReadRequest).table === 'foo';
-      }) as v1.ReadRequest;
-      assert.ok(request, 'no ReadRequest found');
-      assert.ok(
-        request.requestOptions,
-        'no requestOptions found on ReadRequest',
-      );
-      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
-      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-      assert.strictEqual(
-        request.requestOptions!.transactionTag,
-        'transaction-tag',
-      );
-      const beginTxnRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.BeginTransactionRequest).options?.readWrite;
-      }) as v1.BeginTransactionRequest;
-      assert.strictEqual(
-        beginTxnRequest.options?.readWrite!.readLockMode,
-        'OPTIMISTIC',
-      );
-    });
-
-    it('should return an array of json objects', async () => {
-      const database = newTestDatabase();
-      try {
-        const [rows] = await database.run({sql: selectSql, json: true});
-        assert.strictEqual(rows.length, 3);
-        let i = 0;
-        (rows as Json[]).forEach(row => {
-          i++;
-          assert.strictEqual(row.NUM, i);
-          assert.strictEqual(row.NAME, numberToEnglishWord(i));
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ReadRequest).table === 'foo';
+          }) as v1.ReadRequest;
+          assert.ok(request, 'no ReadRequest found');
+          assert.ok(
+            request.requestOptions,
+            'no requestOptions found on ReadRequest',
+          );
+          assert.strictEqual(
+            request.requestOptions!.priority,
+            'PRIORITY_MEDIUM',
+          );
+          assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
         });
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should support all data types', async () => {
-      const database = newTestDatabase();
-      try {
-        const [rows] = await database.run(selectAllTypes);
-        assert.strictEqual(rows.length, 3);
-        let i = 0;
-        (rows as Row[]).forEach(row => {
-          i++;
-          const [
-            boolCol,
-            int64Col,
-            float64Col,
-            numericCol,
-            stringCol,
-            bytesCol,
-            jsonCol,
-            dateCol,
-            timestampCol,
-            arrayBoolCol,
-            arrayInt64Col,
-            arrayFloat64Col,
-            arrayNumericCol,
-            arrayStringCol,
-            arrayBytesCol,
-            arrayJsonCol,
-            arrayDateCol,
-            arrayTimestampCol,
-          ] = row;
-          if (i === 3) {
-            assert.ok(boolCol.value === null);
-            assert.ok(int64Col.value === null);
-            assert.ok(float64Col.value === null);
-            assert.ok(numericCol.value === null);
-            assert.ok(stringCol.value === null);
-            assert.ok(bytesCol.value === null);
-            assert.ok(jsonCol.value === null);
-            assert.ok(dateCol.value === null);
-            assert.ok(timestampCol.value === null);
-            assert.ok(arrayBoolCol.value === null);
-            assert.ok(arrayInt64Col.value === null);
-            assert.ok(arrayFloat64Col.value === null);
-            assert.ok(arrayNumericCol.value === null);
-            assert.ok(arrayStringCol.value === null);
-            assert.ok(arrayBytesCol.value === null);
-            assert.ok(arrayJsonCol.value === null);
-            assert.ok(arrayDateCol.value === null);
-            assert.ok(arrayTimestampCol.value === null);
-          } else {
-            assert.strictEqual(boolCol.value, i === 1);
-            assert.deepStrictEqual(int64Col.value, new Int(`${i}`));
-            assert.deepStrictEqual(float64Col.value, new Float(3.14));
-            assert.deepStrictEqual(numericCol.value, new Numeric('6.626'));
-            assert.strictEqual(stringCol.value, numberToEnglishWord(i));
-            assert.deepStrictEqual(bytesCol.value, Buffer.from('test'));
-            assert.deepStrictEqual(jsonCol.value, {
-              result: true,
-              count: 42,
-            });
-            assert.deepStrictEqual(
-              dateCol.value,
-              new SpannerDate('2021-05-11'),
-            );
-            assert.deepStrictEqual(
-              timestampCol.value,
-              new PreciseDate('2021-05-11T16:46:04.872Z'),
-            );
-            assert.deepStrictEqual(arrayBoolCol.value, [true, false, null]);
-            assert.deepStrictEqual(arrayInt64Col.value, [
-              new Int(`${i}`),
-              new Int(`${i}00`),
-              null,
-            ]);
-            assert.deepStrictEqual(arrayFloat64Col.value, [
-              new Float(3.14),
-              new Float(100.9),
-              null,
-            ]);
-            assert.deepStrictEqual(arrayNumericCol.value, [
-              new Numeric('6.626'),
-              new Numeric('100'),
-              null,
-            ]);
-            assert.deepStrictEqual(arrayStringCol.value, [
-              numberToEnglishWord(i),
-              'test',
-              null,
-            ]);
-            assert.deepStrictEqual(arrayBytesCol.value, [
-              Buffer.from('test1'),
-              Buffer.from('test2'),
-              null,
-            ]);
-            assert.deepStrictEqual(arrayJsonCol.value, [
-              {result: true, count: 42},
-              {},
-              null,
-            ]);
-            assert.deepStrictEqual(arrayDateCol.value, [
-              new SpannerDate('2021-05-12'),
-              new SpannerDate('2000-02-29'),
-              null,
-            ]);
-            assert.deepStrictEqual(arrayTimestampCol.value, [
-              new PreciseDate('2021-05-12T08:38:19.8474Z'),
-              new PreciseDate('2000-02-29T07:00:00Z'),
-              null,
-            ]);
-          }
+        it('should execute batchUpdate with requestOptions', async () => {
+          const database = newTestDatabase();
+          await database.runTransactionAsync(
+            {requestOptions: {transactionTag: 'transaction-tag'}},
+            async tx => {
+              await tx!.batchUpdate([insertSql, insertSql], {
+                requestOptions: {
+                  priority: RequestOptions.Priority.PRIORITY_MEDIUM,
+                  requestTag: 'request-tag',
+                },
+              });
+              await tx!.batchUpdate([insertSql, insertSql]);
+              return await tx.commit();
+            },
+          );
+          await database.close();
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteBatchDmlRequest).statements;
+          }) as v1.ExecuteBatchDmlRequest;
+          assert.ok(request, 'no ExecuteBatchDmlRequest found');
+          assert.ok(
+            request.requestOptions,
+            'no requestOptions found on ExecuteBatchDmlRequest',
+          );
+          assert.strictEqual(
+            request.requestOptions!.priority,
+            'PRIORITY_MEDIUM',
+          );
+          assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+          assert.strictEqual(
+            request.requestOptions!.transactionTag,
+            'transaction-tag',
+          );
+          assert.ok(request.transaction?.begin, 'transaction is not empty');
+          const nextBatchRequest = spannerMock
+            .getRequests()
+            .reverse()
+            .find(val => {
+              return (val as v1.ExecuteBatchDmlRequest).statements;
+            }) as v1.ExecuteBatchDmlRequest;
+          assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+          assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
+
+          const commitRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.CommitRequest).mutations;
+          }) as v1.CommitRequest;
+          assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+          assert.strictEqual(
+            commitRequest.requestOptions!.transactionTag,
+            'transaction-tag',
+          );
         });
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should support all data types as JSON', async () => {
-      const database = newTestDatabase();
-      try {
-        const [rows] = await database.run({sql: selectAllTypes, json: true});
-        assert.strictEqual(rows.length, 3);
-        let i = 0;
-        (rows as Json[]).forEach(row => {
-          i++;
-          if (i === 3) {
-            assert.ok(row.COLBOOL === null);
-            assert.ok(row.COLINT64 === null);
-            assert.ok(row.COLFLOAT64 === null);
-            assert.ok(row.COLNUMERIC === null);
-            assert.ok(row.COLSTRING === null);
-            assert.ok(row.COLBYTES === null);
-            assert.ok(row.COLJSON === null);
-            assert.ok(row.COLDATE === null);
-            assert.ok(row.COLTIMESTAMP === null);
-            assert.ok(row.COLBOOLARRAY === null);
-            assert.ok(row.COLINT64ARRAY === null);
-            assert.ok(row.COLFLOAT64ARRAY === null);
-            assert.ok(row.COLNUMERICARRAY === null);
-            assert.ok(row.COLSTRINGARRAY === null);
-            assert.ok(row.COLBYTESARRAY === null);
-            assert.ok(row.COLJSONARRAY === null);
-            assert.ok(row.COLDATEARRAY === null);
-            assert.ok(row.COLTIMESTAMPARRAY === null);
-          } else {
-            assert.strictEqual(row.COLBOOL, i === 1);
-            assert.strictEqual(row.COLINT64, i);
-            assert.strictEqual(row.COLFLOAT64, 3.14);
-            assert.deepStrictEqual(row.COLNUMERIC, new Numeric('6.626'));
-            assert.strictEqual(row.COLSTRING, numberToEnglishWord(i));
-            assert.deepStrictEqual(row.COLBYTES, Buffer.from('test'));
-            assert.deepStrictEqual(row.COLJSON, {
-              result: true,
-              count: 42,
-            });
-            assert.deepStrictEqual(row.COLDATE, new SpannerDate('2021-05-11'));
-            assert.deepStrictEqual(
-              row.COLTIMESTAMP,
-              new PreciseDate('2021-05-11T16:46:04.872Z'),
-            );
-            assert.deepStrictEqual(row.COLBOOLARRAY, [true, false, null]);
-            assert.deepStrictEqual(row.COLINT64ARRAY, [i, 100 * i, null]);
-            assert.deepStrictEqual(row.COLFLOAT64ARRAY, [3.14, 100.9, null]);
-            assert.deepStrictEqual(row.COLNUMERICARRAY, [
-              new Numeric('6.626'),
-              new Numeric('100'),
-              null,
-            ]);
-            assert.deepStrictEqual(row.COLSTRINGARRAY, [
-              numberToEnglishWord(i),
-              'test',
-              null,
-            ]);
-            assert.deepStrictEqual(row.COLBYTESARRAY, [
-              Buffer.from('test1'),
-              Buffer.from('test2'),
-              null,
-            ]);
-            assert.deepStrictEqual(row.COLJSONARRAY, [
-              {result: true, count: 42},
-              {},
-              null,
-            ]);
-            assert.deepStrictEqual(row.COLDATEARRAY, [
-              new SpannerDate('2021-05-12'),
-              new SpannerDate('2000-02-29'),
-              null,
-            ]);
-            assert.deepStrictEqual(row.COLTIMESTAMPARRAY, [
-              new PreciseDate('2021-05-12T08:38:19.8474Z'),
-              new PreciseDate('2000-02-29T07:00:00Z'),
-              null,
-            ]);
-          }
+        it('should use txn ID from batchUpdate if non-ok status', async () => {
+          const sql = "INSERT INTO TBL (NUM, NAME) VALUES (14, 'Four')";
+          const database = newTestDatabase();
+          const err = {
+            message: 'Not OK',
+          } as MockError;
+          spannerMock.putStatementResult(
+            sql,
+            mock.StatementResult.updateCount(1, err),
+          );
+
+          await database.runTransactionAsync(async tx => {
+            await tx!.batchUpdate([sql, insertSql]);
+            await tx!.batchUpdate([sql, insertSql]);
+            return await tx.commit();
+          });
+          await database.close();
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteBatchDmlRequest).statements;
+          }) as v1.ExecuteBatchDmlRequest;
+          assert.ok(request, 'no ExecuteBatchDmlRequest found');
+          assert.ok(request.transaction?.begin, 'transaction is not empty');
+          const nextBatchRequest = spannerMock
+            .getRequests()
+            .reverse()
+            .find(val => {
+              return (val as v1.ExecuteBatchDmlRequest).statements;
+            }) as v1.ExecuteBatchDmlRequest;
+          assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+          assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
         });
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should receive metadata', async () => {
-      // The query to execute
-      const query = {
-        sql: selectSql,
-      };
-      const database = newTestDatabase();
-      try {
-        const [rows, , metadata] = await database.run(query);
-        assert.strictEqual(rows.length, 3);
-        assert.ok(metadata);
-        assert.strictEqual(metadata.rowType!.fields!.length, 2);
-        assert.strictEqual(metadata.rowType!.fields![0].name, 'NUM');
-        assert.strictEqual(metadata.rowType!.fields![1].name, 'NAME');
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should return result without column name in JSON', async () => {
-      // The query to execute
-      const query = {
-        sql: select1,
-        json: true,
-        jsonOptions: {includeNameless: true},
-      } as ExecuteSqlRequest;
-      const database = newTestDatabase();
-      try {
-        const [rows, , metadata] = await database.run(query);
-        assert.strictEqual(rows.length, 1);
-        assert.ok(metadata);
-        assert.strictEqual(metadata.rowType!.fields!.length, 1);
-        assert.strictEqual(metadata.rowType!.fields![0].name, '');
-        assert.strictEqual(rows[0]['_0'], 1);
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should pause on slow writer', async () => {
-      const largeSelect = 'select * from large_table';
-      spannerMock.putStatementResult(
-        largeSelect,
-        mock.StatementResult.resultSet(mock.createLargeResultSet()),
-      );
-      const database = newTestDatabase();
-      let rowCount = 0;
-      let paused = false;
-      try {
-        const rs = database.runStream({
-          sql: largeSelect,
+        it('should execute update with requestOptions', async () => {
+          const database = newTestDatabase();
+          await database.runTransactionAsync(
+            {requestOptions: {transactionTag: 'transaction-tag'}},
+            async tx => {
+              await tx!.runUpdate({
+                sql: insertSql,
+                requestOptions: {
+                  priority: RequestOptions.Priority.PRIORITY_LOW,
+                  requestTag: 'request-tag',
+                },
+              });
+              return await tx.commit();
+            },
+          );
+          await database.close();
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.ok(
+            request.requestOptions,
+            'no requestOptions found on ExecuteSqlRequest',
+          );
+          assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+          assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+          assert.ok(
+            request.transaction!.begin!.readWrite,
+            'ReadWrite is not set',
+          );
+          assert.strictEqual(
+            request.requestOptions!.transactionTag,
+            'transaction-tag',
+          );
+          const commitRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.CommitRequest).mutations;
+          }) as v1.CommitRequest;
+          assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+          assert.strictEqual(
+            commitRequest.requestOptions!.transactionTag,
+            'transaction-tag',
+          );
         });
-        const pipeline = util.promisify(stream.pipeline);
-        const simulateSlowFlushInterval = Math.floor(
-          NUM_ROWS_LARGE_RESULT_SET / 10,
-        );
 
-        await pipeline(
-          rs,
-          // Create an artificially slow transformer to simulate network latency.
-          new stream.Transform({
-            highWaterMark: 1,
-            objectMode: true,
-            transform(chunk, encoding, callback) {
-              rowCount++;
-              if (rowCount % simulateSlowFlushInterval === 0) {
-                // Simulate a slow flush.
-                setTimeout(() => {
-                  paused = paused || rs.isPaused();
-                  callback(undefined, chunk);
-                }, 50);
-              } else {
-                callback(undefined, chunk);
+        it('should execute read with requestOptions in a read/write transaction', async () => {
+          const database = newTestDatabase();
+          await database.runTransactionAsync(
+            {
+              readLockMode: ReadLockMode.OPTIMISTIC,
+              requestOptions: {transactionTag: 'transaction-tag'},
+            },
+            async tx => {
+              try {
+                return await tx.read('foo', {
+                  keySet: {all: true},
+                  requestOptions: {
+                    priority: Priority.PRIORITY_LOW,
+                    requestTag: 'request-tag',
+                  },
+                });
+              } catch (e) {
+                assert.strictEqual((e as ServiceError).code, Status.UNKNOWN);
+                isMuxEnabled
+                  ? assert.deepStrictEqual(
+                      (e as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.2.1`,
+                    )
+                  : assert.deepStrictEqual(
+                      (e as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.3.1`,
+                    );
+                return undefined;
+              } finally {
+                tx.end();
               }
             },
-          }),
-          new stream.Transform({
-            objectMode: true,
-            transform(chunk, encoding, callback) {
-              callback();
-            },
-          }),
-        );
-        assert.strictEqual(rowCount, NUM_ROWS_LARGE_RESULT_SET);
-        assert.ok(paused, 'stream should have been paused');
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should fail on slow writer when maxResumeRetries has been exceeded', async () => {
-      const largeSelect = 'select * from large_table';
-      spannerMock.putStatementResult(
-        largeSelect,
-        mock.StatementResult.resultSet(mock.createLargeResultSet()),
-      );
-      const database = newTestDatabase();
-      try {
-        const rs = database.runStream({
-          sql: largeSelect,
-          maxResumeRetries: 1,
+          );
+          await database.close();
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ReadRequest).table === 'foo';
+          }) as v1.ReadRequest;
+          assert.ok(request, 'no ReadRequest found');
+          assert.ok(
+            request.requestOptions,
+            'no requestOptions found on ReadRequest',
+          );
+          assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+          assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+          assert.strictEqual(
+            request.requestOptions!.transactionTag,
+            'transaction-tag',
+          );
+          const beginTxnRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.BeginTransactionRequest).options?.readWrite;
+          }) as v1.BeginTransactionRequest;
+          assert.strictEqual(
+            beginTxnRequest.options?.readWrite!.readLockMode,
+            'OPTIMISTIC',
+          );
         });
-        const pipeline = util.promisify(stream.pipeline);
 
-        await pipeline(
-          rs,
-          // Create an artificially slow transformer to simulate network latency.
-          new stream.Transform({
-            highWaterMark: 1,
-            objectMode: true,
-            transform(chunk, encoding, callback) {
-              // Simulate a slow flush.
-              setTimeout(() => {
-                callback(undefined, chunk);
-              }, 50);
-            },
-          }),
-          new stream.Transform({
-            objectMode: true,
-            transform(chunk, encoding, callback) {
-              callback();
-            },
-          }),
-        );
-        assert.fail('missing expected error');
-      } catch (err) {
-        assert.strictEqual(
-          (err as ServiceError).message,
-          'Stream is still not ready to receive data after 1 attempts to resume.',
-        );
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should return statistics', async () => {
-      const database = newTestDatabase();
-      try {
-        const [rows, stats] = await database.run({
-          sql: selectSql,
-          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+        it('should return an array of json objects', async () => {
+          const database = newTestDatabase();
+          try {
+            const [rows] = await database.run({sql: selectSql, json: true});
+            assert.strictEqual(rows.length, 3);
+            let i = 0;
+            (rows as Json[]).forEach(row => {
+              i++;
+              assert.strictEqual(row.NUM, i);
+              assert.strictEqual(row.NAME, numberToEnglishWord(i));
+            });
+          } finally {
+            await database.close();
+          }
         });
-        assert.strictEqual(rows.length, 3);
-        assert.ok(stats);
-        assert.ok(stats.queryPlan);
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should return statistics from snapshot', async () => {
-      const database = newTestDatabase();
-      try {
-        const [snapshot] = await database.getSnapshot();
-        const [rows, stats] = await snapshot.run({
-          sql: selectSql,
-          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+        it('should support all data types', async () => {
+          const database = newTestDatabase();
+          try {
+            const [rows] = await database.run(selectAllTypes);
+            assert.strictEqual(rows.length, 3);
+            let i = 0;
+            (rows as Row[]).forEach(row => {
+              i++;
+              const [
+                boolCol,
+                int64Col,
+                float64Col,
+                numericCol,
+                stringCol,
+                bytesCol,
+                jsonCol,
+                dateCol,
+                timestampCol,
+                arrayBoolCol,
+                arrayInt64Col,
+                arrayFloat64Col,
+                arrayNumericCol,
+                arrayStringCol,
+                arrayBytesCol,
+                arrayJsonCol,
+                arrayDateCol,
+                arrayTimestampCol,
+              ] = row;
+              if (i === 3) {
+                assert.ok(boolCol.value === null);
+                assert.ok(int64Col.value === null);
+                assert.ok(float64Col.value === null);
+                assert.ok(numericCol.value === null);
+                assert.ok(stringCol.value === null);
+                assert.ok(bytesCol.value === null);
+                assert.ok(jsonCol.value === null);
+                assert.ok(dateCol.value === null);
+                assert.ok(timestampCol.value === null);
+                assert.ok(arrayBoolCol.value === null);
+                assert.ok(arrayInt64Col.value === null);
+                assert.ok(arrayFloat64Col.value === null);
+                assert.ok(arrayNumericCol.value === null);
+                assert.ok(arrayStringCol.value === null);
+                assert.ok(arrayBytesCol.value === null);
+                assert.ok(arrayJsonCol.value === null);
+                assert.ok(arrayDateCol.value === null);
+                assert.ok(arrayTimestampCol.value === null);
+              } else {
+                assert.strictEqual(boolCol.value, i === 1);
+                assert.deepStrictEqual(int64Col.value, new Int(`${i}`));
+                assert.deepStrictEqual(float64Col.value, new Float(3.14));
+                assert.deepStrictEqual(numericCol.value, new Numeric('6.626'));
+                assert.strictEqual(stringCol.value, numberToEnglishWord(i));
+                assert.deepStrictEqual(bytesCol.value, Buffer.from('test'));
+                assert.deepStrictEqual(jsonCol.value, {
+                  result: true,
+                  count: 42,
+                });
+                assert.deepStrictEqual(
+                  dateCol.value,
+                  new SpannerDate('2021-05-11'),
+                );
+                assert.deepStrictEqual(
+                  timestampCol.value,
+                  new PreciseDate('2021-05-11T16:46:04.872Z'),
+                );
+                assert.deepStrictEqual(arrayBoolCol.value, [true, false, null]);
+                assert.deepStrictEqual(arrayInt64Col.value, [
+                  new Int(`${i}`),
+                  new Int(`${i}00`),
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayFloat64Col.value, [
+                  new Float(3.14),
+                  new Float(100.9),
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayNumericCol.value, [
+                  new Numeric('6.626'),
+                  new Numeric('100'),
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayStringCol.value, [
+                  numberToEnglishWord(i),
+                  'test',
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayBytesCol.value, [
+                  Buffer.from('test1'),
+                  Buffer.from('test2'),
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayJsonCol.value, [
+                  {result: true, count: 42},
+                  {},
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayDateCol.value, [
+                  new SpannerDate('2021-05-12'),
+                  new SpannerDate('2000-02-29'),
+                  null,
+                ]);
+                assert.deepStrictEqual(arrayTimestampCol.value, [
+                  new PreciseDate('2021-05-12T08:38:19.8474Z'),
+                  new PreciseDate('2000-02-29T07:00:00Z'),
+                  null,
+                ]);
+              }
+            });
+          } finally {
+            await database.close();
+          }
         });
-        assert.strictEqual(rows.length, 3);
-        assert.ok(stats);
-        assert.ok(stats.queryPlan);
-        snapshot.end();
-      } finally {
-        await database.close();
-      }
-    });
 
-    it('should emit query statistics', done => {
-      const database = newTestDatabase();
-      let rowCount = 0;
-      let stats: ResultSetStats;
-      database
-        .runStream({
-          sql: selectSql,
-          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
-        })
-        .on('data', () => rowCount++)
-        .on('stats', _stats => (stats = _stats))
-        .on('end', () => {
-          assert.strictEqual(rowCount, 3);
-          assert.ok(stats);
-          assert.ok(stats.queryPlan);
+        it('should support all data types as JSON', async () => {
+          const database = newTestDatabase();
+          try {
+            const [rows] = await database.run({
+              sql: selectAllTypes,
+              json: true,
+            });
+            assert.strictEqual(rows.length, 3);
+            let i = 0;
+            (rows as Json[]).forEach(row => {
+              i++;
+              if (i === 3) {
+                assert.ok(row.COLBOOL === null);
+                assert.ok(row.COLINT64 === null);
+                assert.ok(row.COLFLOAT64 === null);
+                assert.ok(row.COLNUMERIC === null);
+                assert.ok(row.COLSTRING === null);
+                assert.ok(row.COLBYTES === null);
+                assert.ok(row.COLJSON === null);
+                assert.ok(row.COLDATE === null);
+                assert.ok(row.COLTIMESTAMP === null);
+                assert.ok(row.COLBOOLARRAY === null);
+                assert.ok(row.COLINT64ARRAY === null);
+                assert.ok(row.COLFLOAT64ARRAY === null);
+                assert.ok(row.COLNUMERICARRAY === null);
+                assert.ok(row.COLSTRINGARRAY === null);
+                assert.ok(row.COLBYTESARRAY === null);
+                assert.ok(row.COLJSONARRAY === null);
+                assert.ok(row.COLDATEARRAY === null);
+                assert.ok(row.COLTIMESTAMPARRAY === null);
+              } else {
+                assert.strictEqual(row.COLBOOL, i === 1);
+                assert.strictEqual(row.COLINT64, i);
+                assert.strictEqual(row.COLFLOAT64, 3.14);
+                assert.deepStrictEqual(row.COLNUMERIC, new Numeric('6.626'));
+                assert.strictEqual(row.COLSTRING, numberToEnglishWord(i));
+                assert.deepStrictEqual(row.COLBYTES, Buffer.from('test'));
+                assert.deepStrictEqual(row.COLJSON, {
+                  result: true,
+                  count: 42,
+                });
+                assert.deepStrictEqual(
+                  row.COLDATE,
+                  new SpannerDate('2021-05-11'),
+                );
+                assert.deepStrictEqual(
+                  row.COLTIMESTAMP,
+                  new PreciseDate('2021-05-11T16:46:04.872Z'),
+                );
+                assert.deepStrictEqual(row.COLBOOLARRAY, [true, false, null]);
+                assert.deepStrictEqual(row.COLINT64ARRAY, [i, 100 * i, null]);
+                assert.deepStrictEqual(row.COLFLOAT64ARRAY, [
+                  3.14,
+                  100.9,
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLNUMERICARRAY, [
+                  new Numeric('6.626'),
+                  new Numeric('100'),
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLSTRINGARRAY, [
+                  numberToEnglishWord(i),
+                  'test',
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLBYTESARRAY, [
+                  Buffer.from('test1'),
+                  Buffer.from('test2'),
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLJSONARRAY, [
+                  {result: true, count: 42},
+                  {},
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLDATEARRAY, [
+                  new SpannerDate('2021-05-12'),
+                  new SpannerDate('2000-02-29'),
+                  null,
+                ]);
+                assert.deepStrictEqual(row.COLTIMESTAMPARRAY, [
+                  new PreciseDate('2021-05-12T08:38:19.8474Z'),
+                  new PreciseDate('2000-02-29T07:00:00Z'),
+                  null,
+                ]);
+              }
+            });
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should receive metadata', async () => {
+          // The query to execute
+          const query = {
+            sql: selectSql,
+          };
+          const database = newTestDatabase();
+          try {
+            const [rows, , metadata] = await database.run(query);
+            assert.strictEqual(rows.length, 3);
+            assert.ok(metadata);
+            assert.strictEqual(metadata.rowType!.fields!.length, 2);
+            assert.strictEqual(metadata.rowType!.fields![0].name, 'NUM');
+            assert.strictEqual(metadata.rowType!.fields![1].name, 'NAME');
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should return result without column name in JSON', async () => {
+          // The query to execute
+          const query = {
+            sql: select1,
+            json: true,
+            jsonOptions: {includeNameless: true},
+          } as ExecuteSqlRequest;
+          const database = newTestDatabase();
+          try {
+            const [rows, , metadata] = await database.run(query);
+            assert.strictEqual(rows.length, 1);
+            assert.ok(metadata);
+            assert.strictEqual(metadata.rowType!.fields!.length, 1);
+            assert.strictEqual(metadata.rowType!.fields![0].name, '');
+            assert.strictEqual(rows[0]['_0'], 1);
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should pause on slow writer', async () => {
+          const largeSelect = 'select * from large_table';
+          spannerMock.putStatementResult(
+            largeSelect,
+            mock.StatementResult.resultSet(mock.createLargeResultSet()),
+          );
+          const database = newTestDatabase();
+          let rowCount = 0;
+          let paused = false;
+          try {
+            const rs = database.runStream({
+              sql: largeSelect,
+            });
+            const pipeline = util.promisify(stream.pipeline);
+            const simulateSlowFlushInterval = Math.floor(
+              NUM_ROWS_LARGE_RESULT_SET / 10,
+            );
+
+            await pipeline(
+              rs,
+              // Create an artificially slow transformer to simulate network latency.
+              new stream.Transform({
+                highWaterMark: 1,
+                objectMode: true,
+                transform(chunk, encoding, callback) {
+                  rowCount++;
+                  if (rowCount % simulateSlowFlushInterval === 0) {
+                    // Simulate a slow flush.
+                    setTimeout(() => {
+                      paused = paused || rs.isPaused();
+                      callback(undefined, chunk);
+                    }, 50);
+                  } else {
+                    callback(undefined, chunk);
+                  }
+                },
+              }),
+              new stream.Transform({
+                objectMode: true,
+                transform(chunk, encoding, callback) {
+                  callback();
+                },
+              }),
+            );
+            assert.strictEqual(rowCount, NUM_ROWS_LARGE_RESULT_SET);
+            assert.ok(paused, 'stream should have been paused');
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should fail on slow writer when maxResumeRetries has been exceeded', async () => {
+          const largeSelect = 'select * from large_table';
+          spannerMock.putStatementResult(
+            largeSelect,
+            mock.StatementResult.resultSet(mock.createLargeResultSet()),
+          );
+          const database = newTestDatabase();
+          try {
+            const rs = database.runStream({
+              sql: largeSelect,
+              maxResumeRetries: 1,
+            });
+            const pipeline = util.promisify(stream.pipeline);
+
+            await pipeline(
+              rs,
+              // Create an artificially slow transformer to simulate network latency.
+              new stream.Transform({
+                highWaterMark: 1,
+                objectMode: true,
+                transform(chunk, encoding, callback) {
+                  // Simulate a slow flush.
+                  setTimeout(() => {
+                    callback(undefined, chunk);
+                  }, 50);
+                },
+              }),
+              new stream.Transform({
+                objectMode: true,
+                transform(chunk, encoding, callback) {
+                  callback();
+                },
+              }),
+            );
+            assert.fail('missing expected error');
+          } catch (err) {
+            assert.strictEqual(
+              (err as ServiceError).message,
+              'Stream is still not ready to receive data after 1 attempts to resume.',
+            );
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should return statistics', async () => {
+          const database = newTestDatabase();
+          try {
+            const [rows, stats] = await database.run({
+              sql: selectSql,
+              queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+            });
+            assert.strictEqual(rows.length, 3);
+            assert.ok(stats);
+            assert.ok(stats.queryPlan);
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should return statistics from snapshot', async () => {
+          const database = newTestDatabase();
+          try {
+            const [snapshot] = await database.getSnapshot();
+            const [rows, stats] = await snapshot.run({
+              sql: selectSql,
+              queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+            });
+            assert.strictEqual(rows.length, 3);
+            assert.ok(stats);
+            assert.ok(stats.queryPlan);
+            snapshot.end();
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should emit query statistics', done => {
+          const database = newTestDatabase();
+          let rowCount = 0;
+          let stats: ResultSetStats;
           database
-            .close()
-            .then(() => done())
-            .catch(() => done());
-        });
-    });
-
-    it('should emit query statistics from snapshot', done => {
-      const database = newTestDatabase();
-      let rowCount = 0;
-      let stats: ResultSetStats;
-      database
-        .getSnapshot()
-        .then(response => {
-          const [snapshot] = response;
-          snapshot
             .runStream({
               sql: selectSql,
               queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
@@ -1070,635 +1095,324 @@ describe('Spanner with mock server', () => {
               assert.strictEqual(rowCount, 3);
               assert.ok(stats);
               assert.ok(stats.queryPlan);
-              snapshot.end();
               database
                 .close()
                 .then(() => done())
                 .catch(() => done());
             });
-        })
-        .catch(err => done(err));
-    });
-
-    it('should call callback with statistics', done => {
-      const database = newTestDatabase();
-      database.run(
-        {
-          sql: selectSql,
-          queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
-        },
-        (err, rows, stats) => {
-          assert.ifError(err);
-          assert.strictEqual(rows.length, 3);
-          assert.ok(stats);
-          assert.ok(stats.queryPlan);
-          database
-            .close()
-            .then(() => done())
-            .catch(() => done());
-        },
-      );
-    });
-
-    it('should execute update', async () => {
-      const update = {
-        sql: insertSql,
-      };
-      const database = newTestDatabase();
-      try {
-        const updated = await executeSimpleUpdate(database, update);
-        assert.deepStrictEqual(updated, [1]);
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should execute update with all types', async () => {
-      const update = {
-        sql: insertSqlForAllTypes,
-        params: {
-          bool: true,
-          int64: 100,
-          float64: 3.14,
-          numeric: new Numeric('6.626'),
-          string: 'test',
-          bytes: Buffer.from('test'),
-          json: {key1: 'value1', key2: 'value2', key3: ['1', '2', '3']},
-          date: new SpannerDate('2021-05-11'),
-          timestamp: new PreciseDate('2021-05-11T17:55:16.9823Z'),
-        },
-      };
-      const database = newTestDatabase();
-      try {
-        const updated = await executeSimpleUpdate(database, update);
-        assert.deepStrictEqual(updated, [1]);
-        const request = spannerMock.getRequests().find(val => {
-          return (val as v1.ExecuteSqlRequest).sql;
-        }) as v1.ExecuteSqlRequest;
-        assert.ok(request, 'no ExecuteSqlRequest found');
-        assert.strictEqual(request.params!.fields!['bool'].boolValue, true);
-        assert.strictEqual(request.params!.fields!['int64'].stringValue, '100');
-        assert.strictEqual(
-          request.params!.fields!['float64'].numberValue,
-          3.14,
-        );
-        assert.strictEqual(
-          request.params!.fields!['numeric'].stringValue,
-          '6.626',
-        );
-        assert.strictEqual(
-          request.params!.fields!['string'].stringValue,
-          'test',
-        );
-        assert.strictEqual(
-          request.params!.fields!['bytes'].stringValue,
-          Buffer.from('test').toString('base64'),
-        );
-        assert.strictEqual(
-          request.params!.fields!['json'].stringValue,
-          '{"key1":"value1","key2":"value2","key3":["1","2","3"]}',
-        );
-        assert.strictEqual(
-          request.params!.fields!['date'].stringValue,
-          '2021-05-11',
-        );
-        assert.strictEqual(
-          request.params!.fields!['timestamp'].stringValue,
-          '2021-05-11T17:55:16.982300000Z',
-        );
-        assert.strictEqual(request.paramTypes!['bool'].code, 'BOOL');
-        assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
-        assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
-        assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
-        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
-        assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
-        assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
-        assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
-        assert.strictEqual(request.paramTypes!['timestamp'].code, 'TIMESTAMP');
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should execute queries in parallel', async () => {
-      // The query to execute
-      const query = {
-        sql: selectSql,
-      };
-      const database = newTestDatabase({incStep: 1, min: 0});
-      try {
-        const pool = database.pool_ as SessionPool;
-        const promises: Array<Promise<RunResponse>> = [];
-        for (let i = 0; i < 10; i++) {
-          promises.push(database.run(query));
-        }
-        await Promise.all(promises);
-        assert.ok(
-          pool.size >= 1 && pool.size <= 10,
-          'Pool size should be between 1 and 10',
-        );
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should execute updates in parallel', async () => {
-      spannerMock.freeze();
-      const update = {
-        sql: insertSql,
-      };
-      const database = newTestDatabase({incStep: 1, min: 0});
-      try {
-        const pool = database.pool_ as SessionPool;
-        const promises: Array<Promise<number | number[]>> = [];
-        for (let i = 0; i < 10; i++) {
-          promises.push(executeSimpleUpdate(database, update));
-        }
-        spannerMock.unfreeze();
-        await Promise.all(promises);
-        assert.ok(
-          pool.size >= 1 && pool.size <= 10,
-          'Pool size should be between 1 and 10',
-        );
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should retry UNAVAILABLE from executeStreamingSql with a callback', done => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Temporary unavailable',
-        code: grpc.status.UNAVAILABLE,
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      database.run(selectSql, (err, rows) => {
-        assert.ifError(err);
-        assert.strictEqual(rows!.length, 3);
-        database
-          .close()
-          .then(() => {
-            const gotStreamingCalls = xGoogReqIDInterceptor.getStreamingCalls();
-            const wantStreamingCalls = [
-              {
-                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
-                reqId: `1.${randIdForProcess}.1.1.2.1`,
-              },
-              {
-                method: '/google.spanner.v1.Spanner/ExecuteStreamingSql',
-                reqId: `1.${randIdForProcess}.1.1.2.2`,
-              },
-            ];
-            assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
-            done();
-          })
-          .catch(err => done(err));
-      });
-    });
-
-    it('should not retry non-retryable error from executeStreamingSql with a callback', done => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Non-retryable error',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      database.run(selectSql, err => {
-        assert.ok(err, 'Missing expected error');
-        assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
-        database
-          .close()
-          .then(() => done())
-          .catch(err => done(err));
-      });
-    });
-
-    it('should emit non-retryable error to runStream', done => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Test error',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      const rows: Row[] = [];
-      const stream = database.runStream(selectSql);
-      stream
-        .on('error', err => {
-          assert.strictEqual(err.message, '2 UNKNOWN: Test error');
-          database
-            .close()
-            .then(() => done())
-            .catch(err => done(err));
-        })
-        .on('data', row => rows.push(row))
-        .on('end', () => {
-          if (rows.length) {
-            assert.fail('Should not receive data');
-          }
-          assert.fail('Missing expected error');
         });
-    });
 
-    it('should retry UNAVAILABLE from executeStreamingSql', async () => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Temporary unavailable',
-        code: grpc.status.UNAVAILABLE,
-        details: 'Transient error',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      try {
-        const [rows] = await database.run(selectSql);
-        assert.strictEqual(rows.length, 3);
-      } finally {
-        await database.close();
-      }
-    });
+        it('should emit query statistics from snapshot', done => {
+          const database = newTestDatabase();
+          let rowCount = 0;
+          let stats: ResultSetStats;
+          database
+            .getSnapshot()
+            .then(response => {
+              const [snapshot] = response;
+              snapshot
+                .runStream({
+                  sql: selectSql,
+                  queryMode:
+                    google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+                })
+                .on('data', () => rowCount++)
+                .on('stats', _stats => (stats = _stats))
+                .on('end', () => {
+                  assert.strictEqual(rowCount, 3);
+                  assert.ok(stats);
+                  assert.ok(stats.queryPlan);
+                  snapshot.end();
+                  database
+                    .close()
+                    .then(() => done())
+                    .catch(() => done());
+                });
+            })
+            .catch(err => done(err));
+        });
 
-    it('should not retry non-retryable errors from executeStreamingSql', async () => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Test error',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      try {
-        await database.run(selectSql);
-        assert.fail('missing expected error');
-      } catch (e) {
-        assert.strictEqual(
-          (e as ServiceError).message,
-          '2 UNKNOWN: Test error',
-        );
-        assert.deepStrictEqual(
-          (e as RequestIDError).requestID,
-          `1.${randIdForProcess}.1.1.2.1`,
-        );
-      } finally {
-        await database.close();
-      }
-    });
+        it('should call callback with statistics', done => {
+          const database = newTestDatabase();
+          database.run(
+            {
+              sql: selectSql,
+              queryMode: google.spanner.v1.ExecuteSqlRequest.QueryMode.PROFILE,
+            },
+            (err, rows, stats) => {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 3);
+              assert.ok(stats);
+              assert.ok(stats.queryPlan);
+              database
+                .close()
+                .then(() => done())
+                .catch(() => done());
+            },
+          );
+        });
 
-    it('should not retry UNAVAILABLE from executeStreamingSql when maxQueued was exceeded', async () => {
-      // Setup a query result with more than maxQueued (10) PartialResultSets.
-      // None of the PartialResultSets include a resume token.
-      const sql = 'SELECT C1 FROM TestTable';
-      const fields = [
-        protobuf.StructType.Field.create({
-          name: 'C1',
-          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
-        }),
-      ];
-      const metadata = new protobuf.ResultSetMetadata({
-        rowType: new protobuf.StructType({
-          fields,
-        }),
-      });
-      const results: PartialResultSet[] = [];
-      for (let i = 0; i < 12; i++) {
-        results.push(
-          PartialResultSet.create({
-            metadata,
-            values: [{stringValue: `V${i}`}],
-          }),
-        );
-      }
-      spannerMock.putStatementResult(
-        sql,
-        mock.StatementResult.resultSet(results),
-      );
-      // Register an error after maxQueued has been exceeded.
-      const err = {
-        message: 'Temporary unavailable',
-        code: grpc.status.UNAVAILABLE,
-        details: 'Transient error',
-        streamIndex: 11,
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
+        it('should execute update', async () => {
+          const update = {
+            sql: insertSql,
+          };
+          const database = newTestDatabase();
+          try {
+            const updated = await executeSimpleUpdate(database, update);
+            assert.deepStrictEqual(updated, [1]);
+          } finally {
+            await database.close();
+          }
+        });
 
-      const database = newTestDatabase();
-      try {
-        await database.run(sql);
-        assert.fail('missing expected error');
-      } catch (e) {
-        assert.strictEqual(
-          (e as ServiceError).message,
-          '14 UNAVAILABLE: Transient error',
-        );
-        // Ensure that we have a requestID returned and it was on the 2nd request.
-        assert.deepStrictEqual(
-          (e as RequestIDError).requestID,
-          `1.${randIdForProcess}.1.1.2.1`,
-        );
-      } finally {
-        await database.close();
-      }
-    });
+        it('should execute update with all types', async () => {
+          const update = {
+            sql: insertSqlForAllTypes,
+            params: {
+              bool: true,
+              int64: 100,
+              float64: 3.14,
+              numeric: new Numeric('6.626'),
+              string: 'test',
+              bytes: Buffer.from('test'),
+              json: {key1: 'value1', key2: 'value2', key3: ['1', '2', '3']},
+              date: new SpannerDate('2021-05-11'),
+              timestamp: new PreciseDate('2021-05-11T17:55:16.9823Z'),
+            },
+          };
+          const database = newTestDatabase();
+          try {
+            const updated = await executeSimpleUpdate(database, update);
+            assert.deepStrictEqual(updated, [1]);
+            const request = spannerMock.getRequests().find(val => {
+              return (val as v1.ExecuteSqlRequest).sql;
+            }) as v1.ExecuteSqlRequest;
+            assert.ok(request, 'no ExecuteSqlRequest found');
+            assert.strictEqual(request.params!.fields!['bool'].boolValue, true);
+            assert.strictEqual(
+              request.params!.fields!['int64'].stringValue,
+              '100',
+            );
+            assert.strictEqual(
+              request.params!.fields!['float64'].numberValue,
+              3.14,
+            );
+            assert.strictEqual(
+              request.params!.fields!['numeric'].stringValue,
+              '6.626',
+            );
+            assert.strictEqual(
+              request.params!.fields!['string'].stringValue,
+              'test',
+            );
+            assert.strictEqual(
+              request.params!.fields!['bytes'].stringValue,
+              Buffer.from('test').toString('base64'),
+            );
+            assert.strictEqual(
+              request.params!.fields!['json'].stringValue,
+              '{"key1":"value1","key2":"value2","key3":["1","2","3"]}',
+            );
+            assert.strictEqual(
+              request.params!.fields!['date'].stringValue,
+              '2021-05-11',
+            );
+            assert.strictEqual(
+              request.params!.fields!['timestamp'].stringValue,
+              '2021-05-11T17:55:16.982300000Z',
+            );
+            assert.strictEqual(request.paramTypes!['bool'].code, 'BOOL');
+            assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
+            assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
+            assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
+            assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
+            assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
+            assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
+            assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
+            assert.strictEqual(
+              request.paramTypes!['timestamp'].code,
+              'TIMESTAMP',
+            );
+          } finally {
+            await database.close();
+          }
+        });
 
-    it('should return the results correctly when last field is present in PartialResultSet for query', async () => {
-      // Setup a query result with more than maxQueued (10) PartialResultSets.
-      // None of the PartialResultSets include a resume token.
-      const sql = 'SELECT C1 FROM TestTable';
-      const fields = [
-        protobuf.StructType.Field.create({
-          name: 'C1',
-          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
-        }),
-      ];
-      const metadata = new protobuf.ResultSetMetadata({
-        rowType: new protobuf.StructType({
-          fields,
-        }),
-      });
-      const results: PartialResultSet[] = [];
-      for (let i = 0; i < 2; i++) {
-        results.push(
-          PartialResultSet.create({
-            metadata,
-            values: [{stringValue: `V${i}`}],
-            last: i === 1,
-          }),
-        );
-      }
-      spannerMock.putStatementResult(
-        sql,
-        mock.StatementResult.resultSet(results),
-      );
+        it('should execute queries in parallel', async () => {
+          // The query to execute
+          const query = {
+            sql: selectSql,
+          };
+          const database = newTestDatabase({incStep: 1, min: 0});
+          try {
+            const sessionFactory = database.sessionFactory_ as SessionFactory;
+            const pool = sessionFactory.pool_ as SessionPool;
+            const multiplexedSession =
+              sessionFactory.multiplexedSession_ as MultiplexedSession;
+            const promises: Array<Promise<RunResponse>> = [];
+            for (let i = 0; i < 10; i++) {
+              promises.push(database.run(query));
+            }
+            await Promise.all(promises);
+            isMuxEnabled
+              ? assert.notEqual(multiplexedSession, null)
+              : assert.ok(
+                  pool.size >= 1 && pool.size <= 10,
+                  'Pool size should be between 1 and 10',
+                );
+          } finally {
+            await database.close();
+          }
+        });
 
-      const database = newTestDatabase();
-      const [rows] = await database.run(sql);
-      assert.equal(rows.length, 2);
-      await database.close();
-    });
+        it('should execute updates in parallel', async () => {
+          spannerMock.freeze();
+          const update = {
+            sql: insertSql,
+          };
+          const database = newTestDatabase({incStep: 1, min: 0});
+          try {
+            const sessionFactory = database.sessionFactory_ as SessionFactory;
+            const pool = sessionFactory.pool_ as SessionPool;
+            const multiplexedSession =
+              sessionFactory.multiplexedSession_ as MultiplexedSession;
+            const promises: Array<Promise<number | number[]>> = [];
+            for (let i = 0; i < 10; i++) {
+              promises.push(executeSimpleUpdate(database, update));
+            }
+            spannerMock.unfreeze();
+            await Promise.all(promises);
+            isMuxEnabled
+              ? assert.notEqual(multiplexedSession, null)
+              : assert.ok(
+                  pool.size >= 1 && pool.size <= 10,
+                  'Pool size should be between 1 and 10',
+                );
+          } finally {
+            await database.close();
+          }
+        });
 
-    it('should return the results correctly when last field is present in PartialResultSet for read', async () => {
-      // Setup a query result with more than maxQueued (10) PartialResultSets.
-      // None of the PartialResultSets include a resume token.
-      const fields = [
-        protobuf.StructType.Field.create({
-          name: 'C1',
-          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
-        }),
-      ];
-      const metadata = new protobuf.ResultSetMetadata({
-        rowType: new protobuf.StructType({
-          fields,
-        }),
-      });
-      const results: PartialResultSet[] = [];
-      for (let i = 0; i < 2; i++) {
-        results.push(
-          PartialResultSet.create({
-            metadata,
-            values: [{stringValue: `V${i}`}],
-            last: i === 0,
-          }),
-        );
-      }
-      const request = {
-        table: 'TestTable',
-        keySet: {
-          keys: [],
-          all: true,
-          ranges: [],
-        },
-      };
-      spannerMock.putReadRequestResult(
-        request,
-        mock.ReadRequestResult.resultSet(results),
-      );
-
-      const database = newTestDatabase();
-      const table = database.table('TestTable');
-      const query = {
-        columns: ['C1'],
-      };
-      const [rows] = await table.read(query);
-      assert.equal(rows.length, 1);
-      await database.close();
-    });
-
-    it('should handle missing parameters in query', async () => {
-      const sql =
-        'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
-      const database = newTestDatabase();
-      const q = {
-        json: true,
-        params: {namedParameter: undefined},
-        sql,
-      };
-      spannerMock.putStatementResult(
-        sql,
-        mock.StatementResult.resultSet(mock.createSimpleResultSet()),
-      );
-      try {
-        await database.run(q);
-        assert.fail('missing expected exception');
-      } catch (err) {
-        assert.ok(
-          (err as ServiceError).message.includes(
-            'Value of type undefined not recognized.',
-          ),
-        );
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should handle missing parameters in query stream', done => {
-      const sql =
-        'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
-      const database = newTestDatabase();
-      const q = {
-        json: true,
-        params: {namedParameter: undefined},
-        sql,
-      };
-      spannerMock.putStatementResult(
-        sql,
-        mock.StatementResult.resultSet(mock.createSimpleResultSet()),
-      );
-      const prs = database.runStream(q);
-      setImmediate(() => {
-        prs
-          .on('data', () => {})
-          .on('error', () => {
-            // The stream should end with an error, so the test should succeed.
-            done();
-          })
-          .on('end', () => {
+        it('should retry UNAVAILABLE from executeStreamingSql with a callback', done => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err),
+          );
+          database.run(selectSql, (err, rows) => {
+            assert.ifError(err);
+            assert.strictEqual(rows!.length, 3);
             database
               .close()
               .then(() => {
-                done(assert.fail('missing error'));
+                const gotStreamingCalls =
+                  xGoogReqIDInterceptor.getStreamingCalls();
+                const wantStreamingCalls = isMuxEnabled
+                  ? [
+                      {
+                        method:
+                          '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                        reqId: `1.${randIdForProcess}.1.1.2.1`,
+                      },
+                      {
+                        method:
+                          '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                        reqId: `1.${randIdForProcess}.1.1.2.2`,
+                      },
+                    ]
+                  : [
+                      {
+                        method:
+                          '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                        reqId: `1.${randIdForProcess}.1.1.3.1`,
+                      },
+                      {
+                        method:
+                          '/google.spanner.v1.Spanner/ExecuteStreamingSql',
+                        reqId: `1.${randIdForProcess}.1.1.3.2`,
+                      },
+                    ];
+                assert.deepStrictEqual(gotStreamingCalls, wantStreamingCalls);
+                done();
               })
               .catch(err => done(err));
           });
-      });
-    });
-
-    it('should handle missing parameters in update', async () => {
-      const sql =
-        "UPDATE tableId SET namedParameter='Foo' WHERE namedParameter = @namedParameter";
-      const database = newTestDatabase();
-      const q = {
-        json: true,
-        params: {namedParameter: undefined},
-        sql,
-      };
-      await database.runTransactionAsync(async tx => {
-        try {
-          await tx.runUpdate(q);
-          assert.fail('missing expected exception');
-        } catch (err) {
-          assert.ok(
-            (err as ServiceError).message.includes(
-              'Value of type undefined not recognized.',
-            ),
-          );
-        }
-      });
-      await database.close();
-    });
-
-    describe('PartialResultStream', () => {
-      const streamIndexes = [1, 2];
-      streamIndexes.forEach(index => {
-        it('should retry UNAVAILABLE during streaming', async () => {
-          const database = newTestDatabase();
-          const err = {
-            message: 'Temporary unavailable',
-            code: grpc.status.UNAVAILABLE,
-            streamIndex: index,
-          } as MockError;
-          spannerMock.setExecutionTime(
-            spannerMock.executeStreamingSql,
-            SimulatedExecutionTime.ofError(err),
-          );
-          const [rows] = await database.run(selectSql);
-          assert.strictEqual(rows.length, 3);
-          await database.close();
         });
 
-        it('should retry UNAVAILABLE during streaming with txn ID from inline begin response', async () => {
+        it('should not retry non-retryable error from executeStreamingSql with a callback', done => {
+          const database = newTestDatabase();
           const err = {
-            message: 'Temporary unavailable',
-            code: grpc.status.UNAVAILABLE,
-            streamIndex: index,
+            message: 'Non-retryable error',
           } as MockError;
           spannerMock.setExecutionTime(
             spannerMock.executeStreamingSql,
             SimulatedExecutionTime.ofError(err),
           );
-          const database = newTestDatabase();
-
-          await database.runTransactionAsync(async tx => {
-            await tx.run(selectSql);
-            await tx.commit();
+          database.run(selectSql, err => {
+            assert.ok(err, 'Missing expected error');
+            assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
+            database
+              .close()
+              .then(() => done())
+              .catch(err => done(err));
           });
-          await database.close();
-
-          const requests = spannerMock
-            .getRequests()
-            .filter(val => (val as v1.ExecuteSqlRequest).sql)
-            .map(req => req as v1.ExecuteSqlRequest);
-          assert.strictEqual(requests.length, 2);
-          assert.ok(
-            requests[0].transaction?.begin!.readWrite,
-            'inline txn is not set.',
-          );
-          assert.ok(
-            requests[1].transaction!.id,
-            'Transaction ID is not used for retries.',
-          );
-          assert.ok(
-            requests[1].resumeToken,
-            'Resume token is not set for the retried',
-          );
         });
 
-        it('should retry UNAVAILABLE during streaming with txn ID from inline begin response with parallel queries', async () => {
-          const err = {
-            message: 'Temporary unavailable',
-            code: grpc.status.UNAVAILABLE,
-            streamIndex: index,
-          } as MockError;
-          spannerMock.setExecutionTime(
-            spannerMock.executeStreamingSql,
-            SimulatedExecutionTime.ofError(err),
-          );
-          const database = newTestDatabase();
-
-          await database.runTransactionAsync(async tx => {
-            const [rows1, rows2] = await Promise.all([
-              tx!.run(selectSql),
-              tx!.run(selectSql),
-            ]);
-            assert.equal(rows1.length, 3);
-            assert.equal(rows2.length, 3);
-            await tx.commit();
-          });
-          await database.close();
-
-          const requests = spannerMock
-            .getRequests()
-            .filter(val => (val as v1.ExecuteSqlRequest).sql)
-            .map(req => req as v1.ExecuteSqlRequest);
-          assert.strictEqual(requests.length, 3);
-          assert.ok(
-            requests[0].transaction?.begin!.readWrite,
-            'inline txn is not set.',
-          );
-          assert.ok(
-            requests[1].transaction!.id,
-            'Transaction ID is not used for retries.',
-          );
-          assert.ok(
-            requests[1].resumeToken,
-            'Resume token is not set for the retried',
-          );
-          const commitRequests = spannerMock
-            .getRequests()
-            .filter(val => (val as v1.CommitRequest).mutations)
-            .map(req => req as v1.CommitRequest);
-          assert.strictEqual(commitRequests.length, 1);
-          assert.deepStrictEqual(
-            requests[1].transaction!.id,
-            requests[2].transaction!.id,
-          );
-          assert.deepStrictEqual(
-            requests[1].transaction!.id,
-            commitRequests[0].transactionId,
-          );
-          const beginTxnRequests = spannerMock
-            .getRequests()
-            .filter(
-              val => (val as v1.BeginTransactionRequest).options?.readWrite,
-            )
-            .map(req => req as v1.BeginTransactionRequest);
-          assert.deepStrictEqual(beginTxnRequests.length, 0);
-        });
-
-        it('should not retry non-retryable error during streaming', async () => {
+        it('should emit non-retryable error to runStream', done => {
           const database = newTestDatabase();
           const err = {
             message: 'Test error',
-            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err),
+          );
+          const rows: Row[] = [];
+          const stream = database.runStream(selectSql);
+          stream
+            .on('error', err => {
+              assert.strictEqual(err.message, '2 UNKNOWN: Test error');
+              database
+                .close()
+                .then(() => done())
+                .catch(err => done(err));
+            })
+            .on('data', row => rows.push(row))
+            .on('end', () => {
+              if (rows.length) {
+                assert.fail('Should not receive data');
+              }
+              assert.fail('Missing expected error');
+            });
+        });
+
+        it('should retry UNAVAILABLE from executeStreamingSql', async () => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            details: 'Transient error',
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err),
+          );
+          try {
+            const [rows] = await database.run(selectSql);
+            assert.strictEqual(rows.length, 3);
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should not retry non-retryable errors from executeStreamingSql', async () => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Test error',
           } as MockError;
           spannerMock.setExecutionTime(
             spannerMock.executeStreamingSql,
@@ -1712,260 +1426,661 @@ describe('Spanner with mock server', () => {
               (e as ServiceError).message,
               '2 UNKNOWN: Test error',
             );
-            assert.deepStrictEqual(
-              (e as RequestIDError).requestID,
-              `1.${randIdForProcess}.1.1.2.1`,
+            isMuxEnabled
+              ? assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.2.1`,
+                )
+              : assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.3.1`,
+                );
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should not retry UNAVAILABLE from executeStreamingSql when maxQueued was exceeded', async () => {
+          // Setup a query result with more than maxQueued (10) PartialResultSets.
+          // None of the PartialResultSets include a resume token.
+          const sql = 'SELECT C1 FROM TestTable';
+          const fields = [
+            protobuf.StructType.Field.create({
+              name: 'C1',
+              type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+            }),
+          ];
+          const metadata = new protobuf.ResultSetMetadata({
+            rowType: new protobuf.StructType({
+              fields,
+            }),
+          });
+          const results: PartialResultSet[] = [];
+          for (let i = 0; i < 12; i++) {
+            results.push(
+              PartialResultSet.create({
+                metadata,
+                values: [{stringValue: `V${i}`}],
+              }),
             );
           }
+          spannerMock.putStatementResult(
+            sql,
+            mock.StatementResult.resultSet(results),
+          );
+          // Register an error after maxQueued has been exceeded.
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            details: 'Transient error',
+            streamIndex: 11,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err),
+          );
+
+          const database = newTestDatabase();
+          try {
+            await database.run(sql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              (e as ServiceError).message,
+              '14 UNAVAILABLE: Transient error',
+            );
+            // Ensure that we have a requestID returned and it was on the 2nd request.
+            isMuxEnabled
+              ? assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.2.1`,
+                )
+              : assert.deepStrictEqual(
+                  (e as RequestIDError).requestID,
+                  `1.${randIdForProcess}.1.1.3.1`,
+                );
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should return the results correctly when last field is present in PartialResultSet for query', async () => {
+          // Setup a query result with more than maxQueued (10) PartialResultSets.
+          // None of the PartialResultSets include a resume token.
+          const sql = 'SELECT C1 FROM TestTable';
+          const fields = [
+            protobuf.StructType.Field.create({
+              name: 'C1',
+              type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+            }),
+          ];
+          const metadata = new protobuf.ResultSetMetadata({
+            rowType: new protobuf.StructType({
+              fields,
+            }),
+          });
+          const results: PartialResultSet[] = [];
+          for (let i = 0; i < 2; i++) {
+            results.push(
+              PartialResultSet.create({
+                metadata,
+                values: [{stringValue: `V${i}`}],
+                last: i === 1,
+              }),
+            );
+          }
+          spannerMock.putStatementResult(
+            sql,
+            mock.StatementResult.resultSet(results),
+          );
+
+          const database = newTestDatabase();
+          const [rows] = await database.run(sql);
+          assert.equal(rows.length, 2);
           await database.close();
         });
 
-        it('should retry UNAVAILABLE during streaming with a callback', done => {
+        it('should return the results correctly when last field is present in PartialResultSet for read', async () => {
+          // Setup a query result with more than maxQueued (10) PartialResultSets.
+          // None of the PartialResultSets include a resume token.
+          const fields = [
+            protobuf.StructType.Field.create({
+              name: 'C1',
+              type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+            }),
+          ];
+          const metadata = new protobuf.ResultSetMetadata({
+            rowType: new protobuf.StructType({
+              fields,
+            }),
+          });
+          const results: PartialResultSet[] = [];
+          for (let i = 0; i < 2; i++) {
+            results.push(
+              PartialResultSet.create({
+                metadata,
+                values: [{stringValue: `V${i}`}],
+                last: i === 0,
+              }),
+            );
+          }
+          const request = {
+            table: 'TestTable',
+            keySet: {
+              keys: [],
+              all: true,
+              ranges: [],
+            },
+          };
+          spannerMock.putReadRequestResult(
+            request,
+            mock.ReadRequestResult.resultSet(results),
+          );
+
+          const database = newTestDatabase();
+          const table = database.table('TestTable');
+          const query = {
+            columns: ['C1'],
+          };
+          const [rows] = await table.read(query);
+          assert.equal(rows.length, 1);
+          await database.close();
+        });
+
+        it('should handle missing parameters in query', async () => {
+          const sql =
+            'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
+          const database = newTestDatabase();
+          const q = {
+            json: true,
+            params: {namedParameter: undefined},
+            sql,
+          };
+          spannerMock.putStatementResult(
+            sql,
+            mock.StatementResult.resultSet(mock.createSimpleResultSet()),
+          );
+          try {
+            await database.run(q);
+            assert.fail('missing expected exception');
+          } catch (err) {
+            assert.ok(
+              (err as ServiceError).message.includes(
+                'Value of type undefined not recognized.',
+              ),
+            );
+          } finally {
+            await database.close();
+          }
+        });
+
+        it('should handle missing parameters in query stream', done => {
+          const sql =
+            'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
+          const database = newTestDatabase();
+          const q = {
+            json: true,
+            params: {namedParameter: undefined},
+            sql,
+          };
+          spannerMock.putStatementResult(
+            sql,
+            mock.StatementResult.resultSet(mock.createSimpleResultSet()),
+          );
+          const prs = database.runStream(q);
+          setImmediate(() => {
+            prs
+              .on('data', () => {})
+              .on('error', () => {
+                // The stream should end with an error, so the test should succeed.
+                done();
+              })
+              .on('end', () => {
+                database
+                  .close()
+                  .then(() => {
+                    done(assert.fail('missing error'));
+                  })
+                  .catch(err => done(err));
+              });
+          });
+        });
+
+        it('should handle missing parameters in update', async () => {
+          const sql =
+            "UPDATE tableId SET namedParameter='Foo' WHERE namedParameter = @namedParameter";
+          const database = newTestDatabase();
+          const q = {
+            json: true,
+            params: {namedParameter: undefined},
+            sql,
+          };
+          await database.runTransactionAsync(async tx => {
+            try {
+              await tx.runUpdate(q);
+              assert.fail('missing expected exception');
+            } catch (err) {
+              assert.ok(
+                (err as ServiceError).message.includes(
+                  'Value of type undefined not recognized.',
+                ),
+              );
+            }
+          });
+          await database.close();
+        });
+
+        describe('PartialResultStream', () => {
+          const streamIndexes = [1, 2];
+          streamIndexes.forEach(index => {
+            it('should retry UNAVAILABLE during streaming', async () => {
+              const database = newTestDatabase();
+              const err = {
+                message: 'Temporary unavailable',
+                code: grpc.status.UNAVAILABLE,
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              const [rows] = await database.run(selectSql);
+              assert.strictEqual(rows.length, 3);
+              await database.close();
+            });
+
+            it('should retry UNAVAILABLE during streaming with txn ID from inline begin response', async () => {
+              const err = {
+                message: 'Temporary unavailable',
+                code: grpc.status.UNAVAILABLE,
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              const database = newTestDatabase();
+
+              await database.runTransactionAsync(async tx => {
+                await tx.run(selectSql);
+                await tx.commit();
+              });
+              await database.close();
+
+              const requests = spannerMock
+                .getRequests()
+                .filter(val => (val as v1.ExecuteSqlRequest).sql)
+                .map(req => req as v1.ExecuteSqlRequest);
+              assert.strictEqual(requests.length, 2);
+              assert.ok(
+                requests[0].transaction?.begin!.readWrite,
+                'inline txn is not set.',
+              );
+              assert.ok(
+                requests[1].transaction!.id,
+                'Transaction ID is not used for retries.',
+              );
+              assert.ok(
+                requests[1].resumeToken,
+                'Resume token is not set for the retried',
+              );
+            });
+
+            it('should retry UNAVAILABLE during streaming with txn ID from inline begin response with parallel queries', async () => {
+              const err = {
+                message: 'Temporary unavailable',
+                code: grpc.status.UNAVAILABLE,
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              const database = newTestDatabase();
+
+              await database.runTransactionAsync(async tx => {
+                const [rows1, rows2] = await Promise.all([
+                  tx!.run(selectSql),
+                  tx!.run(selectSql),
+                ]);
+                assert.equal(rows1.length, 3);
+                assert.equal(rows2.length, 3);
+                await tx.commit();
+              });
+              await database.close();
+
+              const requests = spannerMock
+                .getRequests()
+                .filter(val => (val as v1.ExecuteSqlRequest).sql)
+                .map(req => req as v1.ExecuteSqlRequest);
+              assert.strictEqual(requests.length, 3);
+              assert.ok(
+                requests[0].transaction?.begin!.readWrite,
+                'inline txn is not set.',
+              );
+              assert.ok(
+                requests[1].transaction!.id,
+                'Transaction ID is not used for retries.',
+              );
+              assert.ok(
+                requests[1].resumeToken,
+                'Resume token is not set for the retried',
+              );
+              const commitRequests = spannerMock
+                .getRequests()
+                .filter(val => (val as v1.CommitRequest).mutations)
+                .map(req => req as v1.CommitRequest);
+              assert.strictEqual(commitRequests.length, 1);
+              assert.deepStrictEqual(
+                requests[1].transaction!.id,
+                requests[2].transaction!.id,
+              );
+              assert.deepStrictEqual(
+                requests[1].transaction!.id,
+                commitRequests[0].transactionId,
+              );
+              const beginTxnRequests = spannerMock
+                .getRequests()
+                .filter(
+                  val => (val as v1.BeginTransactionRequest).options?.readWrite,
+                )
+                .map(req => req as v1.BeginTransactionRequest);
+              assert.deepStrictEqual(beginTxnRequests.length, 0);
+            });
+
+            it('should not retry non-retryable error during streaming', async () => {
+              const database = newTestDatabase();
+              const err = {
+                message: 'Test error',
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              try {
+                await database.run(selectSql);
+                assert.fail('missing expected error');
+              } catch (e) {
+                assert.strictEqual(
+                  (e as ServiceError).message,
+                  '2 UNKNOWN: Test error',
+                );
+                isMuxEnabled
+                  ? assert.deepStrictEqual(
+                      (e as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.2.1`,
+                    )
+                  : assert.deepStrictEqual(
+                      (e as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.3.1`,
+                    );
+              }
+              await database.close();
+            });
+
+            it('should retry UNAVAILABLE during streaming with a callback', done => {
+              const database = newTestDatabase();
+              const err = {
+                message: 'Temporary unavailable',
+                code: grpc.status.UNAVAILABLE,
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              database.run(selectSql, (err, rows) => {
+                assert.ifError(err);
+                assert.strictEqual(rows!.length, 3);
+                database
+                  .close()
+                  .then(() => done())
+                  .catch(err => done(err));
+              });
+            });
+
+            it('should not retry non-retryable error during streaming with a callback', done => {
+              const database = newTestDatabase();
+              const err = {
+                message: 'Non-retryable error',
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              database.run(selectSql, err => {
+                assert.ok(err, 'Missing expected error');
+                assert.strictEqual(
+                  err!.message,
+                  '2 UNKNOWN: Non-retryable error',
+                );
+                isMuxEnabled
+                  ? assert.deepStrictEqual(
+                      (err as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.2.1`,
+                    )
+                  : assert.deepStrictEqual(
+                      (err as RequestIDError).requestID,
+                      `1.${randIdForProcess}.1.1.3.1`,
+                    );
+                database
+                  .close()
+                  .then(() => done())
+                  .catch(err => done(err));
+              });
+            });
+
+            it('should emit non-retryable error during streaming to stream', done => {
+              const database = newTestDatabase();
+              const err = {
+                message: 'Non-retryable error',
+                streamIndex: index,
+              } as MockError;
+              spannerMock.setExecutionTime(
+                spannerMock.executeStreamingSql,
+                SimulatedExecutionTime.ofError(err),
+              );
+              const receivedRows: Row[] = [];
+              database
+                .runStream(selectSql)
+                .on('error', err => {
+                  assert.strictEqual(
+                    err.message,
+                    '2 UNKNOWN: Non-retryable error',
+                  );
+                  assert.strictEqual(receivedRows.length, index);
+                  isMuxEnabled
+                    ? assert.deepStrictEqual(
+                        (err as RequestIDError).requestID,
+                        `1.${randIdForProcess}.1.1.2.1`,
+                      )
+                    : assert.deepStrictEqual(
+                        (err as RequestIDError).requestID,
+                        `1.${randIdForProcess}.1.1.3.1`,
+                      );
+                  database
+                    .close()
+                    .then(() => done())
+                    .catch(err => done(err));
+                })
+                // We will receive data for the partial result sets that are
+                // returned before the error occurs.
+                .on('data', row => {
+                  receivedRows.push(row);
+                })
+                .on('end', () => {
+                  assert.fail('Missing expected error');
+                });
+            });
+          });
+        });
+
+        it('should retry UNAVAILABLE from executeStreamingSql with multiple errors during streaming', async () => {
+          const database = newTestDatabase();
+          const errors: MockError[] = [];
+          for (const index of [0, 1, 1, 2, 2]) {
+            errors.push({
+              message: 'Temporary unavailable',
+              code: grpc.status.UNAVAILABLE,
+              streamIndex: index,
+            } as MockError);
+          }
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofErrors(errors),
+          );
+          const [rows] = await database.run(selectSql);
+          assert.strictEqual(rows.length, 3);
+          await database.close();
+        });
+
+        it('should retry UNAVAILABLE on update', done => {
           const database = newTestDatabase();
           const err = {
             message: 'Temporary unavailable',
             code: grpc.status.UNAVAILABLE,
-            streamIndex: index,
           } as MockError;
           spannerMock.setExecutionTime(
             spannerMock.executeStreamingSql,
             SimulatedExecutionTime.ofError(err),
           );
-          database.run(selectSql, (err, rows) => {
+          database.runTransaction((err, tx) => {
             assert.ifError(err);
-            assert.strictEqual(rows!.length, 3);
-            database
-              .close()
-              .then(() => done())
-              .catch(err => done(err));
-          });
-        });
-
-        it('should not retry non-retryable error during streaming with a callback', done => {
-          const database = newTestDatabase();
-          const err = {
-            message: 'Non-retryable error',
-            streamIndex: index,
-          } as MockError;
-          spannerMock.setExecutionTime(
-            spannerMock.executeStreamingSql,
-            SimulatedExecutionTime.ofError(err),
-          );
-          database.run(selectSql, err => {
-            assert.ok(err, 'Missing expected error');
-            assert.strictEqual(err!.message, '2 UNKNOWN: Non-retryable error');
-            assert.deepStrictEqual(
-              (err as RequestIDError).requestID,
-              `1.${randIdForProcess}.1.1.2.1`,
-            );
-            database
-              .close()
-              .then(() => done())
-              .catch(err => done(err));
-          });
-        });
-
-        it('should emit non-retryable error during streaming to stream', done => {
-          const database = newTestDatabase();
-          const err = {
-            message: 'Non-retryable error',
-            streamIndex: index,
-          } as MockError;
-          spannerMock.setExecutionTime(
-            spannerMock.executeStreamingSql,
-            SimulatedExecutionTime.ofError(err),
-          );
-          const receivedRows: Row[] = [];
-          database
-            .runStream(selectSql)
-            .on('error', err => {
-              assert.strictEqual(err.message, '2 UNKNOWN: Non-retryable error');
-              assert.strictEqual(receivedRows.length, index);
-              assert.deepStrictEqual(
-                (err as RequestIDError).requestID,
-                `1.${randIdForProcess}.1.1.2.1`,
-              );
-              database
-                .close()
-                .then(() => done())
-                .catch(err => done(err));
-            })
-            // We will receive data for the partial result sets that are
-            // returned before the error occurs.
-            .on('data', row => {
-              receivedRows.push(row);
-            })
-            .on('end', () => {
-              assert.fail('Missing expected error');
+            tx!.runUpdate(insertSql, (err, updateCount) => {
+              assert.ifError(err);
+              assert.strictEqual(updateCount, 1);
+              tx!
+                .commit()
+                .then(() => {
+                  database
+                    .close()
+                    .then(() => done())
+                    .catch(err => done(err));
+                })
+                .catch(() => {});
             });
-        });
-      });
-    });
-
-    it('should retry UNAVAILABLE from executeStreamingSql with multiple errors during streaming', async () => {
-      const database = newTestDatabase();
-      const errors: MockError[] = [];
-      for (const index of [0, 1, 1, 2, 2]) {
-        errors.push({
-          message: 'Temporary unavailable',
-          code: grpc.status.UNAVAILABLE,
-          streamIndex: index,
-        } as MockError);
-      }
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofErrors(errors),
-      );
-      const [rows] = await database.run(selectSql);
-      assert.strictEqual(rows.length, 3);
-      await database.close();
-    });
-
-    it('should retry UNAVAILABLE on update', done => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Temporary unavailable',
-        code: grpc.status.UNAVAILABLE,
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      database.runTransaction((err, tx) => {
-        assert.ifError(err);
-        tx!.runUpdate(insertSql, (err, updateCount) => {
-          assert.ifError(err);
-          assert.strictEqual(updateCount, 1);
-          tx!
-            .commit()
-            .then(() => {
-              database
-                .close()
-                .then(() => done())
-                .catch(err => done(err));
-            })
-            .catch(() => {});
-        });
-      });
-    });
-
-    it('should not retry non-retryable error on update', done => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Permanent error',
-        // We need to specify a non-retryable error code to prevent the entire
-        // transaction to retry. Not specifying an error code, will result in
-        // an error with code UNKNOWN, which again will retry the transaction.
-        code: grpc.status.INVALID_ARGUMENT,
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err),
-      );
-      let attempts = 0;
-      database.runTransaction((err, tx) => {
-        assert.ifError(err);
-        attempts++;
-        tx!.runUpdate(insertSql, err => {
-          assert.ok(err, 'Missing expected error');
-          assert.deepStrictEqual(
-            (err as RequestIDError).requestID,
-            `1.${randIdForProcess}.1.1.2.1`,
-          );
-          assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
-          // Only the update RPC should be retried and not the entire
-          // transaction.
-          assert.strictEqual(attempts, 1);
-          tx!
-            .commit()
-            .then(() => {
-              database
-                .close()
-                .then(() => done())
-                .catch(err => done(err));
-            })
-            .catch(done);
-        });
-      });
-    });
-
-    describe('LeaderAwareRouting', () => {
-      let spannerWithLARDisabled: Spanner;
-      let instanceWithLARDisabled: Instance;
-
-      function newTestDatabaseWithLARDisabled(
-        options?: SessionPoolOptions,
-        queryOptions?: IQueryOptions,
-      ): Database {
-        return instanceWithLARDisabled.database(
-          `database-${dbCounter++}`,
-          options,
-          queryOptions,
-        );
-      }
-
-      before(() => {
-        spannerWithLARDisabled = new Spanner({
-          servicePath: 'localhost',
-          port,
-          sslCreds: grpc.credentials.createInsecure(),
-          routeToLeaderEnabled: false,
-        });
-        // Gets a reference to a Cloud Spanner instance and database
-        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
-      });
-
-      it('should execute with leader aware routing enabled in a read/write transaction', async () => {
-        const database = newTestDatabase();
-        await database.runTransactionAsync(async tx => {
-          await tx!.runUpdate({
-            sql: insertSql,
           });
-          return await tx.commit();
         });
-        await database.close();
-        let metadataCountWithLAREnabled = 0;
-        spannerMock.getMetadata().forEach(metadata => {
-          if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
-            metadataCountWithLAREnabled++;
-            assert.strictEqual(
-              metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
-              'true',
+
+        it('should not retry non-retryable error on update', done => {
+          const database = newTestDatabase();
+          const err = {
+            message: 'Permanent error',
+            // We need to specify a non-retryable error code to prevent the entire
+            // transaction to retry. Not specifying an error code, will result in
+            // an error with code UNKNOWN, which again will retry the transaction.
+            code: grpc.status.INVALID_ARGUMENT,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err),
+          );
+          let attempts = 0;
+          database.runTransaction((err, tx) => {
+            assert.ifError(err);
+            attempts++;
+            tx!.runUpdate(insertSql, err => {
+              assert.ok(err, 'Missing expected error');
+              isMuxEnabled
+                ? assert.deepStrictEqual(
+                    (err as RequestIDError).requestID,
+                    `1.${randIdForProcess}.1.1.2.1`,
+                  )
+                : assert.deepStrictEqual(
+                    (err as RequestIDError).requestID,
+                    `1.${randIdForProcess}.1.1.3.1`,
+                  );
+              assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
+              // Only the update RPC should be retried and not the entire
+              // transaction.
+              assert.strictEqual(attempts, 1);
+              tx!
+                .commit()
+                .then(() => {
+                  database
+                    .close()
+                    .then(() => done())
+                    .catch(err => done(err));
+                })
+                .catch(done);
+            });
+          });
+        });
+
+        describe('LeaderAwareRouting', () => {
+          let spannerWithLARDisabled: Spanner;
+          let instanceWithLARDisabled: Instance;
+
+          function newTestDatabaseWithLARDisabled(
+            options?: SessionPoolOptions,
+            queryOptions?: IQueryOptions,
+          ): Database {
+            return instanceWithLARDisabled.database(
+              `database-${dbCounter++}`,
+              options,
+              queryOptions,
             );
           }
-        });
-        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
-      });
 
-      it('should execute with leader aware routing disabled in a read/write transaction', async () => {
-        const database = newTestDatabaseWithLARDisabled();
-        await database.runTransactionAsync(async tx => {
-          await tx!.runUpdate({
-            sql: insertSql,
+          before(() => {
+            spannerWithLARDisabled = new Spanner({
+              servicePath: 'localhost',
+              port,
+              sslCreds: grpc.credentials.createInsecure(),
+              routeToLeaderEnabled: false,
+            });
+            // Gets a reference to a Cloud Spanner instance and database
+            instanceWithLARDisabled =
+              spannerWithLARDisabled.instance('instance');
           });
-          return await tx.commit();
-        });
-        await database.close();
-        spannerMock.getMetadata().forEach(metadata => {
-          assert.strictEqual(
-            metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
-            undefined,
-          );
+
+          it('should execute with leader aware routing enabled in a read/write transaction', async () => {
+            const database = newTestDatabase();
+            await database.runTransactionAsync(async tx => {
+              await tx!.runUpdate({
+                sql: insertSql,
+              });
+              return await tx.commit();
+            });
+            await database.close();
+            let metadataCountWithLAREnabled = 0;
+            spannerMock.getMetadata().forEach(metadata => {
+              if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+                metadataCountWithLAREnabled++;
+                assert.strictEqual(
+                  metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+                  'true',
+                );
+              }
+            });
+            assert.notStrictEqual(metadataCountWithLAREnabled, 0);
+          });
+
+          it('should execute with leader aware routing disabled in a read/write transaction', async () => {
+            const database = newTestDatabaseWithLARDisabled();
+            await database.runTransactionAsync(async tx => {
+              await tx!.runUpdate({
+                sql: insertSql,
+              });
+              return await tx.commit();
+            });
+            await database.close();
+            spannerMock.getMetadata().forEach(metadata => {
+              assert.strictEqual(
+                metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+                undefined,
+              );
+            });
+          });
         });
       });
     });
   });
 
   describe('read-only transactions', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
+    describe('default session mode for read-only', () => {
       it('should make a request to CreateSession', async () => {
         const database = newTestDatabase();
         await database.run('SELECT 1');
@@ -2090,36 +2205,133 @@ describe('Spanner with mock server', () => {
           done();
         });
       });
+
+      it('should fail the transaction, if multiplexed session creation is failed', async () => {
+        const query = {
+          sql: selectSql,
+        } as ExecuteSqlRequest;
+        const err = {
+          code: grpc.status.NOT_FOUND,
+          message: 'create session failed',
+        } as MockError;
+        spannerMock.setExecutionTime(
+          spannerMock.createSession,
+          SimulatedExecutionTime.ofError(err),
+        );
+        const database = newTestDatabase().on('error', err => {
+          assert.strictEqual(err.code, Status.NOT_FOUND);
+        });
+        try {
+          await database.run(query);
+        } catch (error) {
+          assert.strictEqual((error as grpc.ServiceError).code, err.code);
+          assert.strictEqual(
+            (error as grpc.ServiceError).details,
+            'create session failed',
+          );
+          assert.strictEqual(
+            (error as grpc.ServiceError).message,
+            '5 NOT_FOUND: create session failed',
+          );
+        }
+      });
+    });
+
+    describe('when multiplexed session is disabled for read-only', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+      });
+      it('should make a request to BatchCreateSessions', async () => {
+        const database = newTestDatabase();
+        await database.run('SELECT 1');
+        const requests = spannerMock.getRequests().find(val => {
+          return (val as v1.BatchCreateSessionsRequest).sessionTemplate;
+        }) as v1.BatchCreateSessionsRequest;
+        assert.ok(requests, 'BatchCreateSessionsRequest should be called');
+        assert.strictEqual(
+          requests.sessionTemplate?.multiplexed,
+          false,
+          'Multiplexed should be false',
+        );
+      });
+
+      it('should execute the transaction(database.run) successfully using regular session', done => {
+        const query = {
+          sql: selectSql,
+        } as ExecuteSqlRequest;
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.run(query, (err, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(pool._inventory.sessions.length, 1);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp.length, 3);
+          done();
+        });
+      });
+
+      it('should execute the transaction(database.getSnapshot) successfully using regular session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.getSnapshot((err, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(pool._inventory.borrowed.size, 1);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert(resp instanceof Snapshot);
+          resp.end();
+          done();
+        });
+      });
+
+      it('should execute the transaction(database.writeAtLeastOnce) successfully using regular session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const mutations = new MutationSet();
+        mutations.upsert('Singers', {
+          SingerId: 1,
+          FirstName: 'Scarlet',
+          LastName: 'Terry',
+        });
+        mutations.upsert('Singers', {
+          SingerId: 2,
+          FirstName: 'Marc',
+        });
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.writeAtLeastOnce(mutations, (err, resp) => {
+          assert.ifError(err);
+          assert.strictEqual(pool._inventory.borrowed.size, 1);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(typeof resp?.commitTimestamp?.nanos, 'number');
+          assert.strictEqual(typeof resp?.commitTimestamp?.seconds, 'string');
+          assert.strictEqual(resp?.commitStats, null);
+          done();
+        });
+      });
     });
   });
 
   describe('partitioned ops', () => {
-    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'false';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'false';
-      });
-
-      it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
+    describe('default session mode for partitioned ops', () => {
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
         const database = newTestDatabase({min: 1, max: 1});
         const pool = (database.sessionFactory_ as SessionFactory)
           .pool_ as SessionPool;
         const multiplexedSession = (database.sessionFactory_ as SessionFactory)
           .multiplexedSession_ as MultiplexedSession;
         database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
-          assert.strictEqual(pool._inventory.sessions.length, 1);
-          assert.strictEqual(
-            pool._inventory.sessions[0].metadata.multiplexed,
-            false,
-          );
-          // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
           assert.notEqual(multiplexedSession._multiplexedSession, null);
           assert.strictEqual(resp, 2);
           assert.ifError(err);
@@ -2128,50 +2340,13 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS is enabled', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'true';
       });
 
       after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'false';
-      });
-
-      it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
-        const database = newTestDatabase({min: 1, max: 1});
-        const pool = (database.sessionFactory_ as SessionFactory)
-          .pool_ as SessionPool;
-        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
-          .multiplexedSession_ as MultiplexedSession;
-        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
-          assert.strictEqual(pool._inventory.sessions.length, 1);
-          assert.strictEqual(
-            pool._inventory.sessions[0].metadata.multiplexed,
-            false,
-          );
-          assert.strictEqual(multiplexedSession._multiplexedSession, null);
-          assert.strictEqual(resp, 2);
-          assert.ifError(err);
-          done();
-        });
-      });
-    });
-
-    describe('when multiplexed session is enabled for partitioned ops', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-          'false';
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       });
 
       it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
@@ -2190,11 +2365,44 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    describe('when multiplexed session is not enabled for partitioned ops', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+          'false';
+      });
+
+      after(() => {
+        delete process.env
+          .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+      });
+
+      it('should execute the transaction(database.runPartitionedUpdate) successfully using multiplexed session', done => {
+        const database = newTestDatabase({min: 1, max: 1});
+        const pool = (database.sessionFactory_ as SessionFactory)
+          .pool_ as SessionPool;
+        const multiplexedSession = (database.sessionFactory_ as SessionFactory)
+          .multiplexedSession_ as MultiplexedSession;
+        database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.strictEqual(pool._inventory.borrowed.size, 0);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
+          assert.strictEqual(resp, 2);
+          assert.ifError(err);
+          done();
+        });
+      });
+    });
+
+    describe('when multiplexed session is disabled for partitioned ops', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
           'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        delete process.env
+          .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
       });
 
       it('should execute the transaction(database.runPartitionedUpdate) successfully using regular/pool session', done => {
@@ -2204,14 +2412,14 @@ describe('Spanner with mock server', () => {
         const multiplexedSession = (database.sessionFactory_ as SessionFactory)
           .multiplexedSession_ as MultiplexedSession;
         database.runPartitionedUpdate({sql: updateSql}, (err, resp) => {
+          assert.ifError(err);
           assert.strictEqual(pool._inventory.sessions.length, 1);
           assert.strictEqual(
             pool._inventory.sessions[0].metadata.multiplexed,
             false,
           );
-          assert.strictEqual(multiplexedSession._multiplexedSession, null);
+          assert.notEqual(multiplexedSession._multiplexedSession, null);
           assert.strictEqual(resp, 2);
-          assert.ifError(err);
           done();
         });
       });
@@ -2219,18 +2427,8 @@ describe('Spanner with mock server', () => {
   });
 
   describe('batch write', () => {
-    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
-      it('should use regular session from pool', done => {
+    describe('default session mode for r/w', () => {
+      it('should use multiplexed session', done => {
         const mutationGroup = new MutationGroup();
         mutationGroup.upsert('FOO', {
           Id: '1',
@@ -2250,30 +2448,25 @@ describe('Spanner with mock server', () => {
           .on('data', response => {
             // ensure that response is coming
             assert.notEqual(response.commitTimestamp, null);
-            assert.strictEqual(
-              Array.from(pool._inventory.borrowed)[0].metadata.multiplexed,
-              false,
-            );
-            assert.strictEqual(pool._inventory.borrowed.size, 1);
-            // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
             assert.notEqual(multiplexedSession._multiplexedSession, null);
+
+            // regular session will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not disabled
+            assert.strictEqual(pool._inventory.sessions.length, 0);
           })
           .on('end', done);
       });
     });
 
-    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is enabled', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
       });
 
       after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       });
 
-      it('should use regular session from pool', done => {
+      it('should use multiplexed session', done => {
         const mutationGroup = new MutationGroup();
         mutationGroup.upsert('FOO', {
           Id: '1',
@@ -2291,29 +2484,23 @@ describe('Spanner with mock server', () => {
           .batchWriteAtLeastOnce([mutationGroup])
           .on('error', done)
           .on('data', response => {
-            // ensure that response is not null
+            // ensure that response is coming
             assert.notEqual(response.commitTimestamp, null);
-            assert.strictEqual(
-              Array.from(pool._inventory.borrowed)[0].metadata.multiplexed,
-              false,
-            );
-            assert.strictEqual(pool._inventory.borrowed.size, 1);
-            // multiplexed session will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled
-            assert.strictEqual(multiplexedSession._multiplexedSession, null);
+            assert.notEqual(multiplexedSession._multiplexedSession, null);
+            // session pool will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not false
+            assert.strictEqual(pool._inventory.sessions.length, 0);
           })
           .on('end', done);
       });
     });
 
-    describe('when multiplexed session is enabled for r/w', () => {
+    describe('when only GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is disabled', () => {
       before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
       });
 
       after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
       });
 
       it('should use multiplexed session', done => {
@@ -2336,22 +2523,26 @@ describe('Spanner with mock server', () => {
           .on('data', response => {
             // ensure that response is not null
             assert.notEqual(response.commitTimestamp, null);
-            assert.strictEqual(pool._inventory.sessions.length, 1);
-            assert.strictEqual(pool._inventory.borrowed.size, 0);
-            // multiplexed session will get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled
             assert.notEqual(multiplexedSession._multiplexedSession, null);
+            // session pool will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not false
+            assert.strictEqual(pool._inventory.sessions.length, 0);
           })
           .on('end', done);
       });
     });
 
-    describe('when multiplexed session is not enabled for r/w', () => {
+    describe('when multiplexed session is disabled for r/w', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
       });
 
-      it('should use regular session from pool', done => {
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+      });
+
+      it('should use regular session', done => {
         const mutationGroup = new MutationGroup();
         mutationGroup.upsert('FOO', {
           Id: '1',
@@ -2376,8 +2567,8 @@ describe('Spanner with mock server', () => {
               false,
             );
             assert.strictEqual(pool._inventory.borrowed.size, 1);
-            // multiplexed session will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled
-            assert.strictEqual(multiplexedSession._multiplexedSession, null);
+            // multiplexed session will get created by default
+            assert.notEqual(multiplexedSession._multiplexedSession, null);
           })
           .on('end', done);
       });
@@ -2767,6 +2958,20 @@ describe('Spanner with mock server', () => {
   });
 
   describe('session-not-found', () => {
+    before(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+        'false';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+    });
+
+    after(() => {
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+      delete process.env
+        .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+    });
+
     it('should retry "Session not found" errors on Database.run()', done => {
       const db = newTestDatabase({
         incStep: 1,
@@ -2793,8 +2998,8 @@ describe('Spanner with mock server', () => {
           // 'Session not found' error. The second one was created by the retry.
           // As we only simulate the 'Session not found' error, the first
           // session is still present on the mock server.
-          assert.strictEqual(results!.length, 2);
-          if (results!.length !== 2) {
+          assert.strictEqual(results!.length, 3);
+          if (results!.length !== 3) {
             done();
           }
           db.close()
@@ -2919,7 +3124,8 @@ describe('Spanner with mock server', () => {
           // second one that was created as a result of the retry.
           db.getSessions((err, sessions) => {
             assert.ifError(err);
-            assert.strictEqual(sessions!.length, 2);
+            // sessions length is 3 as the list will contain default multiplexed session as well.
+            assert.strictEqual(sessions!.length, 3);
             transaction!.commit(err => {
               assert.ifError(err);
               db.close(done);
@@ -2949,7 +3155,8 @@ describe('Spanner with mock server', () => {
             assert.ifError(err);
             db.getSessions((err, sessions) => {
               assert.ifError(err);
-              assert.strictEqual(sessions!.length, 2);
+              // sessions length is 3 as the list will contain default multiplexed session as well.
+              assert.strictEqual(sessions!.length, 3);
               db.close(done);
             });
           });
@@ -3004,7 +3211,8 @@ describe('Spanner with mock server', () => {
               assert.ifError(err);
               db.getSessions((err, sessions) => {
                 assert.ifError(err);
-                assert.strictEqual(sessions!.length, 2);
+                // sessions length is 3 as the list will contain default multiplexed session as well.
+                assert.strictEqual(sessions!.length, 3);
                 db.close(done);
               });
             });
@@ -3037,7 +3245,8 @@ describe('Spanner with mock server', () => {
                 assert.ifError(err);
                 db.getSessions((err, sessions) => {
                   assert.ifError(err);
-                  assert.strictEqual(sessions!.length, 2);
+                  // sessions length is 3 as the list will contain default multiplexed session as well.
+                  assert.strictEqual(sessions!.length, 3);
                   db.close(done);
                 });
               });
@@ -3071,7 +3280,8 @@ describe('Spanner with mock server', () => {
             const [rows] = await transaction.run(selectSql);
             assert.strictEqual(rows.length, 3);
             const [sessions] = await db.getSessions();
-            assert.strictEqual(sessions!.length, 2);
+            // sessions length is 3 as the list will contain default multiplexed session as well.
+            assert.strictEqual(sessions!.length, 3);
             await transaction.commit();
             return Promise.resolve();
           } catch (e) {
@@ -3103,7 +3313,8 @@ describe('Spanner with mock server', () => {
               transaction.insert('FOO', {Id: 1, Name: 'foo'});
               await transaction.commit();
               const [sessions] = await db.getSessions();
-              assert.strictEqual(sessions!.length, 2);
+              // sessions length is 3 as the list will contain default multiplexed session as well.
+              assert.strictEqual(sessions!.length, 3);
             })
             .catch(assert.ifError);
           await db.close();
@@ -3135,7 +3346,8 @@ describe('Spanner with mock server', () => {
               assert.strictEqual(updateCount, 1);
               await transaction.commit();
               const [sessions] = await db.getSessions();
-              assert.strictEqual(sessions!.length, 2);
+              // sessions length is 3 as the list will contain default multiplexed session as well.
+              assert.strictEqual(sessions!.length, 3);
             })
             .catch(assert.ifError);
           await db.close();
@@ -3170,7 +3382,8 @@ describe('Spanner with mock server', () => {
               assert.deepStrictEqual(updateCounts, [1, 1]);
               await transaction.commit();
               const [sessions] = await db.getSessions();
-              assert.strictEqual(sessions!.length, 2);
+              // sessions length is 3 as the list will contain default multiplexed session as well.
+              assert.strictEqual(sessions!.length, 3);
             })
             .catch(assert.ifError);
           await db.close();
@@ -3184,6 +3397,20 @@ describe('Spanner with mock server', () => {
   });
 
   describe('session-pool', () => {
+    before(() => {
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+        'false';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+    });
+
+    after(() => {
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+      delete process.env
+        .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+    });
+
     it('should execute table mutations without leaking sessions', async () => {
       const database = newTestDatabase();
       try {
@@ -3925,35 +4152,36 @@ describe('Spanner with mock server', () => {
     });
 
     describe('batch-readonly-transaction', () => {
-      it('should use session from pool', async () => {
-        const database = newTestDatabase({min: 0, incStep: 1});
-        const pool = database.pool_ as SessionPool;
-        assert.strictEqual(pool.size, 0);
-        const [transaction] = await database.createBatchTransaction();
-        assert.strictEqual(pool.size, 1);
-        assert.strictEqual(pool.available, 0);
-        transaction.close();
-        await database.close();
-      });
-
-      it('failing to close transaction should cause session leak error', async () => {
-        const database = newTestDatabase();
-        await database.createBatchTransaction();
-        try {
-          await database.close();
-          assert.fail('missing expected session leak error');
-        } catch (err) {
-          assert.ok(err instanceof SessionLeakError);
-        }
-      });
-
-      describe('when multiplexed session is enabled', () => {
+      describe('when multiplexed session is disabled', () => {
         before(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        });
-        after(() => {
           process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         });
+        after(() => {
+          delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        });
+        it('should use session from pool', async () => {
+          const database = newTestDatabase({min: 0, incStep: 1});
+          const pool = database.pool_ as SessionPool;
+          assert.strictEqual(pool.size, 0);
+          const [transaction] = await database.createBatchTransaction();
+          assert.strictEqual(pool.size, 1);
+          assert.strictEqual(pool.available, 0);
+          transaction.close();
+          await database.close();
+        });
+        it('failing to close transaction should cause session leak error', async () => {
+          const database = newTestDatabase();
+          await database.createBatchTransaction();
+          try {
+            await database.close();
+            assert.fail('missing expected session leak error');
+          } catch (err) {
+            assert.ok(err instanceof SessionLeakError);
+          }
+        });
+      });
+
+      describe('when session mode is default', () => {
         it('should use multiplexed session', async () => {
           const database = newTestDatabase({min: 0, incStep: 1});
           const pool = database.pool_ as SessionPool;
@@ -4130,659 +4358,645 @@ describe('Spanner with mock server', () => {
     });
 
     // tests for mutation key heuristics, lock order prevention and commit retry protocol
-    describe('when multiplexed session is enabled for R/W', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
-      // test(s) for mutation key heuristic
-      describe('should be able to select correct mutation key in case of mutation(s) only transaction(s)', () => {
-        it('should select the insertOrUpdate(upsert)/delete(deleteRows) mutation key over insert', async () => {
-          const database = newTestDatabase();
-          await database.runTransactionAsync(async tx => {
-            tx.upsert('foo', [
-              {id: 1, name: 'One'},
-              {id: 2, name: 'Two'},
-            ]);
-            tx.insert('foo', [{id: 3, name: 'Three'}]);
-            tx.insert('foo', [{id: 4, name: 'Four'}]);
-            tx.deleteRows('foo', ['3', '4']);
-            await tx.commit();
-          });
-
-          const beginTransactionRequest = spannerMock
-            .getRequests()
-            .filter(val => {
-              return (val as v1.BeginTransactionRequest).mutationKey;
-            }) as v1.BeginTransactionRequest[];
-
-          // assert on begin transaction request
-          assert.strictEqual(beginTransactionRequest.length, 1);
-
-          // selected mutation key
-          const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
-
-          // assert that mutation key have been selected
-          assert.ok(
-            selectedMutationKey,
-            'A mutation key should have been selected',
-          );
-
-          // get the type of mutation key
-          const mutationType = Object.keys(selectedMutationKey!)[0];
-
-          // assert that mutation key is either insertOrUpdate or delete
-          assert.ok(
-            ['insertOrUpdate', 'delete'].includes(mutationType),
-            "Expected either 'insertOrUpdate' or 'delete' key.",
-          );
-
-          const commitRequest = spannerMock.getRequests().filter(val => {
-            return (val as v1.CommitRequest).precommitToken;
-          }) as v1.CommitRequest[];
-
-          // assert on commit request
-          assert.strictEqual(commitRequest.length, 1);
-          await database.close();
+    // test(s) for mutation key heuristic
+    describe('should be able to select correct mutation key in case of mutation(s) only transaction(s)', () => {
+      it('should select the insertOrUpdate(upsert)/delete(deleteRows) mutation key over insert', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          tx.upsert('foo', [
+            {id: 1, name: 'One'},
+            {id: 2, name: 'Two'},
+          ]);
+          tx.insert('foo', [{id: 3, name: 'Three'}]);
+          tx.insert('foo', [{id: 4, name: 'Four'}]);
+          tx.deleteRows('foo', ['3', '4']);
+          await tx.commit();
         });
 
-        it('should select the mutation key with highest number of values when insert key(s) are present', async () => {
-          const database = newTestDatabase();
-          await database.runTransactionAsync(async tx => {
-            tx.insert('foo', [
-              {id: randomUUID(), name: 'One'},
-              {id: randomUUID(), name: 'Two'},
-              {id: randomUUID(), name: 'Three'},
-            ]);
-            tx.insert('foo', {id: randomUUID(), name: 'Four'});
-            await tx.commit();
-          });
+        const beginTransactionRequest = spannerMock
+          .getRequests()
+          .filter(val => {
+            return (val as v1.BeginTransactionRequest).mutationKey;
+          }) as v1.BeginTransactionRequest[];
 
-          const beginTransactionRequest = spannerMock
-            .getRequests()
-            .filter(val => {
-              return (val as v1.BeginTransactionRequest).mutationKey;
-            }) as v1.BeginTransactionRequest[];
+        // assert on begin transaction request
+        assert.strictEqual(beginTransactionRequest.length, 1);
 
-          // assert on begin transaction request
-          assert.strictEqual(beginTransactionRequest.length, 1);
+        // selected mutation key
+        const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
 
-          // selected mutation key
-          const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
+        // assert that mutation key have been selected
+        assert.ok(
+          selectedMutationKey,
+          'A mutation key should have been selected',
+        );
 
-          // assert that mutation key have been selected
-          assert.ok(
-            selectedMutationKey,
-            'A mutation key should have been selected',
-          );
+        // get the type of mutation key
+        const mutationType = Object.keys(selectedMutationKey!)[0];
 
-          // assert that mutation key is insert
-          const mutationType = Object.keys(selectedMutationKey!)[0];
-          assert.ok(
-            ['insert'].includes(mutationType),
-            'insert key must have been selected',
-          );
+        // assert that mutation key is either insertOrUpdate or delete
+        assert.ok(
+          ['insertOrUpdate', 'delete'].includes(mutationType),
+          "Expected either 'insertOrUpdate' or 'delete' key.",
+        );
 
-          // assert that insert mutation key with highest number of rows has been selected
-          assert.strictEqual(selectedMutationKey.insert?.values?.length, 3);
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
 
-          const commitRequest = spannerMock.getRequests().filter(val => {
-            return (val as v1.CommitRequest).precommitToken;
-          }) as v1.CommitRequest[];
-
-          // assert on commit request
-          assert.strictEqual(commitRequest.length, 1);
-          await database.close();
-        });
+        // assert on commit request
+        assert.strictEqual(commitRequest.length, 1);
+        await database.close();
       });
 
-      // test(s) for lock order prevention
-      describe('should be able to track multiplexedSessionPreviousTransactionId in case of abort transactions and retries', () => {
-        describe('using runTransaction', () => {
-          it('case 1: transaction abortion on first query execution', async () => {
-            let attempts = 0;
-            let rowCount = 0;
-            const database = newTestDatabase();
-            const transactionObjects: Transaction[] = [];
-            try {
-              await new Promise<void>((resolve, reject) => {
-                database.runTransaction(async (err, transaction) => {
-                  try {
-                    if (err) {
-                      return reject(err);
-                    }
-                    transactionObjects.push(transaction!);
-                    if (!attempts) {
-                      // abort the transaction
-                      spannerMock.abortTransaction(transaction!);
-                    }
-                    attempts++;
-                    const [rows1] = await transaction!.run(selectSql);
-                    rows1.forEach(() => rowCount++);
+      it('should select the mutation key with highest number of values when insert key(s) are present', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', [
+            {id: randomUUID(), name: 'One'},
+            {id: randomUUID(), name: 'Two'},
+            {id: randomUUID(), name: 'Three'},
+          ]);
+          tx.insert('foo', {id: randomUUID(), name: 'Four'});
+          await tx.commit();
+        });
 
-                    // assert on number of rows
-                    assert.strictEqual(rowCount, 3);
+        const beginTransactionRequest = spannerMock
+          .getRequests()
+          .filter(val => {
+            return (val as v1.BeginTransactionRequest).mutationKey;
+          }) as v1.BeginTransactionRequest[];
 
-                    // assert on number of retries
-                    assert.strictEqual(attempts, 2);
+        // assert on begin transaction request
+        assert.strictEqual(beginTransactionRequest.length, 1);
 
-                    const beginTxnRequest = spannerMock
-                      .getRequests()
-                      .find(val => {
-                        return (val as v1.BeginTransactionRequest).options
-                          ?.readWrite;
-                      }) as v1.BeginTransactionRequest;
+        // selected mutation key
+        const selectedMutationKey = beginTransactionRequest[0]!.mutationKey;
 
-                    const txnId =
-                      beginTxnRequest.options?.readWrite
-                        ?.multiplexedSessionPreviousTransactionId;
-                    // no transaction id should be in the begintransactionrequest
-                    // since first transaction got abort before getting an id
-                    assert.ok(
-                      txnId instanceof Buffer && txnId.byteLength === 0,
-                    );
-                    // transactionObjects must have two transaction objects
-                    // one the aborted transaction
-                    // another the retried transaction
-                    assert.strictEqual(transactionObjects.length, 2);
-                    // first transaction must have an id undefined
-                    // as the transaction got aborted before query execution
-                    // which results in failure of inline begin
-                    assert.strictEqual(transactionObjects[0].id, undefined);
-                    // first transaction must not be having any previous transaction id
-                    assert.strictEqual(
-                      transactionObjects[0]
-                        .multiplexedSessionPreviousTransactionId,
-                      undefined,
-                    );
-                    // the second transaction object(retried transaction) must have
-                    // non null transaction id
-                    assert.notEqual(transactionObjects[1].id, undefined);
-                    // since the first transaction did not got any id previous transaction id
-                    // for second transaction must be undefined
-                    assert.strictEqual(
-                      transactionObjects[1]
-                        .multiplexedSessionPreviousTransactionId,
-                      undefined,
-                    );
-                    resolve();
-                  } catch (e: any) {
-                    if (e.code === 10) {
-                      throw e;
-                    } else {
-                      reject(e);
-                    }
+        // assert that mutation key have been selected
+        assert.ok(
+          selectedMutationKey,
+          'A mutation key should have been selected',
+        );
+
+        // assert that mutation key is insert
+        const mutationType = Object.keys(selectedMutationKey!)[0];
+        assert.ok(
+          ['insert'].includes(mutationType),
+          'insert key must have been selected',
+        );
+
+        // assert that insert mutation key with highest number of rows has been selected
+        assert.strictEqual(selectedMutationKey.insert?.values?.length, 3);
+
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
+
+        // assert on commit request
+        assert.strictEqual(commitRequest.length, 1);
+        await database.close();
+      });
+    });
+
+    // test(s) for lock order prevention
+    describe('should be able to track multiplexedSessionPreviousTransactionId in case of abort transactions and retries', () => {
+      describe('using runTransaction', () => {
+        it('case 1: transaction abortion on first query execution', async () => {
+          let attempts = 0;
+          let rowCount = 0;
+          const database = newTestDatabase();
+          const transactionObjects: Transaction[] = [];
+          try {
+            await new Promise<void>((resolve, reject) => {
+              database.runTransaction(async (err, transaction) => {
+                try {
+                  if (err) {
+                    return reject(err);
                   }
-                });
+                  transactionObjects.push(transaction!);
+                  if (!attempts) {
+                    // abort the transaction
+                    spannerMock.abortTransaction(transaction!);
+                  }
+                  attempts++;
+                  const [rows1] = await transaction!.run(selectSql);
+                  rows1.forEach(() => rowCount++);
+
+                  // assert on number of rows
+                  assert.strictEqual(rowCount, 3);
+
+                  // assert on number of retries
+                  assert.strictEqual(attempts, 2);
+
+                  const beginTxnRequest = spannerMock
+                    .getRequests()
+                    .find(val => {
+                      return (val as v1.BeginTransactionRequest).options
+                        ?.readWrite;
+                    }) as v1.BeginTransactionRequest;
+
+                  const txnId =
+                    beginTxnRequest.options?.readWrite
+                      ?.multiplexedSessionPreviousTransactionId;
+                  // no transaction id should be in the begintransactionrequest
+                  // since first transaction got abort before getting an id
+                  assert.ok(txnId instanceof Buffer && txnId.byteLength === 0);
+                  // transactionObjects must have two transaction objects
+                  // one the aborted transaction
+                  // another the retried transaction
+                  assert.strictEqual(transactionObjects.length, 2);
+                  // first transaction must have an id undefined
+                  // as the transaction got aborted before query execution
+                  // which results in failure of inline begin
+                  assert.strictEqual(transactionObjects[0].id, undefined);
+                  // first transaction must not be having any previous transaction id
+                  assert.strictEqual(
+                    transactionObjects[0]
+                      .multiplexedSessionPreviousTransactionId,
+                    undefined,
+                  );
+                  // the second transaction object(retried transaction) must have
+                  // non null transaction id
+                  assert.notEqual(transactionObjects[1].id, undefined);
+                  // since the first transaction did not got any id previous transaction id
+                  // for second transaction must be undefined
+                  assert.strictEqual(
+                    transactionObjects[1]
+                      .multiplexedSessionPreviousTransactionId,
+                    undefined,
+                  );
+                  resolve();
+                } catch (e: any) {
+                  if (e.code === 10) {
+                    throw e;
+                  } else {
+                    reject(e);
+                  }
+                }
               });
-            } finally {
-              await database.close();
-            }
-          });
-        });
-        describe('using runTransactionAsync', () => {
-          it('case 1: transaction abortion on first query execution', async () => {
-            let attempts = 0;
-            const database = newTestDatabase();
-            const transactionObjects: Transaction[] = [];
-            const rowCount = await database.runTransactionAsync(
-              (transaction): Promise<number> => {
-                transactionObjects.push(transaction);
-                if (!attempts) {
-                  // abort the transaction
-                  spannerMock.abortTransaction(transaction);
-                }
-                attempts++;
-                return transaction.run(selectSql).then(([rows]) => {
-                  let count = 0;
-                  rows.forEach(() => count++);
-                  return transaction.commit().then(() => count);
-                });
-              },
-            );
-            assert.strictEqual(rowCount, 3);
-            assert.strictEqual(attempts, 2);
-            await database.close();
-
-            const beginTxnRequest = spannerMock.getRequests().find(val => {
-              return (val as v1.BeginTransactionRequest).options?.readWrite;
-            }) as v1.BeginTransactionRequest;
-            const txnId =
-              beginTxnRequest.options?.readWrite
-                ?.multiplexedSessionPreviousTransactionId;
-            // no transaction id should be in the begintransactionrequest
-            // since first transaction got abort before getting an id
-            assert.ok(txnId instanceof Buffer && txnId.byteLength === 0);
-            // transactionObjects must have two transaction objects
-            // one the aborted transaction
-            // another the retried transaction
-            assert.strictEqual(transactionObjects.length, 2);
-            // first transaction must have an id undefined
-            // as the transaction got aborted before query execution
-            // which results in failure of inline begin
-            assert.strictEqual(transactionObjects[0].id, undefined);
-            // first transaction must not be having any previous transaction id
-            assert.strictEqual(
-              transactionObjects[0].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-            // the second transaction object(retried transaction) must have
-            // non null transaction id
-            assert.notEqual(transactionObjects[1].id, undefined);
-            // since the first transaction did not got any id previous transaction id
-            // for second transaction must be undefined
-            assert.strictEqual(
-              transactionObjects[1].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-          });
-          it('case 2: transaction abortion on second query execution', async () => {
-            let attempts = 0;
-            let rowCount = 0;
-            const database = newTestDatabase();
-            const transactionObjects: Transaction[] = [];
-            await database.runTransactionAsync(
-              async (transaction): Promise<void> => {
-                transactionObjects.push(transaction);
-                attempts++;
-                const [rows1] = await transaction.run(selectSql);
-                rows1.forEach(() => rowCount++);
-                if (attempts === 1) {
-                  // abort the transaction
-                  spannerMock.abortTransaction(transaction);
-                }
-                const [rows2] = await transaction.run(selectSql);
-                rows2.forEach(() => rowCount++);
-                await transaction.commit();
-              },
-            );
-            assert.strictEqual(rowCount, 9);
-            assert.strictEqual(attempts, 2);
-            await database.close();
-
-            const beginTxnRequest = spannerMock.getRequests().find(val => {
-              return (val as v1.BeginTransactionRequest).options?.readWrite;
-            }) as v1.BeginTransactionRequest;
-            const txnId =
-              beginTxnRequest.options?.readWrite
-                ?.multiplexedSessionPreviousTransactionId;
-            // begin transaction request must contain the aborted transaction id
-            // as the previous transaction id upon retrying
-            assert.deepStrictEqual(txnId, transactionObjects[0].id);
-            // transactionObjects must contain have both the transaction
-            // one the aborted transaction
-            // another the retried transaction
-            assert.strictEqual(transactionObjects.length, 2);
-            // since inline begin was successfull with first query execution
-            // the transaction id would not be undefined for first transaction
-            assert.notEqual(transactionObjects[0].id, undefined);
-            // multiplexed session previous transaction id would be undefined
-            // for first transaction
-            assert.strictEqual(
-              transactionObjects[0].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-            // the second transction object (the retried transaction) must have an id
-            assert.notEqual(transactionObjects[1].id, undefined);
-            // first transaction id would be the multiplexed session previous transction id
-            // for retried transction
-            assert.strictEqual(
-              transactionObjects[1].multiplexedSessionPreviousTransactionId,
-              transactionObjects[0].id,
-            );
-          });
-          it('case 3: multiple transaction abortion', async () => {
-            let attempts = 0;
-            let rowCount = 0;
-            const database = newTestDatabase();
-            const transactionObjects: Transaction[] = [];
-            await database.runTransactionAsync(
-              async (transaction): Promise<void> => {
-                transactionObjects.push(transaction);
-                attempts++;
-                const [rows1] = await transaction.run(selectSql);
-                rows1.forEach(() => rowCount++);
-                if (attempts === 1) {
-                  // abort the transaction
-                  spannerMock.abortTransaction(transaction);
-                }
-                const [rows2] = await transaction.run(selectSql);
-                rows2.forEach(() => rowCount++);
-                if (attempts === 2) {
-                  // abort the transaction
-                  spannerMock.abortTransaction(transaction);
-                }
-                const [rows3] = await transaction.run(selectSql);
-                rows3.forEach(() => rowCount++);
-                await transaction.commit();
-              },
-            );
-            assert.strictEqual(rowCount, 18);
-            assert.strictEqual(attempts, 3);
-            await database.close();
-            const beginTxnRequest = spannerMock.getRequests().filter(val => {
-              return (val as v1.BeginTransactionRequest).options?.readWrite;
-            }) as v1.BeginTransactionRequest[];
-            // begin transaction request must have been called twice
-            // as transaction abortion happend twice
-            assert.strictEqual(beginTxnRequest.length, 2);
-            // multiplexedSessionPreviousTransactionId for first
-            // begin transaction request must be the id of first transaction object
-            assert.deepStrictEqual(
-              beginTxnRequest[0].options?.readWrite
-                ?.multiplexedSessionPreviousTransactionId,
-              transactionObjects[0].id,
-            );
-            // multiplexedSessionPreviousTransactionId must get updated with an id of
-            // second transaction object on second begin transaction request
-            assert.deepStrictEqual(
-              beginTxnRequest[1].options?.readWrite
-                ?.multiplexedSessionPreviousTransactionId,
-              transactionObjects[1].id,
-            );
-            // transactionObjects must contain 3 transaction objects
-            // as the transaction abortion happend twice
-            assert.strictEqual(transactionObjects.length, 3);
-            // first transaction must have a non null id
-            assert.notEqual(transactionObjects[0].id, undefined);
-            // first transaction must not have any previous transaction id
-            assert.strictEqual(
-              transactionObjects[0].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-            // second transaction must have a non null id
-            assert.notEqual(transactionObjects[1].id, undefined);
-            // second transaction must have previous transaction id as the
-            // id of first transaction object
-            assert.strictEqual(
-              transactionObjects[1].multiplexedSessionPreviousTransactionId,
-              transactionObjects[0].id,
-            );
-            // third transction must have a non null id
-            assert.notEqual(transactionObjects[2].id, undefined);
-            // third transaction must have previous transaction id
-            // set to second transaction object id
-            assert.strictEqual(
-              transactionObjects[2].multiplexedSessionPreviousTransactionId,
-              transactionObjects[1].id,
-            );
-          });
-          it('case 4: commit abort', async () => {
-            const database = newTestDatabase();
-            let attempts = 0;
-            let rowCount = 0;
-            const transactionObjects: Transaction[] = [];
-            const err = {
-              message: 'Simulated error for commit abortion',
-              code: grpc.status.ABORTED,
-            } as MockError;
-            await database.runTransactionAsync(async tx => {
-              attempts++;
-              transactionObjects.push(tx);
-              try {
-                const [rows] = await tx.runUpdate(invalidSql);
-                rowCount = rowCount + rows;
-                assert.fail('missing expected error');
-              } catch (e) {
-                assert.strictEqual(
-                  (e as ServiceError).message,
-                  `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`,
-                );
-              }
-              const [rows] = await tx.run(selectSql);
-              rows.forEach(() => rowCount++);
-              if (attempts === 1) {
-                spannerMock.setExecutionTime(
-                  spannerMock.commit,
-                  SimulatedExecutionTime.ofError(err),
-                );
-                // abort commit
-                spannerMock.abortTransaction(tx);
-              }
-              await tx.commit();
             });
-            assert.strictEqual(attempts, 2);
-            assert.strictEqual(rowCount, 6);
+          } finally {
             await database.close();
-            const beginTxnRequest = spannerMock
-              .getRequests()
-              .filter(
-                val => (val as v1.BeginTransactionRequest).options?.readWrite,
-              )
-              .map(req => req as v1.BeginTransactionRequest);
-            // begin must have been requested twice
-            // one during explicit begin on unsucessful inline begin
-            // another time during retrying of aborted transaction
-            assert.deepStrictEqual(beginTxnRequest.length, 2);
-            // there must be two transaction in the transactionObjects
-            // one aborted transaction, another retried transaction
-            assert.strictEqual(transactionObjects.length, 2);
-            // since, inline begin was sucessful before commit got abort
-            // hence, the first transaction will have the id not null/undefined
-            assert.notEqual(transactionObjects[0].id, undefined);
-            // multiplexedSessionPreviousTransactionId must be undefined for first transaction
-            assert.strictEqual(
-              transactionObjects[0].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-            // retried transction will have the id not null/undefined
-            assert.notEqual(transactionObjects[1].id, undefined);
-            // multiplexedSessionPreviousTransactionId for retried transaction would be the id of aborted transaction
-            assert.strictEqual(
-              transactionObjects[1].multiplexedSessionPreviousTransactionId,
-              transactionObjects[0].id,
-            );
-          });
-        });
-        describe('using getTransaction', () => {
-          it('case 1: transaction abortion on first query execution', async () => {
-            let attempts = 0;
-            let rowCount = 0;
-            const MAX_ATTEMPTS = 2;
-            let multiplexedSessionPreviousTransactionId;
-            let transaction;
-            const database = newTestDatabase();
-            const transactionObjects: Transaction[] = [];
-            while (attempts < MAX_ATTEMPTS) {
-              try {
-                [transaction] = await database.getTransaction();
-                transactionObjects.push(transaction);
-                transaction.multiplexedSessionPreviousTransactionId =
-                  multiplexedSessionPreviousTransactionId;
-                if (attempts > 0) {
-                  transaction.begin();
-                }
-                const [rows1] = await transaction.run(selectSql);
-                rows1.forEach(() => rowCount++);
-                if (!attempts) {
-                  // abort the transaction
-                  spannerMock.abortTransaction(transaction);
-                }
-                const [rows2] = await transaction.run(selectSql);
-                rows2.forEach(() => rowCount++);
-                await transaction.commit();
-              } catch (err) {
-                assert.strictEqual(
-                  (err as grpc.ServiceError).code,
-                  grpc.status.ABORTED,
-                );
-              } finally {
-                attempts++;
-                multiplexedSessionPreviousTransactionId = transaction.id;
-              }
-            }
-            // assert on row count
-            assert.strictEqual(rowCount, 9);
-            // assert on number of attempts
-            assert.strictEqual(attempts, 2);
-            await database.close();
-            const beginTxnRequest = spannerMock.getRequests().find(val => {
-              return (val as v1.BeginTransactionRequest).options?.readWrite;
-            }) as v1.BeginTransactionRequest;
-            const txnId =
-              beginTxnRequest.options?.readWrite
-                ?.multiplexedSessionPreviousTransactionId;
-            // begin transaction request must contain the aborted transaction id
-            // as the previous transaction id upon retrying
-            assert.deepStrictEqual(txnId, transactionObjects[0].id);
-            // transactionObjects must contain have both the transaction
-            // one the aborted transaction
-            // another the retried transaction
-            assert.strictEqual(transactionObjects.length, 2);
-            // since inline begin was successful with first query execution
-            // the transaction id would not be undefined for first transaction
-            assert.notEqual(transactionObjects[0].id, undefined);
-            // multiplexed session previous transaction id would be undefined
-            // for first transaction
-            assert.strictEqual(
-              transactionObjects[0].multiplexedSessionPreviousTransactionId,
-              undefined,
-            );
-            // the second transction object (the retried transaction) must have an id
-            assert.notEqual(transactionObjects[1].id, undefined);
-            // first transaction id would be the multiplexed session previous transction id
-            // for retried transction
-            assert.strictEqual(
-              transactionObjects[1].multiplexedSessionPreviousTransactionId,
-              transactionObjects[0].id,
-            );
-          });
+          }
         });
       });
-
-      // test(s) for commit retry logic
-      describe('Transaction Commit Retry Logic', () => {
-        let commitCallCount = 0;
-        let capturedCommitRequests: any[] = [];
-
-        it('should retry commit only once with a precommit token', async () => {
-          commitCallCount = 0;
-          capturedCommitRequests = [];
-
-          const database = newTestDatabase({min: 1, max: 1});
-          const fakeRetryToken = Buffer.from('mock-retry-token-123');
-
-          const commitRetryResponse = {
-            MultiplexedSessionRetry: 'precommitToken',
-            precommitToken: {
-              precommitToken: fakeRetryToken,
-              seqNum: 2,
-            },
-            commitTimestamp: mock.now(),
-          };
-
-          const commitSuccessResponse = {
-            commitTimestamp: mock.now(),
-          };
-
-          await database.runTransactionAsync(async tx => {
-            // mock commit request
-            tx.request = (config: any, callback: Function) => {
-              const cb = callback as (err: any, response: any) => void;
-
-              if (config.method !== 'commit') return;
-
-              commitCallCount++;
-              capturedCommitRequests.push(config.reqOpts);
-
-              if (commitCallCount === 1) {
-                cb(null, commitRetryResponse);
-              } else {
-                cb(null, commitSuccessResponse);
-              }
-            };
-
-            // perform read
-            await tx!.run(selectSql);
-
-            // perform mutations
-            tx.upsert('foo', [
-              {id: 1, name: 'One'},
-              {id: 2, name: 'Two'},
-            ]);
-
-            // make a call to commit
-            await tx.commit();
-
-            // assert that retry heppen only once
-            assert.strictEqual(
-              commitCallCount,
-              2,
-              'The mock commit method should have been called exactly twice.',
-            );
-
-            const secondRequest = capturedCommitRequests[1];
-            // assert that during the second request to commit
-            // the precommitToken was present
-            assert.deepStrictEqual(
-              secondRequest.precommitToken,
-              commitRetryResponse.precommitToken,
-              'The second commit request should have the precommitToken from the retry response.',
-            );
-          });
-          await database.close();
-        });
-      });
-
-      // parallel transactions
-      describe('parallel transactions', async () => {
-        async function readAndMutations(database) {
-          await database.runTransactionAsync(async tx => {
-            await tx.run(selectSql);
-            await tx.run(selectSql);
-            tx.upsert('foo', [
-              {id: 1, name: 'One'},
-              {id: 2, name: 'Two'},
-            ]);
-            await tx.commit();
-          });
-        }
-        it('should have different precommit tokens for each transactions when running parallely', async () => {
-          const promises: Promise<void>[] = [];
+      describe('using runTransactionAsync', () => {
+        it('case 1: transaction abortion on first query execution', async () => {
+          let attempts = 0;
           const database = newTestDatabase();
-
-          // run the transactions parallely
-          promises.push(readAndMutations(database));
-          promises.push(readAndMutations(database));
-
-          // wait for the transaction to complete its execution
-          await Promise.all(promises);
-
-          const commitRequest = spannerMock.getRequests().filter(val => {
-            return (val as v1.CommitRequest).precommitToken;
-          }) as v1.CommitRequest[];
-
-          // assert that there are two commit requests one for each transaction
-          assert.strictEqual(commitRequest.length, 2);
-
-          // assert that precommitToken is not null during first request to commit
-          assert.notEqual(commitRequest[0].precommitToken, null);
-
-          // assert that precommitToken is instance of Buffer
-          assert.ok(
-            commitRequest[0].precommitToken?.precommitToken instanceof Buffer,
+          const transactionObjects: Transaction[] = [];
+          const rowCount = await database.runTransactionAsync(
+            (transaction): Promise<number> => {
+              transactionObjects.push(transaction);
+              if (!attempts) {
+                // abort the transaction
+                spannerMock.abortTransaction(transaction);
+              }
+              attempts++;
+              return transaction.run(selectSql).then(([rows]) => {
+                let count = 0;
+                rows.forEach(() => count++);
+                return transaction.commit().then(() => count);
+              });
+            },
           );
+          assert.strictEqual(rowCount, 3);
+          assert.strictEqual(attempts, 2);
+          await database.close();
 
-          // assert that precommitToken is not null during second request to commit
-          assert.notEqual(commitRequest[1].precommitToken, null);
-
-          // assert that precommitToken is instance of Buffer
-          assert.ok(
-            commitRequest[1].precommitToken?.precommitToken instanceof Buffer,
+          const beginTxnRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.BeginTransactionRequest).options?.readWrite;
+          }) as v1.BeginTransactionRequest;
+          const txnId =
+            beginTxnRequest.options?.readWrite
+              ?.multiplexedSessionPreviousTransactionId;
+          // no transaction id should be in the begintransactionrequest
+          // since first transaction got abort before getting an id
+          assert.ok(txnId instanceof Buffer && txnId.byteLength === 0);
+          // transactionObjects must have two transaction objects
+          // one the aborted transaction
+          // another the retried transaction
+          assert.strictEqual(transactionObjects.length, 2);
+          // first transaction must have an id undefined
+          // as the transaction got aborted before query execution
+          // which results in failure of inline begin
+          assert.strictEqual(transactionObjects[0].id, undefined);
+          // first transaction must not be having any previous transaction id
+          assert.strictEqual(
+            transactionObjects[0].multiplexedSessionPreviousTransactionId,
+            undefined,
           );
-
-          // assert that precommitToken is different in both the commit request
-          assert.notEqual(
-            commitRequest[0].precommitToken.precommitToken,
-            commitRequest[1].precommitToken.precommitToken,
+          // the second transaction object(retried transaction) must have
+          // non null transaction id
+          assert.notEqual(transactionObjects[1].id, undefined);
+          // since the first transaction did not got any id previous transaction id
+          // for second transaction must be undefined
+          assert.strictEqual(
+            transactionObjects[1].multiplexedSessionPreviousTransactionId,
+            undefined,
           );
         });
+        it('case 2: transaction abortion on second query execution', async () => {
+          let attempts = 0;
+          let rowCount = 0;
+          const database = newTestDatabase();
+          const transactionObjects: Transaction[] = [];
+          await database.runTransactionAsync(
+            async (transaction): Promise<void> => {
+              transactionObjects.push(transaction);
+              attempts++;
+              const [rows1] = await transaction.run(selectSql);
+              rows1.forEach(() => rowCount++);
+              if (attempts === 1) {
+                // abort the transaction
+                spannerMock.abortTransaction(transaction);
+              }
+              const [rows2] = await transaction.run(selectSql);
+              rows2.forEach(() => rowCount++);
+              await transaction.commit();
+            },
+          );
+          assert.strictEqual(rowCount, 9);
+          assert.strictEqual(attempts, 2);
+          await database.close();
+
+          const beginTxnRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.BeginTransactionRequest).options?.readWrite;
+          }) as v1.BeginTransactionRequest;
+          const txnId =
+            beginTxnRequest.options?.readWrite
+              ?.multiplexedSessionPreviousTransactionId;
+          // begin transaction request must contain the aborted transaction id
+          // as the previous transaction id upon retrying
+          assert.deepStrictEqual(txnId, transactionObjects[0].id);
+          // transactionObjects must contain have both the transaction
+          // one the aborted transaction
+          // another the retried transaction
+          assert.strictEqual(transactionObjects.length, 2);
+          // since inline begin was successfull with first query execution
+          // the transaction id would not be undefined for first transaction
+          assert.notEqual(transactionObjects[0].id, undefined);
+          // multiplexed session previous transaction id would be undefined
+          // for first transaction
+          assert.strictEqual(
+            transactionObjects[0].multiplexedSessionPreviousTransactionId,
+            undefined,
+          );
+          // the second transction object (the retried transaction) must have an id
+          assert.notEqual(transactionObjects[1].id, undefined);
+          // first transaction id would be the multiplexed session previous transction id
+          // for retried transction
+          assert.strictEqual(
+            transactionObjects[1].multiplexedSessionPreviousTransactionId,
+            transactionObjects[0].id,
+          );
+        });
+        it('case 3: multiple transaction abortion', async () => {
+          let attempts = 0;
+          let rowCount = 0;
+          const database = newTestDatabase();
+          const transactionObjects: Transaction[] = [];
+          await database.runTransactionAsync(
+            async (transaction): Promise<void> => {
+              transactionObjects.push(transaction);
+              attempts++;
+              const [rows1] = await transaction.run(selectSql);
+              rows1.forEach(() => rowCount++);
+              if (attempts === 1) {
+                // abort the transaction
+                spannerMock.abortTransaction(transaction);
+              }
+              const [rows2] = await transaction.run(selectSql);
+              rows2.forEach(() => rowCount++);
+              if (attempts === 2) {
+                // abort the transaction
+                spannerMock.abortTransaction(transaction);
+              }
+              const [rows3] = await transaction.run(selectSql);
+              rows3.forEach(() => rowCount++);
+              await transaction.commit();
+            },
+          );
+          assert.strictEqual(rowCount, 18);
+          assert.strictEqual(attempts, 3);
+          await database.close();
+          const beginTxnRequest = spannerMock.getRequests().filter(val => {
+            return (val as v1.BeginTransactionRequest).options?.readWrite;
+          }) as v1.BeginTransactionRequest[];
+          // begin transaction request must have been called twice
+          // as transaction abortion happend twice
+          assert.strictEqual(beginTxnRequest.length, 2);
+          // multiplexedSessionPreviousTransactionId for first
+          // begin transaction request must be the id of first transaction object
+          assert.deepStrictEqual(
+            beginTxnRequest[0].options?.readWrite
+              ?.multiplexedSessionPreviousTransactionId,
+            transactionObjects[0].id,
+          );
+          // multiplexedSessionPreviousTransactionId must get updated with an id of
+          // second transaction object on second begin transaction request
+          assert.deepStrictEqual(
+            beginTxnRequest[1].options?.readWrite
+              ?.multiplexedSessionPreviousTransactionId,
+            transactionObjects[1].id,
+          );
+          // transactionObjects must contain 3 transaction objects
+          // as the transaction abortion happend twice
+          assert.strictEqual(transactionObjects.length, 3);
+          // first transaction must have a non null id
+          assert.notEqual(transactionObjects[0].id, undefined);
+          // first transaction must not have any previous transaction id
+          assert.strictEqual(
+            transactionObjects[0].multiplexedSessionPreviousTransactionId,
+            undefined,
+          );
+          // second transaction must have a non null id
+          assert.notEqual(transactionObjects[1].id, undefined);
+          // second transaction must have previous transaction id as the
+          // id of first transaction object
+          assert.strictEqual(
+            transactionObjects[1].multiplexedSessionPreviousTransactionId,
+            transactionObjects[0].id,
+          );
+          // third transction must have a non null id
+          assert.notEqual(transactionObjects[2].id, undefined);
+          // third transaction must have previous transaction id
+          // set to second transaction object id
+          assert.strictEqual(
+            transactionObjects[2].multiplexedSessionPreviousTransactionId,
+            transactionObjects[1].id,
+          );
+        });
+        it('case 4: commit abort', async () => {
+          const database = newTestDatabase();
+          let attempts = 0;
+          let rowCount = 0;
+          const transactionObjects: Transaction[] = [];
+          const err = {
+            message: 'Simulated error for commit abortion',
+            code: grpc.status.ABORTED,
+          } as MockError;
+          await database.runTransactionAsync(async tx => {
+            attempts++;
+            transactionObjects.push(tx);
+            try {
+              const [rows] = await tx.runUpdate(invalidSql);
+              rowCount = rowCount + rows;
+              assert.fail('missing expected error');
+            } catch (e) {
+              assert.strictEqual(
+                (e as ServiceError).message,
+                `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`,
+              );
+            }
+            const [rows] = await tx.run(selectSql);
+            rows.forEach(() => rowCount++);
+            if (attempts === 1) {
+              spannerMock.setExecutionTime(
+                spannerMock.commit,
+                SimulatedExecutionTime.ofError(err),
+              );
+              // abort commit
+              spannerMock.abortTransaction(tx);
+            }
+            await tx.commit();
+          });
+          assert.strictEqual(attempts, 2);
+          assert.strictEqual(rowCount, 6);
+          await database.close();
+          const beginTxnRequest = spannerMock
+            .getRequests()
+            .filter(
+              val => (val as v1.BeginTransactionRequest).options?.readWrite,
+            )
+            .map(req => req as v1.BeginTransactionRequest);
+          // begin must have been requested twice
+          // one during explicit begin on unsucessful inline begin
+          // another time during retrying of aborted transaction
+          assert.deepStrictEqual(beginTxnRequest.length, 2);
+          // there must be two transaction in the transactionObjects
+          // one aborted transaction, another retried transaction
+          assert.strictEqual(transactionObjects.length, 2);
+          // since, inline begin was sucessful before commit got abort
+          // hence, the first transaction will have the id not null/undefined
+          assert.notEqual(transactionObjects[0].id, undefined);
+          // multiplexedSessionPreviousTransactionId must be undefined for first transaction
+          assert.strictEqual(
+            transactionObjects[0].multiplexedSessionPreviousTransactionId,
+            undefined,
+          );
+          // retried transction will have the id not null/undefined
+          assert.notEqual(transactionObjects[1].id, undefined);
+          // multiplexedSessionPreviousTransactionId for retried transaction would be the id of aborted transaction
+          assert.strictEqual(
+            transactionObjects[1].multiplexedSessionPreviousTransactionId,
+            transactionObjects[0].id,
+          );
+        });
+      });
+      describe('using getTransaction', () => {
+        it('case 1: transaction abortion on first query execution', async () => {
+          let attempts = 0;
+          let rowCount = 0;
+          const MAX_ATTEMPTS = 2;
+          let multiplexedSessionPreviousTransactionId;
+          let transaction;
+          const database = newTestDatabase();
+          const transactionObjects: Transaction[] = [];
+          while (attempts < MAX_ATTEMPTS) {
+            try {
+              [transaction] = await database.getTransaction();
+              transactionObjects.push(transaction);
+              transaction.multiplexedSessionPreviousTransactionId =
+                multiplexedSessionPreviousTransactionId;
+              if (attempts > 0) {
+                transaction.begin();
+              }
+              const [rows1] = await transaction.run(selectSql);
+              rows1.forEach(() => rowCount++);
+              if (!attempts) {
+                // abort the transaction
+                spannerMock.abortTransaction(transaction);
+              }
+              const [rows2] = await transaction.run(selectSql);
+              rows2.forEach(() => rowCount++);
+              await transaction.commit();
+            } catch (err) {
+              assert.strictEqual(
+                (err as grpc.ServiceError).code,
+                grpc.status.ABORTED,
+              );
+            } finally {
+              attempts++;
+              multiplexedSessionPreviousTransactionId = transaction.id;
+            }
+          }
+          // assert on row count
+          assert.strictEqual(rowCount, 9);
+          // assert on number of attempts
+          assert.strictEqual(attempts, 2);
+          await database.close();
+          const beginTxnRequest = spannerMock.getRequests().find(val => {
+            return (val as v1.BeginTransactionRequest).options?.readWrite;
+          }) as v1.BeginTransactionRequest;
+          const txnId =
+            beginTxnRequest.options?.readWrite
+              ?.multiplexedSessionPreviousTransactionId;
+          // begin transaction request must contain the aborted transaction id
+          // as the previous transaction id upon retrying
+          assert.deepStrictEqual(txnId, transactionObjects[0].id);
+          // transactionObjects must contain have both the transaction
+          // one the aborted transaction
+          // another the retried transaction
+          assert.strictEqual(transactionObjects.length, 2);
+          // since inline begin was successful with first query execution
+          // the transaction id would not be undefined for first transaction
+          assert.notEqual(transactionObjects[0].id, undefined);
+          // multiplexed session previous transaction id would be undefined
+          // for first transaction
+          assert.strictEqual(
+            transactionObjects[0].multiplexedSessionPreviousTransactionId,
+            undefined,
+          );
+          // the second transction object (the retried transaction) must have an id
+          assert.notEqual(transactionObjects[1].id, undefined);
+          // first transaction id would be the multiplexed session previous transction id
+          // for retried transction
+          assert.strictEqual(
+            transactionObjects[1].multiplexedSessionPreviousTransactionId,
+            transactionObjects[0].id,
+          );
+        });
+      });
+    });
+
+    // test(s) for commit retry logic
+    describe('Transaction Commit Retry Logic', () => {
+      let commitCallCount = 0;
+      let capturedCommitRequests: any[] = [];
+
+      it('should retry commit only once with a precommit token', async () => {
+        commitCallCount = 0;
+        capturedCommitRequests = [];
+
+        const database = newTestDatabase({min: 1, max: 1});
+        const fakeRetryToken = Buffer.from('mock-retry-token-123');
+
+        const commitRetryResponse = {
+          MultiplexedSessionRetry: 'precommitToken',
+          precommitToken: {
+            precommitToken: fakeRetryToken,
+            seqNum: 2,
+          },
+          commitTimestamp: mock.now(),
+        };
+
+        const commitSuccessResponse = {
+          commitTimestamp: mock.now(),
+        };
+
+        await database.runTransactionAsync(async tx => {
+          // mock commit request
+          tx.request = (config: any, callback: Function) => {
+            const cb = callback as (err: any, response: any) => void;
+
+            if (config.method !== 'commit') return;
+
+            commitCallCount++;
+            capturedCommitRequests.push(config.reqOpts);
+
+            if (commitCallCount === 1) {
+              cb(null, commitRetryResponse);
+            } else {
+              cb(null, commitSuccessResponse);
+            }
+          };
+
+          // perform read
+          await tx!.run(selectSql);
+
+          // perform mutations
+          tx.upsert('foo', [
+            {id: 1, name: 'One'},
+            {id: 2, name: 'Two'},
+          ]);
+
+          // make a call to commit
+          await tx.commit();
+
+          // assert that retry heppen only once
+          assert.strictEqual(
+            commitCallCount,
+            2,
+            'The mock commit method should have been called exactly twice.',
+          );
+
+          const secondRequest = capturedCommitRequests[1];
+          // assert that during the second request to commit
+          // the precommitToken was present
+          assert.deepStrictEqual(
+            secondRequest.precommitToken,
+            commitRetryResponse.precommitToken,
+            'The second commit request should have the precommitToken from the retry response.',
+          );
+        });
+        await database.close();
+      });
+    });
+
+    // parallel transactions
+    describe('parallel transactions', async () => {
+      async function readAndMutations(database) {
+        await database.runTransactionAsync(async tx => {
+          await tx.run(selectSql);
+          await tx.run(selectSql);
+          tx.upsert('foo', [
+            {id: 1, name: 'One'},
+            {id: 2, name: 'Two'},
+          ]);
+          await tx.commit();
+        });
+      }
+      it('should have different precommit tokens for each transactions when running parallely', async () => {
+        const promises: Promise<void>[] = [];
+        const database = newTestDatabase();
+
+        // run the transactions parallely
+        promises.push(readAndMutations(database));
+        promises.push(readAndMutations(database));
+
+        // wait for the transaction to complete its execution
+        await Promise.all(promises);
+
+        const commitRequest = spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).precommitToken;
+        }) as v1.CommitRequest[];
+
+        // assert that there are two commit requests one for each transaction
+        assert.strictEqual(commitRequest.length, 2);
+
+        // assert that precommitToken is not null during first request to commit
+        assert.notEqual(commitRequest[0].precommitToken, null);
+
+        // assert that precommitToken is instance of Buffer
+        assert.ok(
+          commitRequest[0].precommitToken?.precommitToken instanceof Buffer,
+        );
+
+        // assert that precommitToken is not null during second request to commit
+        assert.notEqual(commitRequest[1].precommitToken, null);
+
+        // assert that precommitToken is instance of Buffer
+        assert.ok(
+          commitRequest[1].precommitToken?.precommitToken instanceof Buffer,
+        );
+
+        // assert that precommitToken is different in both the commit request
+        assert.notEqual(
+          commitRequest[0].precommitToken.precommitToken,
+          commitRequest[1].precommitToken.precommitToken,
+        );
       });
     });
   });
@@ -5898,16 +6112,6 @@ describe('Spanner with mock server', () => {
     });
     // tests for mutation key heuristic
     describe('when multiplexed session is enabled for R/W', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
       it('should pass the mutation key in begin transaction request in case of mutations only transactions', async () => {
         const database = newTestDatabase();
         await database.table('foo').upsert({id: 1, name: randomUUID()});
@@ -6829,6 +7033,7 @@ describe('Spanner with mock server', () => {
     const opts: typeof ObservabilityOptions = {tracerProvider: provider};
     startTrace('aSpan', {opts: opts}, async span => {
       instance._observabilityOptions = opts;
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       const database = newTestDatabase();
       database._observabilityOptions = opts;
 
@@ -6859,6 +7064,8 @@ describe('Spanner with mock server', () => {
       });
 
       const expectedSpanNames = [
+        'CloudSpanner.Database.createSession',
+        'CloudSpanner.MultiplexedSession.createSession',
         'CloudSpanner.Database.batchCreateSessions',
         'CloudSpanner.SessionPool.createSessions',
         'CloudSpanner.Snapshot.runStream',
@@ -6873,6 +7080,8 @@ describe('Spanner with mock server', () => {
       );
 
       const expectedEventNames = [
+        'Requesting a multiplexed session',
+        'Created a multiplexed session',
         'Requesting 25 sessions',
         'Creating 25 sessions',
         'Requested for 25 sessions returned 25',
@@ -6888,20 +7097,20 @@ describe('Spanner with mock server', () => {
         expectedEventNames,
         `Mismatched events\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
       );
-
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       done();
     });
   });
 
   describe('session-factory', () => {
     after(() => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
     });
 
     it('should not propagate any error when enabling GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS after client initialization', done => {
       const database = newTestDatabase();
       // enable env after database creation
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       const sessionFactory = database.sessionFactory_ as SessionFactory;
       sessionFactory.getSession((err, _) => {
         assert.ifError(err);
@@ -6966,7 +7175,7 @@ describe('Spanner with mock server', () => {
       const gotUnaryCalls = xGoogReqIDInterceptor.getUnaryCalls();
       assert.deepStrictEqual(
         gotUnaryCalls[0].method,
-        '/google.spanner.v1.Spanner/BatchCreateSessions',
+        '/google.spanner.v1.Spanner/CreateSession',
       );
       // It is non-deterministic to try to get the exact clientId used to invoke .BatchCreateSessions
       // given that these tests run as a collective and sessions are pooled.

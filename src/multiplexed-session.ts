@@ -126,9 +126,7 @@ export class MultiplexedSession
             multiplexed: true,
           });
           this._multiplexedSession = createSessionResponse;
-          span.addEvent(
-            `Created multiplexed session ${this._multiplexedSession.id}`,
-          );
+          span.addEvent('Created a multiplexed session');
           this.emit(MUX_SESSION_AVAILABLE);
         } catch (e) {
           setSpanError(span, e as Error);
