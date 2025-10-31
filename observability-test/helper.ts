@@ -19,6 +19,11 @@ import * as assert from 'assert';
 const {ReadableSpan} = require('@opentelemetry/sdk-trace-base');
 import {SEMATTRS_DB_NAME} from '@opentelemetry/semantic-conventions';
 
+export const createSessionEvents = [
+  'Requesting a multiplexed session',
+  'Created a multiplexed session',
+];
+
 export const batchCreateSessionsEvents = [
   'Requesting 25 sessions',
   'Creating 25 sessions',

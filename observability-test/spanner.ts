@@ -41,6 +41,7 @@ const {
   generateWithAllSpansHaveDBName,
   setGlobalContextManager,
   verifySpansAndEvents,
+  createSessionEvents,
   batchCreateSessionsEvents,
   waitingSessionsEvents,
   cacheSessionEvents,
@@ -100,7 +101,7 @@ async function setup(
   sandbox?: sinon.SinonSandbox,
 ): Promise<setupResults> {
   const server = new grpc.Server();
-
+  process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
@@ -835,6 +836,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
       });
 
       const expectedSpanNames = [
+        'CloudSpanner.Database.createSession',
+        'CloudSpanner.MultiplexedSession.createSession',
         'CloudSpanner.Database.batchCreateSessions',
         'CloudSpanner.SessionPool.createSessions',
         'CloudSpanner.Snapshot.runStream',
@@ -848,6 +851,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
       );
 
       const expectedEventNames = [
+        ...createSessionEvents,
         ...batchCreateSessionsEvents,
         'Starting stream',
         ...waitingSessionsEvents,
@@ -913,6 +917,8 @@ describe('E2E traces with async/await', async () => {
     });
 
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Snapshot.runStream',
@@ -957,12 +963,12 @@ describe('E2E traces with async/await', async () => {
       'Expected that runSpan has a defined spanId',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseBatchCreateSessionsSpan = spans[2];
     assert.strictEqual(
       databaseBatchCreateSessionsSpan.name,
       'CloudSpanner.Database.batchCreateSessions',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const sessionPoolCreateSessionsSpan = spans[3];
     assert.strictEqual(
       sessionPoolCreateSessionsSpan.name,
       'CloudSpanner.SessionPool.createSessions',
@@ -993,6 +999,7 @@ describe('E2E traces with async/await', async () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       'Starting stream',
       ...waitingSessionsEvents,
@@ -1134,6 +1141,8 @@ SELECT 1p
     });
 
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Snapshot.runStream',
@@ -1178,12 +1187,12 @@ SELECT 1p
       'Expected that runSpan has a defined spanId',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseBatchCreateSessionsSpan = spans[2];
     assert.strictEqual(
       databaseBatchCreateSessionsSpan.name,
       'CloudSpanner.Database.batchCreateSessions',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const sessionPoolCreateSessionsSpan = spans[3];
     assert.strictEqual(
       sessionPoolCreateSessionsSpan.name,
       'CloudSpanner.SessionPool.createSessions',
@@ -1228,6 +1237,7 @@ SELECT 1p
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       'Starting stream',
       ...waitingSessionsEvents,
@@ -1284,6 +1294,8 @@ SELECT 1p
     });
 
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Snapshot.runStream',
@@ -1299,7 +1311,7 @@ SELECT 1p
       expectedSpanNames,
       `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
     );
-    const spanSnapshotRun = spans[3];
+    const spanSnapshotRun = spans[5];
     assert.strictEqual(spanSnapshotRun.name, 'CloudSpanner.Snapshot.run');
     const wantSpanErr = '6 ALREADY_EXISTS: ' + messageBadInsertAlreadyExistent;
     assert.deepStrictEqual(
@@ -1313,12 +1325,12 @@ SELECT 1p
       'Unexpexcted error message',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseBatchCreateSessionsSpan = spans[2];
     assert.strictEqual(
       databaseBatchCreateSessionsSpan.name,
       'CloudSpanner.Database.batchCreateSessions',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const sessionPoolCreateSessionsSpan = spans[3];
     assert.strictEqual(
       sessionPoolCreateSessionsSpan.name,
       'CloudSpanner.SessionPool.createSessions',
@@ -1379,6 +1391,7 @@ SELECT 1p
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       'Starting stream',
       'Stream broken. Safe to retry',
@@ -1459,6 +1472,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
   });
 
   function newTestDatabase(): Database {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     return instance.database(`database-${dbCounter++}`);
   }
 
@@ -1511,6 +1525,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       enableExtendedTracing: true,
     };
 
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
     spanner = new Spanner({
       servicePath: 'localhost',
       port,
@@ -1536,6 +1551,9 @@ describe('Traces for ExecuteStream broken stream retries', () => {
   });
 
   describe('PartialResultStream', () => {
+    beforeEach(() => {
+      traceExporter.reset();
+    });
     const streamIndexes = [1, 2];
     streamIndexes.forEach(index => {
       it('should retry UNAVAILABLE during streaming', async () => {
@@ -1757,6 +1775,9 @@ describe('Traces for ExecuteStream broken stream retries', () => {
                 });
 
                 const expectedSpanNames = [
+                  'CloudSpanner.Database.createSession',
+                  'CloudSpanner.MultiplexedSession.createSession',
+                  // multiplexed session will get created by default hence the above two spans
                   'CloudSpanner.Database.batchCreateSessions',
                   'CloudSpanner.SessionPool.createSessions',
                   'CloudSpanner.Snapshot.runStream',
@@ -1770,6 +1791,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
                 // Finally check for the collective expected event names.
                 const expectedEventNames = [
+                  ...createSessionEvents,
                   ...batchCreateSessionsEvents,
                   'Starting stream',
                   'Transaction Creation Done',
@@ -1823,6 +1845,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     });
 
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Snapshot.runStream',
@@ -1837,6 +1861,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       'Starting stream',
       'Re-attempting start stream',
@@ -1885,6 +1910,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     });
 
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Snapshot.runStream',
@@ -1903,6 +1930,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       'Starting stream',
       'Re-attempting start stream',
@@ -1954,12 +1982,15 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'runTransactionAsync.attempt must be 1',
     );
     const expectedSpanNames = [
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.batchCreateSessions',
       'CloudSpanner.SessionPool.createSessions',
       'CloudSpanner.Database.runTransactionAsync',
     ];
 
     const expectedEventNames = [
+      ...createSessionEvents,
       ...batchCreateSessionsEvents,
       ...waitingSessionsEvents,
     ];
@@ -2020,10 +2051,10 @@ describe('End to end tracing headers', () => {
           }
         });
 
-        // Batch Create Session request and Select 1 request.
-        assert.strictEqual(spannerMock.getRequests().length, 2);
-        assert.strictEqual(metadataCountWithE2EHeader, 2);
-        assert.strictEqual(metadataCountWithTraceParent, 2);
+        // Batch Create Session, Create Session for multiplexed session(default) and Select 1 request.
+        assert.strictEqual(spannerMock.getRequests().length, 3);
+        assert.strictEqual(metadataCountWithE2EHeader, 3);
+        assert.strictEqual(metadataCountWithTraceParent, 3);
         done();
       });
     });

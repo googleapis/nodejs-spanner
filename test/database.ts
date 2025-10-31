@@ -154,12 +154,12 @@ export class FakeSessionFactory extends EventEmitter {
   }
   release() {}
   isMultiplexedEnabled(): boolean {
-    return process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true';
+    return process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS! === 'false';
   }
   isMultiplexedEnabledForRW(): boolean {
     return (
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'true' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'true'
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS! === 'false' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW! === 'false'
     );
   }
 }
@@ -352,21 +352,30 @@ describe('Database', () => {
       assert(database.pool_ instanceof FakeSessionPool);
     });
 
-    it('should re-emit SessionPool errors', done => {
-      const error = new Error('err');
-
-      const sessionFactory = new SessionFactory(database, NAME);
-
-      database.on('error', err => {
-        assert.strictEqual(err, error);
-        done();
+    describe('when multiplexed session is disabled', () => {
+      before(() => {
+        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
 
-      sessionFactory.pool_.emit('error', error);
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+      });
+
+      it('should re-emit SessionPool errors', done => {
+        const error = new Error('err');
+
+        const sessionFactory = new SessionFactory(database, NAME);
+
+        database.on('error', err => {
+          assert.strictEqual(err, error);
+          done();
+        });
+
+        sessionFactory.pool_.emit('error', error);
+      });
     });
 
     it('should re-emit Multiplexed Session errors', done => {
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
       const error = new Error('err');
 
       const sessionFactory = new SessionFactory(database, NAME);
@@ -671,8 +680,8 @@ describe('Database', () => {
       gaxOptions: {autoPaginate: false},
     } as BatchWriteOptions;
 
-    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    // muxEnabled[i][0] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to false
+    // muxEnabled[i][1] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW to false
     const muxEnabled = [
       [true, true],
       [true, false],
@@ -683,15 +692,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          `${isMuxEnabled[0] ? 'not set' : 'set to false'}` +
           ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
-          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[1] ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-              isMuxEnabled[0].toString();
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-              isMuxEnabled[1].toString();
+            if (!isMuxEnabled[0]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+            if (!isMuxEnabled[1]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+                'false';
+            }
           });
 
           after(() => {
@@ -889,13 +901,16 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'false');
+            if (!isMuxEnabled) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
           });
 
           beforeEach(() => {
@@ -1037,13 +1052,12 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'false');
+            if (!isMuxEnabled) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
           });
 
           after(() => {
@@ -2030,14 +2044,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED is ' +
-          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'false');
+            if (!isMuxEnabled) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
           });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+          });
+
           beforeEach(() => {
             fakeSessionFactory = database.sessionFactory_;
             fakeSession = new FakeSession();
@@ -2473,13 +2491,16 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            isMuxEnabled
-              ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true')
-              : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-                  'false');
+            if (!isMuxEnabled) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+          });
+
+          after(() => {
+            delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
           });
 
           beforeEach(() => {
@@ -2673,8 +2694,8 @@ describe('Database', () => {
 
     let getSessionStub: sinon.SinonStub;
 
-    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    // muxEnabled[i][0] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to false
+    // muxEnabled[i][1] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW to false
     const muxEnabled = [
       [true, true],
       [true, false],
@@ -2685,15 +2706,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          `${isMuxEnabled[0] ? 'not set' : 'set to false'}` +
           ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
-          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[1] ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-              isMuxEnabled[0].toString();
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-              isMuxEnabled[1].toString();
+            if (!isMuxEnabled[0]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+            if (!isMuxEnabled[1]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+                'false';
+            }
           });
 
           after(() => {
@@ -3089,8 +3113,8 @@ describe('Database', () => {
       },
     };
 
-    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS
+    // muxEnabled[i][0] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to false
+    // muxEnabled[i][1] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS to false
     const muxEnabled = [
       [true, true],
       [true, false],
@@ -3101,15 +3125,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          `${isMuxEnabled[0] ? 'not set' : 'set to false'}` +
           ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS is ' +
-          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[1] ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-              isMuxEnabled[0].toString();
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
-              isMuxEnabled[1].toString();
+            if (!isMuxEnabled[0]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+            if (!isMuxEnabled[1]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+                'false';
+            }
           });
 
           after(() => {
@@ -3314,8 +3341,8 @@ describe('Database', () => {
 
     let fakeSessionFactory: FakeSessionFactory;
 
-    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    // muxEnabled[i][0] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to false
+    // muxEnabled[i][1] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW to false
     const muxEnabled = [
       [true, true],
       [true, false],
@@ -3326,15 +3353,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          `${isMuxEnabled[0] ? 'not set' : 'set to false'}` +
           ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
-          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[1] ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-              isMuxEnabled[0].toString();
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-              isMuxEnabled[1].toString();
+            if (!isMuxEnabled[0]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+            if (!isMuxEnabled[1]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+                'false';
+            }
           });
 
           after(() => {
@@ -3457,8 +3487,8 @@ describe('Database', () => {
 
     let fakeSessionFactory: FakeSessionFactory;
 
-    // muxEnabled[i][0] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS
-    // muxEnabled[i][1] is to enable/disable env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW
+    // muxEnabled[i][0] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to false
+    // muxEnabled[i][1] is to set/unset env GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW to false
     const muxEnabled = [
       [true, true],
       [true, false],
@@ -3469,15 +3499,18 @@ describe('Database', () => {
     muxEnabled.forEach(isMuxEnabled => {
       describe(
         'when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is ' +
-          `${isMuxEnabled[0] ? 'enabled' : 'disable'}` +
+          `${isMuxEnabled[0] ? 'not set' : 'set to false'}` +
           ' and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW is ' +
-          `${isMuxEnabled[1] ? 'enabled' : 'disable'}`,
+          `${isMuxEnabled[1] ? 'not set' : 'set to false'}`,
         () => {
           before(() => {
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS =
-              isMuxEnabled[0].toString();
-            process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-              isMuxEnabled[1].toString();
+            if (!isMuxEnabled[0]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+            }
+            if (!isMuxEnabled[1]) {
+              process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
+                'false';
+            }
           });
 
           after(() => {
