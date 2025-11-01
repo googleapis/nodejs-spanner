@@ -18,7 +18,11 @@ import * as process from 'process';
 import {v4 as uuidv4} from 'uuid';
 import {MeterProvider, MetricReader} from '@opentelemetry/sdk-metrics';
 import {Counter, Histogram} from '@opentelemetry/api';
-import {detectResources, Resource} from '@opentelemetry/resources';
+import {
+  detectResources,
+  Resource,
+  resourceFromAttributes,
+} from '@opentelemetry/resources';
 import {GcpDetectorSync} from '@google-cloud/opentelemetry-resource-util';
 import * as Constants from './constants';
 import {MetricsTracer} from './metrics-tracer';
@@ -121,7 +125,7 @@ export class MetricsTracerFactory {
    */
   public getMeterProvider(readers: MetricReader[] = []): MeterProvider {
     if (this._meterProvider === null) {
-      const resource = new Resource({
+      const resource = resourceFromAttributes({
         [Constants.MONITORED_RES_LABEL_KEY_PROJECT]: this._projectId,
         [Constants.MONITORED_RES_LABEL_KEY_CLIENT_HASH]: this._clientHash,
         [Constants.MONITORED_RES_LABEL_KEY_LOCATION]: this._location,
