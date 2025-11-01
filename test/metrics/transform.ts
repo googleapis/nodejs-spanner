@@ -42,6 +42,7 @@ import {
 } from '../../src/metrics/constants';
 import {MetricKind, ValueType} from '../../src/metrics/external-types';
 import {MetricsTracerFactory} from '../../src/metrics/metrics-tracer-factory';
+import {resourceFromAttributes} from '@opentelemetry/resources';
 
 const {
   _normalizeLabelKey,
@@ -84,7 +85,7 @@ describe('transform', () => {
     sandbox.stub(MetricsTracerFactory, 'getInstance').returns(mockFactory);
 
     reader = new InMemoryMetricReader();
-    resource = new Resource({
+    resource = resourceFromAttributes({
       ['project_id']: 'project_id',
       ['client_hash']: 'test_hash',
       ['location']: 'test_location',
