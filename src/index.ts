@@ -502,6 +502,7 @@ class Spanner extends GrpcService {
     this._universeDomain = universeEndpoint;
     this.projectId_ = options.projectId;
     this.configureMetrics_(options.disableBuiltInMetrics);
+    this._logSpannerConfigurations(config);
   }
 
   get universeDomain() {
@@ -1659,6 +1660,33 @@ class Spanner extends GrpcService {
             err,
         );
       }
+    }
+  }
+
+  /**
+   * Logs the Spanner configurations that have been set.
+   *
+   * @private
+   */
+  private _logSpannerConfigurations(config: GrpcServiceConfig): void {
+    try {
+      const afeServerTiming = Spanner.isAFEServerTimingEnabled();
+      console.log(
+        'Spanner configurations:\n' +
+          `  Project ID: ${this.projectId_}\n` +
+          `  Spanner Emulator Host: ${process.env.SPANNER_EMULATOR_HOST || 'not set'}\n` +
+          `  Base URL: ${config.baseUrl}\n` +
+          `  Leader aware routing enabled: ${this.routeToLeaderEnabled}\n` +
+          `  Built in metrics enabled: ${MetricsTracerFactory.enabled}\n` +
+          `  AFE Server Timing enabled: ${afeServerTiming}\n` +
+          `  Spanner extended tracing enabled: ${this._observabilityOptions?.enableExtendedTracing === true || process.env.SPANNER_ENABLE_EXTENDED_TRACING === 'true' || false}\n` +
+          `  Spanner end-to-end tracing enabled: ${this._observabilityOptions?.enableEndToEndTracing === true || process.env.SPANNER_ENABLE_END_TO_END_TRACING === 'true' || false}\n` +
+          `  GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS: ${process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS || 'not set'}\n` +
+          `  GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS: ${process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS || 'not set'}\n` +
+          `  GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW: ${process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW || 'not set'}\n  `,
+      );
+    } catch (error) {
+      console.log('Unable to log Spanner configurations:\n' + error);
     }
   }
 
