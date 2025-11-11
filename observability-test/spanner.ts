@@ -41,7 +41,7 @@ const {
   generateWithAllSpansHaveDBName,
   setGlobalContextManager,
   verifySpansAndEvents,
-  batchCreateSessionsEvents,
+  createSessionEvents,
   waitingSessionsEvents,
   cacheSessionEvents,
 } = require('./helper');
@@ -100,7 +100,6 @@ async function setup(
   sandbox?: sinon.SinonSandbox,
 ): Promise<setupResults> {
   const server = new grpc.Server();
-
   const spannerMock = mock.createMockSpanner(server);
   mockInstanceAdmin.createMockInstanceAdmin(server);
   mockDatabaseAdmin.createMockDatabaseAdmin(server);
@@ -190,7 +189,7 @@ describe('EndToEnd', async () => {
   beforeEach(async () => {
     // To deflake expectations of session creation, let's
     // issue out a warm-up request request that'll ensure
-    // that the SessionPool is created deterministically.
+    // that the MultiplexedSession is created deterministically.
     await database.run('SELECT 1');
     // Clear out any present traces to make a clean slate for testing.
     traceExporter.forceFlush();
@@ -526,7 +525,7 @@ describe('ObservabilityOptions injection and propagation', async () => {
 
       // To deflake expectations of session creation, let's
       // issue out a warm-up request request that'll ensure
-      // that the SessionPool is created deterministically.
+      // that the MultiplexedSession is created deterministically.
       await database.run('SELECT 1');
       // Clear out any present traces to make a clean slate for testing.
       traceExporter.forceFlush();
@@ -542,54 +541,52 @@ describe('ObservabilityOptions injection and propagation', async () => {
       db.formattedName_,
     );
 
-    it('run', done => {
-      database.getTransaction((err, tx) => {
-        assert.ifError(err);
+    it('run', async () => {
+      let txn;
+      try {
+        [txn] = await database.getTransaction();
+        await txn.run('SELECT 1');
+        await tracerProvider.forceFlush();
+        traceExporter.forceFlush();
 
-        tx!.run('SELECT 1', async () => {
-          tx!.end();
+        const spans = traceExporter.getFinishedSpans();
+        withAllSpansHaveDBName(spans);
 
-          await tracerProvider.forceFlush();
-          traceExporter.forceFlush();
-
-          const spans = traceExporter.getFinishedSpans();
-          withAllSpansHaveDBName(spans);
-
-          const actualSpanNames: string[] = [];
-          const actualEventNames: string[] = [];
-          spans.forEach(span => {
-            actualSpanNames.push(span.name);
-            span.events.forEach(event => {
-              actualEventNames.push(event.name);
-            });
+        const actualSpanNames: string[] = [];
+        const actualEventNames: string[] = [];
+        spans.forEach(span => {
+          actualSpanNames.push(span.name);
+          span.events.forEach(event => {
+            actualEventNames.push(event.name);
           });
-
-          const expectedSpanNames = [
-            'CloudSpanner.Database.getTransaction',
-            'CloudSpanner.Snapshot.runStream',
-            'CloudSpanner.Snapshot.run',
-          ];
-          assert.deepStrictEqual(
-            actualSpanNames,
-            expectedSpanNames,
-            `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
-          );
-
-          const expectedEventNames = [
-            ...cacheSessionEvents,
-            'Using Session',
-            'Starting stream',
-            'Transaction Creation Done',
-          ];
-          assert.strictEqual(
-            actualEventNames.every(value => expectedEventNames.includes(value)),
-            true,
-            `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
-          );
-
-          done();
         });
-      });
+        const expectedSpanNames = [
+          'CloudSpanner.Database.getTransaction',
+          'CloudSpanner.Snapshot.runStream',
+          'CloudSpanner.Snapshot.run',
+        ];
+        assert.deepStrictEqual(
+          actualSpanNames,
+          expectedSpanNames,
+          `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
+        );
+
+        const expectedEventNames = [
+          ...cacheSessionEvents,
+          'Using Session',
+          'Starting stream',
+          'Transaction Creation Done',
+        ];
+        assert.strictEqual(
+          actualEventNames.every(value => expectedEventNames.includes(value)),
+          true,
+          `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
+        );
+      } catch (err) {
+        assert.ifError(err);
+      } finally {
+        txn.end();
+      }
     });
 
     it('Transaction.begin+Dml.runUpdate', done => {
@@ -787,14 +784,6 @@ describe('ObservabilityOptions injection and propagation', async () => {
     const server = setupResult.server;
     const spannerMock = setupResult.spannerMock;
 
-    after(async () => {
-      injectedTraceExporter.reset();
-      await injectedTracerProvider.shutdown();
-      spannerMock.resetRequests();
-      spanner.close();
-      server.tryShutdown(() => {});
-    });
-
     const instance = spanner.instance('instance');
     const database = instance.database('database');
 
@@ -802,14 +791,12 @@ describe('ObservabilityOptions injection and propagation', async () => {
       database.formattedName_,
     );
 
-    database.run('SELECT 1', err => {
-      assert.ifError(err);
-
+    try {
+      await database.run('SELECT 1');
       injectedTraceExporter.forceFlush();
       globalTraceExporter.forceFlush();
       const spansFromInjected = injectedTraceExporter.getFinishedSpans();
       const spansFromGlobal = globalTraceExporter.getFinishedSpans();
-
       assert.strictEqual(
         spansFromGlobal.length,
         0,
@@ -833,10 +820,9 @@ describe('ObservabilityOptions injection and propagation', async () => {
           actualEventNames.push(event.name);
         });
       });
-
       const expectedSpanNames = [
-        'CloudSpanner.Database.batchCreateSessions',
-        'CloudSpanner.SessionPool.createSessions',
+        'CloudSpanner.Database.createSession',
+        'CloudSpanner.MultiplexedSession.createSession',
         'CloudSpanner.Snapshot.runStream',
         'CloudSpanner.Database.runStream',
         'CloudSpanner.Database.run',
@@ -846,9 +832,8 @@ describe('ObservabilityOptions injection and propagation', async () => {
         expectedSpanNames,
         `span names mismatch:\n\tGot:  ${actualSpanNames}\n\tWant: ${expectedSpanNames}`,
       );
-
       const expectedEventNames = [
-        ...batchCreateSessionsEvents,
+        ...createSessionEvents,
         'Starting stream',
         ...waitingSessionsEvents,
       ];
@@ -857,7 +842,15 @@ describe('ObservabilityOptions injection and propagation', async () => {
         expectedEventNames,
         `Unexpected events:\n\tGot:  ${actualEventNames}\n\tWant: ${expectedEventNames}`,
       );
-    });
+    } catch (err) {
+      assert.ifError(err);
+    } finally {
+      injectedTraceExporter.reset();
+      await injectedTracerProvider.shutdown();
+      spannerMock.resetRequests();
+      spanner.close();
+      server.tryShutdown(() => {});
+    }
   });
 });
 
@@ -913,8 +906,8 @@ describe('E2E traces with async/await', async () => {
     });
 
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Database.runStream',
       'CloudSpanner.Database.run',
@@ -957,43 +950,43 @@ describe('E2E traces with async/await', async () => {
       'Expected that runSpan has a defined spanId',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseCreateSessionSpan = spans[0];
     assert.strictEqual(
-      databaseBatchCreateSessionsSpan.name,
-      'CloudSpanner.Database.batchCreateSessions',
+      databaseCreateSessionSpan.name,
+      'CloudSpanner.Database.createSession',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const multiplexedSessionCreateSessionSpan = spans[1];
     assert.strictEqual(
-      sessionPoolCreateSessionsSpan.name,
-      'CloudSpanner.SessionPool.createSessions',
+      multiplexedSessionCreateSessionSpan.name,
+      'CloudSpanner.MultiplexedSession.createSession',
     );
     assert.ok(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      'Expecting a defined sessionPoolCreateSessions traceId',
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      'Expecting a defined multiplexedSessionCreateSession traceId',
     );
     assert.deepStrictEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      databaseBatchCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      databaseCreateSessionSpan.spanContext().traceId,
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
-      sessionPoolCreateSessionsSpan.spanContext().spanId,
-      'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
+      databaseCreateSessionSpan.parentSpanContext.spanId,
+      multiplexedSessionCreateSessionSpan.spanContext().spanId,
+      'Expected that multiplexedSession.createSession is the parent to db.creassionSession',
     );
 
-    // Assert that despite all being exported, SessionPool.createSessions
+    // Assert that despite all being exported, MultiplexedSession.createSession
     // is not in the same trace as runStream, createSessions is invoked at
     // Spanner Client instantiation, thus before database.run is invoked.
     assert.notEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
       runSpan.spanContext().traceId,
       'Did not expect the same traceId',
     );
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       'Starting stream',
       ...waitingSessionsEvents,
     ];
@@ -1134,8 +1127,8 @@ SELECT 1p
     });
 
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Database.runStream',
       'CloudSpanner.Database.run',
@@ -1178,36 +1171,36 @@ SELECT 1p
       'Expected that runSpan has a defined spanId',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseCreateSessionSpan = spans[0];
     assert.strictEqual(
-      databaseBatchCreateSessionsSpan.name,
-      'CloudSpanner.Database.batchCreateSessions',
+      databaseCreateSessionSpan.name,
+      'CloudSpanner.Database.createSession',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const multiplexedSessionCreateSessionSpan = spans[1];
     assert.strictEqual(
-      sessionPoolCreateSessionsSpan.name,
-      'CloudSpanner.SessionPool.createSessions',
+      multiplexedSessionCreateSessionSpan.name,
+      'CloudSpanner.MultiplexedSession.createSession',
     );
     assert.ok(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      'Expecting a defined sessionPoolCreateSessions traceId',
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      'Expecting a defined multiplexedSessionCreateSession traceId',
     );
     assert.deepStrictEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      databaseBatchCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      databaseCreateSessionSpan.spanContext().traceId,
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
-      sessionPoolCreateSessionsSpan.spanContext().spanId,
-      'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
+      databaseCreateSessionSpan.parentSpanContext.spanId,
+      multiplexedSessionCreateSessionSpan.spanContext().spanId,
+      'Expected that multiplexedSession.createSession is the parent to db.creassionSession',
     );
 
-    // Assert that despite all being exported, SessionPool.createSessions
+    // Assert that despite all being exported, MultiplexedSession.createSession
     // is not in the same trace as runStream, createSessions is invoked at
     // Spanner Client instantiation, thus before database.run is invoked.
     assert.notEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
       runSpan.spanContext().traceId,
       'Did not expect the same traceId',
     );
@@ -1228,7 +1221,7 @@ SELECT 1p
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       'Starting stream',
       ...waitingSessionsEvents,
     ];
@@ -1284,8 +1277,8 @@ SELECT 1p
     });
 
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Snapshot.run',
       'CloudSpanner.Snapshot.begin',
@@ -1313,29 +1306,29 @@ SELECT 1p
       'Unexpexcted error message',
     );
 
-    const databaseBatchCreateSessionsSpan = spans[0];
+    const databaseCreateSessionSpan = spans[0];
     assert.strictEqual(
-      databaseBatchCreateSessionsSpan.name,
-      'CloudSpanner.Database.batchCreateSessions',
+      databaseCreateSessionSpan.name,
+      'CloudSpanner.Database.createSession',
     );
-    const sessionPoolCreateSessionsSpan = spans[1];
+    const multiplexedSessionCreateSessionSpan = spans[1];
     assert.strictEqual(
-      sessionPoolCreateSessionsSpan.name,
-      'CloudSpanner.SessionPool.createSessions',
+      multiplexedSessionCreateSessionSpan.name,
+      'CloudSpanner.MultiplexedSession.createSession',
     );
     assert.ok(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      'Expecting a defined sessionPoolCreateSessions traceId',
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      'Expecting a defined multiplexedSessionCreateSession traceId',
     );
     assert.deepStrictEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
-      databaseBatchCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
+      databaseCreateSessionSpan.spanContext().traceId,
       'Expected the same traceId',
     );
     assert.deepStrictEqual(
-      databaseBatchCreateSessionsSpan.parentSpanContext.spanId,
-      sessionPoolCreateSessionsSpan.spanContext().spanId,
-      'Expected that sessionPool.createSessions is the parent to db.batchCreassionSessions',
+      databaseCreateSessionSpan.parentSpanContext.spanId,
+      multiplexedSessionCreateSessionSpan.spanContext().spanId,
+      'Expected that multiplexedSession.createSession is the parent to db.creassionSession',
     );
 
     // We need to ensure a strict relationship between the spans.
@@ -1368,18 +1361,18 @@ SELECT 1p
       'Expected that Database.runTransaction is the parent to Snapshot.run',
     );
 
-    // Assert that despite all being exported, SessionPool.createSessions
+    // Assert that despite all being exported, MultiplexedSession.createSessions
     // is not in the same trace as runStream, createSessions is invoked at
     // Spanner Client instantiation, thus before database.run is invoked.
     assert.notEqual(
-      sessionPoolCreateSessionsSpan.spanContext().traceId,
+      multiplexedSessionCreateSessionSpan.spanContext().traceId,
       spanDatabaseRunTransactionAsync.spanContext().traceId,
       'Did not expect the same traceId',
     );
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       'Starting stream',
       'Stream broken. Safe to retry',
       'Begin Transaction',
@@ -1510,7 +1503,6 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       tracerProvider: tracerProvider,
       enableExtendedTracing: true,
     };
-
     spanner = new Spanner({
       servicePath: 'localhost',
       port,
@@ -1536,6 +1528,9 @@ describe('Traces for ExecuteStream broken stream retries', () => {
   });
 
   describe('PartialResultStream', () => {
+    beforeEach(() => {
+      traceExporter.reset();
+    });
     const streamIndexes = [1, 2];
     streamIndexes.forEach(index => {
       it('should retry UNAVAILABLE during streaming', async () => {
@@ -1757,8 +1752,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
                 });
 
                 const expectedSpanNames = [
-                  'CloudSpanner.Database.batchCreateSessions',
-                  'CloudSpanner.SessionPool.createSessions',
+                  'CloudSpanner.Database.createSession',
+                  'CloudSpanner.MultiplexedSession.createSession',
                   'CloudSpanner.Snapshot.runStream',
                   'CloudSpanner.Database.runStream',
                 ];
@@ -1770,7 +1765,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
                 // Finally check for the collective expected event names.
                 const expectedEventNames = [
-                  ...batchCreateSessionsEvents,
+                  ...createSessionEvents,
                   'Starting stream',
                   'Transaction Creation Done',
                   ...waitingSessionsEvents,
@@ -1823,8 +1818,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     });
 
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Database.runStream',
       'CloudSpanner.Database.run',
@@ -1837,7 +1832,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       'Starting stream',
       'Re-attempting start stream',
       'Resuming stream',
@@ -1885,8 +1880,8 @@ describe('Traces for ExecuteStream broken stream retries', () => {
     });
 
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Snapshot.runStream',
       'CloudSpanner.Snapshot.run',
       'CloudSpanner.Dml.runUpdate',
@@ -1903,7 +1898,7 @@ describe('Traces for ExecuteStream broken stream retries', () => {
 
     // Finally check for the collective expected event names.
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       'Starting stream',
       'Re-attempting start stream',
       'Begin Transaction',
@@ -1954,13 +1949,13 @@ describe('Traces for ExecuteStream broken stream retries', () => {
       'runTransactionAsync.attempt must be 1',
     );
     const expectedSpanNames = [
-      'CloudSpanner.Database.batchCreateSessions',
-      'CloudSpanner.SessionPool.createSessions',
+      'CloudSpanner.Database.createSession',
+      'CloudSpanner.MultiplexedSession.createSession',
       'CloudSpanner.Database.runTransactionAsync',
     ];
 
     const expectedEventNames = [
-      ...batchCreateSessionsEvents,
+      ...createSessionEvents,
       ...waitingSessionsEvents,
     ];
     await verifySpansAndEvents(
@@ -1997,35 +1992,36 @@ describe('End to end tracing headers', () => {
     sandbox.restore();
   });
 
-  it('run', done => {
+  it('run', async () => {
     const instance = spanner.instance('instance');
     const database = instance.database('database');
-    database.getTransaction((err, tx) => {
-      assert.ifError(err);
-
-      tx!.run('SELECT 1', async () => {
-        tx!.end();
-        let metadataCountWithE2EHeader = 0;
-        let metadataCountWithTraceParent = 0;
-        spannerMock.getMetadata().forEach(metadata => {
-          if (metadata.get(END_TO_END_TRACING_HEADER)[0] !== undefined) {
-            metadataCountWithE2EHeader++;
-            assert.strictEqual(
-              metadata.get(END_TO_END_TRACING_HEADER)[0],
-              'true',
-            );
-          }
-          if (metadata.get('traceparent')[0] !== undefined) {
-            metadataCountWithTraceParent++;
-          }
-        });
-
-        // Batch Create Session request and Select 1 request.
-        assert.strictEqual(spannerMock.getRequests().length, 2);
-        assert.strictEqual(metadataCountWithE2EHeader, 2);
-        assert.strictEqual(metadataCountWithTraceParent, 2);
-        done();
+    let txn;
+    try {
+      [txn] = await database.getTransaction();
+      await txn.run('SELECT 1');
+      let metadataCountWithE2EHeader = 0;
+      let metadataCountWithTraceParent = 0;
+      spannerMock.getMetadata().forEach(metadata => {
+        if (metadata.get(END_TO_END_TRACING_HEADER)[0] !== undefined) {
+          metadataCountWithE2EHeader++;
+          assert.strictEqual(
+            metadata.get(END_TO_END_TRACING_HEADER)[0],
+            'true',
+          );
+        }
+        if (metadata.get('traceparent')[0] !== undefined) {
+          metadataCountWithTraceParent++;
+        }
       });
-    });
+
+      // Create Session for multiplexed session(default) and Select 1 request.
+      assert.strictEqual(spannerMock.getRequests().length, 2);
+      assert.strictEqual(metadataCountWithE2EHeader, 2);
+      assert.strictEqual(metadataCountWithTraceParent, 2);
+    } catch (err) {
+      assert.ifError(err);
+    } finally {
+      txn.end();
+    }
   });
 });
