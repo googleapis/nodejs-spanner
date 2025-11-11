@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.3.0](https://github.com/googleapis/nodejs-spanner/compare/v8.2.2...v8.3.0) (2025-11-11)
+
+
+### Features
+
+* Exposing AutoscalingConfig in InstancePartition ([#2449](https://github.com/googleapis/nodejs-spanner/issues/2449)) ([2defcc8](https://github.com/googleapis/nodejs-spanner/commit/2defcc81de4191293cd2d4aa493a0a9dc68f37ce))
+* Multiplexed session as default session mode ([#2451](https://github.com/googleapis/nodejs-spanner/issues/2451)) ([9ef0565](https://github.com/googleapis/nodejs-spanner/commit/9ef0565ca2cc9af18477503b43a506fd7c0c3c33))
+
+
+### Bug Fixes
+
+* Configure gRPC keep alive as 120 sec ([#2445](https://github.com/googleapis/nodejs-spanner/issues/2445)) ([f280e7c](https://github.com/googleapis/nodejs-spanner/commit/f280e7ca7cc60a67da8a5a0b3ada5f414c9e9a5f))
+* **deps:** Update dependency google-gax to v5.0.4 ([#2430](https://github.com/googleapis/nodejs-spanner/issues/2430)) ([4cbed94](https://github.com/googleapis/nodejs-spanner/commit/4cbed94dd74567f12620a493cebace5b2c9196bc))
+
 ## [8.2.2](https://github.com/googleapis/nodejs-spanner/compare/v8.2.1...v8.2.2) (2025-10-07)
 
 
