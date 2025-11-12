@@ -104,12 +104,14 @@ Refer to the Observability README to know more about tracing support in the Clou
 
 ## Multiplexed Sessions
 
-Spanner's Multiplexed Sessions can now be used as an efficient alternative to the default session pool. This feature helps reduce
-session management overhead and minimize session-related errors. Multiplexed sessions can be enabled for all transaction types via environment variables.
+Spanner's Multiplexed Sessions is now default enabled session mode in node client. This feature helps reduce
+session management overhead and minimize session-related errors.
 
-### Configuration
+For a detailed explanation on multiplexed sessions, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
 
-To enable this feature, set the following environment variables to `true`:
+## Regular Sessions
+
+To use regular sessions, disable the multiplexed sessions and set the following environment variables to `false`:
 
 * **For Read-Only Transactions:**
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
@@ -120,7 +122,7 @@ To enable this feature, set the following environment variables to `true`:
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW`
 
-For a detailed explanation of this feature, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
+For a detailed explanation on session modes and env configurations, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions).
 
 
 ## Samples
