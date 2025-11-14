@@ -9286,7 +9286,9 @@
                         "update",
                         "insertOrUpdate",
                         "replace",
-                        "delete"
+                        "delete",
+                        "send",
+                        "ack"
                       ]
                     }
                   },
@@ -9310,6 +9312,14 @@
                     "delete": {
                       "type": "Delete",
                       "id": 5
+                    },
+                    "send": {
+                      "type": "Send",
+                      "id": 6
+                    },
+                    "ack": {
+                      "type": "Ack",
+                      "id": 7
                     }
                   },
                   "nested": {
@@ -9349,6 +9359,54 @@
                           "options": {
                             "(google.api.field_behavior)": "REQUIRED"
                           }
+                        }
+                      }
+                    },
+                    "Send": {
+                      "fields": {
+                        "queue": {
+                          "type": "string",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
+                        },
+                        "key": {
+                          "type": "google.protobuf.ListValue",
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
+                        },
+                        "deliverTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 3
+                        },
+                        "payload": {
+                          "type": "google.protobuf.Value",
+                          "id": 4
+                        }
+                      }
+                    },
+                    "Ack": {
+                      "fields": {
+                        "queue": {
+                          "type": "string",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
+                        },
+                        "key": {
+                          "type": "google.protobuf.ListValue",
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
+                        },
+                        "ignoreNotFound": {
+                          "type": "bool",
+                          "id": 3
                         }
                       }
                     }
@@ -9532,12 +9590,52 @@
                     }
                   }
                 },
+                "QueryAdvisorResult": {
+                  "fields": {
+                    "indexAdvice": {
+                      "rule": "repeated",
+                      "type": "IndexAdvice",
+                      "id": 1,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    }
+                  },
+                  "nested": {
+                    "IndexAdvice": {
+                      "fields": {
+                        "ddl": {
+                          "rule": "repeated",
+                          "type": "string",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "OPTIONAL"
+                          }
+                        },
+                        "improvementFactor": {
+                          "type": "double",
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "OPTIONAL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "QueryPlan": {
                   "fields": {
                     "planNodes": {
                       "rule": "repeated",
                       "type": "PlanNode",
                       "id": 1
+                    },
+                    "queryAdvice": {
+                      "type": "QueryAdvisorResult",
+                      "id": 2,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },

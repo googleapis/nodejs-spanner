@@ -34094,6 +34094,12 @@ export namespace google {
 
                 /** Mutation delete */
                 "delete"?: (google.spanner.v1.Mutation.IDelete|null);
+
+                /** Mutation send */
+                send?: (google.spanner.v1.Mutation.ISend|null);
+
+                /** Mutation ack */
+                ack?: (google.spanner.v1.Mutation.IAck|null);
             }
 
             /** Represents a Mutation. */
@@ -34120,8 +34126,14 @@ export namespace google {
                 /** Mutation delete. */
                 public delete?: (google.spanner.v1.Mutation.IDelete|null);
 
+                /** Mutation send. */
+                public send?: (google.spanner.v1.Mutation.ISend|null);
+
+                /** Mutation ack. */
+                public ack?: (google.spanner.v1.Mutation.IAck|null);
+
                 /** Mutation operation. */
-                public operation?: ("insert"|"update"|"insertOrUpdate"|"replace"|"delete");
+                public operation?: ("insert"|"update"|"insertOrUpdate"|"replace"|"delete"|"send"|"ack");
 
                 /**
                  * Creates a new Mutation instance using the specified properties.
@@ -34409,6 +34421,230 @@ export namespace google {
 
                     /**
                      * Gets the default type url for Delete
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a Send. */
+                interface ISend {
+
+                    /** Send queue */
+                    queue?: (string|null);
+
+                    /** Send key */
+                    key?: (google.protobuf.IListValue|null);
+
+                    /** Send deliverTime */
+                    deliverTime?: (google.protobuf.ITimestamp|null);
+
+                    /** Send payload */
+                    payload?: (google.protobuf.IValue|null);
+                }
+
+                /** Represents a Send. */
+                class Send implements ISend {
+
+                    /**
+                     * Constructs a new Send.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.Mutation.ISend);
+
+                    /** Send queue. */
+                    public queue: string;
+
+                    /** Send key. */
+                    public key?: (google.protobuf.IListValue|null);
+
+                    /** Send deliverTime. */
+                    public deliverTime?: (google.protobuf.ITimestamp|null);
+
+                    /** Send payload. */
+                    public payload?: (google.protobuf.IValue|null);
+
+                    /**
+                     * Creates a new Send instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns Send instance
+                     */
+                    public static create(properties?: google.spanner.v1.Mutation.ISend): google.spanner.v1.Mutation.Send;
+
+                    /**
+                     * Encodes the specified Send message. Does not implicitly {@link google.spanner.v1.Mutation.Send.verify|verify} messages.
+                     * @param message Send message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.Mutation.ISend, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Send message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Send.verify|verify} messages.
+                     * @param message Send message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.Mutation.ISend, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Send message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Send
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.Mutation.Send;
+
+                    /**
+                     * Decodes a Send message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Send
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.Mutation.Send;
+
+                    /**
+                     * Verifies a Send message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Send message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Send
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.Mutation.Send;
+
+                    /**
+                     * Creates a plain object from a Send message. Also converts values to other types if specified.
+                     * @param message Send
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.Mutation.Send, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Send to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for Send
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of an Ack. */
+                interface IAck {
+
+                    /** Ack queue */
+                    queue?: (string|null);
+
+                    /** Ack key */
+                    key?: (google.protobuf.IListValue|null);
+
+                    /** Ack ignoreNotFound */
+                    ignoreNotFound?: (boolean|null);
+                }
+
+                /** Represents an Ack. */
+                class Ack implements IAck {
+
+                    /**
+                     * Constructs a new Ack.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.Mutation.IAck);
+
+                    /** Ack queue. */
+                    public queue: string;
+
+                    /** Ack key. */
+                    public key?: (google.protobuf.IListValue|null);
+
+                    /** Ack ignoreNotFound. */
+                    public ignoreNotFound: boolean;
+
+                    /**
+                     * Creates a new Ack instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns Ack instance
+                     */
+                    public static create(properties?: google.spanner.v1.Mutation.IAck): google.spanner.v1.Mutation.Ack;
+
+                    /**
+                     * Encodes the specified Ack message. Does not implicitly {@link google.spanner.v1.Mutation.Ack.verify|verify} messages.
+                     * @param message Ack message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.Mutation.IAck, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Ack message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Ack.verify|verify} messages.
+                     * @param message Ack message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.Mutation.IAck, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an Ack message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Ack
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.Mutation.Ack;
+
+                    /**
+                     * Decodes an Ack message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Ack
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.Mutation.Ack;
+
+                    /**
+                     * Verifies an Ack message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an Ack message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Ack
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.Mutation.Ack;
+
+                    /**
+                     * Creates a plain object from an Ack message. Also converts values to other types if specified.
+                     * @param message Ack
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.Mutation.Ack, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Ack to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for Ack
                      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                      * @returns The default type url
                      */
@@ -35246,11 +35482,217 @@ export namespace google {
                 }
             }
 
+            /** Properties of a QueryAdvisorResult. */
+            interface IQueryAdvisorResult {
+
+                /** QueryAdvisorResult indexAdvice */
+                indexAdvice?: (google.spanner.v1.QueryAdvisorResult.IIndexAdvice[]|null);
+            }
+
+            /** Represents a QueryAdvisorResult. */
+            class QueryAdvisorResult implements IQueryAdvisorResult {
+
+                /**
+                 * Constructs a new QueryAdvisorResult.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IQueryAdvisorResult);
+
+                /** QueryAdvisorResult indexAdvice. */
+                public indexAdvice: google.spanner.v1.QueryAdvisorResult.IIndexAdvice[];
+
+                /**
+                 * Creates a new QueryAdvisorResult instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns QueryAdvisorResult instance
+                 */
+                public static create(properties?: google.spanner.v1.IQueryAdvisorResult): google.spanner.v1.QueryAdvisorResult;
+
+                /**
+                 * Encodes the specified QueryAdvisorResult message. Does not implicitly {@link google.spanner.v1.QueryAdvisorResult.verify|verify} messages.
+                 * @param message QueryAdvisorResult message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IQueryAdvisorResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryAdvisorResult message, length delimited. Does not implicitly {@link google.spanner.v1.QueryAdvisorResult.verify|verify} messages.
+                 * @param message QueryAdvisorResult message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IQueryAdvisorResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryAdvisorResult message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryAdvisorResult
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.QueryAdvisorResult;
+
+                /**
+                 * Decodes a QueryAdvisorResult message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryAdvisorResult
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.QueryAdvisorResult;
+
+                /**
+                 * Verifies a QueryAdvisorResult message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryAdvisorResult message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryAdvisorResult
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.QueryAdvisorResult;
+
+                /**
+                 * Creates a plain object from a QueryAdvisorResult message. Also converts values to other types if specified.
+                 * @param message QueryAdvisorResult
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.QueryAdvisorResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryAdvisorResult to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for QueryAdvisorResult
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace QueryAdvisorResult {
+
+                /** Properties of an IndexAdvice. */
+                interface IIndexAdvice {
+
+                    /** IndexAdvice ddl */
+                    ddl?: (string[]|null);
+
+                    /** IndexAdvice improvementFactor */
+                    improvementFactor?: (number|null);
+                }
+
+                /** Represents an IndexAdvice. */
+                class IndexAdvice implements IIndexAdvice {
+
+                    /**
+                     * Constructs a new IndexAdvice.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.QueryAdvisorResult.IIndexAdvice);
+
+                    /** IndexAdvice ddl. */
+                    public ddl: string[];
+
+                    /** IndexAdvice improvementFactor. */
+                    public improvementFactor: number;
+
+                    /**
+                     * Creates a new IndexAdvice instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns IndexAdvice instance
+                     */
+                    public static create(properties?: google.spanner.v1.QueryAdvisorResult.IIndexAdvice): google.spanner.v1.QueryAdvisorResult.IndexAdvice;
+
+                    /**
+                     * Encodes the specified IndexAdvice message. Does not implicitly {@link google.spanner.v1.QueryAdvisorResult.IndexAdvice.verify|verify} messages.
+                     * @param message IndexAdvice message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.QueryAdvisorResult.IIndexAdvice, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified IndexAdvice message, length delimited. Does not implicitly {@link google.spanner.v1.QueryAdvisorResult.IndexAdvice.verify|verify} messages.
+                     * @param message IndexAdvice message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.QueryAdvisorResult.IIndexAdvice, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an IndexAdvice message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns IndexAdvice
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.QueryAdvisorResult.IndexAdvice;
+
+                    /**
+                     * Decodes an IndexAdvice message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns IndexAdvice
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.QueryAdvisorResult.IndexAdvice;
+
+                    /**
+                     * Verifies an IndexAdvice message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an IndexAdvice message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns IndexAdvice
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.QueryAdvisorResult.IndexAdvice;
+
+                    /**
+                     * Creates a plain object from an IndexAdvice message. Also converts values to other types if specified.
+                     * @param message IndexAdvice
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.QueryAdvisorResult.IndexAdvice, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this IndexAdvice to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for IndexAdvice
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+            }
+
             /** Properties of a QueryPlan. */
             interface IQueryPlan {
 
                 /** QueryPlan planNodes */
                 planNodes?: (google.spanner.v1.IPlanNode[]|null);
+
+                /** QueryPlan queryAdvice */
+                queryAdvice?: (google.spanner.v1.IQueryAdvisorResult|null);
             }
 
             /** Represents a QueryPlan. */
@@ -35264,6 +35706,9 @@ export namespace google {
 
                 /** QueryPlan planNodes. */
                 public planNodes: google.spanner.v1.IPlanNode[];
+
+                /** QueryPlan queryAdvice. */
+                public queryAdvice?: (google.spanner.v1.IQueryAdvisorResult|null);
 
                 /**
                  * Creates a new QueryPlan instance using the specified properties.
