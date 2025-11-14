@@ -597,10 +597,10 @@ export class SpannerClient {
    * @param {google.spanner.v1.Session} request.sessionTemplate
    *   Parameters to apply to each created session.
    * @param {number} request.sessionCount
-   *   Required. The number of sessions to be created in this batch call.
-   *   The API can return fewer than the requested number of sessions. If a
-   *   specific number of sessions are desired, the client can make additional
-   *   calls to `BatchCreateSessions` (adjusting
+   *   Required. The number of sessions to be created in this batch call. At least
+   *   one session is created. The API can return fewer than the requested number
+   *   of sessions. If a specific number of sessions are desired, the client can
+   *   make additional calls to `BatchCreateSessions` (adjusting
    *   {@link protos.google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count}
    *   as necessary).
    * @param {object} [options]
