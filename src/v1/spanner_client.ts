@@ -1081,6 +1081,13 @@ export class SpannerClient {
    *   be deferred until commit time (for example, validation of unique
    *   constraints). Given this, successful execution of a DML statement shouldn't
    *   be assumed until a subsequent `Commit` call completes successfully.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. If present, it makes the Spanner requests location-aware.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1453,6 +1460,13 @@ export class SpannerClient {
    * @param {google.spanner.v1.ReadRequest.LockHint} [request.lockHint]
    *   Optional. Lock Hint for the request, it can only be used with read-write
    *   transactions.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. If present, it makes the Spanner requests location-aware.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2449,6 +2463,13 @@ export class SpannerClient {
    *   be deferred until commit time (for example, validation of unique
    *   constraints). Given this, successful execution of a DML statement shouldn't
    *   be assumed until a subsequent `Commit` call completes successfully.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. If present, it makes the Spanner requests location-aware.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2556,6 +2577,13 @@ export class SpannerClient {
    * @param {google.spanner.v1.ReadRequest.LockHint} [request.lockHint]
    *   Optional. Lock Hint for the request, it can only be used with read-write
    *   transactions.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. If present, it makes the Spanner requests location-aware.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
