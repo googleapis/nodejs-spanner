@@ -80,28 +80,6 @@ console.log(`Query: ${rows.length} found.`);
 rows.forEach(row => console.log(row));
 
 ```
-## Metrics
-
-Cloud Spanner client supports [client-side metrics](https://cloud.google.com/spanner/docs/view-manage-client-side-metrics) that you can use along with server-side metrics to optimize performance and troubleshoot performance issues if they occur.
-
-Client-side metrics are measured from the time a request leaves your application to the time your application receives the response. 
-In contrast, server-side metrics are measured from the time Spanner receives a request until the last byte of data is sent to the client.
-
-These metrics are enabled by default. You can opt out of using client-side metrics with the following code:
-
-```javascript
-const spanner = new Spanner({
-        disableBuiltInMetrics: true
-});
-```
-
-You can also disable these metrics by setting `SPANNER_DISABLE_BUILTIN_METRICS` to `true`.
-
-> Note: Client-side metrics needs `monitoring.timeSeries.create` IAM permission to export metrics data. Ask your administrator to grant your service account the [Monitoring Metric Writer](https://cloud.google.com/iam/docs/roles-permissions/monitoring#monitoring.metricWriter) (roles/monitoring.metricWriter) IAM role on the project.
-
-## Traces
-Refer to the Observability README to know more about tracing support in the Cloud Spanner client.
-
 ## Multiplexed Sessions
 
 Spanner's Multiplexed Sessions is now default enabled session mode in node client. This feature helps reduce
