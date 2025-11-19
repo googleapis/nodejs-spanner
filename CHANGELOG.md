@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* Remove Console logging ([e673acd](https://github.com/googleapis/nodejs-spanner/commit/e673acdba717380d25eca6d978272c43950eb1e8))
+
 ## [8.3.0](https://github.com/googleapis/nodejs-spanner/compare/v8.2.2...v8.3.0) (2025-11-11)
 
 
