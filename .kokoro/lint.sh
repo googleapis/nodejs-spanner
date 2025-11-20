@@ -18,9 +18,6 @@ set -eo pipefail
 
 export NPM_CONFIG_PREFIX=${HOME}/.npm-global
 
-# Ensure the npm prefix directory exists
-mkdir -p ${NPM_CONFIG_PREFIX}
-
 cd $(dirname $0)/..
 
 npm install
