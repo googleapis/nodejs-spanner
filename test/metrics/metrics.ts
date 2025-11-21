@@ -42,6 +42,7 @@ describe('Test metrics with mock server', () => {
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
   const server = new grpc.Server();
   const spannerMock = mock.createMockSpanner(server);
+  const PROJECT_ID = 'test-project';
 
   class InMemoryMetricReader extends MetricReader {
     protected async onForceFlush(): Promise<void> {}
@@ -158,7 +159,7 @@ describe('Test metrics with mock server', () => {
     await MetricsTracerFactory.resetInstance();
     MetricsTracerFactory.enabled = true;
     spanner = new Spanner({
-      projectId: 'test-project',
+      projectId: PROJECT_ID,
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -210,7 +211,7 @@ describe('Test metrics with mock server', () => {
       spannerMock.removeExecutionTimes();
       // Reset the MetricsFactoryReader to an in-memory reader for the tests
       MetricsTracerFactory.enabled = true;
-      factory = MetricsTracerFactory.getInstance();
+      factory = MetricsTracerFactory.getInstance(PROJECT_ID);
       await factory!.resetMeterProvider();
       reader = new InMemoryMetricReader();
       factory!.getMeterProvider([reader]);
@@ -237,7 +238,7 @@ describe('Test metrics with mock server', () => {
 
       const elapsedTime = endTime.valueOf() - startTime.valueOf();
 
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
 
       const {resourceMetrics} = await reader.collect();
       const operationCountData = getMetricData(
@@ -368,7 +369,7 @@ describe('Test metrics with mock server', () => {
       const sessionAttributes = {
         ...commonAttributes,
         database: `database-${dbCounter}`,
-        method: 'batchCreateSessions',
+        method: 'createSession',
       };
       // Verify batchCreateSession metrics are unaffected
       assert.strictEqual(
@@ -457,15 +458,11 @@ describe('Test metrics with mock server', () => {
         resourceMetrics,
         METRIC_NAME_GFE_CONNECTIVITY_ERROR_COUNT,
       );
-      const afeConnectivityErrorCountData = getMetricData(
-        resourceMetrics,
-        METRIC_NAME_AFE_CONNECTIVITY_ERROR_COUNT,
-      );
 
       // Verify GFE AFE latency doesn't exist
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_GFE_LATENCIES));
       assert.ok(!hasMetricData(resourceMetrics, METRIC_NAME_AFE_LATENCIES));
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
       methods.forEach(method => {
         const attributes = {
           ...commonAttributes,
@@ -484,10 +481,6 @@ describe('Test metrics with mock server', () => {
         // Verify that GFE AFE connectivity error count increased
         assert.strictEqual(
           getAggregatedValue(connectivityErrorCountData, attributes),
-          1,
-        );
-        assert.strictEqual(
-          getAggregatedValue(afeConnectivityErrorCountData, attributes),
           1,
         );
       });
@@ -561,9 +554,9 @@ describe('Test metrics with mock server', () => {
       const sessionAttributes = {
         ...commonAttributes,
         database: `database-${dbCounter}`,
-        method: 'batchCreateSessions',
+        method: 'createSession',
       };
-      // Verify batchCreateSession metrics are unaffected
+      // Verify createSession metrics are unaffected
       assert.strictEqual(
         1,
         getAggregatedValue(operationCountData, sessionAttributes),
@@ -666,7 +659,7 @@ describe('Test metrics with mock server', () => {
 
       const elapsedTime = endTime.valueOf() - startTime.valueOf();
 
-      const methods = ['batchCreateSessions', 'executeStreamingSql'];
+      const methods = ['createSession', 'executeStreamingSql'];
 
       const {resourceMetrics} = await reader.collect();
       const operationCountData = getMetricData(

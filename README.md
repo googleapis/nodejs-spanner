@@ -5,7 +5,7 @@
 # [Cloud Spanner: Node.js Client](https://github.com/googleapis/nodejs-spanner)
 
 [![release level](https://img.shields.io/badge/release%20level-stable-brightgreen.svg?style=flat)](https://cloud.google.com/terms/launch-stages)
-[![npm version](https://img.shields.io/npm/v/@google-cloud/spanner.svg)](https://www.npmjs.org/package/@google-cloud/spanner)
+[![npm version](https://img.shields.io/npm/v/@google-cloud/spanner.svg)](https://www.npmjs.com/package/@google-cloud/spanner)
 
 
 
@@ -80,7 +80,49 @@ console.log(`Query: ${rows.length} found.`);
 rows.forEach(row => console.log(row));
 
 ```
+## Metrics
 
+Cloud Spanner client supports [client-side metrics](https://cloud.google.com/spanner/docs/view-manage-client-side-metrics) that you can use along with server-side metrics to optimize performance and troubleshoot performance issues if they occur.
+
+Client-side metrics are measured from the time a request leaves your application to the time your application receives the response. 
+In contrast, server-side metrics are measured from the time Spanner receives a request until the last byte of data is sent to the client.
+
+These metrics are enabled by default. You can opt out of using client-side metrics with the following code:
+
+```javascript
+const spanner = new Spanner({
+        disableBuiltInMetrics: true
+});
+```
+
+You can also disable these metrics by setting `SPANNER_DISABLE_BUILTIN_METRICS` to `true`.
+
+> Note: Client-side metrics needs `monitoring.timeSeries.create` IAM permission to export metrics data. Ask your administrator to grant your service account the [Monitoring Metric Writer](https://cloud.google.com/iam/docs/roles-permissions/monitoring#monitoring.metricWriter) (roles/monitoring.metricWriter) IAM role on the project.
+
+## Traces
+Refer to the Observability README to know more about tracing support in the Cloud Spanner client.
+
+## Multiplexed Sessions
+
+Spanner's Multiplexed Sessions is now default enabled session mode in node client. This feature helps reduce
+session management overhead and minimize session-related errors.
+
+For a detailed explanation on multiplexed sessions, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
+
+## Regular Sessions
+
+To use regular sessions, disable the multiplexed sessions and set the following environment variables to `false`:
+
+* **For Read-Only Transactions:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+* **For Partitioned Operations:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS`
+* **For Read-Write Transactions:**
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
+- `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW`
+
+For a detailed explanation on session modes and env configurations, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions).
 
 
 ## Samples
@@ -191,6 +233,7 @@ Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tre
 | Queryoptions | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/queryoptions.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/queryoptions.js,samples/README.md) |
 | Quickstart | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/quickstart.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/quickstart.js,samples/README.md) |
 | Read data with database role | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-data-with-database-role.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-data-with-database-role.js,samples/README.md) |
+| Performs a read-write transaction with isolation level option | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/repeatable-reads.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/repeatable-reads.js,samples/README.md) |
 | Sets a request tag for a single query | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/request-tag.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/request-tag.js,samples/README.md) |
 | Run Batch update with RPC priority | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-batch-dml.js,samples/README.md) |
 | Run partitioned update with RPC priority | [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-partitioned-dml.js,samples/README.md) |

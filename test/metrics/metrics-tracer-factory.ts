@@ -93,7 +93,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should use the set meter provider', async () => {
-    const factory = MetricsTracerFactory.getInstance();
+    const factory = MetricsTracerFactory.getInstance('project-id');
     const tracer = factory!.createMetricsTracer(
       'some-method',
       'projects/project/instances/instance/databases/database',
@@ -126,7 +126,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should initialize metric instruments when enabled', () => {
-    const factory = MetricsTracerFactory.getInstance();
+    const factory = MetricsTracerFactory.getInstance('project-id');
 
     assert.deepStrictEqual(factory!.instrumentAttemptLatency, {
       record: recordAttemptLatencyStub,
@@ -149,7 +149,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should create a MetricsTracer instance', () => {
-    const factory = MetricsTracerFactory.getInstance();
+    const factory = MetricsTracerFactory.getInstance('project-id');
     const tracer = factory!.createMetricsTracer(
       'some-method',
       'method-name',
@@ -159,7 +159,7 @@ describe('MetricsTracerFactory', () => {
   });
 
   it('should correctly set default attributes', () => {
-    const factory = MetricsTracerFactory.getInstance();
+    const factory = MetricsTracerFactory.getInstance('project-id');
     const tracer = factory!.createMetricsTracer(
       'test-method',
       'projects/project/instances/instance/databases/database',

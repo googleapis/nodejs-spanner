@@ -28,6 +28,7 @@ import {TimestampBounds} from '../src/transaction';
 import {google} from '../protos/protos';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -408,6 +409,17 @@ describe('Table', () => {
       table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
     });
 
+    it('should accept readLockMode option', done => {
+      const deleteRowsOptions = {
+        readLockMode: ReadLockMode.OPTIMISTIC,
+      };
+      transaction.commit = options => {
+        assert.strictEqual(options, deleteRowsOptions);
+        done();
+      };
+      table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
+    });
+
     it('should delete the rows via transaction', done => {
       const stub = (
         sandbox.stub(transaction, 'deleteRows') as sinon.SinonStub
@@ -541,6 +553,22 @@ describe('Table', () => {
     it('should accept isolationLevel options', done => {
       const insertRowsOptions = {
         isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+      (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW,
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, insertRowsOptions);
+        done();
+      };
+
+      table.insert(ROW, insertRowsOptions, assert.ifError);
+    });
+
+    it('should accept readLockMode options', done => {
+      const insertRowsOptions = {
+        readLockMode: ReadLockMode.OPTIMISTIC,
       };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
@@ -726,6 +754,22 @@ describe('Table', () => {
 
       table.replace(ROW, replaceRowsOptions, assert.ifError);
     });
+
+    it('should accept readLockMode options', done => {
+      const replaceRowsOptions = {
+        readLockMode: ReadLockMode.OPTIMISTIC,
+      };
+      (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW,
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, replaceRowsOptions);
+        done();
+      };
+
+      table.replace(ROW, replaceRowsOptions, assert.ifError);
+    });
   });
 
   describe('update', () => {
@@ -832,6 +876,22 @@ describe('Table', () => {
 
       table.update(ROW, updateRowsOptions, assert.ifError);
     });
+
+    it('should accept readLockMode option', done => {
+      const updateRowsOptions = {
+        readLockMode: ReadLockMode.OPTIMISTIC,
+      };
+      (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW,
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, updateRowsOptions);
+        done();
+      };
+
+      table.update(ROW, updateRowsOptions, assert.ifError);
+    });
   });
 
   describe('upsert', () => {
@@ -926,6 +986,22 @@ describe('Table', () => {
     it('should accept isolationLevel option', done => {
       const upsertRowsOptions = {
         isolationLevel: IsolationLevel.REPEATABLE_READ,
+      };
+      (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW,
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, upsertRowsOptions);
+        done();
+      };
+
+      table.upsert(ROW, upsertRowsOptions, assert.ifError);
+    });
+
+    it('should accept readLockMode option', done => {
+      const upsertRowsOptions = {
+        readLockMode: ReadLockMode.OPTIMISTIC,
       };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,

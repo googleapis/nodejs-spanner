@@ -40,6 +40,7 @@ import {
 import {CLOUD_RESOURCE_HEADER, AFE_SERVER_TIMING_HEADER} from '../src/common';
 import {MetricsTracerFactory} from '../src/metrics/metrics-tracer-factory';
 import IsolationLevel = protos.google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = protos.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 const singer = require('./data/singer');
 const music = singer.examples.spanner.music;
 
@@ -50,18 +51,14 @@ assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
 const apiConfig = require('../src/spanner_grpc_config.json');
 
 async function disableMetrics(sandbox: sinon.SinonSandbox) {
-  if (
-    Object.prototype.hasOwnProperty.call(
-      process.env,
-      'SPANNER_DISABLE_BUILTIN_METRICS',
-    )
-  ) {
-    sandbox.replace(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
-  } else {
-    sandbox.define(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS', 'true');
-  }
+  sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('true');
   await MetricsTracerFactory.resetInstance();
   MetricsTracerFactory.enabled = false;
+}
+
+async function enableMetrics(sandbox: sinon.SinonSandbox) {
+  sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('false');
+  await MetricsTracerFactory.resetInstance();
 }
 
 function getFake(obj: {}) {
@@ -132,7 +129,14 @@ const fakeV1: any = {
 function fakeGoogleAuth() {
   return {
     calledWith_: arguments,
-    getProjectId: () => Promise.resolve('project-id'),
+    getProjectId: function (callback) {
+      if (callback) {
+        callback(null, 'project-id');
+        return;
+      } else {
+        return Promise.resolve('project-id');
+      }
+    },
   };
 }
 
@@ -224,8 +228,7 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.keepalive_time_ms': 30000,
-      'grpc.keepalive_timeout_ms': 10000,
+      'grpc.keepalive_time_ms': 120000,
       'grpc.callInvocationTransformer':
         fakeGrpcGcp().gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
@@ -327,6 +330,13 @@ describe('Spanner', () => {
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
     });
 
+    it('should configure metrics if project Id is not passed', async () => {
+      await enableMetrics(sandbox);
+      const spanner = new Spanner();
+      assert.strictEqual(MetricsTracerFactory.enabled, true);
+      await disableMetrics(sandbox);
+    });
+
     it('should optionally accept disableBuiltInMetrics', () => {
       const spanner = new Spanner({disableBuiltInMetrics: true});
       assert.strictEqual(MetricsTracerFactory.enabled, false);
@@ -357,6 +367,7 @@ describe('Spanner', () => {
       const fakeDefaultTxnOptions = {
         defaultTransactionOptions: {
           isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.PESSIMISTIC,
         },
       };
 

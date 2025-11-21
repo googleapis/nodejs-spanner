@@ -18097,6 +18097,9 @@ export namespace google {
                         /** InstancePartition processingUnits */
                         processingUnits?: (number|null);
 
+                        /** InstancePartition autoscalingConfig */
+                        autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
+
                         /** InstancePartition state */
                         state?: (google.spanner.admin.instance.v1.InstancePartition.State|keyof typeof google.spanner.admin.instance.v1.InstancePartition.State|null);
 
@@ -18139,6 +18142,9 @@ export namespace google {
 
                         /** InstancePartition processingUnits. */
                         public processingUnits?: (number|null);
+
+                        /** InstancePartition autoscalingConfig. */
+                        public autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
                         /** InstancePartition state. */
                         public state: (google.spanner.admin.instance.v1.InstancePartition.State|keyof typeof google.spanner.admin.instance.v1.InstancePartition.State);

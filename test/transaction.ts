@@ -56,6 +56,7 @@ describe('Transaction', () => {
     directedReadOptions: {},
     defaultTransactionOptions: {
       isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+      readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
     },
   };
 
@@ -452,6 +453,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -494,6 +496,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -884,6 +887,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -930,6 +934,7 @@ describe('Transaction', () => {
           directedReadOptions: fakeDirectedReadOptions,
           defaultTransactionOptions: {
             isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+            readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
           },
         };
 
@@ -1655,37 +1660,13 @@ describe('Transaction', () => {
         transaction.begin(assert.ifError);
       });
 
-      it('should set optimistic lock using useOptimisticLock', () => {
-        const rw = {
-          readLockMode: ReadLockMode.OPTIMISTIC,
-        };
-        transaction = new Transaction(SESSION);
-        transaction.useOptimisticLock();
-        const stub = sandbox.stub(transaction, 'request');
-        transaction.begin();
-
-        const expectedOptions = {isolationLevel: 0, readWrite: rw};
-        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
-
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'beginTransaction');
-        assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(
-          headers,
-          Object.assign(
-            {[LEADER_AWARE_ROUTING_HEADER]: true},
-            transaction.commonHeaders_,
-          ),
-        );
-      });
-
       it('should set optimistic lock using setReadWriteTransactionOptions', () => {
         const rw = {
           readLockMode: ReadLockMode.OPTIMISTIC,
         };
         transaction = new Transaction(SESSION);
         transaction.setReadWriteTransactionOptions({
-          optimisticLock: ReadLockMode.OPTIMISTIC,
+          readLockMode: ReadLockMode.OPTIMISTIC,
         });
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
@@ -1705,112 +1686,147 @@ describe('Transaction', () => {
         );
       });
 
-      describe('when multiplexed session is enabled for read/write', () => {
-        before(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      it('should set repeatable read using setReadWriteTransactionOptions', () => {
+        const rw = {
+          readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.setReadWriteTransactionOptions({
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
         });
-        after(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-            'false';
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {isolationLevel: 2, readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_,
+          ),
+        );
+      });
+
+      it('should set repeatable read isolation and pessimistic lock using setReadWriteTransactionOptions', () => {
+        const rw = {
+          readLockMode: ReadLockMode.PESSIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.setReadWriteTransactionOptions({
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.PESSIMISTIC,
         });
-        it('should pass multiplexedSessionPreviousTransactionId in the BeginTransactionRequest upon retrying an aborted transaction', () => {
-          const fakePreviousTransactionId = 'fake-previous-transaction-id';
-          const database = {
-            formattedName_: 'formatted-database-name',
-            isMuxEnabledForRW_: true,
-            parent: INSTANCE,
-          };
-          const SESSION = {
-            parent: database,
-            formattedName_: SESSION_NAME,
-            request: REQUEST,
-            requestStream: REQUEST_STREAM,
-          };
-          // multiplexed session
-          const multiplexedSession = Object.assign(
-            {multiplexed: true},
-            SESSION,
-          );
-          const transaction = new Transaction(multiplexedSession);
-          // transaction option must contain the previous transaction id for multiplexed session
-          transaction.multiplexedSessionPreviousTransactionId =
-            fakePreviousTransactionId;
-          const stub = sandbox.stub(transaction, 'request');
-          transaction.begin();
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
 
-          const expectedOptions = {
-            isolationLevel: 0,
-            readWrite: {
-              multiplexedSessionPreviousTransactionId:
-                fakePreviousTransactionId,
-            },
-          };
-          const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+        const expectedOptions = {isolationLevel: 2, readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
-          assert.strictEqual(client, 'SpannerClient');
-          assert.strictEqual(method, 'beginTransaction');
-          // request options should contain the multiplexedSessionPreviousTransactionId
-          assert.deepStrictEqual(reqOpts.options, expectedOptions);
-          assert.deepStrictEqual(
-            headers,
-            Object.assign(
-              {[LEADER_AWARE_ROUTING_HEADER]: true},
-              transaction.commonHeaders_,
-            ),
-          );
-        });
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_,
+          ),
+        );
+      });
 
-        it('should send the correct options if _mutationKey is set in the transaction object', () => {
-          // session with multiplexed enabled
-          const multiplexedSession = Object.assign(
-            {multiplexed: true},
-            SESSION,
-          );
+      it('should pass multiplexedSessionPreviousTransactionId in the BeginTransactionRequest upon retrying an aborted transaction', () => {
+        const fakePreviousTransactionId = 'fake-previous-transaction-id';
+        const database = {
+          formattedName_: 'formatted-database-name',
+          isMuxEnabledForRW_: true,
+          parent: INSTANCE,
+        };
+        const SESSION = {
+          parent: database,
+          formattedName_: SESSION_NAME,
+          request: REQUEST,
+          requestStream: REQUEST_STREAM,
+        };
+        // multiplexed session
+        const multiplexedSession = Object.assign({multiplexed: true}, SESSION);
+        const transaction = new Transaction(multiplexedSession);
+        // transaction option must contain the previous transaction id for multiplexed session
+        transaction.multiplexedSessionPreviousTransactionId =
+          fakePreviousTransactionId;
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
 
-          // fake mutation key
-          const fakeMutationKey = {
-            insertOrUpdate: {
-              table: 'my-table-123',
-              columns: ['Id', 'Name'],
-              values: [
-                {
-                  values: [{stringValue: 'Id3'}, {stringValue: 'Name3'}],
-                },
-              ],
-            },
-          } as google.spanner.v1.Mutation;
+        const expectedOptions = {
+          isolationLevel: 0,
+          readWrite: {
+            multiplexedSessionPreviousTransactionId: fakePreviousTransactionId,
+          },
+        };
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
 
-          const transaction = new Transaction(multiplexedSession);
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        // request options should contain the multiplexedSessionPreviousTransactionId
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_,
+          ),
+        );
+      });
 
-          // stub the transaction request
-          const stub = sandbox.stub(transaction, 'request');
+      it('should send the correct options if _mutationKey is set in the transaction object', () => {
+        // session with multiplexed enabled
+        const multiplexedSession = Object.assign({multiplexed: true}, SESSION);
 
-          // set the _mutationKey in the transaction object
-          transaction._mutationKey = fakeMutationKey;
+        // fake mutation key
+        const fakeMutationKey = {
+          insertOrUpdate: {
+            table: 'my-table-123',
+            columns: ['Id', 'Name'],
+            values: [
+              {
+                values: [{stringValue: 'Id3'}, {stringValue: 'Name3'}],
+              },
+            ],
+          },
+        } as google.spanner.v1.Mutation;
 
-          // make a call to begin
-          transaction.begin();
+        const transaction = new Transaction(multiplexedSession);
 
-          const expectedOptions = {isolationLevel: 0, readWrite: {}};
-          const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+        // stub the transaction request
+        const stub = sandbox.stub(transaction, 'request');
 
-          // assert on the begin transaction call
-          assert.strictEqual(client, 'SpannerClient');
-          assert.strictEqual(method, 'beginTransaction');
-          assert.deepStrictEqual(reqOpts.options, expectedOptions);
-          // assert that if the _mutationKey is set in the transaction object
-          // it is getting pass in the request as well along with request options
-          assert.deepStrictEqual(reqOpts.mutationKey, fakeMutationKey);
-          assert.deepStrictEqual(
-            headers,
-            Object.assign(
-              {[LEADER_AWARE_ROUTING_HEADER]: true},
-              transaction.commonHeaders_,
-            ),
-          );
-        });
+        // set the _mutationKey in the transaction object
+        transaction._mutationKey = fakeMutationKey;
+
+        // make a call to begin
+        transaction.begin();
+
+        const expectedOptions = {isolationLevel: 0, readWrite: {}};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        // assert on the begin transaction call
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        // assert that if the _mutationKey is set in the transaction object
+        // it is getting pass in the request as well along with request options
+        assert.deepStrictEqual(reqOpts.mutationKey, fakeMutationKey);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.commonHeaders_,
+          ),
+        );
       });
     });
 
@@ -1962,96 +1978,80 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts.singleUseTransaction, expectedOptions);
       });
 
-      describe('when multiplexed session is enabled for read write', () => {
-        before(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
+      it('should call _setMutationKey when neither `id` is set nor `singleUseTransaction` is used', async () => {
+        // fake mutation key
+        const fakeMutations = [
+          {
+            insertOrUpdate: {
+              table: 'my-table-123',
+              columns: ['Id', 'Name'],
+              values: [
+                {
+                  values: [{stringValue: 'Id1'}, {stringValue: 'Name1'}],
+                },
+              ],
+            },
+          } as google.spanner.v1.Mutation,
+        ];
+
+        // fake transaction id
+        const fakeTransactionId = 'fake-tx-id-12345';
+
+        const database = {
+          formattedName_: 'formatted-database-name',
+          isMuxEnabledForRW_: true,
+          parent: INSTANCE,
+        };
+        const SESSION = {
+          parent: database,
+          formattedName_: SESSION_NAME,
+          request: REQUEST,
+          requestStream: REQUEST_STREAM,
+        };
+        // multiplexed session
+        const multiplexedSession = Object.assign({multiplexed: true}, SESSION);
+
+        // transaction object
+        const transaction = new Transaction(multiplexedSession);
+
+        // ensure transaction is not single use transaction
+        transaction._useInRunner = true;
+
+        // ensure transaction ID is not set
+        transaction.id = undefined;
+
+        // set the _queuedMutations with the fakeMutations list
+        transaction._queuedMutations = fakeMutations;
+
+        // spy on _setMutationKey
+        const setMutationKeySpy = sandbox.spy(transaction, '_setMutationKey');
+
+        // stub the begin method
+        const beginStub = sandbox.stub(transaction, 'begin').callsFake(() => {
+          transaction.id = fakeTransactionId;
+          return Promise.resolve();
         });
 
-        after(() => {
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-          process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW =
-            'false';
-        });
+        // stub transaction request
+        sandbox.stub(transaction, 'request');
 
-        it('should call _setMutationKey when neither `id` is set nor `singleUseTransaction` is used', async () => {
-          // fake mutation key
-          const fakeMutations = [
-            {
-              insertOrUpdate: {
-                table: 'my-table-123',
-                columns: ['Id', 'Name'],
-                values: [
-                  {
-                    values: [{stringValue: 'Id1'}, {stringValue: 'Name1'}],
-                  },
-                ],
-              },
-            } as google.spanner.v1.Mutation,
-          ];
+        // make a call to commit
+        transaction.commit();
 
-          // fake transaction id
-          const fakeTransactionId = 'fake-tx-id-12345';
+        // ensure that _setMutationKey was got called once
+        sinon.assert.calledOnce(setMutationKeySpy);
 
-          const database = {
-            formattedName_: 'formatted-database-name',
-            isMuxEnabledForRW_: true,
-            parent: INSTANCE,
-          };
-          const SESSION = {
-            parent: database,
-            formattedName_: SESSION_NAME,
-            request: REQUEST,
-            requestStream: REQUEST_STREAM,
-          };
-          // multiplexed session
-          const multiplexedSession = Object.assign(
-            {multiplexed: true},
-            SESSION,
-          );
+        // ensure that _setMutationKey got called with correct arguments
+        sinon.assert.calledWith(setMutationKeySpy, fakeMutations);
 
-          // transaction object
-          const transaction = new Transaction(multiplexedSession);
+        // ensure begin was called
+        sinon.assert.calledOnce(beginStub);
 
-          // ensure transaction is not single use transaction
-          transaction._useInRunner = true;
+        // ensure begin set the transaction id
+        assert.strictEqual(transaction.id, fakeTransactionId);
 
-          // ensure transaction ID is not set
-          transaction.id = undefined;
-
-          // set the _queuedMutations with the fakeMutations list
-          transaction._queuedMutations = fakeMutations;
-
-          // spy on _setMutationKey
-          const setMutationKeySpy = sandbox.spy(transaction, '_setMutationKey');
-
-          // stub the begin method
-          const beginStub = sandbox.stub(transaction, 'begin').callsFake(() => {
-            transaction.id = fakeTransactionId;
-            return Promise.resolve();
-          });
-
-          // stub transaction request
-          sandbox.stub(transaction, 'request');
-
-          // make a call to commit
-          transaction.commit();
-
-          // ensure that _setMutationKey was got called once
-          sinon.assert.calledOnce(setMutationKeySpy);
-
-          // ensure that _setMutationKey got called with correct arguments
-          sinon.assert.calledWith(setMutationKeySpy, fakeMutations);
-
-          // ensure begin was called
-          sinon.assert.calledOnce(beginStub);
-
-          // ensure begin set the transaction id
-          assert.strictEqual(transaction.id, fakeTransactionId);
-
-          // ensure _mutationKey is set
-          assert.strictEqual(transaction._mutationKey, fakeMutations[0]);
-        });
+        // ensure _mutationKey is set
+        assert.strictEqual(transaction._mutationKey, fakeMutations[0]);
       });
 
       it('should call `end` once complete', () => {

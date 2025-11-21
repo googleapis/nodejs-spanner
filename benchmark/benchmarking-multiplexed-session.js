@@ -16,6 +16,8 @@
 
 'use strict';
 
+const {randomUUID} = require('crypto');
+
 const thread_execution_times = [];
 const transaction_times = [];
 async function main(
@@ -23,15 +25,9 @@ async function main(
   databaseId,
   projectId,
   method,
-  multiplexedEnabled,
   numThreads,
   numQueries,
 ) {
-  // enable the env variable
-  multiplexedEnabled === 'true'
-    ? (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = true)
-    : (process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = false);
-
   const {Spanner} = require('../build/src');
   const {performance} = require('perf_hooks');
   const spanner = new Spanner({
@@ -42,27 +38,50 @@ async function main(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  // generate random queries
-  function generateQuery() {
-    const id = Math.floor(Math.random() * 10) + 1;
+  // generate random read queries
+  function generateReadQuery() {
+    const id = Math.floor(Math.random() * 10000) + 1;
     const query = {
       sql: 'SELECT SingerId from Singers WHERE SingerId = @id',
       params: {id: id},
     };
     return query;
   }
-  // warm up queries
-  for (let i = 0; i < 10; i++) {
-    await database.run(generateQuery());
+
+  // generate random update queries
+  function generateUpdateQuery() {
+    const id = Math.floor(Math.random() * 10000) + 1;
+    const name = randomUUID();
+    const query = {
+      sql: 'UPDATE Singers SET FirstName = @name WHERE SingerId = @id',
+      params: {
+        id: id,
+        name: name,
+      },
+    };
+    return query;
+  }
+  // warm up queries(~5-6 min)
+  for (let i = 0; i < 60000; i++) {
+    await database.run(generateReadQuery());
   }
 
-  // single use transaction
-  async function singleUseTxn() {
+  // case: read and DML
+  async function readAndDML() {
     const startThreadTime = performance.now();
 
     for (let i = 0; i < numQueries; i++) {
       const startTime = performance.now();
-      await database.run(generateQuery());
+      await database.runTransactionAsync(async tx => {
+        const [rows] = await tx.run(generateReadQuery());
+        rows.forEach(row => {
+          const json = row.toJSON();
+          console.log(`SingerId: ${json.SingerId}`);
+        });
+        await tx.runUpdate(generateUpdateQuery());
+        await tx.commit();
+        console.log('transaction done.');
+      });
       const operationTime = performance.now() - startTime;
       // push the time taken by transaction to the array
       transaction_times.push(operationTime);
@@ -74,7 +93,78 @@ async function main(
     );
   }
 
-  // multi use transaction
+  // case: mutations only
+  async function mutationsOnly() {
+    const startThreadTime = performance.now();
+
+    for (let i = 0; i < numQueries; i++) {
+      const startTime = performance.now();
+      await database.runTransactionAsync(async tx => {
+        const id = Math.floor(Math.random() * 10000) + 1;
+        const name = randomUUID();
+        tx.upsert('Singers', [{SingerId: id, FirstName: name}]);
+        await tx.commit();
+        console.log('transaction done.');
+      });
+      const operationTime = performance.now() - startTime;
+      // push the time taken by transaction to the array
+      transaction_times.push(operationTime);
+    }
+
+    // push the time taken by thread to the array
+    thread_execution_times.push(
+      (performance.now() - startThreadTime).toFixed(2),
+    );
+  }
+
+  // case: read and mutations
+  async function readAndMutations() {
+    const startThreadTime = performance.now();
+
+    for (let i = 0; i < numQueries; i++) {
+      const startTime = performance.now();
+      await database.runTransactionAsync(async tx => {
+        const [rows] = await tx.run(generateReadQuery());
+        rows.forEach(row => {
+          const json = row.toJSON();
+          console.log(`SingerId: ${json.SingerId}`);
+        });
+        const id = Math.floor(Math.random() * 10000) + 1;
+        const name = randomUUID();
+        tx.upsert('Singers', [{SingerId: id, FirstName: name}]);
+        await tx.commit();
+        console.log('transaction done.');
+      });
+      const operationTime = performance.now() - startTime;
+      // push the time taken by transaction to the array
+      transaction_times.push(operationTime);
+    }
+
+    // push the time taken by thread to the array
+    thread_execution_times.push(
+      (performance.now() - startThreadTime).toFixed(2),
+    );
+  }
+
+  // case: single use transaction
+  async function singleUseTxn() {
+    const startThreadTime = performance.now();
+
+    for (let i = 0; i < numQueries; i++) {
+      const startTime = performance.now();
+      await database.run(generateReadQuery());
+      const operationTime = performance.now() - startTime;
+      // push the time taken by transaction to the array
+      transaction_times.push(operationTime);
+    }
+
+    // push the time taken by thread to the array
+    thread_execution_times.push(
+      (performance.now() - startThreadTime).toFixed(2),
+    );
+  }
+
+  // case: multi use transaction
   async function multiUseTxn() {
     const startThreadTime = performance.now();
 
@@ -82,10 +172,10 @@ async function main(
       const startTime = performance.now();
       const [txn] = await database.getSnapshot();
       // run 4 queries to make 4 RPC calls
-      await txn.run(generateQuery());
-      await txn.run(generateQuery());
-      await txn.run(generateQuery());
-      await txn.run(generateQuery());
+      await txn.run(generateReadQuery());
+      await txn.run(generateReadQuery());
+      await txn.run(generateReadQuery());
+      await txn.run(generateReadQuery());
       txn.end();
       const operationTime = (performance.now() - startTime).toFixed(2);
       // push the time taken by transaction to the array
@@ -128,11 +218,17 @@ async function main(
 
   // run the threads concurrently
   async function runConcurrently() {
+    const methodMap = {
+      readAndDML: readAndDML,
+      readAndMutations: readAndMutations,
+      mutationsOnly: mutationsOnly,
+      singleUseTxn: singleUseTxn,
+      multiUseTxn: multiUseTxn,
+    };
+    const funcToRun = methodMap[method];
     const promises = [];
     for (let i = 0; i < numThreads; i++) {
-      method === 'singleUseTxn'
-        ? promises.push(singleUseTxn())
-        : promises.push(multiUseTxn());
+      promises.push(funcToRun());
     }
     await Promise.all(promises);
     // print the time taken by each thread

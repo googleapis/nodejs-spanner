@@ -30,7 +30,15 @@ export const MetricInterceptor = (options, nextCall) => {
   return new grpc.InterceptingCall(nextCall(options), {
     start: function (metadata, listener, next) {
       // Record attempt metric on request start
-      const factory = MetricsTracerFactory.getInstance();
+      const resourcePrefix = metadata.get(
+        'google-cloud-resource-prefix',
+      )[0] as string;
+      const match = resourcePrefix?.match(/^projects\/([^/]+)\//);
+      const projectId = match ? match[1] : undefined;
+      let factory;
+      if (projectId) {
+        factory = MetricsTracerFactory.getInstance(projectId);
+      }
       const requestId = metadata.get('x-goog-spanner-request-id')[0] as string;
       const metricsTracer = factory?.getCurrentTracer(requestId);
       metricsTracer?.recordAttemptStart();
@@ -67,7 +75,9 @@ export const MetricInterceptor = (options, nextCall) => {
           if (metricsTracer?.afeLatency) {
             metricsTracer?.recordAfeLatency(status.code);
           } else {
-            metricsTracer?.recordAfeConnectivityErrorCount(status.code);
+            // Disable afe_connectivity_error_count metric as AFE header is disabled in backend
+            // currently.
+            // metricsTracer?.recordAfeConnectivityErrorCount(status.code);
           }
         },
       };

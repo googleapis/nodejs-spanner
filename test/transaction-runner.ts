@@ -24,6 +24,7 @@ import * as through from 'through2';
 import {RunTransactionOptions} from '../src/transaction-runner';
 import {google} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 import {randomUUID} from 'crypto';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -120,6 +121,7 @@ describe('TransactionRunner', () => {
         const expectedOptions = {
           timeout: 3600000,
           isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          readLockMode: ReadLockMode.READ_LOCK_MODE_UNSPECIFIED,
         };
 
         assert.deepStrictEqual(runner.options, expectedOptions);
@@ -127,7 +129,8 @@ describe('TransactionRunner', () => {
 
       it('should accept user `options`', () => {
         const options = {
-          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.SERIALIZABLE,
+          readLockMode: ReadLockMode.OPTIMISTIC,
           timeout: 1000,
         };
         const r = new ExtendedRunner(SESSION, fakeTransaction, options);
@@ -425,7 +428,8 @@ describe('TransactionRunner', () => {
 
       it('should pass `options` to `Runner`', () => {
         const options = {
-          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.PESSIMISTIC,
           timeout: 1,
         };
         const r = new TransactionRunner(
@@ -624,7 +628,8 @@ describe('TransactionRunner', () => {
 
       it('should pass `options` to `Runner`', () => {
         const options = {
-          isolationLevel: IsolationLevel.ISOLATION_LEVEL_UNSPECIFIED,
+          isolationLevel: IsolationLevel.REPEATABLE_READ,
+          readLockMode: ReadLockMode.OPTIMISTIC,
           timeout: 1,
         };
         const r = new AsyncTransactionRunner(

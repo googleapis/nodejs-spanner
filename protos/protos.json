@@ -460,7 +460,14 @@
                   "type": "ServiceOptions",
                   "id": 3
                 }
-              }
+              },
+              "reserved": [
+                [
+                  4,
+                  4
+                ],
+                "stream"
+              ]
             },
             "MethodDescriptorProto": {
               "edition": "proto2",
@@ -5317,6 +5324,13 @@
                               "type": "int32",
                               "id": 6
                             },
+                            "autoscalingConfig": {
+                              "type": "AutoscalingConfig",
+                              "id": 13,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
                             "state": {
                               "type": "State",
                               "id": 7,
@@ -8263,7 +8277,9 @@
                 "Session": {
                   "options": {
                     "(google.api.resource).type": "spanner.googleapis.com/Session",
-                    "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/sessions/{session}"
+                    "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/sessions/{session}",
+                    "(google.api.resource).plural": "sessions",
+                    "(google.api.resource).singular": "session"
                   },
                   "fields": {
                     "name": {

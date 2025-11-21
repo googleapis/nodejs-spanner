@@ -111,6 +111,9 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
 
   const transferAmount = 200000;
 
+  // Note: the `runTransaction()` method is non blocking and returns "void".
+  // For sequential execution of the transaction use `runTransactionAsync()` method which returns a promise.
+  // For example: await database.runTransactionAsync(async (err, transaction) => { ... })
   database.runTransaction(async (err, transaction) => {
     if (err) {
       console.error(err);

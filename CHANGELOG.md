@@ -4,6 +4,60 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* Remove Console logging ([e673acd](https://github.com/googleapis/nodejs-spanner/commit/e673acdba717380d25eca6d978272c43950eb1e8))
+
+## [8.3.0](https://github.com/googleapis/nodejs-spanner/compare/v8.2.2...v8.3.0) (2025-11-11)
+
+
+### Features
+
+* Exposing AutoscalingConfig in InstancePartition ([#2449](https://github.com/googleapis/nodejs-spanner/issues/2449)) ([2defcc8](https://github.com/googleapis/nodejs-spanner/commit/2defcc81de4191293cd2d4aa493a0a9dc68f37ce))
+* Multiplexed session as default session mode ([#2451](https://github.com/googleapis/nodejs-spanner/issues/2451)) ([9ef0565](https://github.com/googleapis/nodejs-spanner/commit/9ef0565ca2cc9af18477503b43a506fd7c0c3c33))
+
+
+### Bug Fixes
+
+* Configure gRPC keep alive as 120 sec ([#2445](https://github.com/googleapis/nodejs-spanner/issues/2445)) ([f280e7c](https://github.com/googleapis/nodejs-spanner/commit/f280e7ca7cc60a67da8a5a0b3ada5f414c9e9a5f))
+* **deps:** Update dependency google-gax to v5.0.4 ([#2430](https://github.com/googleapis/nodejs-spanner/issues/2430)) ([4cbed94](https://github.com/googleapis/nodejs-spanner/commit/4cbed94dd74567f12620a493cebace5b2c9196bc))
+
+## [8.2.2](https://github.com/googleapis/nodejs-spanner/compare/v8.2.1...v8.2.2) (2025-10-07)
+
+
+### Bug Fixes
+
+* Correctly determine project ID for metrics export ([#2427](https://github.com/googleapis/nodejs-spanner/issues/2427)) ([0d63312](https://github.com/googleapis/nodejs-spanner/commit/0d633126a87c1274abfd59550cb94052a819fcaa))
+* Metrics Export Error log ([#2425](https://github.com/googleapis/nodejs-spanner/issues/2425)) ([110923e](https://github.com/googleapis/nodejs-spanner/commit/110923ea1dc6f6c891e0f70406b3839224a25b9e))
+
+## [8.2.1](https://github.com/googleapis/nodejs-spanner/compare/v8.2.0...v8.2.1) (2025-09-12)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.3 ([#2371](https://github.com/googleapis/nodejs-spanner/issues/2371)) ([8a175e2](https://github.com/googleapis/nodejs-spanner/commit/8a175e2e5cc8d0ed81faee7b24b59b5026758a59))
+* Disable afe_connectivity_error_count metric ([af72d70](https://github.com/googleapis/nodejs-spanner/commit/af72d707c8857d5596bd2b93830e52c8e152967f))
+
+## [8.2.0](https://github.com/googleapis/nodejs-spanner/compare/v8.1.0...v8.2.0) (2025-08-26)
+
+
+### Features
+
+* **spanner:** Add support for multiplexed session for r/w transactions ([#2351](https://github.com/googleapis/nodejs-spanner/issues/2351)) ([6a9f1a2](https://github.com/googleapis/nodejs-spanner/commit/6a9f1a2b2c0dad955593571c71e9d4b6c9e7eeee))
+* **spanner:** Support setting read lock mode ([#2388](https://github.com/googleapis/nodejs-spanner/issues/2388)) ([bd66f61](https://github.com/googleapis/nodejs-spanner/commit/bd66f61f3ecac65678d31cbc841c11cd0fb7c3da))
+
+
+### Bug Fixes
+
+* **deps:** Add uuid to dependencies ([#2376](https://github.com/googleapis/nodejs-spanner/issues/2376)) ([0b2060b](https://github.com/googleapis/nodejs-spanner/commit/0b2060b4ad7302ab23ac757e79fe760e34e81083))
+* **deps:** Update dependency @grpc/proto-loader to ^0.8.0 ([#2354](https://github.com/googleapis/nodejs-spanner/issues/2354)) ([75dc4da](https://github.com/googleapis/nodejs-spanner/commit/75dc4daf114cbc4eb4669ed6cb042af051cdce63))
+* **deps:** Update dependency google-gax to v5.0.1 ([#2362](https://github.com/googleapis/nodejs-spanner/issues/2362)) ([9223470](https://github.com/googleapis/nodejs-spanner/commit/922347014ac3966ec4a48116b61ba4850edf0b50))
+* Provide option to disable built in metrics ([#2380](https://github.com/googleapis/nodejs-spanner/issues/2380)) ([b378e2e](https://github.com/googleapis/nodejs-spanner/commit/b378e2ed6739acf76f3f3f27090311129dd83473))
+* Race condition among transactions when running parallely ([#2369](https://github.com/googleapis/nodejs-spanner/issues/2369)) ([f8b6f63](https://github.com/googleapis/nodejs-spanner/commit/f8b6f6340f4f04e04213fdf0a9665d643f474eeb))
+
 ## [8.1.0](https://github.com/googleapis/nodejs-spanner/compare/v8.0.0...v8.1.0) (2025-07-28)
 
 

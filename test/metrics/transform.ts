@@ -243,8 +243,8 @@ describe('transform', () => {
   });
 
   it('should extract metric and resource labels', () => {
-    const dataLabels = _extractLabels(sumDataPoint);
-    const resourceLabels = _extractLabels(resource);
+    const dataLabels = _extractLabels(sumDataPoint, 'project_id');
+    const resourceLabels = _extractLabels(resource, 'project_id');
 
     // Metric Labels
     assert.strictEqual(dataLabels.metricLabels['client_uid'], 'test_uid');
@@ -416,8 +416,10 @@ describe('transform', () => {
     if (errors.length !== 0) {
       throw errors;
     }
-    const timeseries =
-      transformResourceMetricToTimeSeriesArray(resourceMetrics);
+    const timeseries = transformResourceMetricToTimeSeriesArray(
+      resourceMetrics,
+      'project_id',
+    );
     assert.strictEqual(timeseries.length, 1);
 
     // Verify the contents of the TimeSeries
@@ -457,8 +459,10 @@ describe('transform', () => {
     if (errors.length !== 0) {
       throw errors;
     }
-    const timeseries =
-      transformResourceMetricToTimeSeriesArray(resourceMetrics);
+    const timeseries = transformResourceMetricToTimeSeriesArray(
+      resourceMetrics,
+      'project_id',
+    );
 
     assert.strictEqual(timeseries.length, 0);
   });
