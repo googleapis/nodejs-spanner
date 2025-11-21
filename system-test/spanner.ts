@@ -515,12 +515,7 @@ describe('Spanner', () => {
      * @param columnsMetadataForRead Optional parameter use for read/query for
      *      deserializing Proto messages and enum
      */
-    function insert(
-      insertData,
-      dialect,
-      callback,
-      columnsMetadataForRead?: {},
-    ) {
+    async function insert(insertData, dialect, columnsMetadataForRead?: {}) {
       const id = generateName('id');
 
       insertData.Key = id;
@@ -544,39 +539,34 @@ describe('Spanner', () => {
         };
         database = PG_DATABASE;
       }
-      table.insert(insertData, (err, insertResp) => {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        database.run(query, (err, rows, readResp) => {
-          if (err) {
-            callback(err);
-            return;
-          }
-          callback(null, rows.shift(), insertResp, readResp);
-        });
-      });
+      const [insertResp] = await table.insert(insertData);
+      const [rows, readResp] = await database.run(query);
+      return {
+        row: rows.shift(),
+        insertResp,
+        readResp,
+      };
     }
 
-    const incorrectValueType = (done, table) => {
-      table.insert({BoolValue: 'abc'}, err => {
+    const incorrectValueType = async table => {
+      try {
+        await table.insert({BoolValue: 'abc'});
+        throw new Error('Expected an error to be thrown, but it was not.');
+      } catch (err) {
         assert(err);
-        done();
-      });
+      }
     };
 
-    it('GOOGLE_STANDARD_SQL should throw an error for incorrect value types', done => {
-      incorrectValueType(done, googleSqlTable);
+    it('GOOGLE_STANDARD_SQL should throw an error for incorrect value types', async () => {
+      await incorrectValueType(googleSqlTable);
     });
 
-    it('POSTGRESQL should throw an error for incorrect value types', done => {
-      incorrectValueType(done, postgreSqlTable);
+    it('POSTGRESQL should throw an error for incorrect value types', async () => {
+      await incorrectValueType(postgreSqlTable);
     });
 
     describe('uneven rows', () => {
-      const differentlyOrderedRows = (done, dialect) => {
+      const differentlyOrderedRows = async dialect => {
         const data = [
           {
             Key: generateName('id'),
@@ -610,62 +600,54 @@ describe('Spanner', () => {
             },
           };
         }
+        try {
+          await table.insert(data);
+          const [rows] = await database.run(query);
+          const row1 = rows![0].toJSON();
+          assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
+          assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
 
-        table.insert(data, err => {
+          const row2 = rows![1].toJSON();
+          assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
+          assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
+        } catch (err) {
           assert.ifError(err);
-
-          database.run(query, (err, rows) => {
-            assert.ifError(err);
-
-            const row1 = rows![0].toJSON();
-            assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
-            assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
-
-            const row2 = rows![1].toJSON();
-            assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
-            assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
-
-            done();
-          });
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should allow differently-ordered rows', done => {
-        differentlyOrderedRows(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should allow differently-ordered rows', async () => {
+        await differentlyOrderedRows(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should allow differently-ordered rows}', done => {
-        differentlyOrderedRows(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should allow differently-ordered rows}', async () => {
+        await differentlyOrderedRows(Spanner.POSTGRESQL);
       });
     });
 
     describe('structs', () => {
-      it('GOOGLE_STANDARD_SQL should correctly decode structs', done => {
+      it('GOOGLE_STANDARD_SQL should correctly decode structs', async () => {
         const query = 'SELECT ARRAY(SELECT as struct 1, "hello")';
-
-        DATABASE.run(query, (err, rows) => {
-          assert.ifError(err);
-
-          const expected = [
-            {
-              name: '',
-              value: [
-                [
-                  {
-                    name: '',
-                    value: {
-                      value: '1',
-                    },
+        const expected = [
+          {
+            name: '',
+            value: [
+              [
+                {
+                  name: '',
+                  value: {
+                    value: '1',
                   },
-                  {
-                    name: '',
-                    value: 'hello',
-                  },
-                ],
+                },
+                {
+                  name: '',
+                  value: 'hello',
+                },
               ],
-            },
-          ];
-
+            ],
+          },
+        ];
+        try {
+          const [rows] = await DATABASE.run(query);
           assert.deepStrictEqual(
             JSON.stringify(rows![0][0].value[0][0]),
             JSON.stringify(expected[0].value[0][0]),
@@ -674,44 +656,43 @@ describe('Spanner', () => {
             JSON.stringify(rows![0][0].value[0][1]),
             JSON.stringify(expected[0].value[0][1]),
           );
-
-          done();
-        });
+        } catch (err) {
+          assert.ifError(err);
+        }
       });
 
-      it('GOOGLE_STANDARD_SQL should correctly decode structs', done => {
+      it('GOOGLE_STANDARD_SQL should correctly decode structs', async () => {
         const query =
           'SELECT 1 as id, ARRAY(select as struct 2 as id, "hello" as name)';
 
-        DATABASE.run(query, (err, rows) => {
-          assert.ifError(err);
-
-          const expected = [
-            {
-              name: 'id',
-              value: {
-                value: '1',
-              },
+        const expected = [
+          {
+            name: 'id',
+            value: {
+              value: '1',
             },
-            {
-              name: '',
-              value: [
-                [
-                  {
-                    name: 'id',
-                    value: {
-                      value: '2',
-                    },
+          },
+          {
+            name: '',
+            value: [
+              [
+                {
+                  name: 'id',
+                  value: {
+                    value: '2',
                   },
-                  {
-                    name: 'name',
-                    value: 'hello',
-                  },
-                ],
+                },
+                {
+                  name: 'name',
+                  value: 'hello',
+                },
               ],
-            },
-          ];
+            ],
+          },
+        ];
 
+        try {
+          const [rows] = await DATABASE.run(query);
           assert.deepStrictEqual(
             JSON.stringify(rows![0][0]),
             JSON.stringify(expected[0]),
@@ -724,789 +705,640 @@ describe('Spanner', () => {
             JSON.stringify(rows![0][1].value[0][1]),
             JSON.stringify(expected[1].value[0][1]),
           );
-
-          done();
-        });
+        } catch (err) {
+          assert.ifError(err);
+        }
       });
     });
 
     describe('booleans', () => {
-      const booleanInsert = (done, dialect, value) => {
-        insert({BoolValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().BoolValue, value);
-          done();
-        });
+      const booleanInsert = async (dialect, value) => {
+        const {row} = await insert({BoolValue: value}, dialect);
+        assert.strictEqual(row.toJSON().BoolValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write boolean values', done => {
-        booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, true);
+      it('GOOGLE_STANDARD_SQL should write boolean values', async () => {
+        await booleanInsert(Spanner.GOOGLE_STANDARD_SQL, true);
       });
 
-      it('POSTGRESQL should write boolean values', done => {
-        booleanInsert(done, Spanner.POSTGRESQL, true);
+      it('POSTGRESQL should write boolean values', async () => {
+        await booleanInsert(Spanner.POSTGRESQL, true);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null boolean values', done => {
-        booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null boolean values', async () => {
+        await booleanInsert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null boolean values', done => {
-        booleanInsert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null boolean values', async () => {
+        await booleanInsert(Spanner.POSTGRESQL, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty boolean array values', done => {
-        insert({BoolArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BoolArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty boolean array values', async () => {
+        const {row} = await insert(
+          {BoolArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().BoolArray, []);
       });
 
-      it('POSTGRESQL should write empty boolean array values', done => {
-        insert({BoolArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BoolArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty boolean array values', async () => {
+        const {row} = await insert({BoolArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().BoolArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null boolean array values', done => {
-        insert({BoolArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write null boolean array values', async () => {
+        const {row} = await insert(
+          {BoolArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
       });
 
-      it('POSTGRESQL should write null boolean array values', done => {
-        insert({BoolArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null boolean array values', async () => {
+        const {row} = await insert({BoolArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write boolean array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write boolean array values', async () => {
+        const {row} = await insert(
           {BoolArray: [true, false]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
       });
 
-      it('POSTGRESQL should write boolean array values', done => {
-        insert({BoolArray: [true, false]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
-          done();
-        });
+      it('POSTGRESQL should write boolean array values', async () => {
+        const {row} = await insert(
+          {BoolArray: [true, false]},
+          Spanner.POSTGRESQL,
+        );
+        assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
       });
     });
 
     describe('int64s', () => {
-      const int64Insert = (done, dialect, value) => {
-        insert({IntValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          if (value) {
-            value = value.valueOf();
-          }
-          assert.deepStrictEqual(row.toJSON().IntValue, value);
-          done();
-        });
+      const int64Insert = async (dialect, value) => {
+        const {row} = await insert({IntValue: value}, dialect);
+        if (value) {
+          value = value.valueOf();
+        }
+        assert.deepStrictEqual(row.toJSON().IntValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write int64 values', done => {
-        int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.int(1234));
+      it('GOOGLE_STANDARD_SQL should write int64 values', async () => {
+        await int64Insert(Spanner.GOOGLE_STANDARD_SQL, Spanner.int(1234));
       });
 
-      it('POSTGRESQL should write int64 values', done => {
-        int64Insert(done, Spanner.POSTGRESQL, Spanner.int(1234));
+      it('POSTGRESQL should write int64 values', async () => {
+        await int64Insert(Spanner.POSTGRESQL, Spanner.int(1234));
       });
 
-      it('GOOGLE_STANDARD_SQL should write null int64 values', done => {
-        int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null int64 values', async () => {
+        await int64Insert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null int64 values', done => {
-        int64Insert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null int64 values', async () => {
+        await int64Insert(Spanner.POSTGRESQL, null);
       });
 
-      const int64OutOfBounds = (done, dialect) => {
+      const int64OutOfBounds = async dialect => {
         const value = '9223372036854775807';
-
-        insert({IntValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-
-          assert.throws(() => {
-            row.toJSON();
-          }, new RegExp('Serializing column "IntValue" encountered an error'));
-
-          done();
-        });
+        const {row} = await insert({IntValue: value}, dialect);
+        assert.throws(() => {
+          row.toJSON();
+        }, new RegExp('Serializing column "IntValue" encountered an error'));
       };
 
-      it('GOOGLE_STANDARD_SQL should throw for of bounds integers', done => {
-        int64OutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should throw for of bounds integers', async () => {
+        await int64OutOfBounds(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should throw for of bounds integers', done => {
-        int64OutOfBounds(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should throw for of bounds integers', async () => {
+        await int64OutOfBounds(Spanner.POSTGRESQL);
       });
 
-      const int64WrapOutOfBounds = (done, dialect) => {
+      const int64WrapOutOfBounds = async dialect => {
         const value = '9223372036854775807';
-
-        insert({IntValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          const expected = Spanner.int(value);
-          const actual = row.toJSON({wrapNumbers: true}).IntValue;
-          assert.deepStrictEqual(actual, expected);
-          done();
-        });
+        const {row} = await insert({IntValue: value}, dialect);
+        const expected = Spanner.int(value);
+        const actual = row.toJSON({wrapNumbers: true}).IntValue;
+        assert.deepStrictEqual(actual, expected);
       };
 
-      it('GOOGLE_STANDARD_SQL should optionally wrap out of bounds integers', done => {
-        int64WrapOutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should optionally wrap out of bounds integers', async () => {
+        await int64WrapOutOfBounds(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should optionally wrap out of bounds integers', done => {
-        int64WrapOutOfBounds(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should optionally wrap out of bounds integers', async () => {
+        await int64WrapOutOfBounds(Spanner.POSTGRESQL);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty in64 array values', done => {
-        insert({IntArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty in64 array values', async () => {
+        const {row} = await insert({IntArray: []}, Spanner.GOOGLE_STANDARD_SQL);
+        assert.deepStrictEqual(row.toJSON().IntArray, []);
       });
 
-      it('POSTGRESQL should write empty in64 array values', done => {
-        insert({IntArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty in64 array values', async () => {
+        const {row} = await insert({IntArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().IntArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null int64 array values', done => {
-        insert({IntArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, [null]);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write null int64 array values', async () => {
+        const {row} = await insert(
+          {IntArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().IntArray, [null]);
       });
 
-      it('POSTGRESQL should write null int64 array values', done => {
-        insert({IntArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null int64 array values', async () => {
+        const {row} = await insert({IntArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().IntArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write int64 array values', done => {
+      it('GOOGLE_STANDARD_SQL should write int64 array values', async () => {
         const values = [1, 2, 3];
-
-        insert({IntArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, values);
-          done();
-        });
+        const {row} = await insert(
+          {IntArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().IntArray, values);
       });
 
-      it('POSTGRESQL should write int64 array values', done => {
+      it('POSTGRESQL should write int64 array values', async () => {
         const values = [1, 2, 3];
-
-        insert({IntArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntArray, values);
-          done();
-        });
+        const {row} = await insert({IntArray: values}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().IntArray, values);
       });
     });
 
     describe('oids', () => {
-      it('POSTGRESQL should read non-null pgOid values', done => {
-        PG_DATABASE.run('SELECT 123::oid', (err, rows) => {
-          assert.ifError(err);
-          let queriedValue = rows[0][0].value;
-          if (rows[0][0].value) {
-            queriedValue = rows[0][0].value.value;
-          }
-          assert.strictEqual(queriedValue, '123');
-          done();
-        });
+      it('POSTGRESQL should read non-null pgOid values', async () => {
+        const [rows] = await PG_DATABASE.run('SELECT 123::oid');
+        let queriedValue = rows[0][0].value;
+        if (rows[0][0].value) {
+          queriedValue = rows[0][0].value.value;
+        }
+        assert.strictEqual(queriedValue, '123');
       });
 
-      it('POSTGRESQL should read null pgOid values', done => {
-        PG_DATABASE.run('SELECT null::oid', (err, rows) => {
-          assert.ifError(err);
-          let queriedValue = rows[0][0].value;
-          if (rows[0][0].value) {
-            queriedValue = rows[0][0].value.value;
-          }
-          assert.strictEqual(queriedValue, null);
-          done();
-        });
+      it('POSTGRESQL should read null pgOid values', async () => {
+        const [rows] = await PG_DATABASE.run('SELECT null::oid');
+        let queriedValue = rows[0][0].value;
+        if (rows[0][0].value) {
+          queriedValue = rows[0][0].value.value;
+        }
+        assert.strictEqual(queriedValue, null);
       });
     });
 
     describe('float32s', () => {
-      const float32Insert = (done, dialect, value) => {
-        insert({Float32Value: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          if (typeof value === 'object' && value !== null) {
-            value = value.value;
-          }
-          if (Number.isNaN(row.toJSON().Float32Value)) {
-            assert.deepStrictEqual(row.toJSON().Float32Value, value);
-          } else if (row.toJSON().Float32Value === value) {
-            assert.deepStrictEqual(row.toJSON().Float32Value, value);
-          } else {
-            assert.ok(row.toJSON().Float32Value - value <= 0.00001);
-          }
-          done();
-        });
+      const float32Insert = async (dialect, value) => {
+        const {row} = await insert({Float32Value: value}, dialect);
+        if (typeof value === 'object' && value !== null) {
+          value = value.value;
+        }
+        if (Number.isNaN(row.toJSON().Float32Value)) {
+          assert.deepStrictEqual(row.toJSON().Float32Value, value);
+        } else if (row.toJSON().Float32Value === value) {
+          assert.deepStrictEqual(row.toJSON().Float32Value, value);
+        } else {
+          assert.ok(row.toJSON().Float32Value - value <= 0.00001);
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should write float32 values', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
+      it('GOOGLE_STANDARD_SQL should write float32 values', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
-      it('POSTGRESQL should write float32 values', done => {
-        float32Insert(done, Spanner.POSTGRESQL, 8.2);
+      it('POSTGRESQL should write float32 values', async () => {
+        await float32Insert(Spanner.POSTGRESQL, 8.2);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null float32 values', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null float32 values', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null float32 values', done => {
-        float32Insert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null float32 values', async () => {
+        await float32Insert(Spanner.POSTGRESQL, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float32(8));
+      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, Spanner.float32(8));
       });
 
-      it('POSTGRESQL should accept a Float object with an Int-like value', done => {
-        float32Insert(done, Spanner.POSTGRESQL, Spanner.float32(8));
+      it('POSTGRESQL should accept a Float object with an Int-like value', async () => {
+        await float32Insert(Spanner.POSTGRESQL, Spanner.float32(8));
       });
 
-      it('GOOGLE_STANDARD_SQL should handle Infinity', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
+      it('GOOGLE_STANDARD_SQL should handle Infinity', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, Infinity);
       });
 
-      it('POSTGRESQL should handle Infinity', done => {
-        float32Insert(done, Spanner.POSTGRESQL, Infinity);
+      it('POSTGRESQL should handle Infinity', async () => {
+        await float32Insert(Spanner.POSTGRESQL, Infinity);
       });
 
-      it('GOOGLE_STANDARD_SQL should handle -Infinity', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
+      it('GOOGLE_STANDARD_SQL should handle -Infinity', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, -Infinity);
       });
 
-      it('POSTGRESQL should handle -Infinity', done => {
-        float32Insert(done, Spanner.POSTGRESQL, -Infinity);
+      it('POSTGRESQL should handle -Infinity', async () => {
+        await float32Insert(Spanner.POSTGRESQL, -Infinity);
       });
 
-      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
+      it('GOOGLE_STANDARD_SQL should handle NaN', async () => {
+        await float32Insert(Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
-      it('POSTGRESQL should handle NaN', done => {
-        float32Insert(done, Spanner.POSTGRESQL, NaN);
+      it('POSTGRESQL should handle NaN', async () => {
+        await float32Insert(Spanner.POSTGRESQL, NaN);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty float32 array values', done => {
-        insert({Float32Array: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().Float32Array, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty float32 array values', async () => {
+        const {row} = await insert(
+          {Float32Array: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().Float32Array, []);
       });
 
-      it('POSTGRESQL should write empty float32 array values', done => {
-        insert({Float32Array: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().Float32Array, []);
-          done();
-        });
+      it('POSTGRESQL should write empty float32 array values', async () => {
+        const {row} = await insert({Float32Array: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().Float32Array, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null float32 array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null float32 array values', async () => {
+        const {row} = await insert(
           {Float32Array: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
       });
 
-      it('POSTGRESQL should write null float32 array values', done => {
-        insert({Float32Array: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null float32 array values', async () => {
+        const {row} = await insert({Float32Array: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write float32 array values', done => {
+      it('GOOGLE_STANDARD_SQL should write float32 array values', async () => {
         const values = [1.2, 2.3, 3.4];
-
-        insert(
+        const {row} = await insert(
           {Float32Array: values},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            for (let i = 0; i < values.length; i++) {
-              assert.ok(row.toJSON().Float32Array[i] - values[i] <= 0.00001);
-            }
-            done();
-          },
         );
+        for (let i = 0; i < values.length; i++) {
+          assert.ok(row.toJSON().Float32Array[i] - values[i] <= 0.00001);
+        }
       });
 
-      it('POSTGRESQL should write float32 array values', done => {
+      it('POSTGRESQL should write float32 array values', async () => {
         const values = [1.2, 2.3, 3.4];
-
-        insert({Float32Array: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().Float32Array, values);
-          done();
-        });
+        const {row} = await insert({Float32Array: values}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().Float32Array, values);
       });
     });
 
     describe('float64s', () => {
-      const float64Insert = (done, dialect, value) => {
-        insert({FloatValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          if (typeof value === 'object' && value !== null) {
-            value = value.value;
-          }
-          assert.deepStrictEqual(row.toJSON().FloatValue, value);
-          done();
-        });
+      const float64Insert = async (dialect, value) => {
+        const {row} = await insert({FloatValue: value}, dialect);
+        if (typeof value === 'object' && value !== null) {
+          value = value.value;
+        }
+        assert.deepStrictEqual(row.toJSON().FloatValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write float64 values', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
+      it('GOOGLE_STANDARD_SQL should write float64 values', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
-      it('POSTGRESQL should write float64 values', done => {
-        float64Insert(done, Spanner.POSTGRESQL, 8.2);
+      it('POSTGRESQL should write float64 values', async () => {
+        await float64Insert(Spanner.POSTGRESQL, 8.2);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null float64 values', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null float64 values', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null float64 values', done => {
-        float64Insert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null float64 values', async () => {
+        await float64Insert(Spanner.POSTGRESQL, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float(8));
+      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, Spanner.float(8));
       });
 
-      it('POSTGRESQL should accept a Float object with an Int-like value', done => {
-        float64Insert(done, Spanner.POSTGRESQL, Spanner.float(8));
+      it('POSTGRESQL should accept a Float object with an Int-like value', async () => {
+        await float64Insert(Spanner.POSTGRESQL, Spanner.float(8));
       });
 
-      it('GOOGLE_STANDARD_SQL should handle Infinity', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
+      it('GOOGLE_STANDARD_SQL should handle Infinity', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, Infinity);
       });
 
-      it('POSTGRESQL should handle Infinity', done => {
-        float64Insert(done, Spanner.POSTGRESQL, Infinity);
+      it('POSTGRESQL should handle Infinity', async () => {
+        await float64Insert(Spanner.POSTGRESQL, Infinity);
       });
 
-      it('GOOGLE_STANDARD_SQL should handle -Infinity', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
+      it('GOOGLE_STANDARD_SQL should handle -Infinity', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, -Infinity);
       });
 
-      it('POSTGRESQL should handle -Infinity', done => {
-        float64Insert(done, Spanner.POSTGRESQL, -Infinity);
+      it('POSTGRESQL should handle -Infinity', async () => {
+        await float64Insert(Spanner.POSTGRESQL, -Infinity);
       });
 
-      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
+      it('GOOGLE_STANDARD_SQL should handle NaN', async () => {
+        await float64Insert(Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
-      it('POSTGRESQL should handle NaN', done => {
-        float64Insert(done, Spanner.POSTGRESQL, NaN);
+      it('POSTGRESQL should handle NaN', async () => {
+        await float64Insert(Spanner.POSTGRESQL, NaN);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty float64 array values', done => {
-        insert({FloatArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty float64 array values', async () => {
+        const {row} = await insert(
+          {FloatArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().FloatArray, []);
       });
 
-      it('POSTGRESQL should write empty float64 array values', done => {
-        insert({FloatArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty float64 array values', async () => {
+        const {row} = await insert({FloatArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().FloatArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null float64 array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null float64 array values', async () => {
+        const {row} = await insert(
           {FloatArray: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
       });
 
-      it('POSTGRESQL should write null float64 array values', done => {
-        insert({FloatArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null float64 array values', async () => {
+        const {row} = await insert({FloatArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write float64 array values', done => {
+      it('GOOGLE_STANDARD_SQL should write float64 array values', async () => {
         const values = [1.2, 2.3, 3.4];
-
-        insert(
+        const {row} = await insert(
           {FloatArray: values},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().FloatArray, values);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().FloatArray, values);
       });
 
-      it('POSTGRESQL should write float64 array values', done => {
+      it('POSTGRESQL should write float64 array values', async () => {
         const values = [1.2, 2.3, 3.4];
-
-        insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatArray, values);
-          done();
-        });
+        const {row} = await insert({FloatArray: values}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().FloatArray, values);
       });
     });
 
     describe('numerics', () => {
-      const numericInsert = (done, dialect, value) => {
-        insert({NumericValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().NumericValue, value);
-          done();
-        });
+      const numericInsert = async (dialect, value) => {
+        const {row} = await insert({NumericValue: value}, dialect);
+        assert.deepStrictEqual(row.toJSON().NumericValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write numeric values', done => {
-        numericInsert(
-          done,
+      it('GOOGLE_STANDARD_SQL should write numeric values', async () => {
+        await numericInsert(
           Spanner.GOOGLE_STANDARD_SQL,
           Spanner.numeric('3.141592653'),
         );
       });
 
-      it('POSTGRESQL should write numeric values', done => {
-        numericInsert(
-          done,
+      it('POSTGRESQL should write numeric values', async () => {
+        await numericInsert(
           Spanner.POSTGRESQL,
           Spanner.pgNumeric('3.141592653'),
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should write null numeric values', done => {
-        numericInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null numeric values', async () => {
+        await numericInsert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null numeric values', done => {
-        numericInsert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null numeric values', async () => {
+        await numericInsert(Spanner.POSTGRESQL, null);
       });
 
-      it('POSTGRESQL should bind NaN', done => {
-        numericInsert(done, Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
+      it('POSTGRESQL should bind NaN', async () => {
+        await numericInsert(Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
       });
 
-      const numericInsertOutOfBounds = (done, dialect, value) => {
-        insert({NumericValue: value}, dialect, err => {
+      const numericInsertOutOfBounds = async (dialect, value) => {
+        try {
+          await insert({NumericValue: value}, dialect);
+        } catch (err: any) {
           KOKORO_JOB_NAME?.includes('system-test-regular-session')
             ? assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION)
             : assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should throw for out of bounds values', done => {
-        numericInsertOutOfBounds(
-          done,
+      it('GOOGLE_STANDARD_SQL should throw for out of bounds values', async () => {
+        await numericInsertOutOfBounds(
           Spanner.GOOGLE_STANDARD_SQL,
           Spanner.numeric('3.1415926535'),
         );
       });
 
-      it('POSTGRESQL should throw for out of bounds values', done => {
-        numericInsertOutOfBounds(
-          done,
+      it('POSTGRESQL should throw for out of bounds values', async () => {
+        await numericInsertOutOfBounds(
           Spanner.POSTGRESQL,
           Spanner.pgNumeric('1e131072'),
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty numeric array values', done => {
-        insert({NumericArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().NumericArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty numeric array values', async () => {
+        const {row} = await insert(
+          {NumericArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().NumericArray, []);
       });
 
-      it('POSTGRESQL should write empty numeric array values', done => {
-        insert({NumericArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().NumericArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty numeric array values', async () => {
+        const {row} = await insert({NumericArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().NumericArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null numeric array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null numeric array values', async () => {
+        const {row} = await insert(
           {NumericArray: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
       });
 
-      it('POSTGRESQL should write null numeric array values', done => {
-        insert({NumericArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
+      it('POSTGRESQL should write null numeric array values', async () => {
+        try {
+          const {row} = await insert(
+            {NumericArray: [null]},
+            Spanner.POSTGRESQL,
+          );
           assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
-          done();
-        });
+        } catch (err) {
+          assert.ifError(err);
+        }
       });
 
-      it('GOOGLE_STANDARD_SQL should write numeric array values', done => {
+      it('GOOGLE_STANDARD_SQL should write numeric array values', async () => {
         const values = [
           Spanner.numeric('-99999999999999999999999999999.999999999'),
           Spanner.numeric('3.141592653'),
           Spanner.numeric('99999999999999999999999999999.999999999'),
         ];
 
-        insert(
+        const {row} = await insert(
           {NumericArray: values},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().NumericArray, values);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().NumericArray, values);
       });
 
-      it('POSTGRESQL should write numeric array values', done => {
+      it('POSTGRESQL should write numeric array values', async () => {
         const values = [
           Spanner.pgNumeric('-99999999999999999999999999999.999999999'),
           Spanner.pgNumeric('3.141592653'),
           Spanner.pgNumeric('99999999999999999999999999999.999999999'),
         ];
 
-        insert({NumericArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().NumericArray, values);
-          done();
-        });
+        const {row} = await insert({NumericArray: values}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().NumericArray, values);
       });
     });
 
     describe('strings', () => {
-      const stringInsert = (done, dialect, value) => {
-        insert({StringValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().StringValue, value);
-          done();
-        });
+      const stringInsert = async (dialect, value) => {
+        const {row} = await insert({StringValue: value}, dialect);
+        assert.strictEqual(row.toJSON().StringValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write string values', done => {
-        stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, 'abc');
+      it('GOOGLE_STANDARD_SQL should write string values', async () => {
+        await stringInsert(Spanner.GOOGLE_STANDARD_SQL, 'abc');
       });
 
-      it('POSTGRESQL should write string values', done => {
-        stringInsert(done, Spanner.POSTGRESQL, 'abc');
+      it('POSTGRESQL should write string values', async () => {
+        await stringInsert(Spanner.POSTGRESQL, 'abc');
       });
 
-      it('GOOGLE_STANDARD_SQL should write null string values', done => {
-        stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null string values', async () => {
+        await stringInsert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null string values', done => {
-        stringInsert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null string values', async () => {
+        await stringInsert(Spanner.POSTGRESQL, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty string array values', done => {
-        insert({StringArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().StringArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty string array values', async () => {
+        const {row} = await insert(
+          {StringArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().StringArray, []);
       });
 
-      it('POSTGRESQL should write empty string array values', done => {
-        insert({StringArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().StringArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty string array values', async () => {
+        const {row} = await insert({StringArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().StringArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null string array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null string array values', async () => {
+        const {row} = await insert(
           {StringArray: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().StringArray, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().StringArray, [null]);
       });
 
-      it('POSTGRESQL should write null string array values', done => {
-        insert({StringArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().StringArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null string array values', async () => {
+        const {row} = await insert({StringArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().StringArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write string array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write string array values', async () => {
+        const {row} = await insert(
           {StringArray: ['abc', 'def']},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
       });
 
-      it('POSTGRESQL should write string array values', done => {
-        insert(
+      it('POSTGRESQL should write string array values', async () => {
+        const {row} = await insert(
           {StringArray: ['abc', 'def']},
           Spanner.POSTGRESQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
       });
     });
 
     describe('bytes', () => {
-      const bytesInsert = (done, dialect, value) => {
-        insert({BytesValue: value}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesValue, value);
-          done();
-        });
+      const bytesInsert = async (dialect, value) => {
+        const {row} = await insert({BytesValue: value}, dialect);
+        assert.deepStrictEqual(row.toJSON().BytesValue, value);
       };
 
-      it('GOOGLE_STANDARD_SQL should write bytes values', done => {
-        bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, Buffer.from('abc'));
+      it('GOOGLE_STANDARD_SQL should write bytes values', async () => {
+        await bytesInsert(Spanner.GOOGLE_STANDARD_SQL, Buffer.from('abc'));
       });
 
-      it('POSTGRESQL should write bytes values', done => {
-        bytesInsert(done, Spanner.POSTGRESQL, Buffer.from('abc'));
+      it('POSTGRESQL should write bytes values', async () => {
+        await bytesInsert(Spanner.POSTGRESQL, Buffer.from('abc'));
       });
 
-      it('GOOGLE_STANDARD_SQL should write null bytes values', done => {
-        bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      it('GOOGLE_STANDARD_SQL should write null bytes values', async () => {
+        await bytesInsert(Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null bytes values', done => {
-        bytesInsert(done, Spanner.POSTGRESQL, null);
+      it('POSTGRESQL should write null bytes values', async () => {
+        await bytesInsert(Spanner.POSTGRESQL, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty bytes array values', done => {
-        insert({BytesArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty bytes array values', async () => {
+        const {row} = await insert(
+          {BytesArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().BytesArray, []);
       });
 
-      it('POSTGRESQL should write empty bytes array values', done => {
-        insert({BytesArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty bytes array values', async () => {
+        const {row} = await insert({BytesArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().BytesArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null bytes array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null bytes array values', async () => {
+        const {row} = await insert(
           {BytesArray: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
       });
 
-      it('POSTGRESQL should write null bytes array values', done => {
-        insert({BytesArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null bytes array values', async () => {
+        const {row} = await insert({BytesArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write bytes array values', done => {
+      it('GOOGLE_STANDARD_SQL should write bytes array values', async () => {
         const values = [Buffer.from('a'), Buffer.from('b')];
-
-        insert(
+        const {row} = await insert(
           {BytesArray: values},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().BytesArray, values);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().BytesArray, values);
       });
 
-      it('POSTGRESQL should write bytes array values', done => {
+      it('POSTGRESQL should write bytes array values', async () => {
         const values = [Buffer.from('a'), Buffer.from('b')];
-
-        insert({BytesArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesArray, values);
-          done();
-        });
+        const {row} = await insert({BytesArray: values}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().BytesArray, values);
       });
     });
 
@@ -1517,250 +1349,201 @@ describe('Spanner', () => {
         }
       });
 
-      it('GOOGLE_STANDARD_SQL should write json values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write json values', async () => {
+        const {row} = await insert(
           {JsonValue: {key1: 'value1', key2: 'value2'}},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().JsonValue, {
-              key1: 'value1',
-              key2: 'value2',
-            });
-            done();
-          },
         );
-      });
-
-      it('GOOGLE_STANDARD_SQL should write null json values', done => {
-        insert({JsonValue: null}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().JsonValue, null);
-          done();
+        assert.deepStrictEqual(row.toJSON().JsonValue, {
+          key1: 'value1',
+          key2: 'value2',
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty json array values', done => {
-        insert({JsonArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write null json values', async () => {
+        const {row} = await insert(
+          {JsonValue: null},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.strictEqual(row.toJSON().JsonValue, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null json array values', done => {
-        insert({JsonArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonArray, [null]);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty json array values', async () => {
+        const {row} = await insert(
+          {JsonArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().JsonArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write json array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null json array values', async () => {
+        const {row} = await insert(
+          {JsonArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().JsonArray, [null]);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write json array values', async () => {
+        const {row} = await insert(
           {JsonArray: [{key1: 'value1'}, {key2: 'value2'}]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().JsonArray, [
-              {key1: 'value1'},
-              {key2: 'value2'},
-            ]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().JsonArray, [
+          {key1: 'value1'},
+          {key2: 'value2'},
+        ]);
       });
     });
 
     describe('timestamps', () => {
-      const timestampInsert = (done, dialect) => {
+      const timestampInsert = async dialect => {
         const date = Spanner.timestamp();
-
-        insert({TimestampValue: date}, dialect, (err, row) => {
-          assert.ifError(err);
-          const time = row.toJSON().TimestampValue.getTime();
-          assert.strictEqual(time, date.getTime());
-          done();
-        });
+        const {row} = await insert({TimestampValue: date}, dialect);
+        const time = row.toJSON().TimestampValue.getTime();
+        assert.strictEqual(time, date.getTime());
       };
 
-      it('GOOGLE_STANDARD_SQL should write timestamp values', done => {
-        timestampInsert(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should write timestamp values', async () => {
+        await timestampInsert(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write timestamp values', done => {
-        timestampInsert(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should write timestamp values', async () => {
+        await timestampInsert(Spanner.POSTGRESQL);
       });
 
-      const timestampInsertNull = (done, dialect) => {
-        insert({TimestampValue: null}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().TimestampValue, null);
-          done();
-        });
+      const timestampInsertNull = async dialect => {
+        const {row} = await insert({TimestampValue: null}, dialect);
+        assert.strictEqual(row.toJSON().TimestampValue, null);
       };
 
-      it('GOOGLE_STANDARD_SQL should write null timestamp values', done => {
-        timestampInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should write null timestamp values', async () => {
+        await timestampInsertNull(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write null timestamp values', done => {
-        timestampInsertNull(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should write null timestamp values', async () => {
+        await timestampInsertNull(Spanner.POSTGRESQL);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty timestamp array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write empty timestamp array values', async () => {
+        const {row} = await insert(
           {TimestampArray: []},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().TimestampArray, []);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().TimestampArray, []);
       });
 
-      it('POSTGRESQL should write empty timestamp array values', done => {
-        insert({TimestampArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().TimestampArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty timestamp array values', async () => {
+        const {row} = await insert({TimestampArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().TimestampArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null timestamp array values', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null timestamp array values', async () => {
+        const {row} = await insert(
           {TimestampArray: [null]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
       });
 
-      it('POSTGRESQL should write null timestamp array values', done => {
-        insert({TimestampArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null timestamp array values', async () => {
+        const {row} = await insert(
+          {TimestampArray: [null]},
+          Spanner.POSTGRESQL,
+        );
+        assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write timestamp array values', done => {
+      it('GOOGLE_STANDARD_SQL should write timestamp array values', async () => {
         const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
-
-        insert(
+        const {row} = await insert(
           {TimestampArray: values},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().TimestampArray, values);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().TimestampArray, values);
       });
 
-      it('POSTGRESQL should write timestamp array values', done => {
+      it('POSTGRESQL should write timestamp array values', async () => {
         const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
-
-        insert({TimestampArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().TimestampArray, values);
-          done();
-        });
+        const {row} = await insert(
+          {TimestampArray: values},
+          Spanner.POSTGRESQL,
+        );
+        assert.deepStrictEqual(row.toJSON().TimestampArray, values);
       });
     });
 
     describe('dates', () => {
-      const dateInsert = (done, dialect) => {
-        insert({DateValue: Spanner.date()}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(
-            Spanner.date(row.toJSON().DateValue),
-            Spanner.date(),
-          );
-          done();
-        });
+      const dateInsert = async dialect => {
+        const {row} = await insert({DateValue: Spanner.date()}, dialect);
+        assert.deepStrictEqual(
+          Spanner.date(row.toJSON().DateValue),
+          Spanner.date(),
+        );
       };
 
-      it('GOOGLE_STANDARD_SQL should write date values', done => {
-        dateInsert(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should write date values', async () => {
+        await dateInsert(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write date values', done => {
-        dateInsert(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should write date values', async () => {
+        await dateInsert(Spanner.POSTGRESQL);
       });
 
-      const dateInsertNull = (done, dialect) => {
-        insert({DateValue: null}, dialect, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().DateValue, null);
-          done();
-        });
+      const dateInsertNull = async dialect => {
+        const {row} = await insert({DateValue: null}, dialect);
+        assert.strictEqual(row.toJSON().DateValue, null);
       };
 
-      it('GOOGLE_STANDARD_SQL should write null date values', done => {
-        dateInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should write null date values', async () => {
+        await dateInsertNull(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write null date values', done => {
-        dateInsertNull(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should write null date values', async () => {
+        await dateInsertNull(Spanner.POSTGRESQL);
       });
 
-      it('GOOGLE_STANDARD_SQL should write empty date array values', done => {
-        insert({DateArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().DateArray, []);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write empty date array values', async () => {
+        const {row} = await insert(
+          {DateArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().DateArray, []);
       });
 
-      it('POSTGRESQL should write empty date array values', done => {
-        insert({DateArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().DateArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty date array values', async () => {
+        const {row} = await insert({DateArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().DateArray, []);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null date array values', done => {
-        insert({DateArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().DateArray, [null]);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write null date array values', async () => {
+        const {row} = await insert(
+          {DateArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        assert.deepStrictEqual(row.toJSON().DateArray, [null]);
       });
 
-      it('POSTGRESQL should write null date array values', done => {
-        insert({DateArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().DateArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null date array values', async () => {
+        const {row} = await insert({DateArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().DateArray, [null]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write date array values', done => {
+      it('GOOGLE_STANDARD_SQL should write date array values', async () => {
         const values = [Spanner.date(), Spanner.date('3-3-1933')];
-
-        insert({DateArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
-          assert.ifError(err);
-          const {DateArray} = row.toJSON();
-          assert.deepStrictEqual(DateArray, values);
-          done();
-        });
+        const {row} = await insert(
+          {DateArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+        );
+        const {DateArray} = row.toJSON();
+        assert.deepStrictEqual(DateArray, values);
       });
 
-      it('POSTGRESQL should write date array values', done => {
+      it('POSTGRESQL should write date array values', async () => {
         const values = [Spanner.date(), Spanner.date('3-3-1933')];
-
-        insert({DateArray: values}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          const {DateArray} = row.toJSON();
-          assert.deepStrictEqual(DateArray, values);
-          done();
-        });
+        const {row} = await insert({DateArray: values}, Spanner.POSTGRESQL);
+        const {DateArray} = row.toJSON();
+        assert.deepStrictEqual(DateArray, values);
       });
     });
 
@@ -1782,96 +1565,72 @@ describe('Spanner', () => {
         fullName: 'examples.spanner.music.SingerInfo',
       };
 
-      it('GOOGLE_STANDARD_SQL should write protoMessage values', done => {
+      it('GOOGLE_STANDARD_SQL should write protoMessage values', async () => {
         const value = Spanner.protoMessage(protoMessageParams);
-        insert(
+        const {row} = await insert(
           {ProtoMessageValue: value},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              row.toJSON().ProtoMessageValue,
-              music.SingerInfo.toObject(protoMessageParams.value),
-            );
-            done();
-          },
           {ProtoMessageValue: music.SingerInfo},
         );
+        assert.deepStrictEqual(
+          row.toJSON().ProtoMessageValue,
+          music.SingerInfo.toObject(protoMessageParams.value),
+        );
       });
 
-      it('GOOGLE_STANDARD_SQL should write bytes in the protoMessage column', done => {
+      it('GOOGLE_STANDARD_SQL should write bytes in the protoMessage column', async () => {
         const value = music.SingerInfo.encode(
           protoMessageParams.value,
         ).finish();
-        insert(
+        const {row} = await insert(
           {ProtoMessageValue: value},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              row.toJSON().ProtoMessageValue,
-              value.toString(),
-            );
-            done();
-          },
+        );
+        assert.deepStrictEqual(
+          row.toJSON().ProtoMessageValue,
+          value.toString(),
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should write null in the protoMessage column', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null in the protoMessage column', async () => {
+        const {row} = await insert(
           {ProtoMessageValue: null},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.equal(row.toJSON().ProtoMessageValue, null);
-            done();
-          },
         );
+        assert.equal(row.toJSON().ProtoMessageValue, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write protoMessageArray', done => {
+      it('GOOGLE_STANDARD_SQL should write protoMessageArray', async () => {
         const value = Spanner.protoMessage(protoMessageParams);
-        insert(
+        const {row} = await insert(
           {ProtoMessageArray: [value]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
-              music.SingerInfo.toObject(protoMessageParams.value),
-            ]);
-            done();
-          },
           {ProtoMessageArray: music.SingerInfo},
         );
+        assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
+          music.SingerInfo.toObject(protoMessageParams.value),
+        ]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write bytes array in the protoMessageArray column', done => {
+      it('GOOGLE_STANDARD_SQL should write bytes array in the protoMessageArray column', async () => {
         const value = music.SingerInfo.encode(
           protoMessageParams.value,
         ).finish();
-        insert(
+        const {row} = await insert(
           {ProtoMessageArray: [value]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
-              value.toString(),
-            ]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
+          value.toString(),
+        ]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null in the protoMessageArray column', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null in the protoMessageArray column', async () => {
+        const {row} = await insert(
           {ProtoMessageArray: null},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.equal(row.toJSON().ProtoMessageArray, null);
-            done();
-          },
         );
+        assert.equal(row.toJSON().ProtoMessageArray, null);
       });
     });
 
@@ -1888,92 +1647,63 @@ describe('Spanner', () => {
         fullName: 'examples.spanner.music.Genre',
       };
 
-      it('GOOGLE_STANDARD_SQL should write protoEnum values', done => {
+      it('GOOGLE_STANDARD_SQL should write protoEnum values', async () => {
         const value = Spanner.protoEnum(enumParams);
-        insert(
+        const {row} = await insert(
           {ProtoEnumValue: value},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              row.toJSON().ProtoEnumValue,
-              Object.getPrototypeOf(music.Genre)[enumParams.value],
-            );
-            done();
-          },
           {ProtoEnumValue: music.Genre},
         );
+        assert.deepStrictEqual(
+          row.toJSON().ProtoEnumValue,
+          Object.getPrototypeOf(music.Genre)[enumParams.value],
+        );
       });
 
-      it('GOOGLE_STANDARD_SQL should write int in the protoEnum column', done => {
+      it('GOOGLE_STANDARD_SQL should write int in the protoEnum column', async () => {
         const value = 2;
-        insert(
+        const {row} = await insert(
           {ProtoEnumValue: value},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(
-              row.toJSON().ProtoEnumValue,
-              value.toString(),
-            );
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().ProtoEnumValue, value.toString());
       });
 
-      it('GOOGLE_STANDARD_SQL should write null in the protoEnum column', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null in the protoEnum column', async () => {
+        const {row} = await insert(
           {ProtoEnumValue: null},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.equal(row.toJSON().ProtoEnumValue, null);
-            done();
-          },
         );
+        assert.equal(row.toJSON().ProtoEnumValue, null);
       });
 
-      it('GOOGLE_STANDARD_SQL should write protoEnumArray', done => {
+      it('GOOGLE_STANDARD_SQL should write protoEnumArray', async () => {
         const value = Spanner.protoEnum(enumParams);
-        insert(
+        const {row} = await insert(
           {ProtoEnumArray: [value]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [
-              Object.getPrototypeOf(music.Genre)[enumParams.value],
-            ]);
-            done();
-          },
           {ProtoEnumArray: music.Genre},
         );
+        assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [
+          Object.getPrototypeOf(music.Genre)[enumParams.value],
+        ]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write int array in the protoEnumArray column', done => {
+      it('GOOGLE_STANDARD_SQL should write int array in the protoEnumArray column', async () => {
         const value = 3;
-        insert(
+        const {row} = await insert(
           {ProtoEnumArray: [value]},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [
-              value.toString(),
-            ]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [value.toString()]);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null in the protoEnumArray column', done => {
-        insert(
+      it('GOOGLE_STANDARD_SQL should write null in the protoEnumArray column', async () => {
+        const {row} = await insert(
           {ProtoEnumArray: null},
           Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.equal(row.toJSON().ProtoEnumArray, null);
-            done();
-          },
         );
+        assert.equal(row.toJSON().ProtoEnumArray, null);
       });
     });
 
@@ -1984,90 +1714,69 @@ describe('Spanner', () => {
         }
       });
 
-      it('POSTGRESQL should write jsonb values', done => {
+      it('POSTGRESQL should write jsonb values', async () => {
         const value = Spanner.pgJsonb({
           key1: 'value1',
           key2: 'value2',
         });
-        insert({JsonbValue: value}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonbValue, value);
-          done();
-        });
+        const {row} = await insert({JsonbValue: value}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().JsonbValue, value);
       });
 
-      it('POSTGRESQL should write null jsonb values', done => {
-        insert({JsonbValue: null}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonbValue, null);
-          done();
-        });
+      it('POSTGRESQL should write null jsonb values', async () => {
+        const {row} = await insert({JsonbValue: null}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().JsonbValue, null);
       });
 
-      it('POSTGRESQL should write empty json array values', done => {
-        insert({JsonbArray: []}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonbArray, []);
-          done();
-        });
+      it('POSTGRESQL should write empty json array values', async () => {
+        const {row} = await insert({JsonbArray: []}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().JsonbArray, []);
       });
 
-      it('POSTGRESQL should write null json array values', done => {
-        insert({JsonbArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonbArray, [null]);
-          done();
-        });
+      it('POSTGRESQL should write null json array values', async () => {
+        const {row} = await insert({JsonbArray: [null]}, Spanner.POSTGRESQL);
+        assert.deepStrictEqual(row.toJSON().JsonbArray, [null]);
       });
 
-      it('POSTGRESQL should write json array values', done => {
-        insert(
+      it('POSTGRESQL should write json array values', async () => {
+        const {row} = await insert(
           {JsonbArray: [{key1: 'value1'}, {key2: 'value2'}]},
           Spanner.POSTGRESQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().JsonbArray, [
-              Spanner.pgJsonb({key1: 'value1'}),
-              Spanner.pgJsonb({key2: 'value2'}),
-            ]);
-            done();
-          },
         );
+        assert.deepStrictEqual(row.toJSON().JsonbArray, [
+          Spanner.pgJsonb({key1: 'value1'}),
+          Spanner.pgJsonb({key2: 'value2'}),
+        ]);
       });
     });
 
     describe('commit timestamp', () => {
-      const commitTimestamp = (done, dialect) => {
+      const commitTimestamp = async dialect => {
         const data = {CommitTimestamp: Spanner.COMMIT_TIMESTAMP};
 
-        insert(data, dialect, (err, row, {commitTimestamp}) => {
-          assert.ifError(err);
+        const {row, insertResp} = await insert(data, dialect);
+        const timestampFromCommit = Spanner.timestamp(
+          insertResp.commitTimestamp,
+        );
+        const timestampFromRead = row.toJSON().CommitTimestamp;
 
-          const timestampFromCommit = Spanner.timestamp(commitTimestamp);
-          const timestampFromRead = row.toJSON().CommitTimestamp;
-
-          assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
-          done();
-        });
+        assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
       };
 
-      it('GOOGLE_STANDARD_SQL should accept the commit timestamp placeholder', done => {
-        commitTimestamp(done, Spanner.GOOGLE_STANDARD_SQL);
+      it('GOOGLE_STANDARD_SQL should accept the commit timestamp placeholder', async () => {
+        await commitTimestamp(Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should accept the commit timestamp placeholder', done => {
-        commitTimestamp(done, Spanner.POSTGRESQL);
+      it('POSTGRESQL should accept the commit timestamp placeholder', async () => {
+        await commitTimestamp(Spanner.POSTGRESQL);
       });
     });
   });
 
   describe('Instances', () => {
-    it('should have created the instance', done => {
-      instance.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual(metadata!.name, instance.formattedName_);
-        done();
-      });
+    it('should have created the instance', async () => {
+      const [metadata] = await instance.getMetadata();
+      assert.strictEqual(metadata!.name, instance.formattedName_);
     });
 
     it('should respect the FieldMask', async function () {
@@ -2086,7 +1795,7 @@ describe('Spanner', () => {
       assert.strictEqual(metadata['state'], 'STATE_UNSPECIFIED');
     });
 
-    it('should auto create an instance', done => {
+    it('should auto create an instance', async () => {
       const instance = spanner.instance(generateName('instance'));
 
       const config = extend(
@@ -2096,30 +1805,19 @@ describe('Spanner', () => {
         INSTANCE_CONFIG,
       );
 
-      instance.get(config, err => {
-        assert.ifError(err);
-        RESOURCES_TO_CLEAN.push(instance);
-        instance.getMetadata(done);
-      });
+      await instance.get(config);
+      RESOURCES_TO_CLEAN.push(instance);
+      await instance.getMetadata();
     });
 
-    it('should list the instances', done => {
-      spanner.getInstances((err, instances) => {
-        assert.ifError(err);
-        assert(instances!.length > 0);
-        done();
-      });
+    it('should list the instances', async () => {
+      const [instances] = await spanner.getInstances();
+      assert(instances!.length > 0);
     });
 
-    it('should list the instances in promise mode', done => {
-      spanner
-        .getInstances()
-        .then(data => {
-          const instances = data[0];
-          assert(instances.length > 0);
-          done();
-        })
-        .catch(done);
+    it('should list the instances in promise mode', async () => {
+      const [instances] = await spanner.getInstances();
+      assert(instances.length > 0);
     });
 
     it('should list the instances in stream mode', done => {
@@ -2134,42 +1832,28 @@ describe('Spanner', () => {
         );
     });
 
-    it('should update the metadata', function (done) {
+    it('should update the metadata', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
+
       const newData = {
         displayName: 'new-display-name-' + shortUUID(),
       };
-
-      instance.setMetadata(
-        newData,
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          instance.getMetadata((err, metadata) => {
-            assert.ifError(err);
-            assert.strictEqual(metadata!.displayName, newData.displayName);
-            done();
-          });
-        }),
-      );
+      const [operation] = await instance.setMetadata(newData);
+      await operation.promise();
+      const [metadata] = await instance.getMetadata();
+      assert.strictEqual(metadata.displayName, newData.displayName);
     });
 
-    it('should return true for instances that exist', done => {
-      instance.exists((err, exists) => {
-        assert.ifError(err);
-        assert.strictEqual(exists, true);
-        done();
-      });
+    it('should return true for instances that exist', async () => {
+      const [exists] = await instance.exists();
+      assert.strictEqual(exists, true);
     });
 
-    it('should return false for instances that do not exist', done => {
-      spanner.instance('bad-instance').exists((err, exists) => {
-        assert.ifError(err);
-        assert.strictEqual(exists, false);
-        done();
-      });
+    it('should return false for instances that do not exist', async () => {
+      const [exists] = await spanner.instance('bad-instance').exists();
+      assert.strictEqual(exists, false);
     });
   });
 
@@ -2222,34 +1906,22 @@ describe('Spanner', () => {
       );
     });
 
-    it('should have created the instance config', function (done) {
+    it('should have created the instance config', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      instanceConfig.get((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual(metadata!.name, instanceConfig.formattedName_);
-        done();
-      });
+      const [metadata] = await instanceConfig.get();
+      assert.strictEqual(metadata!.name, instanceConfig.formattedName_);
     });
 
-    it('should list the available instanceConfigs', done => {
-      spanner.getInstanceConfigs((err, instanceConfigs) => {
-        assert.ifError(err);
-        assert(instanceConfigs!.length > 0);
-        done();
-      });
+    it('should list the available instanceConfigs', async () => {
+      const [instanceConfigs] = await spanner.getInstanceConfigs();
+      assert(instanceConfigs!.length > 0);
     });
 
-    it('should list the instanceConfigs in promise mode', done => {
-      spanner
-        .getInstanceConfigs()
-        .then(data => {
-          const instanceConfigs = data[0];
-          assert(instanceConfigs.length > 0);
-          done();
-        })
-        .catch(done);
+    it('should list the instanceConfigs in promise mode', async () => {
+      const [instanceConfigs] = await spanner.getInstanceConfigs();
+      assert(instanceConfigs.length > 0);
     });
 
     it('should list the instanceConfigs in stream mode', done => {
@@ -2264,44 +1936,28 @@ describe('Spanner', () => {
         );
     });
 
-    it("should get an instanceConfig's metadata using getInstanceConfig", function (done) {
+    it("should get an instanceConfig's metadata using getInstanceConfig", async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
-        assert.ifError(err);
-        assert(instanceConfig!.displayName);
-        done();
-      });
+      const [instanceConfig] = await spanner.getInstanceConfig('nam6');
+      assert(instanceConfig!.displayName);
     });
 
-    it("should get an instanceConfig's metadata in promise mode using getInstanceConfig", function (done) {
+    it("should get an instanceConfig's metadata in promise mode using getInstanceConfig", async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner
-        .getInstanceConfig('nam6')
-        .then(data => {
-          const instanceConfig = data[0];
-          assert(instanceConfig.displayName);
-          done();
-        })
-        .catch(done);
+      const [instanceConfig] = await spanner.getInstanceConfig('nam6');
+      assert(instanceConfig.displayName);
     });
 
-    it("should get an instanceConfig's metadata using get", function (done) {
+    it("should get an instanceConfig's metadata using get", async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner
-        .instanceConfig('nam6')
-        .get()
-        .then(data => {
-          const instanceConfig = data[0];
-          assert(instanceConfig.displayName);
-          done();
-        })
-        .catch(done);
+      const [instanceConfig] = await spanner.instanceConfig('nam6').get();
+      assert(instanceConfig.displayName);
     });
 
     it("should list an instanceConfig's operations without filter", async function () {
@@ -2347,30 +2003,22 @@ describe('Spanner', () => {
       );
     });
 
-    it('should update the instance config metadata', function (done) {
+    it('should update the instance config metadata', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
+
       const newData = {
         instanceConfig: {
           displayName: 'new-display-name-' + shortUUID(),
         },
       };
-
-      instanceConfig.setMetadata(
-        newData,
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          instanceConfig.get((err, metadata) => {
-            assert.ifError(err);
-            assert.strictEqual(
-              metadata!.displayName,
-              newData.instanceConfig.displayName,
-            );
-            done();
-          });
-        }),
+      const [operation] = await instanceConfig.setMetadata(newData);
+      await operation.promise();
+      const [metadata] = await instanceConfig.get();
+      assert.strictEqual(
+        metadata.displayName,
+        newData.instanceConfig.displayName,
       );
     });
 
@@ -2395,63 +2043,48 @@ describe('Spanner', () => {
 
   describe('Databases', () => {
     const TABLE_NAME = 'SingersTest';
-    const autoCreateDatabase = (done, databaseId) => {
+    const autoCreateDatabase = async databaseId => {
       const database = instance.database(generateName(databaseId));
-
-      database.get({autoCreate: true} as GetDatabaseConfig, err => {
-        assert.ifError(err);
-        RESOURCES_TO_CLEAN.push(database);
-        database.getMetadata(done);
-      });
+      await database.get({autoCreate: true} as GetDatabaseConfig);
+      RESOURCES_TO_CLEAN.push(database);
+      await database.getMetadata();
     };
 
-    it('GOOGLE_STANDARD_SQL should auto create a database', done => {
-      autoCreateDatabase(done, 'database');
+    it('GOOGLE_STANDARD_SQL should auto create a database', async () => {
+      await autoCreateDatabase('database');
     });
 
-    it('POSTGRESQL should auto create a database', done => {
-      autoCreateDatabase(done, 'pg-db');
+    it('POSTGRESQL should auto create a database', async () => {
+      await autoCreateDatabase('pg-db');
     });
 
-    const createDatabase = (done, database, dialect) => {
-      database.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual(metadata!.name, database.formattedName_);
-        assert.strictEqual(metadata!.state, 'READY');
-        assert.strictEqual(metadata!.databaseDialect, dialect);
-        done();
-      });
+    const createDatabase = async (database, dialect) => {
+      const [metadata] = await database.getMetadata();
+      assert.strictEqual(metadata!.name, database.formattedName_);
+      assert.strictEqual(metadata!.state, 'READY');
+      assert.strictEqual(metadata!.databaseDialect, dialect);
     };
 
-    it('GOOGLE_STANDARD_SQL should have created the database', done => {
-      createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
+    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
+      await createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
 
-    it('POSTGRESQL should have created the database', done => {
-      createDatabase(done, PG_DATABASE, 'POSTGRESQL');
+    it('POSTGRESQL should have created the database', async () => {
+      await createDatabase(PG_DATABASE, 'POSTGRESQL');
     });
 
-    it('should list the databases from an instance', done => {
-      instance.getDatabases((err, databases) => {
-        assert.ifError(err);
-        assert(databases!.length > 0);
-        // check if enableDropProtection is populated for databases.
-        databases!.map(db => {
-          assert.notStrictEqual(db.metadata.enableDropProtection, null);
-        });
-        done();
+    it('should list the databases from an instance', async () => {
+      const [databases] = await instance.getDatabases();
+      assert(databases!.length > 0);
+      // check if enableDropProtection is populated for databases.
+      databases!.map(db => {
+        assert.notStrictEqual(db.metadata.enableDropProtection, null);
       });
     });
 
-    it('should list the databases in promise mode', done => {
-      instance
-        .getDatabases()
-        .then(data => {
-          const databases = data[0];
-          assert(databases.length > 0);
-          done();
-        })
-        .catch(done);
+    it('should list the databases in promise mode', async () => {
+      const [databases] = await instance.getDatabases();
+      assert(databases.length > 0);
     });
 
     it('should list the databases in stream mode', done => {
@@ -2466,53 +2099,38 @@ describe('Spanner', () => {
         );
     });
 
-    it('should return true for databases that exist', done => {
-      DATABASE.exists((err, exists) => {
-        assert.ifError(err);
-        assert.strictEqual(exists, true);
-        done();
-      });
+    it('should return true for databases that exist', async () => {
+      const [exists] = await DATABASE.exists();
+      assert.strictEqual(exists, true);
     });
 
-    it('should return false for databases that do not exist', done => {
-      instance.database('bad-database').exists((err, exists) => {
-        assert.ifError(err);
-        assert.strictEqual(exists, false);
-        done();
-      });
+    it('should return false for databases that do not exist', async () => {
+      const [exists] = await instance.database('bad-database').exists();
+      assert.strictEqual(exists, false);
     });
 
-    const createTable = (done, database, dialect, createTableStatement) => {
-      database.updateSchema(
-        [createTableStatement],
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          function replaceNewLinesAndSpacing(str, dialect) {
-            const schema = str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
-            if (dialect === Spanner.GOOGLE_STANDARD_SQL) {
-              return schema;
-            } else {
-              return schema.toLowerCase();
-            }
-          }
-
-          database.getSchema((err, statements) => {
-            assert.ifError(err);
-            assert.ok(
-              statements!.some(
-                s =>
-                  replaceNewLinesAndSpacing(s, dialect) ===
-                  replaceNewLinesAndSpacing(createTableStatement, dialect),
-              ),
-            );
-            done();
-          });
-        }),
+    const createTable = async (database, dialect, createTableStatement) => {
+      const [operation] = await database.updateSchema([createTableStatement]);
+      await operation.promise();
+      function replaceNewLinesAndSpacing(str, dialect) {
+        const schema = str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+        if (dialect === Spanner.GOOGLE_STANDARD_SQL) {
+          return schema;
+        } else {
+          return schema.toLowerCase();
+        }
+      }
+      const [statements] = await database.getSchema();
+      assert.ok(
+        statements.some(
+          s =>
+            replaceNewLinesAndSpacing(s, dialect) ===
+            replaceNewLinesAndSpacing(createTableStatement, dialect),
+        ),
       );
     };
 
-    it('GOOGLE_STANDARD_SQL should create a table', done => {
+    it('GOOGLE_STANDARD_SQL should create a table', async () => {
       const createTableStatement = `
         CREATE TABLE ${TABLE_NAME} (
           SingerId INT64 NOT NULL,
@@ -2520,15 +2138,15 @@ describe('Spanner', () => {
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
         ) PRIMARY KEY(SingerId)`;
-      createTable(
-        done,
+
+      await createTable(
         DATABASE,
         Spanner.GOOGLE_STANDARD_SQL,
         createTableStatement,
       );
     });
 
-    it('POSTGRESQL should create a table', done => {
+    it('POSTGRESQL should create a table', async () => {
       const createTableStatement = `
         CREATE TABLE ${TABLE_NAME} (
           SingerId BIGINT NOT NULL,
@@ -2537,7 +2155,8 @@ describe('Spanner', () => {
           SingerInfo BYTEA,
           PRIMARY KEY(SingerId)
         )`;
-      createTable(done, PG_DATABASE, Spanner.POSTGRESQL, createTableStatement);
+
+      await createTable(PG_DATABASE, Spanner.POSTGRESQL, createTableStatement);
     });
 
     it('should list database operations on an instance', async function () {
@@ -2639,16 +2258,10 @@ describe('Spanner', () => {
         }
       });
       const createUserDefinedDatabaseRole = async (database, query) => {
-        database.updateSchema(
-          [query],
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
-            database.getSchema((err, statements) => {
-              assert.ifError(err);
-              assert.ok(statements.includes(query));
-            });
-          }),
-        );
+        const [operation] = await database.updateSchema([query]);
+        await operation.promise();
+        const [statements] = await database.getSchema();
+        assert.ok(statements.includes(query));
       };
 
       it('GOOGLE_STANDARD_SQL should create a user defined role', async function () {
@@ -2672,17 +2285,14 @@ describe('Spanner', () => {
         createRoleQuery,
         grantAccessQuery,
       ) => {
-        database.updateSchema(
-          [createRoleQuery, grantAccessQuery],
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
-            database.getSchema((err, statements) => {
-              assert.ifError(err);
-              assert.ok(statements.includes(createRoleQuery));
-              assert.ok(statements.includes(grantAccessQuery));
-            });
-          }),
-        );
+        const [operation] = await database.updateSchema([
+          createRoleQuery,
+          grantAccessQuery,
+        ]);
+        await operation.promise();
+        const [statements] = await database.getSchema();
+        assert.ok(statements.includes(createRoleQuery));
+        assert.ok(statements.includes(grantAccessQuery));
       };
 
       it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function () {
@@ -2715,27 +2325,20 @@ describe('Spanner', () => {
         grantPermissionQuery,
         revokePermissionQuery,
       ) => {
-        database.updateSchema(
-          [createRoleQuery, grantPermissionQuery],
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
-            database.getSchema((err, statements) => {
-              assert.ifError(err);
-              assert.ok(statements.includes(createRoleQuery));
-              assert.ok(statements.includes(grantPermissionQuery));
-              database.updateSchema(
-                [revokePermissionQuery],
-                execAfterOperationComplete(err => {
-                  assert.ifError(err);
-                  database.getSchema((err, statements) => {
-                    assert.ifError(err);
-                    assert.ok(!statements.includes(grantPermissionQuery));
-                  });
-                }),
-              );
-            });
-          }),
-        );
+        const [grantOperation] = await database.updateSchema([
+          createRoleQuery,
+          grantPermissionQuery,
+        ]);
+        await grantOperation.promise();
+        const [statementsAfterGrant] = await database.getSchema();
+        assert.ok(statementsAfterGrant.includes(createRoleQuery));
+        assert.ok(statementsAfterGrant.includes(grantPermissionQuery));
+        const [revokeOperation] = await database.updateSchema([
+          revokePermissionQuery,
+        ]);
+        await revokeOperation.promise();
+        const [statementsAfterRevoke] = await database.getSchema();
+        assert.ok(!statementsAfterRevoke.includes(grantPermissionQuery));
       };
 
       it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function () {
@@ -2769,26 +2372,16 @@ describe('Spanner', () => {
         createRoleQuery,
         dropRoleQuery,
       ) => {
-        database.updateSchema(
-          [createRoleQuery],
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
-            database.getSchema((err, statements) => {
-              assert.ifError(err);
-              assert.ok(statements.includes(createRoleQuery));
-              database.updateSchema(
-                [dropRoleQuery],
-                execAfterOperationComplete(err => {
-                  assert.ifError(err);
-                  database.getSchema((err, statements) => {
-                    assert.ifError(err);
-                    assert.ok(!statements.includes(createRoleQuery));
-                  });
-                }),
-              );
-            });
-          }),
-        );
+        const [createOperation] = await database.updateSchema([
+          createRoleQuery,
+        ]);
+        await createOperation.promise();
+        const [statementsAfterCreate] = await database.getSchema();
+        assert.ok(statementsAfterCreate.includes(createRoleQuery));
+        const [dropOperation] = await database.updateSchema([dropRoleQuery]);
+        await dropOperation.promise();
+        const [statementsAfterDrop] = await database.getSchema();
+        assert.ok(!statementsAfterDrop.includes(createRoleQuery));
       };
 
       it('GOOGLE_STANDARD_SQL should drop the user defined role', async function () {
@@ -2815,107 +2408,87 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessSuccess = (done, database, grantPermissionQuery) => {
+      const grantAccessSuccess = async (database, grantPermissionQuery) => {
         const id = 7;
-        database.updateSchema(
-          ['CREATE ROLE read_access', grantPermissionQuery],
-          execAfterOperationComplete(async err => {
-            assert.ifError(err);
-            const table = database.table('Singers');
-            table.insert(
-              {
-                SingerId: id,
-              },
-              err => {
-                assert.ifError(err);
-                const dbReadRole = instance.database(database.formattedName_, {
-                  databaseRole: 'read_access',
-                });
-                const query = {
-                  sql: 'SELECT SingerId, Name FROM Singers',
-                };
-                dbReadRole.run(query, (err, rows) => {
-                  assert.ifError(err);
-                  assert.ok(rows.length > 0);
-                  table.deleteRows([id]);
-                  done();
-                });
-              },
-            );
-          }),
-        );
+        const [operation] = await database.updateSchema([
+          'CREATE ROLE read_access',
+          grantPermissionQuery,
+        ]);
+        await operation.promise();
+        const table = database.table('Singers');
+        await table.insert({
+          SingerId: id,
+        });
+        const dbReadRole = instance.database(database.formattedName_, {
+          databaseRole: 'read_access',
+        });
+        const query = {
+          sql: 'SELECT SingerId, Name FROM Singers',
+        };
+        const [rows] = await dbReadRole.run(query);
+        assert.ok(rows.length > 0);
+        await table.deleteRows([id]);
       };
 
-      it('GOOGLE_STANDARD_SQL should run query with access granted', function (done) {
+      it('GOOGLE_STANDARD_SQL should run query with access granted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessSuccess(
-          done,
+        await grantAccessSuccess(
           DATABASE,
           'GRANT SELECT ON TABLE Singers TO ROLE read_access',
         );
       });
 
-      it('POSTGRESQL should run query with access granted', function (done) {
+      it('POSTGRESQL should run query with access granted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessSuccess(
-          done,
+        await grantAccessSuccess(
           PG_DATABASE,
           'GRANT SELECT ON TABLE singers TO read_access',
         );
       });
 
-      const grantAccessFailure = (done, database, grantPermissionQuery) => {
+      const grantAccessFailure = async (database, grantPermissionQuery) => {
         const id = 8;
-        database.updateSchema(
-          ['CREATE ROLE write_access', grantPermissionQuery],
-          execAfterOperationComplete(async err => {
-            assert.ifError(err);
-            const table = database.table('Singers');
-            // INSERT access cannot SELECT data from table
-            table.insert(
-              {
-                SingerId: id,
-              },
-              err => {
-                assert.ifError(err);
-                const dbWriteRole = instance.database(database.formattedName_, {
-                  databaseRole: 'write_access',
-                });
-                const query = {
-                  sql: 'SELECT SingerId, Name FROM Singers',
-                };
-                dbWriteRole.run(query, err => {
-                  assert(err);
-                  table.deleteRows([id]);
-                  done();
-                });
-              },
-            );
-          }),
-        );
+        const [operation] = await database.updateSchema([
+          'CREATE ROLE write_access',
+          grantPermissionQuery,
+        ]);
+        await operation.promise();
+        const table = database.table('Singers');
+        await table.insert({
+          SingerId: id,
+        });
+        const dbWriteRole = instance.database(database.formattedName_, {
+          databaseRole: 'write_access',
+        });
+
+        const query = {
+          sql: 'SELECT SingerId, Name FROM Singers',
+        };
+        await assert.rejects(async () => {
+          await dbWriteRole.run(query);
+        });
+        await table.deleteRows([id]);
       };
 
-      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', function (done) {
+      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessFailure(
-          done,
+        await grantAccessFailure(
           DATABASE,
           'GRANT INSERT ON TABLE Singers TO ROLE write_access',
         );
       });
 
-      it('POSTGRESQL should fail run query due to no access granted', function (done) {
+      it('POSTGRESQL should fail run query due to no access granted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessFailure(
-          done,
+        await grantAccessFailure(
           PG_DATABASE,
           'GRANT INSERT ON TABLE singers TO write_access',
         );
@@ -2952,27 +2525,24 @@ describe('Spanner', () => {
         await listDatabaseRoles(PG_DATABASE);
       });
 
-      const getIamPolicy = (done, database) => {
-        database.getIamPolicy((err, policy) => {
-          assert.ifError(err);
-          assert.strictEqual(policy!.version, 0);
-          assert.deepStrictEqual(policy!.bindings, []);
-          done();
-        });
+      const getIamPolicy = async database => {
+        const [policy] = await database.getIamPolicy();
+        assert.strictEqual(policy!.version, 0);
+        assert.deepStrictEqual(policy!.bindings, []);
       };
 
-      it('GOOGLE_STANDARD_SQL should get IAM Policy', function (done) {
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        getIamPolicy(done, DATABASE);
+        await getIamPolicy(DATABASE);
       });
 
-      it('POSTGRESQL should should get IAM Policy', function (done) {
+      it('POSTGRESQL should should get IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        getIamPolicy(done, PG_DATABASE);
+        await getIamPolicy(PG_DATABASE);
       });
 
       const setIamPolicy = async database => {
@@ -3202,45 +2772,39 @@ describe('Spanner', () => {
         }
       });
 
-      const insertAndDeleteInSameTransactionErrorWithFKADC = (
-        done,
-        database,
-      ) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
+      const insertAndDeleteInSameTransactionErrorWithFKADC = async database => {
+        await database.runTransactionAsync(async transaction => {
           transaction!.insert('Customers', {
             CustomerId: 2,
             CustomerName: 'John',
           });
           transaction!.deleteRows('Customers', [2]);
-          transaction!.commit(err => {
+          try {
+            await transaction!.commit();
+          } catch (err) {
             assert.match(
               (err as grpc.ServiceError).message.toLowerCase(),
               /9 failed_precondition: cannot write a value for the referenced column `customers.customerid` and delete it in the same transaction\./,
             );
-            done();
-          });
+          }
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should throw error when insert and delete a referenced key', done => {
+      it('GOOGLE_STANDARD_SQL should throw error when insert and delete a referenced key', async () => {
         const fkadc_database = instance.database(fkadc_database_id);
-        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database);
+        await insertAndDeleteInSameTransactionErrorWithFKADC(fkadc_database);
       });
 
-      it('POSTGRESQL should throw error when insert and delete a referenced key', done => {
+      it('POSTGRESQL should throw error when insert and delete a referenced key', async () => {
         const fkadc_database_pg = instance.database(fkadc_database_pg_id);
-        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database_pg);
+        await insertAndDeleteInSameTransactionErrorWithFKADC(fkadc_database_pg);
       });
 
-      const insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC = (
-        done,
-        database,
-      ) => {
-        const customersTable = database.table('Customers');
-        const cartsTable = database.table('ShoppingCarts');
-        customersTable.insert(
-          [
+      const insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC =
+        async database => {
+          const customersTable = database.table('Customers');
+          const cartsTable = database.table('ShoppingCarts');
+          await customersTable.insert([
             {
               CustomerId: 2,
               CustomerName: 'Marc',
@@ -3249,86 +2813,65 @@ describe('Spanner', () => {
               CustomerId: 3,
               CustomerName: 'John',
             },
-          ],
-          err => {
-            assert.ifError(err);
-            cartsTable.insert(
-              {
-                CartId: 2,
-                CustomerId: 2,
-                CustomerName: 'Marc',
-              },
-              err => {
-                assert.ifError(err);
-                database.runTransaction((err, transaction) => {
-                  assert.ifError(err);
-                  transaction!.update('ShoppingCarts', {
-                    CartId: 2,
-                    CustomerId: 3,
-                    CustomerName: 'John',
-                  });
-                  transaction!.deleteRows('Customers', [2]);
-                  transaction!.commit(err => {
-                    assert.match(
-                      (err as grpc.ServiceError).message.toLowerCase(),
-                      /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./,
-                    );
-                    done();
-                  });
-                });
-              },
-            );
-          },
-        );
-      };
+          ]);
+          await cartsTable.insert({
+            CartId: 2,
+            CustomerId: 2,
+            CustomerName: 'Marc',
+          });
 
-      it('GOOGLE_STANDARD_SQL should throw error when insert a referencing key and delete a referenced key', done => {
+          await database.runTransactionAsync(async transaction => {
+            transaction!.update('ShoppingCarts', {
+              CartId: 2,
+              CustomerId: 3,
+              CustomerName: 'John',
+            });
+            transaction!.deleteRows('Customers', [2]);
+            try {
+              await transaction!.commit();
+            } catch (err) {
+              assert.match(
+                (err as grpc.ServiceError).message.toLowerCase(),
+                /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./,
+              );
+            }
+          });
+        };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert a referencing key and delete a referenced key', async () => {
         const fkadc_database = instance.database(fkadc_database_id);
-        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
-          done,
+        await insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
           fkadc_database,
         );
       });
 
-      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', done => {
+      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', async () => {
         const fkadc_database_pg = instance.database(fkadc_database_pg_id);
-        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
-          done,
+        await insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
           fkadc_database_pg,
         );
       });
 
-      const deleteRuleOnInformationSchemaReferentialConstraints = (
-        done,
-        database,
-      ) => {
-        database.getSnapshot((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run(
+      const deleteRuleOnInformationSchemaReferentialConstraints =
+        async database => {
+          const [transaction] = await database.getSnapshot();
+          const [rows] = await transaction!.run(
             "SELECT DELETE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME = 'FKShoppingCartsCustomerId'",
-            (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, 'CASCADE');
-              transaction!.end();
-              done();
-            },
           );
-        });
-      };
+          assert.strictEqual(rows[0][0].value, 'CASCADE');
+          transaction!.end();
+        };
 
-      it('GOOGLE_STANDARD_SQL should test information schema referential constraints', done => {
+      it('GOOGLE_STANDARD_SQL should test information schema referential constraints', async () => {
         const fkadc_database = instance.database(fkadc_database_id);
-        deleteRuleOnInformationSchemaReferentialConstraints(
-          done,
+        await deleteRuleOnInformationSchemaReferentialConstraints(
           fkadc_database,
         );
       });
 
-      it('POSTGRESQL should test information schema referential constraints', done => {
+      it('POSTGRESQL should test information schema referential constraints', async () => {
         const fkadc_database_pg = instance.database(fkadc_database_pg_id);
-        deleteRuleOnInformationSchemaReferentialConstraints(
-          done,
+        await deleteRuleOnInformationSchemaReferentialConstraints(
           fkadc_database_pg,
         );
       });
@@ -3787,30 +3330,22 @@ describe('Spanner', () => {
       }
     });
 
-    it('should have created the session', done => {
-      session.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual(session.formattedName_, metadata!.name);
-        done();
-      });
+    it('should have created the session', async () => {
+      const [metadata] = await session.getMetadata();
+      assert.strictEqual(session.formattedName_, metadata!.name);
     });
 
-    it('should get a session by name', done => {
+    it('should get a session by name', async () => {
       const shortName = session.formattedName_!.split('/').pop();
       const sessionByShortName = DATABASE.session(shortName);
 
-      sessionByShortName.getMetadata((err, metadataByName) => {
-        assert.ifError(err);
-        session.getMetadata((err, metadata) => {
-          assert.ifError(err);
-          assert.strictEqual(metadataByName!.name, metadata!.name);
-          done();
-        });
-      });
+      const [metadataByName] = await sessionByShortName.getMetadata();
+      const [metadata] = await session.getMetadata();
+      assert.strictEqual(metadataByName!.name, metadata!.name);
     });
 
-    it('should keep the session alive', done => {
-      session.keepAlive(done);
+    it('should keep the session alive', async () => {
+      await session.keepAlive();
     });
 
     it('should batch create sessions', async () => {
@@ -3822,37 +3357,28 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should have created the session with database database role', function (done) {
+    it('should have created the session with database database role', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      sessionWithDatabaseRole.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual('parent_role', metadata!.databaseRole);
-        done();
-      });
+      const [metadata] = await sessionWithDatabaseRole.getMetadata();
+      assert.strictEqual('parent_role', metadata!.databaseRole);
     });
 
-    it('should have created the session with database role', function (done) {
+    it('should have created the session with database role', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      sessionWithRole.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual('child_role', metadata!.databaseRole);
-        done();
-      });
+      const metadata = await sessionWithRole.getMetadata();
+      assert.strictEqual('child_role', metadata[0]!.databaseRole);
     });
 
-    it('should have created the session by overriding database database role', function (done) {
+    it('should have created the session by overriding database database role', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      sessionWithOverridingRole.getMetadata((err, metadata) => {
-        assert.ifError(err);
-        assert.strictEqual('orphan_role', metadata!.databaseRole);
-        done();
-      });
+      const metadata = await sessionWithOverridingRole.getMetadata();
+      assert.strictEqual('orphan_role', metadata[0]!.databaseRole);
     });
 
     it('should batch create sessions with database role', async function () {
@@ -3957,47 +3483,38 @@ describe('Spanner', () => {
       await onPromiseOperationComplete(postgreSqlCreateTable);
     });
 
-    const nonExistentTable = (done, database) => {
+    const nonExistentTable = async database => {
       const table = database.table(generateName('nope'));
 
-      table.insert(
-        {
-          SingerId: generateName('id'),
-        },
-        err => {
-          assert.strictEqual(err!.code, 5);
-          done();
-        },
-      );
+      try {
+        table.insert({SingerId: generateName('id')});
+      } catch (err: any) {
+        assert.strictEqual(err!.code, 5);
+      }
     };
 
-    it('GOOGLE_STANDARD_SQL should throw an error for non-existent tables', done => {
-      nonExistentTable(done, DATABASE);
+    it('GOOGLE_STANDARD_SQL should throw an error for non-existent tables', async () => {
+      await nonExistentTable(DATABASE);
     });
 
-    it('POSTGRESQL should throw an error for non-existent tables', done => {
-      nonExistentTable(done, PG_DATABASE);
+    it('POSTGRESQL should throw an error for non-existent tables', async () => {
+      await nonExistentTable(PG_DATABASE);
     });
 
-    const nonExistentColumn = (done, table) => {
-      table.insert(
-        {
-          SingerId: generateName('id'),
-          Nope: 'abc',
-        },
-        err => {
-          assert.strictEqual(err!.code, 5);
-          done();
-        },
-      );
+    const nonExistentColumn = async table => {
+      try {
+        table.insert({SingerId: generateName('id'), Nope: 'abc'});
+      } catch (err: any) {
+        assert.strictEqual(err!.code, 5);
+      }
     };
 
-    it('GOOGLE_STANDARD_SQL should throw an error for non-existent columns', done => {
-      nonExistentColumn(done, googleSqlTable);
+    it('GOOGLE_STANDARD_SQL should throw an error for non-existent columns', async () => {
+      await nonExistentColumn(googleSqlTable);
     });
 
-    it('POSTGRESQL should throw an error for non-existent columns', done => {
-      nonExistentColumn(done, postgreSqlTable);
+    it('POSTGRESQL should throw an error for non-existent columns', async () => {
+      await nonExistentColumn(postgreSqlTable);
     });
 
     const readRowsStream = (done, table) => {
@@ -4228,7 +3745,7 @@ describe('Spanner', () => {
       insertAndDeleteMultipleRows(done, postgreSqlTable);
     });
 
-    const insertAndDeleteMultipleCompositeKeyRows = (
+    const insertAndDeleteMultipleCompositeKeyRows = async (
       database,
       createTableStatement,
     ) => {
@@ -4245,129 +3762,89 @@ describe('Spanner', () => {
         [id2, name2],
       ] as {} as string[];
 
-      return table
-        .create(createTableStatement)
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          return table.insert([
-            {
-              SingerId: id1,
-              Name: name1,
-            },
-            {
-              SingerId: id2,
-              Name: name2,
-            },
-          ]);
-        })
-        .then(() => {
-          return table.read({
-            keys,
-            columns: ['SingerId', 'Name'],
-          });
-        })
-        .then(data => {
-          const rows = data[0];
-
-          assert.strictEqual(rows.length, 2);
-
-          return table.deleteRows(keys as Key[]);
-        })
-        .then(() => {
-          return table.read({
-            keys,
-            columns: ['SingerId', 'Name'],
-          });
-        })
-        .then(data => {
-          const rows = data[0];
-          assert.strictEqual(rows.length, 0);
-        });
+      const [, operation] = await table.create(createTableStatement);
+      await operation.promise();
+      await table.insert([
+        {SingerId: id1, Name: name1},
+        {SingerId: id2, Name: name2},
+      ]);
+      const [rows] = await table.read({keys, columns: ['SingerId', 'Name']});
+      assert.strictEqual(rows.length, 2);
+      await table.deleteRows(keys as Key[]);
+      const [rowsAfterDelete] = await table.read({
+        keys,
+        columns: ['SingerId', 'Name'],
+      });
+      assert.strictEqual(rowsAfterDelete.length, 0);
     };
 
-    it('GOOGLE_STANDARD_SQL should insert and delete composite key rows', () => {
+    it('GOOGLE_STANDARD_SQL should insert and delete composite key rows', async () => {
       const createTableStatement = `
           CREATE TABLE SingersComposite (
             SingerId INT64 NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId, Name)
           `;
-      insertAndDeleteMultipleCompositeKeyRows(DATABASE, createTableStatement);
+      await insertAndDeleteMultipleCompositeKeyRows(
+        DATABASE,
+        createTableStatement,
+      );
     });
 
-    it('POSTGRESQL should insert and delete multiple composite key rows', () => {
+    it('POSTGRESQL should insert and delete multiple composite key rows', async () => {
       const createTableStatement = `
           CREATE TABLE SingersComposite (
             "SingerId" BIGINT NOT NULL,
             "Name" VARCHAR(1024),
             PRIMARY KEY("SingerId", "Name")
           )`;
-      insertAndDeleteMultipleCompositeKeyRows(
+      await insertAndDeleteMultipleCompositeKeyRows(
         PG_DATABASE,
         createTableStatement,
       );
     });
 
-    const insertAndQueryMultipleRows = (done, database, table, query) => {
+    const insertAndQueryMultipleRows = async (database, table, query) => {
       const id1 = generateName('id1');
       const name1 = generateName('name');
 
       const id2 = generateName('id2');
       const name2 = generateName('name');
 
-      table.insert(
-        [
-          {
-            SingerId: id1,
-            Name: name1,
-          },
-          {
-            SingerId: id2,
-            Name: name2,
-          },
-        ],
-        err => {
-          assert.ifError(err);
+      await table.insert([
+        {SingerId: id1, Name: name1},
+        {SingerId: id2, Name: name2},
+      ]);
+      const [rows] = await database.run(query);
+      // We just want the two most recent ones.
+      rows!.splice(0, rows!.length - 2);
 
-          database.run(query, (err, rows) => {
-            assert.ifError(err);
+      const rowJson = rows!.map(x => x.toJSON());
 
-            // We just want the two most recent ones.
-            rows!.splice(0, rows!.length - 2);
+      assert.strictEqual(rowJson[0].SingerId, id1);
+      assert.strictEqual(rowJson[0].Name, name1);
 
-            const rowJson = rows!.map(x => x.toJSON());
-
-            assert.strictEqual(rowJson[0].SingerId, id1);
-            assert.strictEqual(rowJson[0].Name, name1);
-
-            assert.strictEqual(rowJson[1].SingerId, id2);
-            assert.strictEqual(rowJson[1].Name, name2);
-
-            done();
-          });
-        },
-      );
+      assert.strictEqual(rowJson[1].SingerId, id2);
+      assert.strictEqual(rowJson[1].Name, name2);
     };
 
-    it('GOOGLE_STANDARD_SQL should insert and query multiple rows', done => {
-      insertAndQueryMultipleRows(
-        done,
+    it('GOOGLE_STANDARD_SQL should insert and query multiple rows', async () => {
+      await insertAndQueryMultipleRows(
         DATABASE,
         googleSqlTable,
         `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
       );
     });
 
-    it('POSTGRESQL should should insert and query multiple rows', done => {
-      insertAndQueryMultipleRows(
-        done,
+    it('POSTGRESQL should should insert and query multiple rows', async () => {
+      await insertAndQueryMultipleRows(
         PG_DATABASE,
         postgreSqlTable,
         `SELECT * FROM ${TABLE_NAME} ORDER BY "SingerId"`,
       );
     });
 
-    const insertThenReplaceRow = (done, table) => {
+    const insertThenReplaceRow = async table => {
       const originalRow = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -4377,41 +3854,26 @@ describe('Spanner', () => {
         SingerId: originalRow.SingerId,
       };
 
-      table.insert(originalRow, err => {
-        assert.ifError(err);
-
-        table.replace(replacedRow, err => {
-          assert.ifError(err);
-
-          table.read(
-            {
-              keys: [originalRow.SingerId],
-              columns: Object.keys(originalRow),
-            },
-            (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows![0].toJSON();
-
-              assert.strictEqual(row.SingerId, replacedRow.SingerId);
-              assert.strictEqual(row.Name, null);
-
-              done();
-            },
-          );
-        });
+      await table.insert(originalRow);
+      await table.replace(replacedRow);
+      const [rows] = await table.read({
+        keys: [originalRow.SingerId],
+        columns: Object.keys(originalRow),
       });
+      const row = rows![0].toJSON();
+      assert.strictEqual(row.SingerId, replacedRow.SingerId);
+      assert.strictEqual(row.Name, null);
     };
 
-    it('GOOGLE_STANDARD_SQL should insert then replace a row', done => {
-      insertThenReplaceRow(done, googleSqlTable);
+    it('GOOGLE_STANDARD_SQL should insert then replace a row', async () => {
+      await insertThenReplaceRow(googleSqlTable);
     });
 
-    it('POSTGRESQL should insert then replace a row', done => {
-      insertThenReplaceRow(done, postgreSqlTable);
+    it('POSTGRESQL should insert then replace a row', async () => {
+      await insertThenReplaceRow(postgreSqlTable);
     });
 
-    const insertThenUpdateRow = (done, table) => {
+    const insertThenUpdateRow = async table => {
       const originalRow = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -4422,38 +3884,23 @@ describe('Spanner', () => {
         Name: generateName('name'),
       };
 
-      table.insert(originalRow, err => {
-        assert.ifError(err);
-
-        table.update(updatedRow, err => {
-          assert.ifError(err);
-
-          table.read(
-            {
-              keys: [originalRow.SingerId],
-              columns: Object.keys(originalRow),
-            },
-            (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows![0].toJSON();
-
-              assert.strictEqual(row.SingerId, updatedRow.SingerId);
-              assert.strictEqual(row.Name, updatedRow.Name);
-
-              done();
-            },
-          );
-        });
+      await table.insert(originalRow);
+      await table.update(updatedRow);
+      const [rows] = await table.read({
+        keys: [originalRow.SingerId],
+        columns: Object.keys(originalRow),
       });
+      const row = rows![0].toJSON();
+      assert.strictEqual(row.SingerId, updatedRow.SingerId);
+      assert.strictEqual(row.Name, updatedRow.Name);
     };
 
-    it('GOOGLE_STANDARD_SQL should insert then replace a row', done => {
-      insertThenUpdateRow(done, googleSqlTable);
+    it('GOOGLE_STANDARD_SQL should insert then replace a row', async () => {
+      await insertThenUpdateRow(googleSqlTable);
     });
 
-    it('POSTGRESQL should insert then replace a row', done => {
-      insertThenUpdateRow(done, postgreSqlTable);
+    it('POSTGRESQL should insert then replace a row', async () => {
+      await insertThenUpdateRow(postgreSqlTable);
     });
 
     describe('insert & query', () => {
@@ -4502,80 +3949,72 @@ describe('Spanner', () => {
         await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
       });
 
-      const queryCallbackMode = (done, database, query, EXPECTED_ROW) => {
+      const queryCallbackMode = async (database, query, EXPECTED_ROW) => {
         const options = {
           strong: true,
         };
 
-        database.run(query, options, (err, rows) => {
-          assert.ifError(err);
-          const actualRows = rows!.shift()!.toJSON() as {} as Row[];
-          for (const [key, value] of Object.entries(actualRows)) {
-            if (value && key === 'Float32') {
-              assert.ok(
-                EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
-              );
-            } else {
-              assert.deepStrictEqual(EXPECTED_ROW[key], value);
-            }
+        const [rows] = await database.run(query, options);
+        const actualRows = rows!.shift()!.toJSON() as {} as Row[];
+        for (const [key, value] of Object.entries(actualRows)) {
+          if (value && key === 'Float32') {
+            assert.ok(
+              EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
+            );
+          } else {
+            assert.deepStrictEqual(EXPECTED_ROW[key], value);
           }
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should query in callback mode', done => {
+      it('GOOGLE_STANDARD_SQL should query in callback mode', async () => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
           params: {id: ID},
         };
-        queryCallbackMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
+        await queryCallbackMode(DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('POSTGRESQL should query in callback mode', done => {
+      it('POSTGRESQL should query in callback mode', async () => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
         };
-        queryCallbackMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+        await queryCallbackMode(PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
       });
 
-      const queryPromiseMode = (done, database, query, EXPECTED_ROW) => {
+      const queryPromiseMode = async (database, query, EXPECTED_ROW) => {
         const options = {
           strong: true,
         };
 
-        database
-          .run(query, options)
-          .then(data => {
-            const rows = data[0]!.shift()!.toJSON() as {} as Row[];
-            for (const [key, value] of Object.entries(rows)) {
-              if (key === 'Float32') {
-                assert.ok(
-                  EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
-                );
-              } else {
-                assert.deepStrictEqual(EXPECTED_ROW[key], value);
-              }
-            }
-            done();
-          })
-          .catch(done);
+        const data = await database.run(query, options);
+        const rows = data[0]!.shift()!.toJSON() as {} as Row[];
+        for (const [key, value] of Object.entries(rows)) {
+          if (key === 'Float32') {
+            assert.ok(
+              EXPECTED_ROW[key] - (value as unknown as number) <= 0.00001,
+            );
+          } else {
+            assert.deepStrictEqual(EXPECTED_ROW[key], value);
+          }
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should query in promise mode', done => {
+      it('GOOGLE_STANDARD_SQL should query in promise mode', async () => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
           params: {id: ID},
         };
-        queryPromiseMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
+        await queryPromiseMode(DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('POSTGRESQL should query in promise mode', done => {
+      it('POSTGRESQL should query in promise mode', async () => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
         };
-        queryPromiseMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+        await queryPromiseMode(PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
       });
 
       const queryStreamMode = (done, database, query, EXPECTED_ROW) => {
@@ -4777,91 +4216,81 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![7].name, 'HasGear');
       });
 
-      const invalidQueries = (done, database) => {
-        database.run('SELECT Apples AND Oranges', err => {
+      const invalidQueries = async database => {
+        try {
+          await database.run('SELECT Apples AND Oranges');
+        } catch (err: any) {
           assert.strictEqual(err!.code, 3);
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', done => {
-        invalidQueries(done, DATABASE);
+      it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', async () => {
+        await invalidQueries(DATABASE);
       });
 
-      it('POSTGRESQL should allow "SELECT 1" queries', done => {
-        invalidQueries(done, PG_DATABASE);
+      it('POSTGRESQL should allow "SELECT 1" queries', async () => {
+        await invalidQueries(PG_DATABASE);
       });
 
-      it('GOOGLE_STANDARD_SQL should query an array of structs', done => {
+      it('GOOGLE_STANDARD_SQL should query an array of structs', async () => {
         const query = `
           SELECT ARRAY(SELECT AS STRUCT C1, C2
             FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2)
             ORDER BY C1 ASC)`;
 
-        DATABASE.run(query, (err, rows) => {
-          assert.ifError(err);
+        const [rows] = await DATABASE.run(query);
+        const values = rows![0][0].value;
+        assert.strictEqual(values.length, 2);
 
-          const values = rows![0][0].value;
-          assert.strictEqual(values.length, 2);
+        assert.strictEqual(values[0][0].value, 'a');
+        assert.deepStrictEqual(
+          JSON.stringify(values[0][1].value),
+          JSON.stringify({value: '1'}),
+        );
 
-          assert.strictEqual(values[0][0].value, 'a');
-          assert.deepStrictEqual(
-            JSON.stringify(values[0][1].value),
-            JSON.stringify({value: '1'}),
-          );
-
-          assert.strictEqual(values[1][0].value, 'b');
-          assert.deepStrictEqual(
-            JSON.stringify(values[1][1].value),
-            JSON.stringify({value: '2'}),
-          );
-
-          done();
-        });
+        assert.strictEqual(values[1][0].value, 'b');
+        assert.deepStrictEqual(
+          JSON.stringify(values[1][1].value),
+          JSON.stringify({value: '2'}),
+        );
       });
 
-      it('GOOGLE_STANDARD_SQL should query an empty array of structs', done => {
+      it('GOOGLE_STANDARD_SQL should query an empty array of structs', async () => {
         const query = `
           SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)`;
 
-        DATABASE.run(query, (err, rows) => {
-          assert.ifError(err);
-          assert.strictEqual(rows![0][0].value.length, 0);
-          done();
-        });
+        const [rows] = await DATABASE.run(query);
+        assert.strictEqual(rows![0][0].value.length, 0);
       });
 
       describe('params', () => {
         describe('boolean', () => {
-          const booleanQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, value);
-              done();
-            });
+          const booleanQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            assert.strictEqual(rows[0][0].value, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: true,
               },
             };
-            booleanQuery(done, DATABASE, query, true);
+            await booleanQuery(DATABASE, query, true);
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: true,
               },
             };
-            booleanQuery(done, PG_DATABASE, query, true);
+            await booleanQuery(PG_DATABASE, query, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -4871,10 +4300,10 @@ describe('Spanner', () => {
                 v: 'bool',
               },
             };
-            booleanQuery(done, DATABASE, query, null);
+            await booleanQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -4884,10 +4313,10 @@ describe('Spanner', () => {
                 p1: 'bool',
               },
             };
-            booleanQuery(done, PG_DATABASE, query, null);
+            await booleanQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [false, true, false];
 
             const query = {
@@ -4897,14 +4326,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows[0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -4920,14 +4346,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -4941,48 +4364,42 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('int64', () => {
-          const int64Query = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              let queriedValue = rows[0][0].value;
-              if (rows[0][0].value) {
-                queriedValue = rows[0][0].value.value;
-              }
-              assert.strictEqual(queriedValue, value);
-              done();
-            });
+          const int64Query = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            let queriedValue = rows[0][0].value;
+            if (rows[0][0].value) {
+              queriedValue = rows[0][0].value.value;
+            }
+            assert.strictEqual(queriedValue, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 1234,
               },
             };
-            int64Query(done, DATABASE, query, '1234');
+            await int64Query(DATABASE, query, '1234');
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: 1234,
               },
             };
-            int64Query(done, PG_DATABASE, query, '1234');
+            await int64Query(PG_DATABASE, query, '1234');
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -4992,10 +4409,10 @@ describe('Spanner', () => {
                 v: 'int64',
               },
             };
-            int64Query(done, DATABASE, query, null);
+            await int64Query(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5005,10 +4422,10 @@ describe('Spanner', () => {
                 p1: 'int64',
               },
             };
-            int64Query(done, PG_DATABASE, query, null);
+            await int64Query(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [1, 2, 3, null];
 
             const query = {
@@ -5018,22 +4435,19 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
+            const [rows] = await DATABASE.run(query);
 
-              const expected = values.map(val => {
-                return isNumber(val) ? {value: String(val)} : val;
-              });
-
-              assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected),
-              );
-              done();
+            const expected = values.map(val => {
+              return isNumber(val) ? {value: String(val)} : val;
             });
+
+            assert.strictEqual(
+              JSON.stringify(rows[0][0].value),
+              JSON.stringify(expected),
+            );
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5049,14 +4463,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5070,28 +4481,22 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('pgOid', () => {
-          const oidQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              let queriedValue = rows[0][0].value;
-              if (rows[0][0].value) {
-                queriedValue = rows[0][0].value.value;
-              }
-              assert.strictEqual(queriedValue, value);
-              done();
-            });
+          const oidQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            let queriedValue = rows[0][0].value;
+            if (rows[0][0].value) {
+              queriedValue = rows[0][0].value.value;
+            }
+            assert.strictEqual(queriedValue, value);
           };
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5101,10 +4506,10 @@ describe('Spanner', () => {
                 v: 'pgOid',
               },
             };
-            oidQuery(done, PG_DATABASE, query, '1234');
+            await oidQuery(PG_DATABASE, query, '1234');
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5114,30 +4519,27 @@ describe('Spanner', () => {
                 p1: 'pgOid',
               },
             };
-            oidQuery(done, PG_DATABASE, query, null);
+            await oidQuery(PG_DATABASE, query, null);
           });
         });
 
         describe('float32', () => {
-          const float32Query = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              let queriedValue = rows[0][0].value;
-              if (rows[0][0].value) {
-                queriedValue = rows[0][0].value.value;
-              }
-              if (Number.isNaN(queriedValue)) {
-                assert.deepStrictEqual(queriedValue, value);
-              } else if (queriedValue === value) {
-                assert.deepStrictEqual(queriedValue, value);
-              } else {
-                assert.ok(queriedValue - value <= 0.00001);
-              }
-              done();
-            });
+          const float32Query = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            let queriedValue = rows[0][0].value;
+            if (rows[0][0].value) {
+              queriedValue = rows[0][0].value.value;
+            }
+            if (Number.isNaN(queriedValue)) {
+              assert.deepStrictEqual(queriedValue, value);
+            } else if (queriedValue === value) {
+              assert.deepStrictEqual(queriedValue, value);
+            } else {
+              assert.ok(queriedValue - value <= 0.00001);
+            }
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value when param type float32 is used', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value when param type float32 is used', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5147,34 +4549,31 @@ describe('Spanner', () => {
                 v: 'float32',
               },
             };
-            float32Query(done, DATABASE, query, 2.2);
+            await float32Query(DATABASE, query, 2.2);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind the value when spanner.float32 is used', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value when spanner.float32 is used', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: Spanner.float32(2.2),
               },
             };
-            float32Query(done, DATABASE, query, 2.2);
+            await float32Query(DATABASE, query, 2.2);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind the value as float64 when param type is not specified', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value as float64 when param type is not specified', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 2.2,
               },
             };
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value instanceof Float, true);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.strictEqual(rows[0][0].value instanceof Float, true);
           });
 
-          it('POSTGRESQL should bind the value when param type float32 is used', done => {
+          it('POSTGRESQL should bind the value when param type float32 is used', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5184,20 +4583,20 @@ describe('Spanner', () => {
                 p1: 'float32',
               },
             };
-            float32Query(done, PG_DATABASE, query, 2.2);
+            await float32Query(PG_DATABASE, query, 2.2);
           });
 
-          it('POSTGRESQL should bind the value when Spanner.float32 is used', done => {
+          it('POSTGRESQL should bind the value when Spanner.float32 is used', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: Spanner.float32(2.2),
               },
             };
-            float32Query(done, PG_DATABASE, query, 2.2);
+            await float32Query(PG_DATABASE, query, 2.2);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5207,10 +4606,10 @@ describe('Spanner', () => {
                 v: 'float32',
               },
             };
-            float32Query(done, DATABASE, query, null);
+            await float32Query(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5220,10 +4619,10 @@ describe('Spanner', () => {
                 p1: 'float32',
               },
             };
-            float32Query(done, PG_DATABASE, query, null);
+            await float32Query(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [null, 1.1, 2.3, 3.5, null];
 
             const query = {
@@ -5239,27 +4638,23 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const expected = values.map(val => {
-                return isNumber(val) ? Spanner.float32(val) : val;
-              });
-
-              for (let i = 0; i < rows[0][0].value.length; i++) {
-                if (rows[0][0].value[i] === null || expected[i] === null) {
-                  assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
-                } else {
-                  assert.ok(
-                    rows[0][0].value[i] - expected[i]!['value'] <= 0.00001,
-                  );
-                }
-              }
-              done();
+            const [rows] = await DATABASE.run(query);
+            const expected = values.map(val => {
+              return isNumber(val) ? Spanner.float32(val) : val;
             });
+
+            for (let i = 0; i < rows[0][0].value.length; i++) {
+              if (rows[0][0].value[i] === null || expected[i] === null) {
+                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+              } else {
+                assert.ok(
+                  rows[0][0].value[i] - expected[i]!['value'] <= 0.00001,
+                );
+              }
+            }
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5275,14 +4670,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5296,14 +4688,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind Infinity', done => {
+          it('GOOGLE_STANDARD_SQL should bind Infinity', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5313,10 +4702,10 @@ describe('Spanner', () => {
                 v: 'float32',
               },
             };
-            float32Query(done, DATABASE, query, 'Infinity');
+            await float32Query(DATABASE, query, 'Infinity');
           });
 
-          it('POSTGRESQL should bind Infinity', done => {
+          it('POSTGRESQL should bind Infinity', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5326,10 +4715,10 @@ describe('Spanner', () => {
                 p1: 'float32',
               },
             };
-            float32Query(done, PG_DATABASE, query, 'Infinity');
+            await float32Query(PG_DATABASE, query, 'Infinity');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind -Infinity', done => {
+          it('GOOGLE_STANDARD_SQL should bind -Infinity', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5339,10 +4728,10 @@ describe('Spanner', () => {
                 v: 'float32',
               },
             };
-            float32Query(done, DATABASE, query, '-Infinity');
+            await float32Query(DATABASE, query, '-Infinity');
           });
 
-          it('POSTGRESQL should bind -Infinity', done => {
+          it('POSTGRESQL should bind -Infinity', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5352,10 +4741,10 @@ describe('Spanner', () => {
                 p1: 'float32',
               },
             };
-            float32Query(done, PG_DATABASE, query, '-Infinity');
+            await float32Query(PG_DATABASE, query, '-Infinity');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind NaN', done => {
+          it('GOOGLE_STANDARD_SQL should bind NaN', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5365,10 +4754,10 @@ describe('Spanner', () => {
                 v: 'float32',
               },
             };
-            float32Query(done, DATABASE, query, 'NaN');
+            await float32Query(DATABASE, query, 'NaN');
           });
 
-          it('POSTGRESQL should bind NaN', done => {
+          it('POSTGRESQL should bind NaN', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5378,10 +4767,10 @@ describe('Spanner', () => {
                 p1: 'float32',
               },
             };
-            float32Query(done, PG_DATABASE, query, 'NaN');
+            await float32Query(PG_DATABASE, query, 'NaN');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', done => {
+          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', async () => {
             const values = [Infinity, -Infinity, NaN];
 
             const query = {
@@ -5397,56 +4786,50 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
+            const [rows] = await DATABASE.run(query);
 
-              const expected = values.map(val => {
-                return isNumber(val) ? {value: val + ''} : val;
-              });
-
-              assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected),
-              );
-              done();
+            const expected = values.map(val => {
+              return isNumber(val) ? {value: val + ''} : val;
             });
+
+            assert.strictEqual(
+              JSON.stringify(rows[0][0].value),
+              JSON.stringify(expected),
+            );
           });
         });
 
         describe('float64', () => {
-          const float64Query = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              let queriedValue = rows[0][0].value;
-              if (rows[0][0].value) {
-                queriedValue = rows[0][0].value.value;
-              }
-              assert.strictEqual(queriedValue, value);
-              done();
-            });
+          const float64Query = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            let queriedValue = rows[0][0].value;
+            if (rows[0][0].value) {
+              queriedValue = rows[0][0].value.value;
+            }
+            assert.strictEqual(queriedValue, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 2.2,
               },
             };
-            float64Query(done, DATABASE, query, 2.2);
+            await float64Query(DATABASE, query, 2.2);
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: 2.2,
               },
             };
-            float64Query(done, PG_DATABASE, query, 2.2);
+            await float64Query(PG_DATABASE, query, 2.2);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5456,10 +4839,10 @@ describe('Spanner', () => {
                 v: 'float64',
               },
             };
-            float64Query(done, DATABASE, query, null);
+            await float64Query(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5469,10 +4852,10 @@ describe('Spanner', () => {
                 p1: 'float64',
               },
             };
-            float64Query(done, PG_DATABASE, query, null);
+            await float64Query(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [null, 1.1, 2.3, 3.5, null];
 
             const query = {
@@ -5482,22 +4865,19 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
+            const [rows] = await DATABASE.run(query);
 
-              const expected = values.map(val => {
-                return isNumber(val) ? {value: val} : val;
-              });
-
-              assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected),
-              );
-              done();
+            const expected = values.map(val => {
+              return isNumber(val) ? {value: val} : val;
             });
+
+            assert.strictEqual(
+              JSON.stringify(rows[0][0].value),
+              JSON.stringify(expected),
+            );
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5513,14 +4893,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5534,74 +4911,71 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind Infinity', done => {
+          it('GOOGLE_STANDARD_SQL should bind Infinity', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: Infinity,
               },
             };
-            float64Query(done, DATABASE, query, 'Infinity');
+            await float64Query(DATABASE, query, 'Infinity');
           });
 
-          it('POSTGRESQL should bind Infinity', done => {
+          it('POSTGRESQL should bind Infinity', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: Infinity,
               },
             };
-            float64Query(done, PG_DATABASE, query, 'Infinity');
+            await float64Query(PG_DATABASE, query, 'Infinity');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind -Infinity', done => {
+          it('GOOGLE_STANDARD_SQL should bind -Infinity', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: -Infinity,
               },
             };
-            float64Query(done, DATABASE, query, '-Infinity');
+            await float64Query(DATABASE, query, '-Infinity');
           });
 
-          it('POSTGRESQL should bind -Infinity', done => {
+          it('POSTGRESQL should bind -Infinity', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: -Infinity,
               },
             };
-            float64Query(done, PG_DATABASE, query, '-Infinity');
+            await float64Query(PG_DATABASE, query, '-Infinity');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind NaN', done => {
+          it('GOOGLE_STANDARD_SQL should bind NaN', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: NaN,
               },
             };
-            float64Query(done, DATABASE, query, 'NaN');
+            await float64Query(DATABASE, query, 'NaN');
           });
 
-          it('POSTGRESQL should bind NaN', done => {
+          it('POSTGRESQL should bind NaN', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: NaN,
               },
             };
-            float64Query(done, PG_DATABASE, query, 'NaN');
+            await float64Query(PG_DATABASE, query, 'NaN');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', done => {
+          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', async () => {
             const values = [Infinity, -Infinity, NaN];
 
             const query = {
@@ -5611,52 +4985,46 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
+            const [rows] = await DATABASE.run(query);
 
-              const expected = values.map(val => {
-                return isNumber(val) ? {value: val + ''} : val;
-              });
-
-              assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected),
-              );
-              done();
+            const expected = values.map(val => {
+              return isNumber(val) ? {value: val + ''} : val;
             });
+
+            assert.strictEqual(
+              JSON.stringify(rows[0][0].value),
+              JSON.stringify(expected),
+            );
           });
         });
 
         describe('string', () => {
-          const stringQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, value);
-              done();
-            });
+          const stringQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            assert.strictEqual(rows[0][0].value, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 'abc',
               },
             };
-            stringQuery(done, DATABASE, query, 'abc');
+            await stringQuery(DATABASE, query, 'abc');
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: 'abc',
               },
             };
-            stringQuery(done, PG_DATABASE, query, 'abc');
+            await stringQuery(PG_DATABASE, query, 'abc');
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5666,10 +5034,10 @@ describe('Spanner', () => {
                 v: 'string',
               },
             };
-            stringQuery(done, DATABASE, query, null);
+            await stringQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5679,10 +5047,10 @@ describe('Spanner', () => {
                 p1: 'string',
               },
             };
-            stringQuery(done, PG_DATABASE, query, null);
+            await stringQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = ['a', 'b', 'c', null];
 
             const query = {
@@ -5692,14 +5060,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows[0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5715,14 +5080,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5736,44 +5098,38 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('bytes', () => {
-          const bytesQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, value);
-              done();
-            });
+          const bytesQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            assert.deepStrictEqual(rows[0][0].value, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: Buffer.from('abc'),
               },
             };
-            bytesQuery(done, DATABASE, query, Buffer.from('abc'));
+            await bytesQuery(DATABASE, query, Buffer.from('abc'));
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: Buffer.from('abc'),
               },
             };
-            bytesQuery(done, PG_DATABASE, query, Buffer.from('abc'));
+            await bytesQuery(PG_DATABASE, query, Buffer.from('abc'));
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5783,10 +5139,10 @@ describe('Spanner', () => {
                 v: 'bytes',
               },
             };
-            bytesQuery(done, DATABASE, query, null);
+            await bytesQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5796,10 +5152,10 @@ describe('Spanner', () => {
                 p1: 'bytes',
               },
             };
-            bytesQuery(done, PG_DATABASE, query, null);
+            await bytesQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [Buffer.from('a'), Buffer.from('b'), null];
 
             const query = {
@@ -5809,14 +5165,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows[0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5832,14 +5185,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5853,24 +5203,18 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('timestamp', () => {
-          const timestampQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, value);
-              done();
-            });
+          const timestampQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            assert.deepStrictEqual(rows[0][0].value, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const timestamp = Spanner.timestamp();
             const query = {
               sql: 'SELECT @v',
@@ -5878,10 +5222,10 @@ describe('Spanner', () => {
                 v: timestamp,
               },
             };
-            timestampQuery(done, DATABASE, query, timestamp);
+            await timestampQuery(DATABASE, query, timestamp);
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const timestamp = Spanner.timestamp();
             const query = {
               sql: 'SELECT $1',
@@ -5889,10 +5233,10 @@ describe('Spanner', () => {
                 p1: timestamp,
               },
             };
-            timestampQuery(done, PG_DATABASE, query, timestamp);
+            await timestampQuery(PG_DATABASE, query, timestamp);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -5902,10 +5246,10 @@ describe('Spanner', () => {
                 v: 'timestamp',
               },
             };
-            timestampQuery(done, DATABASE, query, null);
+            await timestampQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5915,10 +5259,10 @@ describe('Spanner', () => {
                 p1: 'timestamp',
               },
             };
-            timestampQuery(done, PG_DATABASE, query, null);
+            await timestampQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [
               Spanner.timestamp(),
               Spanner.timestamp('3-3-1999'),
@@ -5932,14 +5276,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows[0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -5955,14 +5296,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -5976,29 +5314,22 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('date', () => {
-          const dateQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              let returnedDate = Spanner.date(rows[0][0].value);
-              if (value === null) {
-                returnedDate = rows[0][0].value;
-              }
-              assert.deepStrictEqual(returnedDate, value);
-              done();
-            });
+          const dateQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            let returnedDate = Spanner.date(rows[0][0].value);
+            if (value === null) {
+              returnedDate = rows[0][0].value;
+            }
+            assert.deepStrictEqual(returnedDate, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value', async () => {
             const date = Spanner.date();
             const query = {
               sql: 'SELECT @v',
@@ -6006,10 +5337,10 @@ describe('Spanner', () => {
                 v: date,
               },
             };
-            dateQuery(done, DATABASE, query, date);
+            await dateQuery(DATABASE, query, date);
           });
 
-          it('POSTGRESQL should bind the value', done => {
+          it('POSTGRESQL should bind the value', async () => {
             const date = Spanner.date();
             const query = {
               sql: 'SELECT $1',
@@ -6017,10 +5348,10 @@ describe('Spanner', () => {
                 p1: date,
               },
             };
-            dateQuery(done, PG_DATABASE, query, date);
+            await dateQuery(PG_DATABASE, query, date);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -6030,10 +5361,10 @@ describe('Spanner', () => {
                 v: 'date',
               },
             };
-            dateQuery(done, DATABASE, query, null);
+            await dateQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6043,10 +5374,10 @@ describe('Spanner', () => {
                 p1: 'date',
               },
             };
-            dateQuery(done, PG_DATABASE, query, null);
+            await dateQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [Spanner.date(), Spanner.date('3-3-1999'), null];
 
             const query = {
@@ -6056,19 +5387,15 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const returnedValues = rows[0][0].value.map(val => {
-                return isNull(val) ? val : Spanner.date(val);
-              });
-
-              assert.deepStrictEqual(returnedValues, values);
-              done();
+            const [rows] = await DATABASE.run(query);
+            const returnedValues = rows[0][0].value.map(val => {
+              return isNull(val) ? val : Spanner.date(val);
             });
+
+            assert.deepStrictEqual(returnedValues, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -6084,14 +5411,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -6105,16 +5429,13 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
 
         describe('structs', () => {
-          it('GOOGLE_STANDARD_SQL should bind a simple struct', done => {
+          it('GOOGLE_STANDARD_SQL should bind a simple struct', async () => {
             const query = {
               sql: 'SELECT @structParam.userf, @p4',
               params: {
@@ -6126,17 +5447,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0].toJSON();
-              assert.strictEqual(row.userf, 'bob');
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0].toJSON();
+            assert.strictEqual(row.userf, 'bob');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind null structs', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.userf is NULL',
               params: {
@@ -6159,17 +5475,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows![0];
-              assert.strictEqual(row[0].value, true);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows![0];
+            assert.strictEqual(row[0].value, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind nested structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind nested structs', async () => {
             const query = {
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
@@ -6181,17 +5492,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0].toJSON();
-              assert.strictEqual(row.nestedf, 'bob');
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0].toJSON();
+            assert.strictEqual(row.nestedf, 'bob');
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null nested structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind null nested structs', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
@@ -6216,17 +5522,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows![0].toJSON();
-              assert.strictEqual(row.nestedf, null);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows![0].toJSON();
+            assert.strictEqual(row.nestedf, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty structs', async () => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -6234,17 +5535,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, false);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, false);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null structs with no fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind null structs with no fields', async () => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -6255,17 +5551,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, true);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind structs with null fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with null fields', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.f1',
               params: {
@@ -6286,17 +5577,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows![0].toJSON();
-              assert.strictEqual(row.f1, null);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows![0].toJSON();
+            assert.strictEqual(row.f1, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind structs with duplicate fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with duplicate fields', async () => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<f1 INT64, f1 INT64>(10, 11)',
               params: {
@@ -6313,17 +5599,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, true);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind structs with missing field names', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with missing field names', async () => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<INT64>(5)',
               params: {
@@ -6331,17 +5612,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, true);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow equality checks', done => {
+          it('GOOGLE_STANDARD_SQL should allow equality checks', async () => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
@@ -6352,17 +5628,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, true);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, true);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow nullness checks', done => {
+          it('GOOGLE_STANDARD_SQL should allow nullness checks', async () => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -6373,17 +5644,12 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const row = rows[0];
-              assert.strictEqual(row[0].value, false);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const row = rows[0];
+            assert.strictEqual(row[0].value, false);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow an array of non-null structs', done => {
+          it('GOOGLE_STANDARD_SQL should allow an array of non-null structs', async () => {
             const query = {
               sql: 'SELECT a.threadid FROM UNNEST(@arraysf) a',
               params: {
@@ -6397,21 +5663,16 @@ describe('Spanner', () => {
                 ],
               },
             };
+            let rows;
+            [rows] = await DATABASE.run(query);
+            rows = rows.map(row => row.toJSON());
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              rows = rows.map(row => row.toJSON());
-
-              assert.strictEqual(rows.length, 2);
-              assert.strictEqual(rows[0].threadid, 12);
-              assert.strictEqual(rows[1].threadid, 13);
-
-              done();
-            });
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].threadid, 12);
+            assert.strictEqual(rows[1].threadid, 13);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow an array of structs with null fields', done => {
+          it('GOOGLE_STANDARD_SQL should allow an array of structs with null fields', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParam.arraysf) a',
               params: {
@@ -6446,15 +5707,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows!.length, 0);
-
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.strictEqual(rows!.length, 0);
           });
 
-          it('GOOGLE_STANDARD_SQL should allow a null array of structs', done => {
+          it('GOOGLE_STANDARD_SQL should allow a null array of structs', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParamArray) a',
               params: {
@@ -6476,11 +5733,8 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows!.length, 0);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.strictEqual(rows!.length, 0);
           });
         });
 
@@ -6492,16 +5746,13 @@ describe('Spanner', () => {
             }
           });
 
-          const intervalQuery = (done, database, query, value) => {
-            database.run(query, (err, rows) => {
-              assert.ifError(err);
-              const queriedValue = rows[0][0].value;
-              assert.deepStrictEqual(queriedValue, value);
-              done();
-            });
+          const intervalQuery = async (database, query, value) => {
+            const [rows] = await database.run(query);
+            const queriedValue = rows[0][0].value;
+            assert.deepStrictEqual(queriedValue, value);
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value when param type interval is used', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value when param type interval is used', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -6511,30 +5762,28 @@ describe('Spanner', () => {
                 v: 'interval',
               },
             };
-            intervalQuery(
-              done,
+            await intervalQuery(
               DATABASE,
               query,
               new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
-          it('GOOGLE_STANDARD_SQL should bind the value when spanner.interval is used', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value when spanner.interval is used', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: Spanner.interval(19, 768, BigInt('123456789123')),
               },
             };
-            intervalQuery(
-              done,
+            await intervalQuery(
               DATABASE,
               query,
               new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
-          it('POSTGRESQL should bind the value when param type interval is used', done => {
+          it('POSTGRESQL should bind the value when param type interval is used', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6544,30 +5793,28 @@ describe('Spanner', () => {
                 p1: 'interval',
               },
             };
-            intervalQuery(
-              done,
+            await intervalQuery(
               PG_DATABASE,
               query,
               new Interval(19, 768, BigInt('123456789123')),
             );
           });
 
-          it('POSTGRESQL should bind the value when Spanner.interval is used', done => {
+          it('POSTGRESQL should bind the value when Spanner.interval is used', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
                 p1: Spanner.interval(-19, -768, BigInt('123456789123')),
               },
             };
-            intervalQuery(
-              done,
+            await intervalQuery(
               PG_DATABASE,
               query,
               new Interval(-19, -768, BigInt('123456789123')),
             );
           });
 
-          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+          it('GOOGLE_STANDARD_SQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -6577,10 +5824,10 @@ describe('Spanner', () => {
                 v: 'interval',
               },
             };
-            intervalQuery(done, DATABASE, query, null);
+            await intervalQuery(DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', done => {
+          it('POSTGRESQL should allow for null values', async () => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6590,10 +5837,10 @@ describe('Spanner', () => {
                 p1: 'interval',
               },
             };
-            intervalQuery(done, PG_DATABASE, query, null);
+            await intervalQuery(PG_DATABASE, query, null);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind arrays', async () => {
             const values = [
               null,
               new Interval(100, 200, BigInt('123456789123')),
@@ -6614,17 +5861,14 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              const expected = values;
-              for (let i = 0; i < rows[0][0].value.length; i++) {
-                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
-              }
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            const expected = values;
+            for (let i = 0; i < rows[0][0].value.length; i++) {
+              assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+            }
           });
 
-          it('GOOGLE_STANDARD_SQL should handle interval passed as string', done => {
+          it('GOOGLE_STANDARD_SQL should handle interval passed as string', async () => {
             const query = {
               sql: "SELECT INTERVAL '1' DAY + @v",
               params: {
@@ -6634,15 +5878,14 @@ describe('Spanner', () => {
                 v: 'interval',
               },
             };
-            intervalQuery(
-              done,
+            await intervalQuery(
               DATABASE,
               query,
               new Interval(100, 201, BigInt('123456789123')),
             );
           });
 
-          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', async () => {
             const values = [];
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
@@ -6657,14 +5900,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -6678,14 +5918,11 @@ describe('Spanner', () => {
               },
             };
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
 
-          it('POSTGRESQL should bind arrays', done => {
+          it('POSTGRESQL should bind arrays', async () => {
             const values = [
               null,
               new Interval(100, 200, BigInt('123456789123')),
@@ -6706,17 +5943,14 @@ describe('Spanner', () => {
               },
             };
 
-            PG_DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              const expected = values;
-              for (let i = 0; i < rows[0][0].value.length; i++) {
-                assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
-              }
-              done();
-            });
+            const [rows] = await PG_DATABASE.run(query);
+            const expected = values;
+            for (let i = 0; i < rows[0][0].value.length; i++) {
+              assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+            }
           });
 
-          it('POSTGRESQL should bind empty arrays', done => {
+          it('POSTGRESQL should bind empty arrays', async () => {
             const values = [];
             const query: ExecuteSqlRequest = {
               sql: 'SELECT $1',
@@ -6731,14 +5965,11 @@ describe('Spanner', () => {
               },
             };
 
-            PG_DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, values);
-              done();
-            });
+            const [rows] = await PG_DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, values);
           });
 
-          it('POSTGRESQL should bind null arrays', done => {
+          it('POSTGRESQL should bind null arrays', async () => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT $1',
               params: {
@@ -6752,11 +5983,8 @@ describe('Spanner', () => {
               },
             };
 
-            PG_DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0][0].value, null);
-              done();
-            });
+            const [rows] = await PG_DATABASE.run(query);
+            assert.deepStrictEqual(rows![0][0].value, null);
           });
         });
       });
@@ -6827,79 +6055,62 @@ describe('Spanner', () => {
           await postgreSqlTable.insert(postgreSqlExpectedRow);
         });
 
-        it('GOOGLE_STANDARD_SQL should read large datasets', done => {
-          googleSqlTable.read(
-            {
-              keys: [googleSqlExpectedRow.Key],
-              columns: [
-                'Key',
-                'StringValue',
-                'StringArray',
-                'BytesValue',
-                'BytesArray',
-              ],
-            },
-            (err, rows) => {
-              assert.ifError(err);
+        it('GOOGLE_STANDARD_SQL should read large datasets', async () => {
+          const [rows] = await googleSqlTable.read({
+            keys: [googleSqlExpectedRow.Key],
+            columns: [
+              'Key',
+              'StringValue',
+              'StringArray',
+              'BytesValue',
+              'BytesArray',
+            ],
+          });
 
-              const row = rows![0].toJSON();
+          const row = rows[0].toJSON();
 
-              assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
-              assert.strictEqual(
-                row.StringValue,
-                googleSqlExpectedRow.StringValue,
-              );
-              assert.deepStrictEqual(
-                row.StringArray,
-                googleSqlExpectedRow.StringArray,
-              );
+          assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
+          assert.strictEqual(row.StringValue, googleSqlExpectedRow.StringValue);
+          assert.deepStrictEqual(
+            row.StringArray,
+            googleSqlExpectedRow.StringArray,
+          );
 
-              row.BytesValue = base64ToBuffer(row.BytesValue);
-              row.BytesArray = row.BytesArray.map(base64ToBuffer);
+          row.BytesValue = base64ToBuffer(row.BytesValue);
+          row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-              assert.deepStrictEqual(
-                row.BytesValue,
-                googleSqlExpectedRow.BytesValue,
-              );
-              assert.deepStrictEqual(
-                row.BytesArray,
-                googleSqlExpectedRow.BytesArray,
-              );
-
-              done();
-            },
+          assert.deepStrictEqual(
+            row.BytesValue,
+            googleSqlExpectedRow.BytesValue,
+          );
+          assert.deepStrictEqual(
+            row.BytesArray,
+            googleSqlExpectedRow.BytesArray,
           );
         });
 
-        it('POSTGRESQL should read large datasets', done => {
-          postgreSqlTable.read(
-            {
-              keys: [postgreSqlExpectedRow.Key],
-              columns: ['Key', 'StringValue', 'BytesValue'],
-            },
-            (err, rows) => {
-              assert.ifError(err);
+        it('POSTGRESQL should read large datasets', async () => {
+          const [rows] = await postgreSqlTable.read({
+            keys: [postgreSqlExpectedRow.Key],
+            columns: ['Key', 'StringValue', 'BytesValue'],
+          });
 
-              const row = rows![0].toJSON();
+          const row = rows[0].toJSON();
 
-              assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
-              assert.strictEqual(
-                row.StringValue,
-                postgreSqlExpectedRow.StringValue,
-              );
+          assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
+          assert.strictEqual(
+            row.StringValue,
+            postgreSqlExpectedRow.StringValue,
+          );
 
-              row.BytesValue = base64ToBuffer(row.BytesValue);
-              assert.deepStrictEqual(
-                row.BytesValue,
-                postgreSqlExpectedRow.BytesValue,
-              );
-
-              done();
-            },
+          row.BytesValue = base64ToBuffer(row.BytesValue);
+          assert.deepStrictEqual(
+            row.BytesValue,
+            postgreSqlExpectedRow.BytesValue,
           );
         });
 
-        it('GOOGLE_STANDARD_SQL should query large datasets', done => {
+        it('GOOGLE_STANDARD_SQL should query large datasets', async () => {
           const query = {
             sql: 'SELECT * FROM ' + googleSqlTable.name + ' WHERE Key = @key',
             params: {
@@ -6907,38 +6118,30 @@ describe('Spanner', () => {
             },
           };
 
-          DATABASE.run(query, (err, rows) => {
-            assert.ifError(err);
+          const [rows] = await DATABASE.run(query);
+          const row = rows[0].toJSON();
 
-            const row = rows[0].toJSON();
+          assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
+          assert.strictEqual(row.StringValue, googleSqlExpectedRow.StringValue);
+          assert.deepStrictEqual(
+            row.StringArray,
+            googleSqlExpectedRow.StringArray,
+          );
 
-            assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
-            assert.strictEqual(
-              row.StringValue,
-              googleSqlExpectedRow.StringValue,
-            );
-            assert.deepStrictEqual(
-              row.StringArray,
-              googleSqlExpectedRow.StringArray,
-            );
+          row.BytesValue = base64ToBuffer(row.BytesValue);
+          row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-            row.BytesValue = base64ToBuffer(row.BytesValue);
-            row.BytesArray = row.BytesArray.map(base64ToBuffer);
-
-            assert.deepStrictEqual(
-              row.BytesValue,
-              googleSqlExpectedRow.BytesValue,
-            );
-            assert.deepStrictEqual(
-              row.BytesArray,
-              googleSqlExpectedRow.BytesArray,
-            );
-
-            done();
-          });
+          assert.deepStrictEqual(
+            row.BytesValue,
+            googleSqlExpectedRow.BytesValue,
+          );
+          assert.deepStrictEqual(
+            row.BytesArray,
+            googleSqlExpectedRow.BytesArray,
+          );
         });
 
-        it('POSTGRESQL should query large datasets', done => {
+        it('POSTGRESQL should query large datasets', async () => {
           const query = {
             sql: 'SELECT * FROM ' + postgreSqlTable.name + ' WHERE "Key" = $1',
             params: {
@@ -6946,25 +6149,20 @@ describe('Spanner', () => {
             },
           };
 
-          PG_DATABASE.run(query, (err, rows) => {
-            assert.ifError(err);
+          const [rows] = await PG_DATABASE.run(query);
+          const row = rows[0].toJSON();
 
-            const row = rows[0].toJSON();
+          assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
+          assert.strictEqual(
+            row.StringValue,
+            postgreSqlExpectedRow.StringValue,
+          );
 
-            assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
-            assert.strictEqual(
-              row.StringValue,
-              postgreSqlExpectedRow.StringValue,
-            );
-
-            row.BytesValue = base64ToBuffer(row.BytesValue);
-            assert.deepStrictEqual(
-              row.BytesValue,
-              postgreSqlExpectedRow.BytesValue,
-            );
-
-            done();
-          });
+          row.BytesValue = base64ToBuffer(row.BytesValue);
+          assert.deepStrictEqual(
+            row.BytesValue,
+            postgreSqlExpectedRow.BytesValue,
+          );
         });
       });
     });
@@ -6975,65 +6173,44 @@ describe('Spanner', () => {
         Name: generateName('name'),
       };
 
-      const updateRow = (done, table) => {
+      const updateRow = async table => {
         const row = {
           SingerId: ROW.SingerId,
           Name: generateName('name'),
         };
 
-        table.insert(row, err => {
-          assert.ifError(err);
-
-          table.upsert(ROW, err => {
-            assert.ifError(err);
-
-            table.read(
-              {
-                keys: [ROW.SingerId],
-                columns: Object.keys(ROW),
-              },
-              (err, rows) => {
-                assert.ifError(err);
-                assert.deepStrictEqual(rows![0].toJSON(), ROW);
-                done();
-              },
-            );
-          });
+        await table.insert(row);
+        await table.upsert(ROW);
+        const [rows] = await table.read({
+          keys: [ROW.SingerId],
+          columns: Object.keys(ROW),
         });
+        assert.deepStrictEqual(rows![0].toJSON(), ROW);
       };
 
-      it('GOOGLE_STANDARD_SQL should update a row', done => {
-        updateRow(done, googleSqlTable);
+      it('GOOGLE_STANDARD_SQL should update a row', async () => {
+        await updateRow(googleSqlTable);
       });
 
-      it('POSTGRESQL should update a row', done => {
-        updateRow(done, postgreSqlTable);
+      it('POSTGRESQL should update a row', async () => {
+        await updateRow(postgreSqlTable);
       });
 
-      const insertRow = (done, table) => {
-        table.upsert(ROW, err => {
-          assert.ifError(err);
-
-          table.read(
-            {
-              keys: [ROW.SingerId],
-              columns: Object.keys(ROW),
-            },
-            (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows![0].toJSON(), ROW);
-              done();
-            },
-          );
+      const insertRow = async table => {
+        await table.upsert(ROW);
+        const [rows] = await table.read({
+          keys: [ROW.SingerId],
+          columns: Object.keys(ROW),
         });
+        assert.deepStrictEqual(rows![0].toJSON(), ROW);
       };
 
-      it('GOOGLE_STANDARD_SQL should update a row', done => {
-        insertRow(done, googleSqlTable);
+      it('GOOGLE_STANDARD_SQL should update a row', async () => {
+        await insertRow(googleSqlTable);
       });
 
-      it('POSTGRESQL should update a row', done => {
-        insertRow(done, postgreSqlTable);
+      it('POSTGRESQL should update a row', async () => {
+        await insertRow(postgreSqlTable);
       });
     });
 
@@ -7071,11 +6248,10 @@ describe('Spanner', () => {
         await googleSqlTable.insert(data);
 
         const postgreSqlCreateTable = await postgreSqlTable.create(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                  "Key" VARCHAR NOT NULL PRIMARY KEY,
-                  "StringValue" VARCHAR
-              )`,
+          `CREATE TABLE ${TABLE_NAME} (
+              "Key" VARCHAR NOT NULL PRIMARY KEY,
+              "StringValue" VARCHAR
+          )`,
           GAX_OPTIONS,
         );
         await onPromiseOperationComplete(postgreSqlCreateTable);
@@ -7302,22 +6478,26 @@ describe('Spanner', () => {
         },
       ].forEach(test => {
         // test normally
-        it(`GOOGLE_STANDARD_SQL ${test.test}`, done => {
-          googleSqlTable.read(test.query as ReadRequest, (err, rows) => {
+        it(`GOOGLE_STANDARD_SQL ${test.test}`, async () => {
+          let rows;
+          try {
+            [rows] = await googleSqlTable.read(test.query as ReadRequest);
+          } catch (err) {
             test.assertions(err, rows);
-            done();
-          });
+          }
         });
 
-        it(`POSTGRESQL ${test.test}`, done => {
-          postgreSqlTable.read(test.query as ReadRequest, (err, rows) => {
+        it(`POSTGRESQL ${test.test}`, async () => {
+          let rows;
+          try {
+            await postgreSqlTable.read(test.query as ReadRequest);
+          } catch (err) {
             test.assertions(err, rows);
-            done();
-          });
+          }
         });
 
         // test using an index
-        const readUsingIndex = (done, test, table) => {
+        const readUsingIndex = async (test, table) => {
           const query = extend(
             {
               index: 'ReadByValue',
@@ -7346,20 +6526,19 @@ describe('Spanner', () => {
 
           table.read(query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
-            done();
           });
         };
 
-        it(`GOOGLE_STANDARD_SQL ${test.test}` + ' with an index', done => {
-          readUsingIndex(done, test, googleSqlTable);
+        it(`GOOGLE_STANDARD_SQL ${test.test}` + ' with an index', async () => {
+          await readUsingIndex(test, googleSqlTable);
         });
 
-        it(`POSTGRESQL ${test.test}` + ' with an index', done => {
-          readUsingIndex(done, test, postgreSqlTable);
+        it(`POSTGRESQL ${test.test}` + ' with an index', async () => {
+          await readUsingIndex(test, postgreSqlTable);
         });
       });
 
-      it('should read over invalid database fails', done => {
+      it('should read over invalid database fails', async () => {
         const database = instance.database(generateName('invalid'));
         const table = database.table(TABLE_NAME);
 
@@ -7368,13 +6547,16 @@ describe('Spanner', () => {
           columns: ALL_COLUMNS,
         };
 
-        table.read(query, err => {
+        try {
+          await table.read(query);
+        } catch (err: any) {
           assert.strictEqual(err.code, 5);
-          database.close().then(() => done());
-        });
+        }
+
+        await database.close();
       });
 
-      const readInvalidTable = (done, database) => {
+      const readInvalidTable = async database => {
         const table = database.table('ReadTestTablezzz');
 
         const query = {
@@ -7382,41 +6564,43 @@ describe('Spanner', () => {
           columns: ALL_COLUMNS,
         };
 
-        table.read(query, err => {
+        try {
+          await table.read(query);
+        } catch (err: any) {
           assert.strictEqual(err.code, 5);
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should read over invalid table fails', done => {
-        readInvalidTable(done, DATABASE);
+      it('GOOGLE_STANDARD_SQL should read over invalid table fails', async () => {
+        await readInvalidTable(DATABASE);
       });
 
-      it('POSTGRESQL should read over invalid table fails', done => {
-        readInvalidTable(done, PG_DATABASE);
+      it('POSTGRESQL should read over invalid table fails', async () => {
+        await readInvalidTable(PG_DATABASE);
       });
 
-      const readInvalidColumn = (done, table) => {
+      const readInvalidColumn = async table => {
         const query = {
           keys: ['k1'],
           columns: ['ohnoes'],
         };
 
-        table.read(query, err => {
+        try {
+          table.read(query);
+        } catch (err: any) {
           assert.strictEqual(err.code, 5);
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should read over invalid column fails', done => {
-        readInvalidColumn(done, googleSqlTable);
+      it('GOOGLE_STANDARD_SQL should read over invalid column fails', async () => {
+        await readInvalidColumn(googleSqlTable);
       });
 
-      it('POSTGRESQL should read over invalid column fails', done => {
-        readInvalidColumn(done, postgreSqlTable);
+      it('POSTGRESQL should read over invalid column fails', async () => {
+        await readInvalidColumn(postgreSqlTable);
       });
 
-      const failDeadlineExceed = (done, table) => {
+      const failDeadlineExceed = async table => {
         const query = {
           keys: ['k1'],
           columns: ALL_COLUMNS,
@@ -7425,111 +6609,92 @@ describe('Spanner', () => {
           },
         };
 
-        table.read(query, err => {
+        try {
+          await table.read(query);
+        } catch (err: any) {
           assert.strictEqual(err.code, 4);
-          done();
-        });
+        }
       };
 
-      it('GOOGLE_STANDARD_SQL should fail if deadline exceeds', function (done) {
+      it('GOOGLE_STANDARD_SQL should fail if deadline exceeds', async function () {
         // This test case somehow causes the emulator to return a RESOURCE_EXHAUSTED
         // error for this or following gRPC calls.
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        failDeadlineExceed(done, googleSqlTable);
+        await failDeadlineExceed(googleSqlTable);
       });
 
-      it('POSTGRESQL should fail if deadline exceeds', function (done) {
+      it('POSTGRESQL should fail if deadline exceeds', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        failDeadlineExceed(done, postgreSqlTable);
+        await failDeadlineExceed(postgreSqlTable);
       });
     });
   });
 
-  describe('SessionPool', () => {
+  describe('Multiplexed Sessions', () => {
     let table;
 
     before(() => {
       table = DATABASE.table(TABLE_NAME);
     });
 
-    it('should insert and query a row', done => {
+    it('should insert and query a row', async () => {
       const id = generateName('id');
       const name = generateName('name');
 
-      table.insert(
-        {
-          SingerId: id,
-          Name: name,
-        },
-        err => {
-          assert.ifError(err);
+      await table.insert({
+        SingerId: id,
+        Name: name,
+      });
 
-          DATABASE.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
-            assert.ifError(err);
-            assert.ok(
-              rows!.some(
-                r =>
-                  JSON.stringify(r.toJSON()) ===
-                  JSON.stringify({SingerId: id, Name: name}),
-              ),
-            );
-            done();
-          });
-        },
+      const [rows] = await DATABASE.run(`SELECT * FROM ${TABLE_NAME}`);
+      assert.ok(
+        rows!.some(
+          r =>
+            JSON.stringify(r.toJSON()) ===
+            JSON.stringify({SingerId: id, Name: name}),
+        ),
       );
     });
 
-    it('should insert and query multiple rows', done => {
+    it('should insert and query multiple rows', async () => {
       const id1 = generateName('id1');
       const name1 = generateName('name');
 
       const id2 = generateName('id2');
       const name2 = generateName('name');
 
-      table.insert(
-        [
-          {
-            SingerId: id1,
-            Name: name1,
-          },
-          {
-            SingerId: id2,
-            Name: name2,
-          },
-        ],
-        err => {
-          assert.ifError(err);
-
-          DATABASE.run(
-            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
-            (err, rows) => {
-              assert.ifError(err);
-
-              // We just want the two most recent ones.
-              rows!.splice(0, rows!.length - 2);
-
-              const rowJson = rows!.map(x => x.toJSON());
-
-              assert.deepStrictEqual(rowJson, [
-                {
-                  SingerId: id1,
-                  Name: name1,
-                },
-                {
-                  SingerId: id2,
-                  Name: name2,
-                },
-              ]);
-
-              done();
-            },
-          );
+      await table.insert([
+        {
+          SingerId: id1,
+          Name: name1,
         },
+        {
+          SingerId: id2,
+          Name: name2,
+        },
+      ]);
+      const [rows] = await DATABASE.run(
+        `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
       );
+      // We just want the two most recent ones.
+      rows!.splice(0, rows!.length - 2);
+
+      const rowJson = rows!.map(x => x.toJSON());
+
+      assert.deepStrictEqual(rowJson, [
+        {
+          SingerId: id1,
+          Name: name1,
+        },
+        {
+          SingerId: id2,
+          Name: name2,
+        },
+      ]);
     });
 
     it('should read rows as a stream', done => {
@@ -7572,40 +6737,21 @@ describe('Spanner', () => {
       );
     });
 
-    it('should read rows', done => {
+    it('should read rows', async () => {
       const id = generateName('id');
       const name = generateName('name');
 
-      table.insert(
+      await table.insert({SingerId: id, Name: name});
+      let rows;
+      [rows] = await table.read({keys: [id], columns: ['SingerId', 'Name']});
+      rows = rows!.map(x => x.toJSON());
+
+      assert.deepStrictEqual(rows, [
         {
           SingerId: id,
           Name: name,
         },
-        err => {
-          assert.ifError(err);
-
-          table.read(
-            {
-              keys: [id],
-              columns: ['SingerId', 'Name'],
-            },
-            (err, rows) => {
-              assert.ifError(err);
-
-              rows = rows!.map(x => x.toJSON());
-
-              assert.deepStrictEqual(rows, [
-                {
-                  SingerId: id,
-                  Name: name,
-                },
-              ]);
-
-              done();
-            },
-          );
-        },
-      );
+      ]);
     });
   });
 
@@ -7661,102 +6807,80 @@ describe('Spanner', () => {
     });
 
     describe('snapshots', () => {
-      const readOnlyTransaction = (done, database, records) => {
+      const readOnlyTransaction = async (database, records) => {
         const options = {
           strong: true,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, records.length);
-
-            transaction!.end();
-            done();
-          });
-        });
+        const [transaction] = await database.getSnapshot(options);
+        const [rows] = await transaction!.run(`SELECT * FROM ${TABLE_NAME}`);
+        assert.strictEqual(rows.length, records.length);
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should run a read only transaction', done => {
-        readOnlyTransaction(done, DATABASE, googleSqlRecords);
+      it('GOOGLE_STANDARD_SQL should run a read only transaction', async () => {
+        await readOnlyTransaction(DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should run a read only transaction', done => {
-        readOnlyTransaction(done, PG_DATABASE, postgreSqlRecords);
+      it('POSTGRESQL should run a read only transaction', async () => {
+        await readOnlyTransaction(PG_DATABASE, postgreSqlRecords);
       });
 
-      const readKeysFromTable = (done, database, table, records) => {
-        database.getSnapshot((err, transaction) => {
-          assert.ifError(err);
+      const readKeysFromTable = async (database, table, records) => {
+        const [transaction] = await database.getSnapshot();
+        const query = {
+          ranges: [
+            {
+              startClosed: 'k0',
+              endClosed: 'k4',
+            },
+          ],
+          columns: ['Key'],
+        } as {} as ReadRequest;
 
-          const query = {
-            ranges: [
-              {
-                startClosed: 'k0',
-                endClosed: 'k4',
-              },
-            ],
-            columns: ['Key'],
-          } as {} as ReadRequest;
-
-          transaction!.read(table.name, query, (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows!.length, records.length);
-
-            transaction!.end();
-            done();
-          });
-        });
+        const [rows] = await transaction!.read(table.name, query);
+        assert.strictEqual(rows!.length, records.length);
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should read keys from a table', done => {
-        readKeysFromTable(done, DATABASE, googleSqlTable, googleSqlRecords);
+      it('GOOGLE_STANDARD_SQL should read keys from a table', async () => {
+        await readKeysFromTable(DATABASE, googleSqlTable, googleSqlRecords);
       });
 
-      it('POSTGRESQL should read keys from a table', done => {
-        readKeysFromTable(
-          done,
+      it('POSTGRESQL should read keys from a table', async () => {
+        await readKeysFromTable(
           PG_DATABASE,
           postgreSqlTable,
           postgreSqlRecords,
         );
       });
 
-      const acceptReadTimestamp = (done, database, records) => {
+      const acceptReadTimestamp = async (database, records) => {
         const options = {
           readTimestamp: records[0].commitTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
+        const [transaction] = await database.getSnapshot(options);
+        const [rows] = await transaction!.run(`SELECT * FROM ${TABLE_NAME}`);
+        assert.strictEqual(rows.length, 1);
 
-          transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
-            assert.ifError(err);
+        const row = rows[0].toJSON();
 
-            assert.strictEqual(rows.length, 1);
+        assert.strictEqual(row.Key, records[0].Key);
+        assert.strictEqual(row.StringValue, records[0].StringValue);
 
-            const row = rows[0].toJSON();
-
-            assert.strictEqual(row.Key, records[0].Key);
-            assert.strictEqual(row.StringValue, records[0].StringValue);
-
-            transaction!.end();
-            done();
-          });
-        });
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should accept a read timestamp', done => {
-        acceptReadTimestamp(done, DATABASE, googleSqlRecords);
+      it('GOOGLE_STANDARD_SQL should accept a read timestamp', async () => {
+        await acceptReadTimestamp(DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a read timestamp', done => {
-        acceptReadTimestamp(done, PG_DATABASE, postgreSqlRecords);
+      it('POSTGRESQL should accept a read timestamp', async () => {
+        await acceptReadTimestamp(PG_DATABASE, postgreSqlRecords);
       });
 
-      const acceptMinTimestamp = (done, database, records) => {
+      const acceptMinTimestamp = async (database, records) => {
         const query = 'SELECT * FROM ' + TABLE_NAME;
 
         const options = {
@@ -7765,65 +6889,54 @@ describe('Spanner', () => {
 
         // minTimestamp can only be used in single use transactions
         // so we can't use database.getSnapshot here
-        database.run(query, options, (err, rows) => {
-          assert.ifError(err);
-          assert.strictEqual(rows!.length, records.length);
-          done();
-        });
+        const [rows] = await database.run(query, options);
+        assert.strictEqual(rows!.length, records.length);
       };
 
-      it('GOOGLE_STANDARD_SQL should accept a min timestamp', done => {
-        acceptMinTimestamp(done, DATABASE, googleSqlRecords);
+      it('GOOGLE_STANDARD_SQL should accept a min timestamp', async () => {
+        await acceptMinTimestamp(DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a min timestamp', done => {
-        acceptMinTimestamp(done, PG_DATABASE, postgreSqlRecords);
+      it('POSTGRESQL should accept a min timestamp', async () => {
+        await acceptMinTimestamp(PG_DATABASE, postgreSqlRecords);
       });
 
-      const acceptExactStaleness = (done, database, records, query) => {
+      const acceptExactStaleness = async (database, records, query) => {
         const options = {
           exactStaleness: Date.now() - records[1].localTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
+        const [transaction] = await database.getSnapshot(options);
+        const [rows] = await transaction!.run(query);
+        assert.strictEqual(rows.length, 2);
 
-          transaction!.run(query, (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 2);
+        const rowJson = rows.map(x => x.toJSON());
 
-            const rowJson = rows.map(x => x.toJSON());
+        assert.strictEqual(rowJson[0].Key, 'k0');
+        assert.strictEqual(rowJson[0].StringValue, 'v0');
+        assert.strictEqual(rowJson[1].Key, 'k1');
+        assert.strictEqual(rowJson[1].StringValue, 'v1');
 
-            assert.strictEqual(rowJson[0].Key, 'k0');
-            assert.strictEqual(rowJson[0].StringValue, 'v0');
-            assert.strictEqual(rowJson[1].Key, 'k1');
-            assert.strictEqual(rowJson[1].StringValue, 'v1');
-
-            transaction!.end();
-            done();
-          });
-        });
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should accept an exact staleness', done => {
-        acceptExactStaleness(
-          done,
+      it('GOOGLE_STANDARD_SQL should accept an exact staleness', async () => {
+        await acceptExactStaleness(
           DATABASE,
           googleSqlRecords,
           `SELECT * FROM ${TABLE_NAME} ORDER BY Key`,
         );
       });
 
-      it('POSTGRESQL should accept an exact staleness', done => {
-        acceptExactStaleness(
-          done,
+      it('POSTGRESQL should accept an exact staleness', async () => {
+        await acceptExactStaleness(
           PG_DATABASE,
           postgreSqlRecords,
           `SELECT * FROM ${TABLE_NAME} ORDER BY "Key"`,
         );
       });
 
-      const acceptMaxStaleness = (done, database, records) => {
+      const acceptMaxStaleness = (database, records) => {
         const query = 'SELECT * FROM TxnTable';
 
         const options = {
@@ -7835,20 +6948,18 @@ describe('Spanner', () => {
         database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows!.length, records.length);
-          done();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should accept a max staleness', done => {
-        acceptMaxStaleness(done, DATABASE, googleSqlRecords);
+      it('GOOGLE_STANDARD_SQL should accept a max staleness', async () => {
+        await acceptMaxStaleness(DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a max staleness', done => {
-        acceptMaxStaleness(done, PG_DATABASE, postgreSqlRecords);
+      it('POSTGRESQL should accept a max staleness', async () => {
+        await acceptMaxStaleness(PG_DATABASE, postgreSqlRecords);
       });
 
-      const strongReadWithConcurrentUpdates = (
-        done,
+      const strongReadWithConcurrentUpdates = async (
         database,
         table,
         records,
@@ -7857,58 +6968,37 @@ describe('Spanner', () => {
           strong: true,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
+        const [transaction] = await database.getSnapshot(options);
+        const query = 'SELECT * FROM TxnTable';
 
-          const query = 'SELECT * FROM TxnTable';
+        const [rows] = await transaction!.run(query);
+        assert.strictEqual(rows.length, records.length);
 
-          transaction!.run(query, (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, records.length);
+        await table.update({Key: 'k4', StringValue: 'v44'});
+        const [rows_] = await transaction!.run(query);
+        const row = rows_!.pop()!.toJSON();
+        assert.strictEqual(row.StringValue, 'v4');
 
-            table.update(
-              {
-                Key: 'k4',
-                StringValue: 'v44',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction!.run(query, (err, rows_) => {
-                  assert.ifError(err);
-
-                  const row = rows_!.pop()!.toJSON();
-                  assert.strictEqual(row.StringValue, 'v4');
-
-                  transaction!.end();
-                  done();
-                });
-              },
-            );
-          });
-        });
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', done => {
-        strongReadWithConcurrentUpdates(
-          done,
+      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', async () => {
+        await strongReadWithConcurrentUpdates(
           DATABASE,
           googleSqlTable,
           googleSqlRecords,
         );
       });
 
-      it('POSTGRESQL should do a strong read with concurrent updates', done => {
-        strongReadWithConcurrentUpdates(
-          done,
+      it('POSTGRESQL should do a strong read with concurrent updates', async () => {
+        await strongReadWithConcurrentUpdates(
           PG_DATABASE,
           postgreSqlTable,
           postgreSqlRecords,
         );
       });
 
-      const exactReadWithConcurrentUpdates = (
-        done,
+      const exactReadWithConcurrentUpdates = async (
         database,
         table,
         records,
@@ -7917,61 +7007,43 @@ describe('Spanner', () => {
           readTimestamp: records[records.length - 1].commitTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
+        const [transaction] = await database.getSnapshot(options);
+        const query = 'SELECT * FROM TxnTable';
 
-          const query = 'SELECT * FROM TxnTable';
+        const [rows] = await transaction!.run(query);
+        const originalRows = extend(true, {}, rows);
 
-          transaction!.run(query, (err, rows) => {
-            assert.ifError(err);
-
-            const originalRows = extend(true, {}, rows);
-
-            // Make arbitrary update.
-            table.update(
-              {
-                Key: rows[0].toJSON().Key,
-                StringValue: 'overridden value',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction!.run(query, (err, rows_) => {
-                  assert.ifError(err);
-
-                  rows_ = extend(true, {}, rows_);
-
-                  assert.deepStrictEqual(rows_, originalRows);
-
-                  transaction!.end();
-                  done();
-                });
-              },
-            );
-          });
+        // Make arbitrary update.
+        await table.update({
+          Key: rows[0].toJSON().Key,
+          StringValue: 'overridden value',
         });
+        let rows_;
+        [rows_] = await transaction!.run(query);
+        rows_ = extend(true, {}, rows_);
+
+        assert.deepStrictEqual(rows_, originalRows);
+
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', done => {
-        exactReadWithConcurrentUpdates(
-          done,
+      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', async () => {
+        await exactReadWithConcurrentUpdates(
           DATABASE,
           googleSqlTable,
           googleSqlRecords,
         );
       });
 
-      it('POSTGRESQL should do a strong read with concurrent updates', done => {
-        exactReadWithConcurrentUpdates(
-          done,
+      it('POSTGRESQL should do a strong read with concurrent updates', async () => {
+        await exactReadWithConcurrentUpdates(
           PG_DATABASE,
           postgreSqlTable,
           postgreSqlRecords,
         );
       });
 
-      const readWithStalenessAndConcurrentUpdates = (
-        done,
+      const readWithStalenessAndConcurrentUpdates = async (
         database,
         table,
         records,
@@ -7980,55 +7052,36 @@ describe('Spanner', () => {
           exactStaleness: Date.now() - records[0].localTimestamp,
         };
 
-        database.getSnapshot(options, (err, transaction) => {
-          assert.ifError(err);
+        const [transaction] = await database.getSnapshot(options);
+        const query = 'SELECT * FROM TxnTable';
 
-          const query = 'SELECT * FROM TxnTable';
+        const [rows1] = await transaction!.run(query);
+        assert.strictEqual(rows1.length, 1);
 
-          transaction!.run(query, (err, rows) => {
-            assert.ifError(err);
-            assert.strictEqual(rows.length, 1);
+        await table.update({Key: 'k4', StringValue: 'overridden value'});
+        const [rows2] = await transaction!.run(query);
+        assert.strictEqual(rows2.length, 1);
 
-            table.update(
-              {
-                Key: 'k4',
-                StringValue: 'overridden value',
-              },
-              err => {
-                assert.ifError(err);
-
-                transaction!.run(query, (err, rows) => {
-                  assert.ifError(err);
-                  assert.strictEqual(rows.length, 1);
-
-                  transaction!.end();
-                  done();
-                });
-              },
-            );
-          });
-        });
+        transaction!.end();
       };
 
-      it('GOOGLE_STANDARD_SQL should read with staleness & concurrent updates', done => {
-        readWithStalenessAndConcurrentUpdates(
-          done,
+      it('GOOGLE_STANDARD_SQL should read with staleness & concurrent updates', async () => {
+        await readWithStalenessAndConcurrentUpdates(
           DATABASE,
           googleSqlTable,
           googleSqlRecords,
         );
       });
 
-      it('POSTGRESQL should read with staleness & concurrent updates', done => {
-        readWithStalenessAndConcurrentUpdates(
-          done,
+      it('POSTGRESQL should read with staleness & concurrent updates', async () => {
+        await readWithStalenessAndConcurrentUpdates(
           PG_DATABASE,
           postgreSqlTable,
           postgreSqlRecords,
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should pass directedReadOptions at query level read-only transactions', function (done) {
+      it('GOOGLE_STANDARD_SQL should pass directedReadOptions at query level read-only transactions', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -8044,21 +7097,13 @@ describe('Spanner', () => {
           },
         };
 
-        DATABASE.getSnapshot((err, transaction) => {
-          assert.ifError(err);
-          transaction!.run(
-            {
-              sql: `SELECT * FROM ${TABLE_NAME}`,
-              directedReadOptions: directedReadOptionsForRequest,
-            },
-            (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows.length, googleSqlRecords.length);
-              transaction!.end();
-              done();
-            },
-          );
+        const [transaction] = await DATABASE.getSnapshot();
+        const [rows] = await transaction!.run({
+          sql: `SELECT * FROM ${TABLE_NAME}`,
+          directedReadOptions: directedReadOptionsForRequest,
         });
+        assert.strictEqual(rows.length, googleSqlRecords.length);
+        transaction!.end();
       });
     });
 
@@ -8099,18 +7144,15 @@ describe('Spanner', () => {
         return Promise.all([psqlTransaction, gsqlTransaction]);
       });
 
-      const rowCountRunUpdate = (done, database, query) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.runUpdate(query, (err, rowCount) => {
-            assert.ifError(err);
-            assert.strictEqual(rowCount, 1);
-            transaction!.rollback(done);
-          });
+      const rowCountRunUpdate = async (database, query) => {
+        await database.runTransactionAsync(async transaction => {
+          const [rowCount] = await transaction!.runUpdate(query);
+          assert.strictEqual(rowCount, 1);
+          await transaction!.rollback();
         });
       };
-      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate', done => {
+
+      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate', async () => {
         const query = {
           sql:
             'UPDATE ' +
@@ -8121,10 +7163,10 @@ describe('Spanner', () => {
             str: 'abcd',
           },
         };
-        rowCountRunUpdate(done, DATABASE, query);
+        await rowCountRunUpdate(DATABASE, query);
       });
 
-      it('POSTGRESQL should return rowCount from runUpdate', done => {
+      it('POSTGRESQL should return rowCount from runUpdate', async () => {
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -8133,24 +7175,18 @@ describe('Spanner', () => {
             p2: 'k999',
           },
         };
-        rowCountRunUpdate(done, PG_DATABASE, query);
+        await rowCountRunUpdate(PG_DATABASE, query);
       });
 
-      const rowCountRun = (done, database, query) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run(query, (err, row, stats) => {
-            assert.ifError(err);
-
-            const rowCount = Math.floor(stats[stats.rowCount!] as number);
-            assert.strictEqual(rowCount, 1);
-
-            transaction!.rollback(done);
-          });
+      const rowCountRun = async (database, query) => {
+        await database.runTransactionAsync(async transaction => {
+          const [rows, stats] = await transaction!.run(query);
+          const rowCount = Math.floor(stats[stats.rowCount!] as number);
+          assert.strictEqual(rowCount, 1);
+          await transaction!.rollback();
         });
       };
-      it('GOOGLE_STANDARD_SQL should return rowCount from run', done => {
+      it('GOOGLE_STANDARD_SQL should return rowCount from run', async () => {
         const query = {
           sql:
             'UPDATE ' +
@@ -8161,10 +7197,10 @@ describe('Spanner', () => {
             str: 'abcd',
           },
         };
-        rowCountRun(done, DATABASE, query);
+        await rowCountRun(DATABASE, query);
       });
 
-      it('POSTGRESQL should return rowCount from run', done => {
+      it('POSTGRESQL should return rowCount from run', async () => {
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -8173,50 +7209,34 @@ describe('Spanner', () => {
             p2: 'k999',
           },
         };
-        rowCountRun(done, PG_DATABASE, query);
+        await rowCountRun(PG_DATABASE, query);
       });
 
-      const multipleDmlOnTxn = (
-        done,
+      const multipleDmlOnTxn = async (
         database,
         insertQuery,
         updateQuery,
         selectQuery,
       ) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!
-            .runUpdate(insertQuery)
-            .then(data => {
-              const rowCount = data[0];
-              assert.strictEqual(rowCount, 1);
-
-              return transaction!.runUpdate(updateQuery);
-            })
-            .then(data => {
-              const rowCount = data[0];
-              assert.strictEqual(rowCount, 1);
-
-              return transaction!.run(selectQuery);
-            })
-            .then(data => {
-              const rows = data[0].map(row => row.toJSON());
-
-              assert.strictEqual(rows.length, 1);
-              assert.deepStrictEqual(rows[0], {
-                Key: 'k1000',
-                StringValue: 'abcd',
-                NumberValue: 11,
-              });
-
-              return transaction!.rollback();
-            })
-            .then(() => done(), done);
+        await database.runTransactionAsync(async transaction => {
+          const [insertRowCount] = await transaction!.runUpdate(insertQuery);
+          assert.strictEqual(insertRowCount, 1);
+          const [updateRowCount] = await transaction!.runUpdate(updateQuery);
+          assert.strictEqual(updateRowCount, 1);
+          let rows;
+          [rows] = await transaction!.run(selectQuery);
+          rows = rows.map(row => row.toJSON());
+          assert.strictEqual(rows.length, 1);
+          assert.deepStrictEqual(rows[0], {
+            Key: 'k1000',
+            StringValue: 'abcd',
+            NumberValue: 11,
+          });
+          await transaction!.rollback();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should exec multiple dml statements on the same txn', done => {
+      it('GOOGLE_STANDARD_SQL should exec multiple dml statements on the same txn', async () => {
         const key = 'k1000';
         const str = 'abcd';
         const num = 11;
@@ -8238,10 +7258,10 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
           params: {key},
         };
-        multipleDmlOnTxn(done, DATABASE, insertQuery, updateQuery, selectQuery);
+        await multipleDmlOnTxn(DATABASE, insertQuery, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should exec multiple dml statements on the same txn', done => {
+      it('POSTGRESQL should exec multiple dml statements on the same txn', async () => {
         const key = 'k1000';
         const str = 'abcd';
         const num = 11;
@@ -8261,8 +7281,7 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
           params: {p1: key},
         };
-        multipleDmlOnTxn(
-          done,
+        await multipleDmlOnTxn(
           PG_DATABASE,
           insertQuery,
           updateQuery,
@@ -8270,31 +7289,23 @@ describe('Spanner', () => {
         );
       });
 
-      const dmlChangesInQueryResults = (
-        done,
+      const dmlChangesInQueryResults = async (
         database,
         updateQuery,
         selectQuery,
       ) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!
-            .runUpdate(updateQuery)
-            .then(() => {
-              return transaction!.run(selectQuery);
-            })
-            .then(data => {
-              const rows = data[0].map(row => row.toJSON());
-
-              assert.strictEqual(rows.length, 1);
-              assert.strictEqual(rows[0].StringValue, 'abcd');
-            })
-            .then(() => transaction!.rollback(done), done);
+        await database.runTransactionAsync(async transaction => {
+          await transaction!.runUpdate(updateQuery);
+          let rows;
+          [rows] = await transaction!.run(selectQuery);
+          rows = rows.map(row => row.toJSON());
+          assert.strictEqual(rows.length, 1);
+          assert.strictEqual(rows[0].StringValue, 'abcd');
+          await transaction!.rollback();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should show dml changes in query results', done => {
+      it('GOOGLE_STANDARD_SQL should show dml changes in query results', async () => {
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8308,10 +7319,10 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
           params: {key},
         };
-        dmlChangesInQueryResults(done, DATABASE, updateQuery, selectQuery);
+        await dmlChangesInQueryResults(DATABASE, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should show dml changes in query results', done => {
+      it('POSTGRESQL should show dml changes in query results', async () => {
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8323,35 +7334,26 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
           params: {p1: key},
         };
-        dmlChangesInQueryResults(done, PG_DATABASE, updateQuery, selectQuery);
+        await dmlChangesInQueryResults(PG_DATABASE, updateQuery, selectQuery);
       });
 
-      const rollbackDmlStatement = (
-        done,
+      const rollbackDmlStatement = async (
         database,
         updateQuery,
         selectQuery,
       ) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!
-            .runUpdate(updateQuery)
-            .then(() => transaction!.rollback())
-            .then(() => {
-              return database.run(selectQuery);
-            })
-            .then(data => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const rows = data[0].map(row => (row as any).toJSON());
-              assert.notStrictEqual(rows[0].StringValue, 'abcd');
-              done();
-            })
-            .catch(done);
+        await database.runTransactionAsync(async transaction => {
+          await transaction!.runUpdate(updateQuery);
+          await transaction!.rollback();
+          let rows;
+          [rows] = await database.run(selectQuery);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          rows = rows.map(row => (row as any).toJSON());
+          assert.notStrictEqual(rows[0].StringValue, 'abcd');
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should rollback a dml statement', done => {
+      it('GOOGLE_STANDARD_SQL should rollback a dml statement', async () => {
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8365,10 +7367,10 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
           params: {key},
         };
-        rollbackDmlStatement(done, DATABASE, updateQuery, selectQuery);
+        await rollbackDmlStatement(DATABASE, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should rollback a dml statement', done => {
+      it('POSTGRESQL should rollback a dml statement', async () => {
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8380,37 +7382,24 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
           params: {p1: key},
         };
-        rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
+        await rollbackDmlStatement(PG_DATABASE, updateQuery, selectQuery);
       });
 
-      const handleDmlAndInsert = (done, database, insertQuery, selectQuery) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
+      const handleDmlAndInsert = async (database, insertQuery, selectQuery) => {
+        await database.runTransactionAsync(async transaction => {
+          await transaction!.runUpdate(insertQuery);
+          transaction!.insert('TxnTable', {
+            Key: 'k1002',
+            StringValue: 'dml+mutation',
+          });
 
-          transaction!
-            .runUpdate(insertQuery)
-            .then(() => {
-              transaction!.insert('TxnTable', {
-                Key: 'k1002',
-                StringValue: 'dml+mutation',
-              });
-
-              return transaction!.commit();
-            })
-            .then(() => {
-              return database.run(selectQuery);
-            })
-            .then(data => {
-              const rows = data[0];
-
-              assert.strictEqual(rows.length, 2);
-              done();
-            })
-            .catch(done);
+          await transaction!.commit();
+          const [rows] = await database.run(selectQuery);
+          assert.strictEqual(rows.length, 2);
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should handle using both dml and insert methods', done => {
+      it('GOOGLE_STANDARD_SQL should handle using both dml and insert methods', async () => {
         const str = 'dml+mutation';
         const insertQuery = {
           sql:
@@ -8426,10 +7415,10 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
           params: {str},
         };
-        handleDmlAndInsert(done, DATABASE, insertQuery, selectQuery);
+        await handleDmlAndInsert(DATABASE, insertQuery, selectQuery);
       });
 
-      it('POSTGRESQL should handle using both dml and insert methods', done => {
+      it('POSTGRESQL should handle using both dml and insert methods', async () => {
         const str = 'dml+mutation';
         const insertQuery = {
           sql:
@@ -8445,7 +7434,7 @@ describe('Spanner', () => {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
           params: {p1: str},
         };
-        handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
+        await handleDmlAndInsert(PG_DATABASE, insertQuery, selectQuery);
       });
 
       describe('dml returning', () => {
@@ -8514,44 +7503,28 @@ describe('Spanner', () => {
           params: {p1: key},
         };
 
-        const rowCountRunUpdate = (
-          done,
+        const rowCountRunUpdate = async (
           database,
           insertQuery,
           updateQuery,
           deletequery,
         ) => {
-          database.runTransaction((err, transaction) => {
-            assert.ifError(err);
-
-            transaction!
-              .runUpdate(insertQuery)
-              .then(data => {
-                const rowCount = data[0];
-                assert.strictEqual(rowCount, 1);
-                return transaction!.runUpdate(updateQuery);
-              })
-              .then(data => {
-                const rowCount = data[0];
-                assert.strictEqual(rowCount, 1);
-                return transaction!.runUpdate(deletequery);
-              })
-              .then(data => {
-                const rowCount = data[0];
-                assert.strictEqual(rowCount, 1);
-                return transaction!.commit();
-              })
-              .then(() => done(), done)
-              .catch(done);
+          await database.runTransactionAsync(async transaction => {
+            const [insertRowCount] = await transaction!.runUpdate(insertQuery);
+            assert.strictEqual(insertRowCount, 1);
+            const [updateRowCount] = await transaction!.runUpdate(updateQuery);
+            assert.strictEqual(updateRowCount, 1);
+            const [deleteRowCount] = await transaction!.runUpdate(deletequery);
+            assert.strictEqual(deleteRowCount, 1);
+            await transaction!.commit();
           });
         };
 
-        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', function (done) {
+        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          rowCountRunUpdate(
-            done,
+          await rowCountRunUpdate(
             DATABASE,
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
@@ -8559,12 +7532,11 @@ describe('Spanner', () => {
           );
         });
 
-        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+        it('POSTGRESQL should return rowCount from runUpdate with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          rowCountRunUpdate(
-            done,
+          await rowCountRunUpdate(
             PG_DATABASE,
             postgreSqlInsertReturning,
             postgreSqlUpdateReturning,
@@ -8584,41 +7556,28 @@ describe('Spanner', () => {
           });
         };
 
-        const rowCountRun = (
-          done,
+        const rowCountRun = async (
           database,
           insertQuery,
           updateQuery,
           deletequery,
         ) => {
-          database.runTransaction((err, transaction) => {
-            assert.ifError(err);
-
-            transaction!
-              .run(insertQuery)
-              .then(data => {
-                assertRowsAndRowCount(data);
-                return transaction!.run(updateQuery);
-              })
-              .then(data => {
-                assertRowsAndRowCount(data);
-                return transaction!.run(deletequery);
-              })
-              .then(data => {
-                assertRowsAndRowCount(data);
-                return transaction!.commit();
-              })
-              .then(() => done(), done)
-              .catch(done);
+          await database.runTransactionAsync(async transaction => {
+            const rows = await transaction!.run(insertQuery);
+            assertRowsAndRowCount(rows);
+            const updateRowsCount = await transaction!.run(updateQuery);
+            assertRowsAndRowCount(updateRowsCount);
+            const deleteRowsCount = await transaction!.run(deletequery);
+            assertRowsAndRowCount(deleteRowsCount);
+            await transaction!.commit();
           });
         };
 
-        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', function (done) {
+        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          rowCountRun(
-            done,
+          await rowCountRun(
             DATABASE,
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
@@ -8626,13 +7585,12 @@ describe('Spanner', () => {
           );
         });
 
-        it('POSTGRESQL should return rowCount and rows from run with dml returning', function (done) {
+        it('POSTGRESQL should return rowCount and rows from run with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
 
-          rowCountRun(
-            done,
+          await rowCountRun(
             PG_DATABASE,
             postgreSqlInsertReturning,
             postgreSqlUpdateReturning,
@@ -8640,29 +7598,30 @@ describe('Spanner', () => {
           );
         });
 
-        const partitionedUpdate = (done, database, query) => {
-          database.runPartitionedUpdate(query, err => {
+        const partitionedUpdate = async (database, query) => {
+          try {
+            await database.runPartitionedUpdate(query);
+          } catch (err: any) {
             assert.match(
               err.details,
               /THEN RETURN is not supported in Partitioned DML\./,
             );
-            done();
-          });
+          }
         };
 
-        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', function (done) {
+        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
+          await partitionedUpdate(DATABASE, googleSqlUpdateReturning);
         });
 
-        it('POSTGRESQL should throw error from partitioned update with dml returning', function (done) {
+        it('POSTGRESQL should throw error from partitioned update with dml returning', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
 
-          partitionedUpdate(done, PG_DATABASE, postgreSqlUpdateReturning);
+          await partitionedUpdate(PG_DATABASE, postgreSqlUpdateReturning);
         });
 
         const batchUpdate = async (
@@ -8711,15 +7670,12 @@ describe('Spanner', () => {
     });
 
     describe('pdml', () => {
-      const simplePdml = (done, database, query) => {
-        database.runPartitionedUpdate(query, (err, rowCount) => {
-          assert.ifError(err);
-          assert.strictEqual(rowCount, 1);
-          done();
-        });
+      const simplePdml = async (database, query) => {
+        const [rowCount] = await database.runPartitionedUpdate(query);
+        assert.strictEqual(rowCount, 1);
       };
 
-      it('GOOGLE_STANDARD_SQL should execute a simple pdml statement', done => {
+      it('GOOGLE_STANDARD_SQL should execute a simple pdml statement', async () => {
         const query = {
           sql:
             'UPDATE ' +
@@ -8730,10 +7686,10 @@ describe('Spanner', () => {
             str: 'abcde',
           },
         };
-        simplePdml(done, DATABASE, query);
+        await simplePdml(DATABASE, query);
       });
 
-      it('POSTGRESQL should execute a simple pdml statement', function (done) {
+      it('POSTGRESQL should execute a simple pdml statement', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -8745,7 +7701,7 @@ describe('Spanner', () => {
             p2: 'k1',
           },
         };
-        simplePdml(done, PG_DATABASE, query);
+        await simplePdml(PG_DATABASE, query);
       });
 
       const longRunningPdml = async function (
@@ -8759,21 +7715,14 @@ describe('Spanner', () => {
           return {Key: `longpdml${i}`, StringValue: 'a'};
         });
 
-        return database
-          .runTransactionAsync(transaction => {
-            transaction.insert('TxnTable', tableData);
-            return transaction.commit();
-          })
-          .then(() => {
-            return database.runPartitionedUpdate(updateQuery);
-          })
-          .then(([rowCount]) => {
-            assert.strictEqual(rowCount, count);
-
-            return database.run(selectQuery).then(([rows]) => {
-              assert.strictEqual(rows.length, count);
-            });
-          });
+        await database.runTransactionAsync(async transaction => {
+          transaction.insert('TxnTable', tableData);
+          await transaction.commit();
+        });
+        const [rowCount] = await database.runPartitionedUpdate(updateQuery);
+        assert.strictEqual(rowCount, count);
+        const [rows] = await database.run(selectQuery);
+        assert.strictEqual(rows.length, count);
       };
 
       it('GOOGLE_STANDARD_SQL should execute a long running pdml statement', async function () {
@@ -9063,10 +8012,8 @@ describe('Spanner', () => {
     });
 
     describe('read/write', () => {
-      const mismatchedColumnError = (done, database, table) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
+      const mismatchedColumnError = async (database, table) => {
+        await database.runTransactionAsync(transaction => {
           const rows = [
             {
               Key: 'k1',
@@ -9091,12 +8038,11 @@ describe('Spanner', () => {
           assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
 
           transaction!.end();
-          done();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should throw an error for mismatched columns', done => {
-        mismatchedColumnError(done, DATABASE, googleSqlTable);
+      it('GOOGLE_STANDARD_SQL should throw an error for mismatched columns', async () => {
+        await mismatchedColumnError(DATABASE, googleSqlTable);
       });
 
       it('GOOGLE_STANDARD_SQL should use getTransaction for executing sql', async () => {
@@ -9117,29 +8063,27 @@ describe('Spanner', () => {
         }
       });
 
-      it('POSTGRESQL should throw an error for mismatched columns', done => {
-        mismatchedColumnError(done, PG_DATABASE, postgreSqlTable);
+      it('POSTGRESQL should throw an error for mismatched columns', async () => {
+        await mismatchedColumnError(PG_DATABASE, postgreSqlTable);
       });
 
-      const commitTransaction = (done, database, table) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
+      const commitTransaction = async (database, table) => {
+        await database.runTransactionAsync(async transaction => {
           transaction!.insert(table.name, {
             Key: 'k5',
             StringValue: 'v5',
           });
 
-          transaction!.commit(done);
+          await transaction!.commit();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should commit a transaction', done => {
-        commitTransaction(done, DATABASE, googleSqlTable);
+      it('GOOGLE_STANDARD_SQL should commit a transaction', async () => {
+        await commitTransaction(DATABASE, googleSqlTable);
       });
 
-      it('POSTGRESQL should commit a transaction', done => {
-        commitTransaction(done, PG_DATABASE, postgreSqlTable);
+      it('POSTGRESQL should commit a transaction', async () => {
+        await commitTransaction(PG_DATABASE, postgreSqlTable);
       });
 
       describe('parallel transactions', async () => {
@@ -9194,23 +8138,19 @@ describe('Spanner', () => {
         });
       });
 
-      const rollbackTransaction = (done, database) => {
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run('SELECT * FROM TxnTable', err => {
-            assert.ifError(err);
-            transaction!.rollback(done);
-          });
+      const rollbackTransaction = async database => {
+        await database.runTransactionAsync(async transaction => {
+          await transaction!.run('SELECT * FROM TxnTable');
+          await transaction!.rollback();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should rollback a transaction', done => {
-        rollbackTransaction(done, DATABASE);
+      it('GOOGLE_STANDARD_SQL should rollback a transaction', async () => {
+        await rollbackTransaction(DATABASE);
       });
 
-      it('POSTGRESQL should rollback a transaction', done => {
-        rollbackTransaction(done, PG_DATABASE);
+      it('POSTGRESQL should rollback a transaction', async () => {
+        await rollbackTransaction(PG_DATABASE);
       });
 
       describe('concurrent transactions', () => {
@@ -9226,124 +8166,85 @@ describe('Spanner', () => {
           }
         });
 
-        const readConcurrentTransaction = (done, database, table) => {
-          database.runTransaction((err, transaction) => {
-            assert.ifError(err);
-
-            incrementValue(err => {
-              assert.ifError(err);
-
-              getValue(transaction, (err, value) => {
-                assert.ifError(err);
-                assert.strictEqual(value, defaultRowValues.NumberValue + 1);
-                done();
-              });
-            });
+        const readConcurrentTransaction = async (database, table) => {
+          await database.runTransactionAsync(async transaction => {
+            await incrementValue();
+            const value = await getValue(transaction);
+            assert.strictEqual(value, defaultRowValues.NumberValue + 1);
           });
 
-          function incrementValue(callback) {
-            database.runTransaction((err, transaction) => {
-              assert.ifError(err);
-
-              getValue(transaction, (err, value) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
-
-                transaction!.update(table.name, {
-                  Key: defaultRowValues.Key,
-                  NumberValue: value + 1,
-                });
-
-                transaction!.commit(callback);
+          async function incrementValue() {
+            await database.runTransactionAsync(async transaction => {
+              const value = await getValue(transaction);
+              transaction!.update(table.name, {
+                Key: defaultRowValues.Key,
+                NumberValue: value + 1,
               });
+
+              await transaction!.commit();
             });
           }
 
-          function getValue(txn, callback) {
-            txn.read(
-              table.name,
-              {
+          async function getValue(txn) {
+            try {
+              const [rows] = await txn.read(table.name, {
                 keys: [defaultRowValues.Key],
                 columns: ['NumberValue'],
-              },
-              (err, rows) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
-
-                const row = rows[0].toJSON();
-                callback(null, row.NumberValue);
-              },
-            );
+              });
+              const row = rows[0].toJSON();
+              return row.NumberValue;
+            } catch (err) {
+              return err;
+            }
           }
         };
 
-        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with read', function (done) {
+        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with read', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          readConcurrentTransaction(done, DATABASE, googleSqlTable);
+          await readConcurrentTransaction(DATABASE, googleSqlTable);
         });
 
-        it('POSTGRESQL should handle concurrent transactions with read', function (done) {
+        it('POSTGRESQL should handle concurrent transactions with read', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          readConcurrentTransaction(done, PG_DATABASE, postgreSqlTable);
+          await readConcurrentTransaction(PG_DATABASE, postgreSqlTable);
         });
 
-        const queryConcurrentTransaction = (done, database, table, query) => {
-          database.runTransaction((err, transaction) => {
-            assert.ifError(err);
-
-            incrementValue(err => {
-              assert.ifError(err);
-
-              getValue(transaction, (err, value) => {
-                assert.ifError(err);
-                assert.strictEqual(value, defaultRowValues.NumberValue + 1);
-                done();
-              });
-            });
+        const queryConcurrentTransaction = async (database, table, query) => {
+          await database.runTransactionAsync(async transaction => {
+            await incrementValue();
+            const value = await getValue(transaction);
+            assert.strictEqual(value, defaultRowValues.NumberValue + 1);
           });
 
-          function incrementValue(callback) {
-            database.runTransaction((err, transaction) => {
-              assert.ifError(err);
-
-              getValue(transaction, (err, value) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
-
-                transaction!.update(table.name, {
-                  Key: defaultRowValues.Key,
-                  NumberValue: value + 1,
-                });
-
-                transaction!.commit(callback);
+          async function incrementValue() {
+            await database.runTransactionAsync(async transaction => {
+              const value = await getValue(transaction);
+              transaction!.update(table.name, {
+                Key: defaultRowValues.Key,
+                NumberValue: value + 1,
               });
+
+              await transaction!.commit();
             });
           }
 
-          function getValue(txn, callback) {
-            txn.run(query, (err, rows) => {
-              if (err) {
-                callback(err);
-                return;
-              }
-
+          async function getValue(txn) {
+            let rows;
+            try {
+              [rows] = await txn.run(query);
               const row = rows[0].toJSON();
-              callback(null, row.NumberValue);
-            });
+              return row.NumberValue;
+            } catch (err) {
+              return err;
+            }
           }
         };
 
-        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with query', function (done) {
+        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with query', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
@@ -9353,10 +8254,10 @@ describe('Spanner', () => {
               key: defaultRowValues.Key,
             },
           };
-          queryConcurrentTransaction(done, DATABASE, googleSqlTable, query);
+          await queryConcurrentTransaction(DATABASE, googleSqlTable, query);
         });
 
-        it('POSTGRESQL should handle concurrent transactions with query', function (done) {
+        it('POSTGRESQL should handle concurrent transactions with query', async function () {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
@@ -9366,12 +8267,11 @@ describe('Spanner', () => {
               p1: defaultRowValues.Key,
             },
           };
-          queryConcurrentTransaction(done, PG_DATABASE, postgreSqlTable, query);
+          await queryConcurrentTransaction(PG_DATABASE, postgreSqlTable, query);
         });
       });
 
-      const retryAbortedTxnWhenReadingFails = (
-        done,
+      const retryAbortedTxnWhenReadingFails = async (
         database,
         table,
         query,
@@ -9383,78 +8283,44 @@ describe('Spanner', () => {
           NumberValue: null,
           StringValue: 'abc',
         };
-
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run(query, err => {
-            assert.ifError(err);
-
-            const action = attempts++ === 0 ? runOtherTransaction : wrap;
-
-            action(err => {
-              assert.ifError(err);
-
-              transaction!.run(query, (err, rows) => {
-                assert.ifError(err);
-
-                transaction!.insert(table.name, {
-                  Key: generateName('key'),
-                  StringValue: generateName('val'),
-                });
-
-                transaction!.commit(err => {
-                  assert.ifError(err);
-
-                  const lastRow = rows!.pop()!.toJSON();
-
-                  assert.deepStrictEqual(lastRow, expectedRow);
-                  // The transaction should have been tried at least twice, but
-                  // there could be more attempts, as the backend could abort
-                  // any subsequent retry attempts as well.
-                  assert.ok(attempts >= 2);
-
-                  done();
-                });
-              });
-            });
+        const runOtherTransaction = async () => {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(query);
+            transaction.insert(table.name, expectedRow);
+            await transaction.commit();
           });
+        };
+
+        await database.runTransactionAsync(async transaction => {
+          attempts++;
+          const [rows] = await transaction.run(query);
+          if (attempts === 1) {
+            await runOtherTransaction();
+          }
+          transaction.insert(table.name, {
+            Key: generateName('key'),
+            StringValue: generateName('val'),
+          });
+          if (attempts > 1 && rows.length > 0) {
+            const lastRow = rows.pop().toJSON();
+            assert.deepStrictEqual(lastRow, expectedRow);
+          }
+          await transaction.commit();
         });
-
-        function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            transaction!.run(query, err => {
-              if (err) {
-                callback(err);
-                return;
-              }
-
-              transaction!.insert(table.name, expectedRow);
-              transaction!.commit(callback);
-            });
-          });
-        }
-
-        function wrap(callback) {
-          setImmediate(callback);
-        }
+        assert.ok(attempts >= 2);
       };
 
-      it('GOOGLE_STANDARD_SQL should retry an aborted txn when reading fails', function (done) {
+      it('GOOGLE_STANDARD_SQL should retry an aborted txn when reading fails', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         const key = 'k888';
         const query = `SELECT * FROM ${googleSqlTable.name} WHERE Key = '${key}'`;
-        retryAbortedTxnWhenReadingFails(done, DATABASE, googleSqlTable, query);
+
+        await retryAbortedTxnWhenReadingFails(DATABASE, googleSqlTable, query);
       });
 
-      it('POSTGRESQL should retry an aborted txn when reading fails', function (done) {
+      it('POSTGRESQL should retry an aborted txn when reading fails', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9465,15 +8331,15 @@ describe('Spanner', () => {
             p1: key,
           },
         };
-        retryAbortedTxnWhenReadingFails(
-          done,
+
+        await retryAbortedTxnWhenReadingFails(
           PG_DATABASE,
           postgreSqlTable,
           query,
         );
       });
 
-      const retryAbortedTxnWhenCommitFails = (done, database, table, query) => {
+      const retryAbortedTxnWhenCommitFails = async (database, table, query) => {
         const key = 'k9999';
         let attempts = 0;
 
@@ -9483,71 +8349,43 @@ describe('Spanner', () => {
           StringValue: 'abc',
         };
 
-        database.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.run(query, (err, rows) => {
-            assert.ifError(err);
-
-            transaction!.insert(table.name, {
-              Key: generateName('key'),
-              StringValue: generateName('val'),
-            });
-
-            if (attempts++ === 0) {
-              runOtherTransaction(err => {
-                assert.ifError(err);
-                transaction!.commit(done); // should not execute callback
-              });
-              return;
-            }
-
-            transaction!.commit(err => {
-              assert.ifError(err);
-
-              const lastRow = rows!.pop()!.toJSON();
-
-              assert.deepStrictEqual(lastRow, expectedRow);
-              // The transaction should have been tried at least twice, but
-              // there could be more attempts, as the backend could abort any
-              // subsequent retry attempts as well.
-              assert.ok(attempts >= 2);
-
-              done();
-            });
+        const runOtherTransaction = async () => {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(query);
+            transaction.insert(table.name, expectedRow);
+            await transaction.commit();
           });
+        };
+
+        await database.runTransactionAsync(async transaction => {
+          attempts++;
+          const [rows] = await transaction.run(query);
+          transaction.insert(table.name, {
+            Key: generateName('key'),
+            StringValue: generateName('val'),
+          });
+          if (attempts === 1) {
+            await runOtherTransaction();
+          }
+          if (attempts > 1 && rows.length > 0) {
+            const lastRow = rows.pop().toJSON();
+            assert.deepStrictEqual(lastRow, expectedRow);
+          }
+          await transaction.commit();
         });
-
-        function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            transaction!.run(query, err => {
-              if (err) {
-                callback(err);
-                return;
-              }
-
-              transaction!.insert(table.name, expectedRow);
-              transaction!.commit(callback);
-            });
-          });
-        }
+        assert.ok(attempts >= 2);
       };
 
-      it('GOOGLE_STANDARD_SQL should retry an aborted txn when commit fails', function (done) {
+      it('GOOGLE_STANDARD_SQL should retry an aborted txn when commit fails', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         const key = 'k9999';
         const query = `SELECT * FROM ${googleSqlTable.name} WHERE Key = '${key}'`;
-        retryAbortedTxnWhenCommitFails(done, DATABASE, googleSqlTable, query);
+        await retryAbortedTxnWhenCommitFails(DATABASE, googleSqlTable, query);
       });
 
-      it('POSTGRESQL should retry an aborted txn when commit fails', function (done) {
+      it('POSTGRESQL should retry an aborted txn when commit fails', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9558,90 +8396,64 @@ describe('Spanner', () => {
             p1: key,
           },
         };
-        retryAbortedTxnWhenCommitFails(
-          done,
+        await retryAbortedTxnWhenCommitFails(
           PG_DATABASE,
           postgreSqlTable,
           query,
         );
       });
 
-      const deadlineErrorInsteadOfAbort = (done, database, table) => {
+      const deadlineErrorInsteadOfAbort = async (database, table) => {
         const options = {
           timeout: 10,
         };
 
         const query = `SELECT * FROM ${table.name}`;
-        let attempts = 0;
-
-        database.runTransaction(options, (err, transaction) => {
-          if (attempts++ === 1) {
-            assert.strictEqual(err!.code, 4);
-            assert(
-              err!.message.startsWith('Deadline for Transaction exceeded.'),
-            );
-
-            done();
-            return;
-          }
-
-          assert.ifError(err);
-
-          transaction!.run(query, err => {
-            assert.ifError(err);
-
-            transaction!.insert(table.name, {
+        const runOtherTransaction = async () => {
+          await database.runTransactionAsync(async transaction => {
+            await transaction.run(query);
+            transaction.insert(table.name, {
               Key: generateName('key'),
             });
-
-            runOtherTransaction(err => {
-              assert.ifError(err);
-
-              transaction!.commit(() => {
-                done(new Error('Should not have been called.'));
-              });
-            });
+            await transaction.commit();
           });
-        });
-
-        function runOtherTransaction(callback) {
-          database.runTransaction((err, transaction) => {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            transaction!.run(query, err => {
-              if (err) {
-                callback(err);
-                return;
-              }
-
-              transaction!.insert(table.name, {
+        };
+        await assert.rejects(
+          async () => {
+            await database.runTransactionAsync(options, async transaction => {
+              await transaction.run(query);
+              transaction.insert(table.name, {
                 Key: generateName('key'),
               });
-
-              transaction!.commit(callback);
+              await runOtherTransaction();
+              await transaction.commit();
             });
-          });
-        }
+          },
+          (err: any) => {
+            assert.strictEqual(err.code, 4);
+            assert.ok(
+              err.message.startsWith('Deadline for Transaction exceeded'),
+            );
+            return true;
+          },
+        );
       };
 
-      it('GOOGLE_STANDARD_SQL should return a deadline error instead of aborted', function (done) {
+      it('GOOGLE_STANDARD_SQL should return a deadline error instead of aborted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        deadlineErrorInsteadOfAbort(done, DATABASE, googleSqlTable);
+        await deadlineErrorInsteadOfAbort(DATABASE, googleSqlTable);
       });
 
-      it('POSTGRESQL should return a deadline error instead of aborted', function (done) {
+      it('POSTGRESQL should return a deadline error instead of aborted', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+        await deadlineErrorInsteadOfAbort(PG_DATABASE, postgreSqlTable);
       });
 
-      it('GOOGLE_STANDARD_SQL should throw error when directedReadOptions at query level is set with read-write transactions', function (done) {
+      it('GOOGLE_STANDARD_SQL should throw error when directedReadOptions at query level is set with read-write transactions', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9657,26 +8469,23 @@ describe('Spanner', () => {
           },
         };
 
-        DATABASE.runTransaction((err, transaction) => {
+        await DATABASE.runTransactionAsync(async transaction => {
           const expectedErrorMessage =
             'Directed reads can only be performed in a read-only transaction.';
-          transaction!.run(
-            {
+          try {
+            await transaction!.run({
               sql: `SELECT * FROM ${googleSqlTable.name}`,
               directedReadOptions: directedReadOptionsForRequest,
-            },
-            err => {
-              assert.strictEqual(err?.details, expectedErrorMessage);
-              transaction!.end();
-              done();
-            },
-          );
+            });
+          } catch (err: any) {
+            assert.strictEqual(err?.details, expectedErrorMessage);
+            await transaction!.end();
+          }
         });
       });
 
-      const handleReadAndMutation = (done, database) => {
-        database.runTransaction(async (err, transaction) => {
-          assert.ifError(err);
+      const handleReadAndMutation = async database => {
+        await database.runTransactionAsync(async transaction => {
           try {
             await transaction.run('SELECT abc');
           } catch (err) {
@@ -9692,44 +8501,34 @@ describe('Spanner', () => {
             StringValue: 'mutation',
           });
           await transaction.commit();
-          done();
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should handle commit retry based on multiplexed enable or not', done => {
-        handleReadAndMutation(done, DATABASE);
+      it('GOOGLE_STANDARD_SQL should handle commit retry based on multiplexed enable or not', async () => {
+        await handleReadAndMutation(DATABASE);
       });
     });
 
     describe('batch transactions', () => {
-      before(done => {
+      before(async () => {
         if (!IS_EMULATOR_ENABLED) {
-          DATABASE.runTransaction((err, transaction) => {
-            assert.ifError(err);
-
-            transaction!.runUpdate(
-              {
-                sql:
-                  'INSERT INTO ' +
-                  TABLE_NAME +
-                  ' (Key, StringValue) VALUES(@key, @str)',
-                params: {
-                  key: 'k998',
-                  str: 'abc',
-                },
+          await DATABASE.runTransactionAsync(async transaction => {
+            await transaction!.runUpdate({
+              sql:
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES(@key, @str)',
+              params: {
+                key: 'k998',
+                str: 'abc',
               },
-              err => {
-                assert.ifError(err);
-                transaction!.commit(done);
-              },
-            );
+            });
+            await transaction!.commit();
           });
-        } else {
-          done();
         }
       });
 
-      it('should create and execute a query partition using callback', function (done) {
+      it('should create and execute a query partition using callback', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9741,25 +8540,19 @@ describe('Spanner', () => {
         };
 
         let row_count = 0;
-        DATABASE.createBatchTransaction((err, transaction) => {
-          assert.ifError(err);
-          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(partitions.length, 1);
-            partitions.forEach(partition => {
-              transaction!.execute(partition, (err, results) => {
-                assert.ifError(err);
-                row_count += results.map(row => row.toJSON()).length;
-                assert.deepStrictEqual(row_count, 1);
-                transaction!.close();
-                done();
-              });
-            });
-          });
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const [partitions] =
+          await transaction!.createQueryPartitions(selectQuery);
+        assert.deepStrictEqual(partitions.length, 1);
+        partitions.forEach(async partition => {
+          const [results] = await transaction!.execute(partition);
+          row_count += results.map(row => row.toJSON()).length;
+          assert.deepStrictEqual(row_count, 1);
+          await transaction!.close();
         });
       });
 
-      it('should create and execute a read partition using callback', function (done) {
+      it('should create and execute a read partition using callback', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -9773,21 +8566,14 @@ describe('Spanner', () => {
         };
 
         let read_row_count = 0;
-        DATABASE.createBatchTransaction((err, transaction) => {
-          assert.ifError(err);
-          transaction!.createReadPartitions(QUERY, (err, partitions) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(partitions.length, 1);
-            partitions.forEach(partition => {
-              transaction!.execute(partition, (err, results) => {
-                assert.ifError(err);
-                read_row_count += results.map(row => row.toJSON()).length;
-                assert.deepStrictEqual(read_row_count, 1);
-                transaction!.close();
-                done();
-              });
-            });
-          });
+        const [transaction] = await DATABASE.createBatchTransaction();
+        const [partitions] = await transaction!.createReadPartitions(QUERY);
+        assert.deepStrictEqual(partitions.length, 1);
+        partitions.forEach(async partition => {
+          const [results] = await transaction!.execute(partition);
+          read_row_count += results.map(row => row.toJSON()).length;
+          assert.deepStrictEqual(read_row_count, 1);
+          await transaction!.close();
         });
       });
 
@@ -9872,32 +8658,6 @@ function onPromiseOperationComplete(data) {
     data[data.length - 1] === undefined ? data.length - 1 : data.length;
   const operation = data[length - 2];
   return operation.promise();
-}
-
-function execAfterOperationComplete(callback) {
-  // tslint:disable-next-line only-arrow-functions
-  return function (err) {
-    // arguments = [..., op, apiResponse], unless the response is Empty.
-    // arguments = [op, apiResponse, undefined] if the response is Empty.
-    const length =
-      // eslint-disable-next-line prefer-rest-params
-      arguments[arguments.length - 1] === undefined
-        ? arguments.length - 1
-        : arguments.length;
-    // eslint-disable-next-line prefer-rest-params
-    const operation = arguments[length - 2];
-    // eslint-disable-next-line prefer-rest-params
-    const apiResponse = arguments[length - 1];
-
-    if (err) {
-      callback(err, apiResponse);
-      return;
-    }
-
-    operation.on('error', callback).on('complete', metadata => {
-      callback(null, metadata);
-    });
-  };
 }
 
 async function deleteOldTestInstances() {
