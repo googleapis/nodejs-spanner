@@ -87,9 +87,13 @@ describe('SessionFactory', () => {
   });
 
   describe('instantiation', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+    describe('when multiplexed session is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       });
 
       it('should create a SessionPool object', () => {
@@ -125,15 +129,7 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
+    describe('when multiplexed session is default', () => {
       it('should create a MultiplexedSession object', () => {
         assert(
           sessionFactory.multiplexedSession_ instanceof MultiplexedSession,
@@ -151,16 +147,20 @@ describe('SessionFactory', () => {
       });
 
       it('should correctly initialize the isMultiplexedEnabled field when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
         assert.strictEqual(sessionFactory.isMultiplexed, true);
       });
     });
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are disabled', () => {
+    describe('when multiplexed session is disabled for r/w', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
       });
 
       it('should correctly initialize the isMultiplexedRW field', () => {
@@ -169,17 +169,7 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS and GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW both are enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
+    describe('when multiplexed session is default for r/w', () => {
       it('should correctly initialize the isMultiplexedRW field', () => {
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
         assert.strictEqual(sessionFactory.isMultiplexedRW, true);
@@ -188,9 +178,13 @@ describe('SessionFactory', () => {
   });
 
   describe('getSession', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
+    describe('when multiplexed session is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       });
 
       it('should retrieve a regular session from the pool', done => {
@@ -217,15 +211,7 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
+    describe('when multiplexed session is default', () => {
       it('should return the multiplexed session', done => {
         (
           sandbox.stub(
@@ -266,6 +252,11 @@ describe('SessionFactory', () => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
       });
 
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
+      });
+
       it('should retrieve a regular session from the pool', done => {
         (
           sandbox.stub(sessionFactory.pool_, 'getSession') as sinon.SinonStub
@@ -290,17 +281,7 @@ describe('SessionFactory', () => {
       });
     });
 
-    describe('when multiplexed session for r/w enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
-      });
-
+    describe('when multiplexed session for r/w not disabled', () => {
       it('should return the multiplexed session', done => {
         (
           sandbox.stub(
@@ -343,15 +324,7 @@ describe('SessionFactory', () => {
   });
 
   describe('release', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
-
-      after(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not disabled', () => {
       it('should not call the release method', () => {
         const releaseStub = sandbox.stub(sessionFactory.pool_, 'release');
         const fakeMuxSession = createMuxSession();
@@ -363,6 +336,10 @@ describe('SessionFactory', () => {
     describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is disabled', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+      });
+
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
       });
 
       it('should call the release method to release a regular session', () => {
@@ -389,10 +366,7 @@ describe('SessionFactory', () => {
   });
 
   describe('isMultiplexedEnabled', () => {
-    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is enabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-      });
+    describe('when GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not disabled', () => {
       it('should have enabled the multiplexed', () => {
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
         assert.strictEqual(sessionFactory.isMultiplexedEnabled(), true);
@@ -403,6 +377,9 @@ describe('SessionFactory', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
       });
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+      });
       it('should not have enabled the multiplexed', () => {
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
         assert.strictEqual(sessionFactory.isMultiplexedEnabled(), false);
@@ -411,11 +388,7 @@ describe('SessionFactory', () => {
   });
 
   describe('isMultiplexedEnabledForRW', () => {
-    describe('when multiplexed session is enabled for read/write transactions', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'true';
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'true';
-      });
+    describe('when multiplexed session is not disabled for read/write transactions', () => {
       it('should have enabled the multiplexed', () => {
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
         assert.strictEqual(sessionFactory.isMultiplexedEnabledForRW(), true);
@@ -426,6 +399,10 @@ describe('SessionFactory', () => {
       before(() => {
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
         process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
+      });
+      after(() => {
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
       });
       it('should not have enabled the multiplexed', () => {
         const sessionFactory = new SessionFactory(DATABASE, NAME, POOL_OPTIONS);
