@@ -97,12 +97,20 @@ describe('SessionPool', () => {
   });
 
   beforeEach(() => {
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS =
+      'false';
+    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW = 'false';
     DATABASE.session = createSession;
     sessionPool = new SessionPool(DATABASE);
     inventory = sessionPool._inventory;
   });
 
   afterEach(() => {
+    delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
+    delete process.env
+      .GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS;
+    delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW;
     pQueueOverride = null;
     sandbox.restore();
   });
