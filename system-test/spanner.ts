@@ -553,7 +553,9 @@ describe('Spanner', () => {
         await table.insert({BoolValue: 'abc'});
         assert.fail('Expected an error to be thrown, but it was not.');
       } catch (err: any) {
-        assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
+        KOKORO_JOB_NAME?.includes('system-test-regular-session')
+          ? assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION)
+          : assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
       }
     };
 
@@ -3488,7 +3490,7 @@ describe('Spanner', () => {
       const table = database.table(generateName('nope'));
 
       try {
-        table.insert({SingerId: generateName('id')});
+        await table.insert({SingerId: generateName('id')});
         assert.fail('Expected an error to be thrown, but it was not.');
       } catch (err: any) {
         assert.strictEqual(err!.code, grpc.status.NOT_FOUND);
@@ -3505,9 +3507,10 @@ describe('Spanner', () => {
 
     const nonExistentColumn = async table => {
       try {
-        table.insert({SingerId: generateName('id'), Nope: 'abc'});
+        await table.insert({SingerId: generateName('id'), Nope: 'abc'});
+        assert.fail('Expected an error to be thrown, but it was not.');
       } catch (err: any) {
-        assert.strictEqual(err!.code, 5);
+        assert.strictEqual(err!.code, grpc.status.NOT_FOUND);
       }
     };
 
