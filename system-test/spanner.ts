@@ -551,9 +551,9 @@ describe('Spanner', () => {
     const incorrectValueType = async table => {
       try {
         await table.insert({BoolValue: 'abc'});
-        throw new Error('Expected an error to be thrown, but it was not.');
-      } catch (err) {
-        assert(err);
+        assert.fail('Expected an error to be thrown, but it was not.');
+      } catch (err: any) {
+        assert.strictEqual(err!.code, grpc.status.INVALID_ARGUMENT);
       }
     };
 
@@ -1133,6 +1133,7 @@ describe('Spanner', () => {
       const numericInsertOutOfBounds = async (dialect, value) => {
         try {
           await insert({NumericValue: value}, dialect);
+          assert.fail('Expected an error to be thrown, but it was not.');
         } catch (err: any) {
           KOKORO_JOB_NAME?.includes('system-test-regular-session')
             ? assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION)
@@ -3488,8 +3489,9 @@ describe('Spanner', () => {
 
       try {
         table.insert({SingerId: generateName('id')});
+        assert.fail('Expected an error to be thrown, but it was not.');
       } catch (err: any) {
-        assert.strictEqual(err!.code, 5);
+        assert.strictEqual(err!.code, grpc.status.NOT_FOUND);
       }
     };
 
