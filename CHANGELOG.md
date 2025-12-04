@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.3.2](https://github.com/googleapis/nodejs-spanner/compare/v8.3.1...v8.3.2) (2025-12-04)
+
+
+### Bug Fixes
+
+* Flaky metric test ([#2472](https://github.com/googleapis/nodejs-spanner/issues/2472)) ([e169cc5](https://github.com/googleapis/nodejs-spanner/commit/e169cc5344d38812b1ebf20c7a987715a73d6f79))
+
 ## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
 
 
