@@ -74,6 +74,8 @@ export class MultiplexedSession
   _multiplexedSession: Session | null;
   _refreshHandle!: NodeJS.Timer;
   _observabilityOptions?: ObservabilityOptions;
+  // status flag for multiplexed session creation
+  _isInitializing: boolean;
   constructor(database: Database) {
     super();
     this.database = database;
@@ -81,6 +83,12 @@ export class MultiplexedSession
     this.refreshRate = 7;
     this._multiplexedSession = null;
     this._observabilityOptions = database._observabilityOptions;
+    // initialize the flag to false
+    this._isInitializing = false;
+    // a large number of concurrent requests can be waiting for a multiplexed
+    // session to become available, each adding a listener. To prevent
+    // MaxListenersExceededWarning, we are increasing the limit.
+    this.setMaxListeners(Infinity);
   }
 
   /**
@@ -112,6 +120,8 @@ export class MultiplexedSession
    * @private
    */
   async _createSession(): Promise<void> {
+    // mark initialization as active
+    this._isInitializing = true;
     const traceConfig = {
       opts: this._observabilityOptions,
       dbName: this.database.formattedName_,
@@ -133,6 +143,8 @@ export class MultiplexedSession
           this.emit(MUX_SESSION_CREATE_ERROR, e);
           throw e;
         } finally {
+          // turn off the flag when done (Success OR Error)
+          this._isInitializing = false;
           span.end();
         }
       },
@@ -223,6 +235,14 @@ export class MultiplexedSession
     if (this._multiplexedSession !== null) {
       span.addEvent('Cache hit: has usable multiplexed session');
       return this._multiplexedSession;
+    }
+
+    // If the session is null, and nobody is currently initializing it
+    // It means a previous attempt failed and we are in a "Dead" state
+    // We must kickstart the process again
+    if (!this._isInitializing) {
+      // Trigger creation for multiplexed session
+      this.createSession();
     }
 
     // Define event and promises to wait for the session to become available or for the error

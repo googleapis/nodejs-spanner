@@ -3807,6 +3807,79 @@ describe('Spanner with mock server', () => {
     });
   });
 
+  describe('multiplexed-session', () => {
+    it('should handle high concurrency during session creation without emitting MaxListenersExceededWarning', async () => {
+      const database = newTestDatabase();
+      // simulate Latency: 50ms delay to force requests to queue up
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofMinAndRandomExecTime(50, 0),
+      );
+      let warningCaught: Error | null = null;
+      const warningListener = (warning: Error) => {
+        if (warning.name === 'MaxListenersExceededWarning') {
+          warningCaught = warning;
+        }
+      };
+      process.on('warning', warningListener);
+      try {
+        // fire 20 requests (default limit is 10, so this triggers the warning if not fixed)
+        const promises: Promise<[Snapshot]>[] = [];
+        for (let i = 0; i < 20; i++) {
+          promises.push(database.getSnapshot());
+        }
+
+        const snapshots = await Promise.all(promises);
+
+        assert.strictEqual(snapshots.length, 20);
+        snapshots.forEach(([snapshot]) => snapshot.end());
+        // assert no warnings
+        if (warningCaught) {
+          assert.fail(
+            `Test Failed: Caught unexpected warning: ${(warningCaught as Error).message}`,
+          );
+        }
+      } finally {
+        process.removeListener('warning', warningListener);
+        await database.close();
+      }
+    });
+
+    it('should recover from a failed session creation when idle (Deadlock Fix)', async () => {
+      const database = newTestDatabase();
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+      // tell Mock Server: The NEXT call to createSession should fail
+      // any calls AFTER that should succeed
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofErrors([err]),
+      );
+      try {
+        await database.getSnapshot();
+        assert.fail('First request should have failed');
+      } catch (e) {
+        // we expect this to fail and catch it so the test continues
+        assert.strictEqual((e as ServiceError).code, grpc.status.INTERNAL);
+      }
+      // wait 50ms to ensure any async cleanups are done
+      // now:
+      // 1. _multiplexedSession is null
+      // 2. _isInitializing is false
+      await new Promise(resolve => setTimeout(resolve, 50));
+      // this should trigger a new createSession call as _isInitializing is false
+      const [snapshot] = await database.getSnapshot();
+      assert.ok(
+        snapshot,
+        'Should have successfully acquired a session on retry',
+      );
+      snapshot.end();
+      await database.close();
+    });
+  });
+
   describe('transaction', () => {
     it('should retry on aborted query', async () => {
       let attempts = 0;
