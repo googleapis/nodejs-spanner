@@ -71,6 +71,7 @@ describe('MultiplexedSession', () => {
       assert.strictEqual(multiplexedSession.refreshRate, 7);
       assert.deepStrictEqual(multiplexedSession._multiplexedSession, null);
       assert(multiplexedSession instanceof events.EventEmitter);
+      assert.strictEqual((multiplexedSession as any)._isInitializing, false);
     });
   });
 
