@@ -2098,36 +2098,6 @@ describe('Spanner with mock server', () => {
           done();
         });
       });
-
-      it('should fail the transaction, if multiplexed session creation is failed', async () => {
-        const query = {
-          sql: selectSql,
-        } as ExecuteSqlRequest;
-        const err = {
-          code: grpc.status.NOT_FOUND,
-          message: 'create session failed',
-        } as MockError;
-        spannerMock.setExecutionTime(
-          spannerMock.createSession,
-          SimulatedExecutionTime.ofError(err),
-        );
-        const database = newTestDatabase().on('error', err => {
-          assert.strictEqual(err.code, Status.NOT_FOUND);
-        });
-        try {
-          await database.run(query);
-        } catch (error) {
-          assert.strictEqual((error as grpc.ServiceError).code, err.code);
-          assert.strictEqual(
-            (error as grpc.ServiceError).details,
-            'create session failed',
-          );
-          assert.strictEqual(
-            (error as grpc.ServiceError).message,
-            '5 NOT_FOUND: create session failed',
-          );
-        }
-      });
     });
 
     describe('when multiplexed session is disabled for read-only', () => {
@@ -2387,7 +2357,7 @@ describe('Spanner with mock server', () => {
           .on('data', response => {
             // ensure that response is coming
             assert.notEqual(response.commitTimestamp, null);
-            // multiplexed session will get created by default
+            // multiplexed session will get created by default during client initialization
             assert.notEqual(multiplexedSession._multiplexedSession, null);
             // session pool will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not false
             assert.strictEqual(pool._inventory.sessions.length, 0);
@@ -2896,11 +2866,13 @@ describe('Spanner with mock server', () => {
           if (err) {
             assert.fail(err);
           }
-          // The mock server should have exactly 2 sessions. The first one was
+          // The mock server should have exactly 3 sessions.
+          // Two from session pool where, the first one was
           // removed from the session pool because of the simulated
           // 'Session not found' error. The second one was created by the retry.
           // As we only simulate the 'Session not found' error, the first
           // session is still present on the mock server.
+          // one session will be multiplexed session.
           assert.strictEqual(results!.length, 3);
           if (results!.length !== 3) {
             done();
@@ -3803,6 +3775,85 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.size, pool.options.max);
       tx1.end();
       tx2.end();
+      await database.close();
+    });
+  });
+
+  describe('multiplexed-session', () => {
+    it('should recover from a failed session creation when idle (Deadlock Fix)', async () => {
+      const database = newTestDatabase();
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+      // Mock Setup:
+      // 1st createSession call -> FAILS (Simulates network blip)
+      // 2nd createSession call -> SUCCEEDS (Default behavior)
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofErrors([err]),
+      );
+      // Attempt 1: Should fail
+      try {
+        await database.getSnapshot();
+        assert.fail('First request should have failed');
+      } catch (e) {
+        // we expect this to fail and catch it so the test continues
+        assert.strictEqual((e as ServiceError).code, grpc.status.INTERNAL);
+      }
+      // Attempt 2: Should trigger a new createSession call
+      // The lazy loader sees _sharedMuxSessionWaitPromise is null, so it retries.
+      const [snapshot] = await database.getSnapshot();
+      assert.ok(
+        snapshot,
+        'Should have successfully acquired a session on retry',
+      );
+      snapshot.end();
+      await database.close();
+      // Filter for CreateSession requests specifically.
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      // Assert that we tried to create the session exactly twice
+      // 1st attempt: Failed (Simulated Error)
+      // 2nd attempt: Succeeded (Retry)
+      assert.strictEqual(request.length, 2);
+    });
+
+    it('should share a single session creation promise among concurrent requests', async () => {
+      const database = newTestDatabase();
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofMinAndRandomExecTime(100, 0),
+      );
+
+      // send multiple concurrent requests
+      const promises: Promise<[Snapshot]>[] = [];
+
+      for (let i = 0; i < 10; i++) {
+        promises.push(database.getSnapshot());
+      }
+
+      // await all of them
+      const snapshots = await Promise.all(promises);
+
+      // assert all requests succeeded
+      assert.strictEqual(snapshots.length, 10);
+      snapshots.forEach(([snapshot]) => snapshot.end());
+
+      // assert there was only one CreateSession request was sent
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      // the CreateSessionRequest should be 1, if the shared promise is working fine
+      assert.strictEqual(
+        request.length,
+        1,
+        'Should have only created one session for all requests',
+      );
+
       await database.close();
     });
   });

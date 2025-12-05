@@ -375,18 +375,6 @@ describe('Database', () => {
       });
     });
 
-    it('should re-emit Multiplexed Session errors', done => {
-      const error = new Error('err');
-
-      const sessionFactory = new SessionFactory(database, NAME);
-
-      database.on('error', err => {
-        assert.strictEqual(err, error);
-        done();
-      });
-      sessionFactory.multiplexedSession_?.emit('error', error);
-    });
-
     it('should inherit from ServiceObject', done => {
       const options = {};
 
