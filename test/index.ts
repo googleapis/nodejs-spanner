@@ -467,6 +467,26 @@ describe('Spanner', () => {
         assert.strictEqual(config.baseUrl, EMULATOR_HOST);
         assert.strictEqual(options.port, EMULATOR_PORT);
       });
+
+      it('should ignore SPANNER_EMULATOR_HOST when ignoreEnvSpannerEmulatorHost is set', () => {
+        const EMULATOR_HOST = 'somehost.local';
+        const EMULATOR_PORT = 1610;
+        process.env.SPANNER_EMULATOR_HOST = `${EMULATOR_HOST}:${EMULATOR_PORT}`;
+
+        const spanner = new Spanner({
+          ignoreEnvSpannerEmulatorHost: true,
+        });
+
+        const config = getFake(spanner).calledWith_[0];
+        const options = getFake(spanner).calledWith_[1];
+
+        // ensure we are NOT pointing to the emulator
+        assert.notStrictEqual(config.baseUrl, EMULATOR_HOST);
+        assert.notStrictEqual(options.port, EMULATOR_PORT);
+
+        // ensure we defaulted back to the real API
+        assert.strictEqual(config.baseUrl, 'spanner.googleapis.com');
+      });
     });
   });
 

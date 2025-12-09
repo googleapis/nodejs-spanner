@@ -167,6 +167,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   observabilityOptions?: ObservabilityOptions;
   disableBuiltInMetrics?: boolean;
   interceptors?: any[];
+  ignoreEnvSpannerEmulatorHost?: boolean;
   /**
    * The Trusted Cloud Domain (TPC) DNS of the service used to make requests.
    * Defaults to `googleapis.com`.
@@ -450,7 +451,9 @@ class Spanner extends GrpcService {
       );
     }
 
-    const emulatorHost = Spanner.getSpannerEmulatorHost();
+    const emulatorHost = options.ignoreEnvSpannerEmulatorHost
+      ? undefined
+      : Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
       emulatorHost.endpoint &&
