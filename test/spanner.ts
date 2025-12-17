@@ -5067,6 +5067,41 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 2);
     });
 
+    it('should execute deleteRows with various key types', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+
+      // define different types of keys
+      const intKey = 123;
+      const boolKey = true;
+      const floatKey = 3.14;
+      const bytesKey = Buffer.from('test-buffer');
+      const dateKey = new SpannerDate('2023-09-22');
+      const timestampKey = new PreciseDate('2023-09-22T10:00:00.123Z');
+      const numericKey = new Numeric('123.456');
+
+      // queue deletes for each type
+      mutations.deleteRows('IntTable', [intKey]);
+      mutations.deleteRows('BoolTable', [boolKey]);
+      mutations.deleteRows('FloatTable', [floatKey]);
+      mutations.deleteRows('BytesTable', [bytesKey]);
+      mutations.deleteRows('DateTable', [dateKey]);
+      mutations.deleteRows('TimestampTable', [timestampKey]);
+      mutations.deleteRows('NumericTable', [numericKey]);
+
+      // execute blind writes
+      await database.writeAtLeastOnce(mutations, {});
+
+      // get the request sent to mock server
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+
+      assert.strictEqual(request.mutations!.length, 7);
+
+      await database.close();
+    });
+
     it('should apply blind writes only once with isolationLevel option', async () => {
       const database = newTestDatabase();
       const mutations = new MutationSet();
