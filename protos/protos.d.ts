@@ -15472,6 +15472,9 @@ export namespace google {
                             /** AutoscalingTargets highPriorityCpuUtilizationPercent */
                             highPriorityCpuUtilizationPercent?: (number|null);
 
+                            /** AutoscalingTargets totalCpuUtilizationPercent */
+                            totalCpuUtilizationPercent?: (number|null);
+
                             /** AutoscalingTargets storageUtilizationPercent */
                             storageUtilizationPercent?: (number|null);
                         }
@@ -15487,6 +15490,9 @@ export namespace google {
 
                             /** AutoscalingTargets highPriorityCpuUtilizationPercent. */
                             public highPriorityCpuUtilizationPercent: number;
+
+                            /** AutoscalingTargets totalCpuUtilizationPercent. */
+                            public totalCpuUtilizationPercent: number;
 
                             /** AutoscalingTargets storageUtilizationPercent. */
                             public storageUtilizationPercent: number;
@@ -15682,6 +15688,15 @@ export namespace google {
 
                                 /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent */
                                 autoscalingTargetHighPriorityCpuUtilizationPercent?: (number|null);
+
+                                /** AutoscalingConfigOverrides autoscalingTargetTotalCpuUtilizationPercent */
+                                autoscalingTargetTotalCpuUtilizationPercent?: (number|null);
+
+                                /** AutoscalingConfigOverrides disableHighPriorityCpuAutoscaling */
+                                disableHighPriorityCpuAutoscaling?: (boolean|null);
+
+                                /** AutoscalingConfigOverrides disableTotalCpuAutoscaling */
+                                disableTotalCpuAutoscaling?: (boolean|null);
                             }
 
                             /** Represents an AutoscalingConfigOverrides. */
@@ -15698,6 +15713,15 @@ export namespace google {
 
                                 /** AutoscalingConfigOverrides autoscalingTargetHighPriorityCpuUtilizationPercent. */
                                 public autoscalingTargetHighPriorityCpuUtilizationPercent: number;
+
+                                /** AutoscalingConfigOverrides autoscalingTargetTotalCpuUtilizationPercent. */
+                                public autoscalingTargetTotalCpuUtilizationPercent: number;
+
+                                /** AutoscalingConfigOverrides disableHighPriorityCpuAutoscaling. */
+                                public disableHighPriorityCpuAutoscaling: boolean;
+
+                                /** AutoscalingConfigOverrides disableTotalCpuAutoscaling. */
+                                public disableTotalCpuAutoscaling: boolean;
 
                                 /**
                                  * Creates a new AutoscalingConfigOverrides instance using the specified properties.
