@@ -4,6 +4,22 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.4.0](https://github.com/googleapis/nodejs-spanner/compare/v8.3.1...v8.4.0) (2025-12-19)
+
+
+### Features
+
+* Exposing total CPU related fields in AutoscalingConfig ([#2490](https://github.com/googleapis/nodejs-spanner/issues/2490)) ([508f0ff](https://github.com/googleapis/nodejs-spanner/commit/508f0ff95636b004f4200522018a199263eda8ca))
+* **spanner:** Support for type UUID ([#2482](https://github.com/googleapis/nodejs-spanner/issues/2482)) ([0047e94](https://github.com/googleapis/nodejs-spanner/commit/0047e9407d86521571626c69011b70307f83f8ba))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.6 ([#2452](https://github.com/googleapis/nodejs-spanner/issues/2452)) ([f9e6b86](https://github.com/googleapis/nodejs-spanner/commit/f9e6b86ff4da03110642c17e5ebc8fac8d903d3a))
+* Flaky metric test ([#2472](https://github.com/googleapis/nodejs-spanner/issues/2472)) ([e169cc5](https://github.com/googleapis/nodejs-spanner/commit/e169cc5344d38812b1ebf20c7a987715a73d6f79))
+* Type check for key in deleteRows ([#2486](https://github.com/googleapis/nodejs-spanner/issues/2486)) ([7347a16](https://github.com/googleapis/nodejs-spanner/commit/7347a1628ad8635b8f84b36ad1d3850b78862ac7))
+* Type mismatch in Snapshot.run error handler ([#2487](https://github.com/googleapis/nodejs-spanner/issues/2487)) ([4ac0360](https://github.com/googleapis/nodejs-spanner/commit/4ac036047e3a03c073300f288c746389a38d8e42))
+
 ## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
 
 
