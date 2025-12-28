@@ -227,7 +227,6 @@ export class MultiplexedSession
     // Check if the multiplexed session is already available
     if (this._multiplexedSession !== null) {
       span.addEvent('Cache hit: has usable multiplexed session');
-      span.addEvent('Acquired multiplexed session');
       return this._multiplexedSession;
     }
 

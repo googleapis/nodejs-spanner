@@ -3781,7 +3781,6 @@ describe('Spanner with mock server', () => {
 
   describe('multiplexed-session', () => {
     it('should recover from a failed session creation when idle (Deadlock Fix)', async () => {
-      const database = newTestDatabase();
       const err = {
         code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
         message: 'Simulated failure',
@@ -3793,6 +3792,9 @@ describe('Spanner with mock server', () => {
         spannerMock.createSession,
         SimulatedExecutionTime.ofErrors([err]),
       );
+
+      const database = newTestDatabase();
+
       // Attempt 1: Should fail
       try {
         await database.getSnapshot();
@@ -3821,16 +3823,19 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(request.length, 2);
     });
 
-    it('should share a single session creation promise among concurrent requests', async () => {
-      const database = newTestDatabase();
+    it('should share a single session creation promise among concurrent requests (Initialization Race)', async () => {
+      // This guarantees that the very first request to createSession (from constructor) gets delayed.
       spannerMock.setExecutionTime(
         spannerMock.createSession,
         SimulatedExecutionTime.ofMinAndRandomExecTime(100, 0),
       );
 
-      // send multiple concurrent requests
-      const promises: Promise<[Snapshot]>[] = [];
+      // this request is now stuck pending for 100ms (because of above delay).
+      const database = newTestDatabase();
 
+      // fire multiple concurrent requests immediately, while Request 1 is still pending
+      // This forces them to hit the "Join Existing Promise" logic.
+      const promises: Promise<[Snapshot]>[] = [];
       for (let i = 0; i < 10; i++) {
         promises.push(database.getSnapshot());
       }
@@ -3852,6 +3857,98 @@ describe('Spanner with mock server', () => {
         request.length,
         1,
         'Should have only created one session for all requests',
+      );
+
+      await database.close();
+    });
+
+    it('should retry only once shared across concurrent requests after an initial failure', async () => {
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+
+      // Mock: Delay 50ms per call, fail next 2 requests (Startup + Retry)
+      spannerMock.setExecutionTime(spannerMock.createSession, {
+        simulateExecutionTime: async () => {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        },
+        errors: [err, err],
+      } as any);
+
+      // Trigger initial session creation (fails due to mock setup)
+      const database = newTestDatabase();
+
+      // wait to ensure 1st request finishes and locks are cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Trigger Concurrent RPCs (The Retry)
+      // Now that we are idle, these 3 requests will trigger a retry.
+      // They should ALL fail, but they should share ONE retry request.
+      const rpcPromises = [
+        database.getSnapshot(),
+        database.getSnapshot(),
+        database.getSnapshot(),
+      ];
+
+      // Verify Failure
+      // We expect all of them to reject with the simulated error
+      await assert.rejects(rpcPromises[0], /Simulated failure/);
+      await assert.rejects(rpcPromises[1], /Simulated failure/);
+      await assert.rejects(rpcPromises[2], /Simulated failure/);
+
+      // Verify exactly 2 create session request
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      assert.strictEqual(
+        request.length,
+        2,
+        'Should have attempted exactly 2 creations (1 startup + 1 shared retry)',
+      );
+
+      await database.close();
+    });
+
+    it('should propagate a single delayed failure to all concurrent listeners without spawning duplicate requests', async () => {
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+
+      // Mock: Delay 50ms to keep request pending, then fail
+      spannerMock.setExecutionTime(spannerMock.createSession, {
+        simulateExecutionTime: async () => {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        },
+        errors: [err],
+      } as any);
+
+      // Trigger Initialization
+      const database = newTestDatabase();
+
+      // Fire 3 RPCs immediately. They should join the pending initialization promise
+      const rpcPromises = [
+        database.getSnapshot(),
+        database.getSnapshot(),
+        database.getSnapshot(),
+      ];
+      // Verify Failure
+      // We expect all of them to reject with the simulated error
+      await assert.rejects(rpcPromises[0], /Simulated failure/);
+      await assert.rejects(rpcPromises[1], /Simulated failure/);
+      await assert.rejects(rpcPromises[2], /Simulated failure/);
+
+      // Verify exactly 1 create session request
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      assert.strictEqual(
+        request.length,
+        1,
+        'Should have attempted exactly 2 creations (1 startup + 1 shared retry)',
       );
 
       await database.close();
