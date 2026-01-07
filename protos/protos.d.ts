@@ -30253,6 +30253,9 @@ export namespace google {
 
                 /** RequestOptions transactionTag */
                 transactionTag?: (string|null);
+
+                /** RequestOptions clientContext */
+                clientContext?: (google.spanner.v1.RequestOptions.IClientContext|null);
             }
 
             /** Represents a RequestOptions. */
@@ -30272,6 +30275,9 @@ export namespace google {
 
                 /** RequestOptions transactionTag. */
                 public transactionTag: string;
+
+                /** RequestOptions clientContext. */
+                public clientContext?: (google.spanner.v1.RequestOptions.IClientContext|null);
 
                 /**
                  * Creates a new RequestOptions instance using the specified properties.
@@ -30359,6 +30365,103 @@ export namespace google {
                     PRIORITY_LOW = 1,
                     PRIORITY_MEDIUM = 2,
                     PRIORITY_HIGH = 3
+                }
+
+                /** Properties of a ClientContext. */
+                interface IClientContext {
+
+                    /** ClientContext secureContext */
+                    secureContext?: ({ [k: string]: google.protobuf.IValue }|null);
+                }
+
+                /** Represents a ClientContext. */
+                class ClientContext implements IClientContext {
+
+                    /**
+                     * Constructs a new ClientContext.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.RequestOptions.IClientContext);
+
+                    /** ClientContext secureContext. */
+                    public secureContext: { [k: string]: google.protobuf.IValue };
+
+                    /**
+                     * Creates a new ClientContext instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ClientContext instance
+                     */
+                    public static create(properties?: google.spanner.v1.RequestOptions.IClientContext): google.spanner.v1.RequestOptions.ClientContext;
+
+                    /**
+                     * Encodes the specified ClientContext message. Does not implicitly {@link google.spanner.v1.RequestOptions.ClientContext.verify|verify} messages.
+                     * @param message ClientContext message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.RequestOptions.IClientContext, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ClientContext message, length delimited. Does not implicitly {@link google.spanner.v1.RequestOptions.ClientContext.verify|verify} messages.
+                     * @param message ClientContext message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.RequestOptions.IClientContext, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ClientContext message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ClientContext
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.RequestOptions.ClientContext;
+
+                    /**
+                     * Decodes a ClientContext message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ClientContext
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.RequestOptions.ClientContext;
+
+                    /**
+                     * Verifies a ClientContext message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ClientContext message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ClientContext
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.RequestOptions.ClientContext;
+
+                    /**
+                     * Creates a plain object from a ClientContext message. Also converts values to other types if specified.
+                     * @param message ClientContext
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.RequestOptions.ClientContext, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ClientContext to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ClientContext
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
                 }
             }
 
