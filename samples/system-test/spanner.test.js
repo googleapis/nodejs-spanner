@@ -114,7 +114,14 @@ const GAX_OPTIONS = {
 
 async function cleanupDatabase(instanceId, databaseId) {
   const database = spanner.instance(instanceId).database(databaseId);
-  await database.delete();
+  try {
+    await database.delete();
+  } catch (err) {
+    // ignore the error in case the database doesn't exists
+    if (err.code !== 5) {
+      throw err;
+    }
+  }
 }
 
 const delay = async (test, cleanupFn = null) => {
