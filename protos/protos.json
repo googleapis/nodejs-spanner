@@ -8423,6 +8423,13 @@
                     "transactionTag": {
                       "type": "string",
                       "id": 3
+                    },
+                    "clientContext": {
+                      "type": "ClientContext",
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
@@ -8432,6 +8439,18 @@
                         "PRIORITY_LOW": 1,
                         "PRIORITY_MEDIUM": 2,
                         "PRIORITY_HIGH": 3
+                      }
+                    },
+                    "ClientContext": {
+                      "fields": {
+                        "secureContext": {
+                          "keyType": "string",
+                          "type": "google.protobuf.Value",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "OPTIONAL"
+                          }
+                        }
                       }
                     }
                   }
