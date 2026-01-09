@@ -115,7 +115,7 @@
     "dedent": "^1.5.3",
     "execa": "^5.0.0",
     "gapic-tools": "^1.0.1",
-    "gts": "^6.0.2",
+    "gts": "^7.0.0",
     "jsdoc": "^4.0.4",
     "jsdoc-fresh": "^5.0.0",
     "jsdoc-region-tag": "^4.0.0",
