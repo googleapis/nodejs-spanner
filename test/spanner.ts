@@ -2098,36 +2098,6 @@ describe('Spanner with mock server', () => {
           done();
         });
       });
-
-      it('should fail the transaction, if multiplexed session creation is failed', async () => {
-        const query = {
-          sql: selectSql,
-        } as ExecuteSqlRequest;
-        const err = {
-          code: grpc.status.NOT_FOUND,
-          message: 'create session failed',
-        } as MockError;
-        spannerMock.setExecutionTime(
-          spannerMock.createSession,
-          SimulatedExecutionTime.ofError(err),
-        );
-        const database = newTestDatabase().on('error', err => {
-          assert.strictEqual(err.code, Status.NOT_FOUND);
-        });
-        try {
-          await database.run(query);
-        } catch (error) {
-          assert.strictEqual((error as grpc.ServiceError).code, err.code);
-          assert.strictEqual(
-            (error as grpc.ServiceError).details,
-            'create session failed',
-          );
-          assert.strictEqual(
-            (error as grpc.ServiceError).message,
-            '5 NOT_FOUND: create session failed',
-          );
-        }
-      });
     });
 
     describe('when multiplexed session is disabled for read-only', () => {
@@ -2387,7 +2357,7 @@ describe('Spanner with mock server', () => {
           .on('data', response => {
             // ensure that response is coming
             assert.notEqual(response.commitTimestamp, null);
-            // multiplexed session will get created by default
+            // multiplexed session will get created by default during client initialization
             assert.notEqual(multiplexedSession._multiplexedSession, null);
             // session pool will not get created since GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS is not false
             assert.strictEqual(pool._inventory.sessions.length, 0);
@@ -2896,11 +2866,13 @@ describe('Spanner with mock server', () => {
           if (err) {
             assert.fail(err);
           }
-          // The mock server should have exactly 2 sessions. The first one was
+          // The mock server should have exactly 3 sessions.
+          // Two from session pool where, the first one was
           // removed from the session pool because of the simulated
           // 'Session not found' error. The second one was created by the retry.
           // As we only simulate the 'Session not found' error, the first
           // session is still present on the mock server.
+          // one session will be multiplexed session.
           assert.strictEqual(results!.length, 3);
           if (results!.length !== 3) {
             done();
@@ -3803,6 +3775,182 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.size, pool.options.max);
       tx1.end();
       tx2.end();
+      await database.close();
+    });
+  });
+
+  describe('multiplexed-session', () => {
+    it('should recover from a failed session creation when idle (Deadlock Fix)', async () => {
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+      // Mock Setup:
+      // 1st createSession call -> FAILS (Simulates network blip)
+      // 2nd createSession call -> SUCCEEDS (Default behavior)
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofErrors([err]),
+      );
+
+      const database = newTestDatabase();
+
+      // Attempt 1: Should fail
+      try {
+        await database.getSnapshot();
+        assert.fail('First request should have failed');
+      } catch (e) {
+        // we expect this to fail and catch it so the test continues
+        assert.strictEqual((e as ServiceError).code, grpc.status.INTERNAL);
+      }
+      // Attempt 2: Should trigger a new createSession call
+      // The lazy loader sees _sharedMuxSessionWaitPromise is null, so it retries.
+      const [snapshot] = await database.getSnapshot();
+      assert.ok(
+        snapshot,
+        'Should have successfully acquired a session on retry',
+      );
+      snapshot.end();
+      await database.close();
+      // Filter for CreateSession requests specifically.
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      // Assert that we tried to create the session exactly twice
+      // 1st attempt: Failed (Simulated Error)
+      // 2nd attempt: Succeeded (Retry)
+      assert.strictEqual(request.length, 2);
+    });
+
+    it('should share a single session creation promise among concurrent requests (Initialization Race)', async () => {
+      // This guarantees that the very first request to createSession (from constructor) gets delayed.
+      spannerMock.setExecutionTime(
+        spannerMock.createSession,
+        SimulatedExecutionTime.ofMinAndRandomExecTime(100, 0),
+      );
+
+      // this request is now stuck pending for 100ms (because of above delay).
+      const database = newTestDatabase();
+
+      // fire multiple concurrent requests immediately, while Request 1 is still pending
+      // This forces them to hit the "Join Existing Promise" logic.
+      const promises: Promise<[Snapshot]>[] = [];
+      for (let i = 0; i < 10; i++) {
+        promises.push(database.getSnapshot());
+      }
+
+      // await all of them
+      const snapshots = await Promise.all(promises);
+
+      // assert all requests succeeded
+      assert.strictEqual(snapshots.length, 10);
+      snapshots.forEach(([snapshot]) => snapshot.end());
+
+      // assert there was only one CreateSession request was sent
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      // the CreateSessionRequest should be 1, if the shared promise is working fine
+      assert.strictEqual(
+        request.length,
+        1,
+        'Should have only created one session for all requests',
+      );
+
+      await database.close();
+    });
+
+    it('should retry only once shared across concurrent requests after an initial failure', async () => {
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+
+      // Mock: Delay 50ms per call, fail next 2 requests (Startup + Retry)
+      spannerMock.setExecutionTime(spannerMock.createSession, {
+        simulateExecutionTime: async () => {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        },
+        errors: [err, err],
+      } as any);
+
+      // Trigger initial session creation (fails due to mock setup)
+      const database = newTestDatabase();
+
+      // wait to ensure 1st request finishes and locks are cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Trigger Concurrent RPCs (The Retry)
+      // Now that we are idle, these 3 requests will trigger a retry.
+      // They should ALL fail, but they should share ONE retry request.
+      const rpcPromises = [
+        database.getSnapshot(),
+        database.getSnapshot(),
+        database.getSnapshot(),
+      ];
+
+      // Verify Failure
+      // We expect all of them to reject with the simulated error
+      await assert.rejects(rpcPromises[0], /Simulated failure/);
+      await assert.rejects(rpcPromises[1], /Simulated failure/);
+      await assert.rejects(rpcPromises[2], /Simulated failure/);
+
+      // Verify exactly 2 create session request
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      assert.strictEqual(
+        request.length,
+        2,
+        'Should have attempted exactly 2 creations (1 startup + 1 shared retry)',
+      );
+
+      await database.close();
+    });
+
+    it('should propagate a single delayed failure to all concurrent listeners without spawning duplicate requests', async () => {
+      const err = {
+        code: grpc.status.INTERNAL, // Use a non-retryable error to force failures
+        message: 'Simulated failure',
+      } as MockError;
+
+      // Mock: Delay 50ms to keep request pending, then fail
+      spannerMock.setExecutionTime(spannerMock.createSession, {
+        simulateExecutionTime: async () => {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        },
+        errors: [err],
+      } as any);
+
+      // Trigger Initialization
+      const database = newTestDatabase();
+
+      // Fire 3 RPCs immediately. They should join the pending initialization promise
+      const rpcPromises = [
+        database.getSnapshot(),
+        database.getSnapshot(),
+        database.getSnapshot(),
+      ];
+      // Verify Failure
+      // We expect all of them to reject with the simulated error
+      await assert.rejects(rpcPromises[0], /Simulated failure/);
+      await assert.rejects(rpcPromises[1], /Simulated failure/);
+      await assert.rejects(rpcPromises[2], /Simulated failure/);
+
+      // Verify exactly 1 create session request
+      const request = spannerMock.getRequests().filter(val => {
+        return (val as v1.CreateSessionRequest).session?.multiplexed;
+      }) as v1.CreateSessionRequest[];
+
+      assert.strictEqual(
+        request.length,
+        1,
+        'Should have attempted exactly 2 creations (1 startup + 1 shared retry)',
+      );
+
       await database.close();
     });
   });
@@ -5065,6 +5213,41 @@ describe('Spanner with mock server', () => {
       }) as v1.CommitRequest;
       assert.ok(commitRequest, 'Commit was called');
       assert.strictEqual(commitRequest.mutations.length, 2);
+    });
+
+    it('should execute deleteRows with various key types', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+
+      // define different types of keys
+      const intKey = 123;
+      const boolKey = true;
+      const floatKey = 3.14;
+      const bytesKey = Buffer.from('test-buffer');
+      const dateKey = new SpannerDate('2023-09-22');
+      const timestampKey = new PreciseDate('2023-09-22T10:00:00.123Z');
+      const numericKey = new Numeric('123.456');
+
+      // queue deletes for each type
+      mutations.deleteRows('IntTable', [intKey]);
+      mutations.deleteRows('BoolTable', [boolKey]);
+      mutations.deleteRows('FloatTable', [floatKey]);
+      mutations.deleteRows('BytesTable', [bytesKey]);
+      mutations.deleteRows('DateTable', [dateKey]);
+      mutations.deleteRows('TimestampTable', [timestampKey]);
+      mutations.deleteRows('NumericTable', [numericKey]);
+
+      // execute blind writes
+      await database.writeAtLeastOnce(mutations, {});
+
+      // get the request sent to mock server
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+
+      assert.strictEqual(request.mutations!.length, 7);
+
+      await database.close();
     });
 
     it('should apply blind writes only once with isolationLevel option', async () => {

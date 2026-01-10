@@ -131,29 +131,34 @@ export class SessionFactory
       parent: database,
       id: name,
     } as {} as ServiceObjectConfig);
+    // initialize regular pool
     this.pool_ =
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(database, null)
         : new SessionPool(database, poolOptions);
+
+    // initialize multiplexed session
     this.multiplexedSession_ = new MultiplexedSession(database);
-    this.multiplexedSession_.on('error', this.emit.bind(database, 'error'));
     this.multiplexedSession_.createSession();
+
     // set the isMultiplexed property to false if multiplexed session is disabled, otherwise set the property to true
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false'
-      ? (this.isMultiplexed = false)
-      : (this.isMultiplexed = true);
+    this.isMultiplexed = !(
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false'
+    );
+
     // set the isMultiplexedPartitionedOps property to false if multiplexed session is disabled for paritioned ops, otherwise set the property to true
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
-      'false'
-      ? (this.isMultiplexedPartitionOps = false)
-      : (this.isMultiplexedPartitionOps = true);
+    this.isMultiplexedPartitionOps = !(
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS ===
+        'false'
+    );
 
     // set the isMultiplexedRW property to false if multiplexed session is disabled for read/write, otherwise set the property to true
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
-    process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'false'
-      ? (this.isMultiplexedRW = false)
-      : (this.isMultiplexedRW = true);
+    this.isMultiplexedRW = !(
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS === 'false' &&
+      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW === 'false'
+    );
+
     // Regular sessions should only be created if mux is disabled.
     if (!this.isMultiplexed) {
       this.pool_.on('error', this.emit.bind(database, 'error'));

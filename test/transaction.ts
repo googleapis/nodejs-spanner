@@ -1183,24 +1183,24 @@ describe('Transaction', () => {
         const fakeParams = {a: 'foo', b: 3};
         const fakeTypes = {b: 'number'};
         const fakeMissingType = {type: 'string'};
-        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
-
-        sandbox
-          .stub(codec, 'getType')
-          .withArgs(fakeParams.a)
-          .returns(fakeMissingType);
+        const expectedTypes = {
+          a: {code: google.spanner.v1.TypeCode.STRING},
+          b: {code: google.spanner.v1.TypeCode.INT64},
+        };
 
         sandbox
           .stub(codec, 'createTypeObject')
+          .withArgs(fakeTypes.b)
+          .returns(expectedTypes.b as google.spanner.v1.Type)
           .withArgs(fakeMissingType)
-          .returns(expectedType as google.spanner.v1.Type);
+          .returns(expectedTypes.a as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
           types: fakeTypes,
         });
 
-        assert.strictEqual(paramTypes.a, expectedType);
+        assert.strictEqual(paramTypes.a, expectedTypes.a);
       });
     });
   });

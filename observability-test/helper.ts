@@ -36,10 +36,7 @@ export const waitingSessionsEvents = [
   'Using Session',
 ];
 
-export const cacheSessionEvents = [
-  'Cache hit: has usable multiplexed session',
-  'Acquired multiplexed session',
-];
+export const cacheSessionEvents = ['Cache hit: has usable multiplexed session'];
 
 /**
  * This utility exists as a test helper because mocha has builtin "context"

@@ -4704,7 +4704,14 @@
                                   "type": "int32",
                                   "id": 1,
                                   "options": {
-                                    "(google.api.field_behavior)": "REQUIRED"
+                                    "(google.api.field_behavior)": "OPTIONAL"
+                                  }
+                                },
+                                "totalCpuUtilizationPercent": {
+                                  "type": "int32",
+                                  "id": 4,
+                                  "options": {
+                                    "(google.api.field_behavior)": "OPTIONAL"
                                   }
                                 },
                                 "storageUtilizationPercent": {
@@ -4746,6 +4753,27 @@
                                     "autoscalingTargetHighPriorityCpuUtilizationPercent": {
                                       "type": "int32",
                                       "id": 2,
+                                      "options": {
+                                        "(google.api.field_behavior)": "OPTIONAL"
+                                      }
+                                    },
+                                    "autoscalingTargetTotalCpuUtilizationPercent": {
+                                      "type": "int32",
+                                      "id": 4,
+                                      "options": {
+                                        "(google.api.field_behavior)": "OPTIONAL"
+                                      }
+                                    },
+                                    "disableHighPriorityCpuAutoscaling": {
+                                      "type": "bool",
+                                      "id": 5,
+                                      "options": {
+                                        "(google.api.field_behavior)": "OPTIONAL"
+                                      }
+                                    },
+                                    "disableTotalCpuAutoscaling": {
+                                      "type": "bool",
+                                      "id": 6,
                                       "options": {
                                         "(google.api.field_behavior)": "OPTIONAL"
                                       }
@@ -8395,6 +8423,13 @@
                     "transactionTag": {
                       "type": "string",
                       "id": 3
+                    },
+                    "clientContext": {
+                      "type": "ClientContext",
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   },
                   "nested": {
@@ -8404,6 +8439,18 @@
                         "PRIORITY_LOW": 1,
                         "PRIORITY_MEDIUM": 2,
                         "PRIORITY_HIGH": 3
+                      }
+                    },
+                    "ClientContext": {
+                      "fields": {
+                        "secureContext": {
+                          "keyType": "string",
+                          "type": "google.protobuf.Value",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "OPTIONAL"
+                          }
+                        }
                       }
                     }
                   }
