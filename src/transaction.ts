@@ -1289,10 +1289,17 @@ export class Snapshot extends EventEmitter {
       },
       span => {
         return this.runStream(query)
-          .on('error', (err, rows, stats, metadata) => {
+          .on('error', err => {
             setSpanError(span, err);
             span.end();
-            callback!(err, rows, stats, metadata);
+            if (!('code' in err)) {
+              Object.assign(err, {
+                code: grpc.status.UNKNOWN,
+                details: err.message,
+                metadata: new grpc.Metadata(),
+              });
+            }
+            callback!(err as ServiceError, rows, stats, metadata);
           })
           .on('response', response => {
             if (response.metadata) {
@@ -1728,7 +1735,15 @@ export class Snapshot extends EventEmitter {
     if (!isEmpty(typeMap)) {
       Object.keys(typeMap).forEach(param => {
         const type = typeMap[param];
-        paramTypes[param] = codec.createTypeObject(type);
+        const typeObject = codec.createTypeObject(type);
+        if (
+          (type.child &&
+            typeObject.code === 'ARRAY' &&
+            typeObject.arrayElementType?.code !== 'TYPE_CODE_UNSPECIFIED') ||
+          (!type.child && typeObject.code !== 'TYPE_CODE_UNSPECIFIED')
+        ) {
+          paramTypes[param] = typeObject;
+        }
       });
     }
 

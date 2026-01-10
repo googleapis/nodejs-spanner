@@ -80,14 +80,38 @@ console.log(`Query: ${rows.length} found.`);
 rows.forEach(row => console.log(row));
 
 ```
+## Metrics
+
+Cloud Spanner client supports [client-side metrics](https://cloud.google.com/spanner/docs/view-manage-client-side-metrics) that you can use along with server-side metrics to optimize performance and troubleshoot performance issues if they occur.
+
+Client-side metrics are measured from the time a request leaves your application to the time your application receives the response. 
+In contrast, server-side metrics are measured from the time Spanner receives a request until the last byte of data is sent to the client.
+
+These metrics are enabled by default. You can opt out of using client-side metrics with the following code:
+
+```javascript
+const spanner = new Spanner({
+        disableBuiltInMetrics: true
+});
+```
+
+You can also disable these metrics by setting `SPANNER_DISABLE_BUILTIN_METRICS` to `true`.
+
+> Note: Client-side metrics needs `monitoring.timeSeries.create` IAM permission to export metrics data. Ask your administrator to grant your service account the [Monitoring Metric Writer](https://cloud.google.com/iam/docs/roles-permissions/monitoring#monitoring.metricWriter) (roles/monitoring.metricWriter) IAM role on the project.
+
+## Traces
+Refer to the Observability README to know more about tracing support in the Cloud Spanner client.
+
 ## Multiplexed Sessions
 
-Spanner's Multiplexed Sessions can now be used as an efficient alternative to the default session pool. This feature helps reduce
-session management overhead and minimize session-related errors. Multiplexed sessions can be enabled for all transaction types via environment variables.
+Spanner's Multiplexed Sessions is now default enabled session mode in node client. This feature helps reduce
+session management overhead and minimize session-related errors.
 
-### Configuration
+For a detailed explanation on multiplexed sessions, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
 
-To enable this feature, set the following environment variables to `true`:
+## Regular Sessions
+
+To use regular sessions, disable the multiplexed sessions and set the following environment variables to `false`:
 
 * **For Read-Only Transactions:**
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
@@ -98,7 +122,7 @@ To enable this feature, set the following environment variables to `true`:
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS`
 - `GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW`
 
-For a detailed explanation of this feature, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions#multiplexed_sessions).
+For a detailed explanation on session modes and env configurations, please refer to the [official documentation](https://cloud.google.com/spanner/docs/sessions).
 
 
 ## Samples

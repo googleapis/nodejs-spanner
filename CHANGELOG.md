@@ -4,6 +4,46 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.4.0](https://github.com/googleapis/nodejs-spanner/compare/v8.3.1...v8.4.0) (2026-01-09)
+
+
+### Features
+
+* Add a ClientContext field to Spanner requests ([#2493](https://github.com/googleapis/nodejs-spanner/issues/2493)) ([37504ad](https://github.com/googleapis/nodejs-spanner/commit/37504adcc37a7e95acfb2530313ff783d0c1fe7d))
+* Exposing total CPU related fields in AutoscalingConfig ([#2490](https://github.com/googleapis/nodejs-spanner/issues/2490)) ([508f0ff](https://github.com/googleapis/nodejs-spanner/commit/508f0ff95636b004f4200522018a199263eda8ca))
+* **spanner:** Support for type UUID ([#2482](https://github.com/googleapis/nodejs-spanner/issues/2482)) ([0047e94](https://github.com/googleapis/nodejs-spanner/commit/0047e9407d86521571626c69011b70307f83f8ba))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.6 ([#2452](https://github.com/googleapis/nodejs-spanner/issues/2452)) ([f9e6b86](https://github.com/googleapis/nodejs-spanner/commit/f9e6b86ff4da03110642c17e5ebc8fac8d903d3a))
+* Flaky metric test ([#2472](https://github.com/googleapis/nodejs-spanner/issues/2472)) ([e169cc5](https://github.com/googleapis/nodejs-spanner/commit/e169cc5344d38812b1ebf20c7a987715a73d6f79))
+* Memory leak and deadlock due to error event in multiplexed session ([#2477](https://github.com/googleapis/nodejs-spanner/issues/2477)) ([c624619](https://github.com/googleapis/nodejs-spanner/commit/c624619a3960892b1d2d412ff79faa5a74de45df))
+* Presubmit failure for samples backups test ([#2492](https://github.com/googleapis/nodejs-spanner/issues/2492)) ([01eb3d5](https://github.com/googleapis/nodejs-spanner/commit/01eb3d5801ddb21517f185b9d585fbce4fa1475c))
+* Type check for key in deleteRows ([#2486](https://github.com/googleapis/nodejs-spanner/issues/2486)) ([7347a16](https://github.com/googleapis/nodejs-spanner/commit/7347a1628ad8635b8f84b36ad1d3850b78862ac7))
+* Type mismatch in Snapshot.run error handler ([#2487](https://github.com/googleapis/nodejs-spanner/issues/2487)) ([4ac0360](https://github.com/googleapis/nodejs-spanner/commit/4ac036047e3a03c073300f288c746389a38d8e42))
+
+## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* Remove Console logging ([e673acd](https://github.com/googleapis/nodejs-spanner/commit/e673acdba717380d25eca6d978272c43950eb1e8))
+
+## [8.3.0](https://github.com/googleapis/nodejs-spanner/compare/v8.2.2...v8.3.0) (2025-11-11)
+
+
+### Features
+
+* Exposing AutoscalingConfig in InstancePartition ([#2449](https://github.com/googleapis/nodejs-spanner/issues/2449)) ([2defcc8](https://github.com/googleapis/nodejs-spanner/commit/2defcc81de4191293cd2d4aa493a0a9dc68f37ce))
+* Multiplexed session as default session mode ([#2451](https://github.com/googleapis/nodejs-spanner/issues/2451)) ([9ef0565](https://github.com/googleapis/nodejs-spanner/commit/9ef0565ca2cc9af18477503b43a506fd7c0c3c33))
+
+
+### Bug Fixes
+
+* Configure gRPC keep alive as 120 sec ([#2445](https://github.com/googleapis/nodejs-spanner/issues/2445)) ([f280e7c](https://github.com/googleapis/nodejs-spanner/commit/f280e7ca7cc60a67da8a5a0b3ada5f414c9e9a5f))
+* **deps:** Update dependency google-gax to v5.0.4 ([#2430](https://github.com/googleapis/nodejs-spanner/issues/2430)) ([4cbed94](https://github.com/googleapis/nodejs-spanner/commit/4cbed94dd74567f12620a493cebace5b2c9196bc))
+
 ## [8.2.2](https://github.com/googleapis/nodejs-spanner/compare/v8.2.1...v8.2.2) (2025-10-07)
 
 

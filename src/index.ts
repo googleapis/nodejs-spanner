@@ -1812,7 +1812,7 @@ class Spanner extends GrpcService {
       metricsTracer =
         MetricsTracerFactory?.getInstance(this.projectId_)?.createMetricsTracer(
           config.method,
-          config.reqOpts.session ?? config.reqOpts.database,
+          config.reqOpts.database ?? config.reqOpts.session,
           config.headers['x-goog-spanner-request-id'],
         ) ?? null;
     }

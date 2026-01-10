@@ -24,6 +24,7 @@ import {GrpcService} from '../src/common-grpc/service';
 import {google} from '../protos/protos';
 import {GoogleError} from 'google-gax';
 import {util} from 'protobufjs';
+import * as uuid from 'uuid';
 import Long = util.Long;
 import {isString} from '../src/helper';
 const singer = require('./data/singer');
@@ -1257,6 +1258,16 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it('should decode UUID', () => {
+      const value = uuid.v4();
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.UUID,
+      });
+
+      assert.strictEqual(decoded, value);
+    });
+
     it('should decode FLOAT32', () => {
       const value = 'Infinity';
 
@@ -1664,6 +1675,14 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
+    it('should encode UUID', () => {
+      const value = uuid.v4();
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, value);
+    });
+
     it('should encode FLOAT32', () => {
       const value = new codec.Float32(10);
 
@@ -1756,6 +1775,12 @@ describe('codec', () => {
       assert.deepStrictEqual(codec.getType(2.2), {type: 'float64'});
       assert.deepStrictEqual(codec.getType(new codec.Float(1.1)), {
         type: 'float64',
+      });
+    });
+
+    it('should determine if the uuid value is unspecified', () => {
+      assert.deepStrictEqual(codec.getType(uuid.v4()), {
+        type: 'unspecified',
       });
     });
 
@@ -1925,6 +1950,9 @@ describe('codec', () => {
         },
         int64: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        },
+        uuid: {
+          code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.UUID],
         },
         float32: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT32],

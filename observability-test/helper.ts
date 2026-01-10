@@ -19,6 +19,11 @@ import * as assert from 'assert';
 const {ReadableSpan} = require('@opentelemetry/sdk-trace-base');
 import {SEMATTRS_DB_NAME} from '@opentelemetry/semantic-conventions';
 
+export const createSessionEvents = [
+  'Requesting a multiplexed session',
+  'Created a multiplexed session',
+];
+
 export const batchCreateSessionsEvents = [
   'Requesting 25 sessions',
   'Creating 25 sessions',
@@ -26,17 +31,12 @@ export const batchCreateSessionsEvents = [
 ];
 
 export const waitingSessionsEvents = [
-  'Acquiring session',
-  'Waiting for a session to become available',
-  'Acquired session',
+  'Waiting for a multiplexed session to become available',
+  'Acquired multiplexed session',
   'Using Session',
 ];
 
-export const cacheSessionEvents = [
-  'Acquiring session',
-  'Cache hit: has usable session',
-  'Acquired session',
-];
+export const cacheSessionEvents = ['Cache hit: has usable multiplexed session'];
 
 /**
  * This utility exists as a test helper because mocha has builtin "context"
