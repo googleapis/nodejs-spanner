@@ -6,7 +6,8 @@
     "img.shields.io",
     "https://console.cloud.google.com/cloudshell",
     "https://support.google.com",
-    "^https://github\\.com/googleapis/nodejs-spanner/blob/[^/]+/samples/.*"
+    "^https://github\\.com/googleapis/nodejs-spanner/blob/[^/]+/samples/.*",
+    "https://www.npmjs.com/package/@google-cloud/spanner"
   ],
   "silent": true,
   "concurrency": 5,
