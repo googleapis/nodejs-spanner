@@ -547,9 +547,6 @@ describe('Transaction', () => {
     });
 
     it('no error with unset `id`', done => {
-      const expectedError = new Error(
-        'Transaction ID is unknown, nothing to rollback.',
-      );
       delete transaction.id;
 
       transaction.rollback(err => {

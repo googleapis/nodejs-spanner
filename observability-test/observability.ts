@@ -39,7 +39,6 @@ const {
   SEMATTRS_DB_NAME,
   SEMATTRS_DB_SQL_TABLE,
   SEMATTRS_DB_STATEMENT,
-  SEMATTRS_DB_SYSTEM,
   SEMATTRS_EXCEPTION_MESSAGE,
 } = require('@opentelemetry/semantic-conventions');
 

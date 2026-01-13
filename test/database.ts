@@ -29,7 +29,6 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
 import {Spanner, Instance, MutationGroup} from '../src';
-import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {
   CLOUD_RESOURCE_HEADER,
@@ -49,7 +48,6 @@ import {
   CommitOptions,
   MutationSet,
 } from '../src/transaction';
-import {SessionFactory} from '../src/session-factory';
 import {RunTransactionOptions} from '../src/transaction-runner';
 import {
   X_GOOG_SPANNER_REQUEST_ID_HEADER,
@@ -147,21 +145,6 @@ export class FakeSessionFactory extends EventEmitter {
     this.calledWith_ = arguments;
   }
   getSession() {}
-  getSessionForPartitionedOps() {}
-  getSessionForReadWrite() {}
-  getPool(): FakeSessionPool {
-    return new FakeSessionPool();
-  }
-  release() {}
-  isMultiplexedEnabled(): boolean {
-    return process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS! === 'false';
-  }
-  isMultiplexedEnabledForRW(): boolean {
-    return (
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS! === 'false' &&
-      process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_FOR_RW! === 'false'
-    );
-  }
 }
 
 class FakeTable {
@@ -340,39 +323,6 @@ describe('Database', () => {
 
       const database = new Database(INSTANCE, NAME);
       assert(database.formattedName_, formattedName);
-    });
-
-    it('should accept a custom Pool class', () => {
-      function FakePool() {}
-      const database = new Database(
-        INSTANCE,
-        NAME,
-        FakePool as {} as db.SessionPoolConstructor,
-      );
-      assert(database.pool_ instanceof FakeSessionPool);
-    });
-
-    describe('when multiplexed session is disabled', () => {
-      before(() => {
-        process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS = 'false';
-      });
-
-      after(() => {
-        delete process.env.GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS;
-      });
-
-      it('should re-emit SessionPool errors', done => {
-        const error = new Error('err');
-
-        const sessionFactory = new SessionFactory(database, NAME);
-
-        database.on('error', err => {
-          assert.strictEqual(err, error);
-          done();
-        });
-
-        sessionFactory.pool_.emit('error', error);
-      });
     });
 
     it('should inherit from ServiceObject', done => {
@@ -674,10 +624,7 @@ describe('Database', () => {
       fakeDataStream = through.obj();
 
       getSessionStub = (
-        sandbox.stub(
-          fakeSessionFactory,
-          'getSessionForReadWrite',
-        ) as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
       requestStreamStub = sandbox
@@ -795,41 +742,6 @@ describe('Database', () => {
       fakeDataStream.emit('error', fakeError);
       done();
     });
-
-    it('should retry on "Session not found" error', done => {
-      const sessionNotFoundError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as grpc.ServiceError;
-      let retryCount = 0;
-
-      database
-        .batchWriteAtLeastOnce(mutationGroups, options)
-        .on('data', () => {})
-        .on('error', err => {
-          assert.fail(err);
-        })
-        .on('end', () => {
-          assert.strictEqual(retryCount, 1);
-          done();
-        });
-
-      fakeDataStream.emit('error', sessionNotFoundError);
-      retryCount++;
-    });
-
-    it('should release session on stream end', () => {
-      const releaseStub = sandbox.stub(
-        fakeSessionFactory,
-        'release',
-      ) as sinon.SinonStub;
-
-      database.batchWriteAtLeastOnce(mutationGroups, options);
-      fakeDataStream.emit('end');
-
-      assert.strictEqual(releaseStub.callCount, 1);
-      assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
-    });
   });
 
   describe('writeAtLeastOnce', () => {
@@ -929,11 +841,6 @@ describe('Database', () => {
     describe('success', () => {
       beforeEach(() => {
         database.parent = INSTANCE;
-        database.pool_ = {
-          close(callback) {
-            callback(null);
-          },
-        };
       });
 
       it('should close the database', done => {
@@ -950,23 +857,6 @@ describe('Database', () => {
         database.close(err => {
           assert.ifError(err);
           assert.strictEqual(cache.has(cacheId), false);
-          done();
-        });
-      });
-    });
-
-    describe('error', () => {
-      it('should return the closing error', done => {
-        const error = new Error('err.');
-
-        database.pool_ = {
-          close(callback) {
-            callback(error);
-          },
-        };
-
-        database.close(err => {
-          assert.strictEqual(err, error);
           done();
         });
       });
@@ -1575,15 +1465,13 @@ describe('Database', () => {
 
       database.sessionFactory_ = SESSIONFACTORY;
 
-      SESSIONFACTORY.getSessionForReadWrite = callback => {
+      SESSIONFACTORY.getSession = callback => {
         callback(null, SESSION);
       };
-
-      SESSIONFACTORY.release = util.noop;
     });
 
     it('should get a session', done => {
-      SESSIONFACTORY.getSessionForReadWrite = () => {
+      SESSIONFACTORY.getSession = () => {
         done();
       };
 
@@ -1593,7 +1481,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      SESSIONFACTORY.getSessionForReadWrite = callback => {
+      SESSIONFACTORY.getSession = callback => {
         callback(error);
       };
 
@@ -1616,19 +1504,6 @@ describe('Database', () => {
           }),
         );
         done();
-      };
-
-      database.makePooledRequest_(CONFIG, assert.ifError);
-    });
-
-    it('should release the session after calling the method', done => {
-      SESSIONFACTORY.release = session => {
-        assert.deepStrictEqual(session, SESSION);
-        done();
-      };
-
-      database.request = (config, callback) => {
-        callback();
       };
 
       database.makePooledRequest_(CONFIG, assert.ifError);
@@ -1674,8 +1549,6 @@ describe('Database', () => {
       SESSIONFACTORY.getSession = callback => {
         callback(null, SESSION);
       };
-
-      SESSIONFACTORY.release = util.noop;
     });
 
     it('should get a session when stream opens', done => {
@@ -1734,30 +1607,6 @@ describe('Database', () => {
         REQUEST_STREAM.end(responseData);
       });
 
-      it('should release session when request stream ends', done => {
-        SESSIONFACTORY.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        database.makePooledStreamingRequest_(CONFIG).emit('reading');
-
-        REQUEST_STREAM.end();
-      });
-
-      it('should release session when request stream errors', done => {
-        SESSIONFACTORY.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        database.makePooledStreamingRequest_(CONFIG).emit('reading');
-
-        setImmediate(() => {
-          REQUEST_STREAM.emit('error');
-        });
-      });
-
       it('should error user stream when request stream errors', done => {
         const error = new Error('Error.');
 
@@ -1788,44 +1637,6 @@ describe('Database', () => {
         SESSIONFACTORY.getSession = callback => {
           callback(null, SESSION);
         };
-      });
-
-      it('should release the session', done => {
-        SESSIONFACTORY.release = session => {
-          assert.strictEqual(session, SESSION);
-          done();
-        };
-
-        const requestStream = database.makePooledStreamingRequest_(CONFIG);
-
-        requestStream.emit('reading');
-
-        setImmediate(() => {
-          requestStream.abort();
-        });
-      });
-
-      it('should not release the session more than once', done => {
-        let numTimesReleased = 0;
-
-        SESSIONFACTORY.release = session => {
-          numTimesReleased++;
-          assert.strictEqual(session, SESSION);
-        };
-
-        const requestStream = database.makePooledStreamingRequest_(CONFIG);
-
-        requestStream.emit('reading');
-
-        setImmediate(() => {
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
-
-          requestStream.abort();
-          assert.strictEqual(numTimesReleased, 1);
-
-          done();
-        });
       });
 
       it('should cancel the request stream', done => {
@@ -1955,8 +1766,6 @@ describe('Database', () => {
         .returns(fakeStream);
 
       sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
-
-      sandbox.stub(fakeSessionFactory, 'isMultiplexedEnabled').returns(true);
     });
 
     it('should get a read session via `getSession`', () => {
@@ -2021,71 +1830,6 @@ describe('Database', () => {
       });
 
       fakeStream.destroy(fakeError);
-    });
-
-    it('should not retry on "Session not found" error', done => {
-      const sessionNotFoundError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as grpc.ServiceError;
-      const endStub = sandbox.stub(fakeSnapshot, 'end');
-      const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
-      const rows = 0;
-
-      database.runStream(QUERY).on('error', err => {
-        assert.strictEqual(err, sessionNotFoundError);
-        assert.strictEqual(endStub.callCount, 1);
-        // make sure it is not retrying the stream
-        assert.strictEqual(endStub2.callCount, 0);
-        // row count should be 0
-        assert.strictEqual(rows, 0);
-        done();
-      });
-
-      fakeStream.emit('error', sessionNotFoundError);
-      fakeStream2.push('row1');
-      fakeStream2.push(null);
-    });
-
-    it('should release the session on transaction end', () => {
-      const releaseStub = sandbox.stub(
-        fakeSessionFactory,
-        'release',
-      ) as sinon.SinonStub;
-
-      database.runStream(QUERY);
-      fakeSnapshot.emit('end');
-
-      const session = releaseStub.lastCall.args[0];
-      assert.strictEqual(session, fakeSession);
-    });
-
-    // since mux is default enabled, session pool is not getting created
-    it.skip('should retry "Session not found" error', done => {
-      const sessionNotFoundError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as grpc.ServiceError;
-      const endStub = sandbox.stub(fakeSnapshot, 'end');
-      const endStub2 = sandbox.stub(fakeSnapshot2, 'end');
-      let rows = 0;
-
-      database
-        .runStream(QUERY)
-        .on('data', () => rows++)
-        .on('error', err => {
-          assert.fail(err);
-        })
-        .on('end', () => {
-          assert.strictEqual(endStub.callCount, 1);
-          assert.strictEqual(endStub2.callCount, 1);
-          assert.strictEqual(rows, 1);
-          done();
-        });
-
-      fakeStream.emit('error', sessionNotFoundError);
-      fakeStream2.push('row1');
-      fakeStream2.push(null);
     });
   });
 
@@ -2363,13 +2107,6 @@ describe('Database', () => {
       snapshotStub = (
         sandbox.stub(fakeSession, 'snapshot') as sinon.SinonStub
       ).returns(fakeSnapshot);
-
-      (
-        sandbox.stub(
-          fakeSessionFactory,
-          'isMultiplexedEnabled',
-        ) as sinon.SinonStub
-      ).returns(true);
     });
 
     it('should return any multiplexed session errors', done => {
@@ -2432,92 +2169,6 @@ describe('Database', () => {
         done();
       });
     });
-
-    it('should throw an error if `begin` errors with `Session not found`', done => {
-      const fakeError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as MockError;
-
-      beginSnapshotStub.callsFake(callback => callback(fakeError));
-
-      database.getSnapshot((err, snapshot) => {
-        assert.strictEqual(err, fakeError);
-        assert.strictEqual(snapshot, undefined);
-        done();
-      });
-    });
-
-    it('should release the session if `begin` errors', done => {
-      const fakeError = new Error('err');
-
-      beginSnapshotStub.callsFake(callback => callback(fakeError));
-
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.getSnapshot(err => {
-        assert.strictEqual(err, fakeError);
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
-
-    // since mux is default enabled, session pool is not getting created
-    it.skip('should retry if `begin` errors with `Session not found`', done => {
-      const fakeError = {
-        code: grpc.status.NOT_FOUND,
-        message: 'Session not found',
-      } as MockError;
-
-      const fakeSession2 = new FakeSession();
-      const fakeSnapshot2 = new FakeTransaction(
-        {} as google.spanner.v1.TransactionOptions.ReadOnly,
-      );
-      (sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub).callsFake(
-        callback => callback(null),
-      );
-      sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
-
-      getSessionStub
-        .onFirstCall()
-        .callsFake(callback => callback(null, fakeSession))
-        .onSecondCall()
-        .callsFake(callback => callback(null, fakeSession2));
-
-      beginSnapshotStub.callsFake(callback => callback(fakeError));
-
-      // The first session that was not found should be released back into the
-      // pool, so that the pool can remove it from its inventory.
-      const releaseStub = sandbox.stub(fakeSessionFactory, 'release');
-
-      database.getSnapshot((err, snapshot) => {
-        assert.ifError(err);
-        assert.strictEqual(snapshot, fakeSnapshot2);
-        // The first session that error should already have been released back
-        // to the pool.
-        assert.strictEqual(releaseStub.callCount, 1);
-        // Ending the valid snapshot will release its session back into the
-        // pool.
-        snapshot.emit('end');
-        assert.strictEqual(releaseStub.callCount, 2);
-        done();
-      });
-    });
-
-    it('should release the snapshot on `end`', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.getSnapshot(err => {
-        assert.ifError(err);
-        fakeSnapshot.emit('end');
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
   });
 
   describe('getTransaction', () => {
@@ -2535,10 +2186,7 @@ describe('Database', () => {
       );
 
       getSessionStub = (
-        sandbox.stub(
-          fakeSessionFactory,
-          'getSessionForReadWrite',
-        ) as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession, fakeTransaction);
       });
@@ -2567,36 +2215,6 @@ describe('Database', () => {
       database.getTransaction((err, transaction) => {
         assert.ifError(err);
         assert.strictEqual(transaction, fakeTransaction);
-        done();
-      });
-    });
-
-    it('should propagate an error', done => {
-      const error = new Error('resource');
-      (sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub)
-        .withArgs(fakeSession)
-        .throws(error);
-
-      database.on('error', err => {
-        assert.deepStrictEqual(err, error);
-        done();
-      });
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-      });
-    });
-
-    it('should release the session on transaction end', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.getTransaction((err, transaction) => {
-        assert.ifError(err);
-        transaction.emit('end');
-        assert.strictEqual(releaseStub.callCount, 1);
         done();
       });
     });
@@ -2918,10 +2536,7 @@ describe('Database', () => {
       fakePartitionedDml = fakeSession.partitionedDml();
 
       getSessionStub = (
-        sandbox.stub(
-          fakeSessionFactory,
-          'getSessionForPartitionedOps',
-        ) as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession);
       });
@@ -2986,14 +2601,9 @@ describe('Database', () => {
 
       beginStub.callsFake(callback => callback(fakeError));
 
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
       database.runPartitionedUpdate(QUERY, (err, rowCount) => {
         assert.strictEqual(err, fakeError);
         assert.strictEqual(rowCount, 0);
-        assert.strictEqual(releaseStub.callCount, 1);
         done();
       });
     });
@@ -3008,17 +2618,6 @@ describe('Database', () => {
       assert.strictEqual(query.sql, QUERY.sql);
       assert.deepStrictEqual(query.params, QUERY.params);
       assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should release the session on transaction end', () => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(fakeSession);
-
-      database.runPartitionedUpdate(QUERY, assert.ifError);
-      fakePartitionedDml.emit('end');
-
-      assert.strictEqual(releaseStub.callCount, 1);
     });
 
     it('should accept requestOptions', () => {
@@ -3105,10 +2704,7 @@ describe('Database', () => {
       fakeSessionFactory = database.sessionFactory_;
 
       (
-        sandbox.stub(
-          fakeSessionFactory,
-          'getSessionForReadWrite',
-        ) as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, SESSION, TRANSACTION);
       });
@@ -3117,8 +2713,8 @@ describe('Database', () => {
     it('should return any errors getting a session', done => {
       const fakeErr = new Error('err');
 
-      (fakeSessionFactory.getSessionForReadWrite as sinon.SinonStub).callsFake(
-        callback => callback(fakeErr),
+      (fakeSessionFactory.getSession as sinon.SinonStub).callsFake(callback =>
+        callback(fakeErr),
       );
 
       database.runTransaction(err => {
@@ -3172,32 +2768,13 @@ describe('Database', () => {
       assert.strictEqual(options, fakeOptions);
     });
 
-    it('should release the session when finished', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeTransactionRunner.prototype, 'run').resolves();
-
-      database.runTransaction(assert.ifError);
-
-      setImmediate(() => {
-        assert.strictEqual(releaseStub.callCount, 1);
-        done();
-      });
-    });
-
     it('should catch any run errors and return them', done => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
       const fakeError = new Error('err');
 
       sandbox.stub(FakeTransactionRunner.prototype, 'run').rejects(fakeError);
 
       database.runTransaction(err => {
         assert.strictEqual(err, fakeError);
-        assert.strictEqual(releaseStub.callCount, 1);
         done();
       });
     });
@@ -3214,10 +2791,7 @@ describe('Database', () => {
     beforeEach(() => {
       fakeSessionFactory = database.sessionFactory_;
       (
-        sandbox.stub(
-          fakeSessionFactory,
-          'getSessionForReadWrite',
-        ) as sinon.SinonStub
+        sandbox.stub(fakeSessionFactory, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, SESSION, TRANSACTION);
       });
@@ -3276,17 +2850,6 @@ describe('Database', () => {
 
       const value = await database.runTransactionAsync(assert.ifError);
       assert.strictEqual(value, fakeValue);
-    });
-
-    it('should release the session when finished', async () => {
-      const releaseStub = (
-        sandbox.stub(fakeSessionFactory, 'release') as sinon.SinonStub
-      ).withArgs(SESSION);
-
-      sandbox.stub(FakeAsyncTransactionRunner.prototype, 'run').resolves();
-
-      await database.runTransactionAsync(assert.ifError);
-      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 

@@ -51,12 +51,14 @@ assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
 const apiConfig = require('../src/spanner_grpc_config.json');
 
 async function disableMetrics(sandbox: sinon.SinonSandbox) {
+  process.env['SPANNER_DISABLE_BUILTIN_METRICS'] = 'false';
   sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('true');
   await MetricsTracerFactory.resetInstance();
   MetricsTracerFactory.enabled = false;
 }
 
 async function enableMetrics(sandbox: sinon.SinonSandbox) {
+  process.env['SPANNER_DISABLE_BUILTIN_METRICS'] = 'false';
   sandbox.stub(process.env, 'SPANNER_DISABLE_BUILTIN_METRICS').value('false');
   await MetricsTracerFactory.resetInstance();
 }
@@ -2201,11 +2203,6 @@ describe('Spanner', () => {
       replaceProjectIdTokenOverride = reqOpts => {
         return reqOpts;
       };
-      const expectedGaxOpts = extend(true, {}, CONFIG.gaxOpts, {
-        otherArgs: {
-          headers: CONFIG.headers,
-        },
-      });
 
       FAKE_GAPIC_CLIENT[CONFIG.method] = function (reqOpts, gaxOpts, arg) {
         assert.strictEqual(this, FAKE_GAPIC_CLIENT);
