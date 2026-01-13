@@ -31,7 +31,6 @@ import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import NullValue = google.protobuf.NullValue;
 import {ExecuteSqlRequest, ReadRequest} from '../../src/transaction';
-import {randomInt} from 'crypto';
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';

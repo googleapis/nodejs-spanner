@@ -943,6 +943,9 @@ class Instance extends common.GrpcServiceObject {
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
    *     configuration options.
+   *     **Deprecated**. Session pool options is deprecated and will be removed in a future release.
+   *     Multiplexed sessions are now used for all operations by default, eliminating
+   *     the need for session pooling.
    * @param {spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
    *     overridden by any query options set in environment variables or that
