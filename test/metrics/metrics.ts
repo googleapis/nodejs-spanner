@@ -186,7 +186,6 @@ describe('Test metrics with mock server', () => {
     let gfeStub;
     let afeStub;
     let exporterStub;
-    const MIN_LATENCY = 0;
     const commonAttributes = {
       instance_id: 'instance',
       status: 'OK',
