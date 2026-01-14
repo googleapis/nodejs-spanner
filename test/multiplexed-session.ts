@@ -22,7 +22,7 @@ import {Database} from '../src/database';
 import {Session} from '../src/session';
 import {MultiplexedSession} from '../src/multiplexed-session';
 import {Transaction} from '../src/transaction';
-import {FakeTransaction} from './session-pool';
+import {FakeTransaction} from './session-factory';
 import {grpc} from 'google-gax';
 
 describe('MultiplexedSession', () => {
