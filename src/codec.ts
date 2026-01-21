@@ -1160,10 +1160,6 @@ function getType(value: Value): Type {
     return {type: 'bool'};
   }
 
-  if (uuid.validate(value)) {
-    return {type: 'unspecified'};
-  }
-
   if (isString(value)) {
     return {type: 'string'};
   }

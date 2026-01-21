@@ -1778,9 +1778,9 @@ describe('codec', () => {
       });
     });
 
-    it('should determine if the uuid value is unspecified', () => {
+    it('should determine if the uuid value is string', () => {
       assert.deepStrictEqual(codec.getType(uuid.v4()), {
-        type: 'unspecified',
+        type: 'string',
       });
     });
 
