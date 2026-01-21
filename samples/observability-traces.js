@@ -37,7 +37,7 @@ async function main(
   } = require('@opentelemetry/sdk-trace-base');
   const {Spanner} = require('@google-cloud/spanner');
 
-  const traceExporter = new TraceExporter();
+  const traceExporter = new TraceExporter({projectId: projectId});
 
   // Create a provider with a custom sampler
   const provider = new NodeTracerProvider({
@@ -81,7 +81,7 @@ async function main(
     spanner.close();
   }
 
-  provider.forceFlush();
+  await provider.forceFlush();
 
   // This sleep gives ample time for the trace
   // spans to be exported to Google Cloud Trace.
