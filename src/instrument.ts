@@ -150,6 +150,10 @@ export function startTrace<T>(
         span.setAttribute('db.sql.table', config.tableName);
       }
       if (config.dbName) {
+        span.setAttribute(
+          'gcp.resource.name',
+          `//spanner.googleapis.com/${config.dbName}`,
+        );
         span.setAttribute('db.name', config.dbName);
       }
       if (config.requestTag) {
