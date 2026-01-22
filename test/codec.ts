@@ -1784,6 +1784,35 @@ describe('codec', () => {
       });
     });
 
+    it('should determine if the uuid value is unspecified when SPANNER_ENABLE_UUID_AS_UNTYPED is true', () => {
+      const emitWarningStub = sandbox.stub(process, 'emitWarning');
+      try {
+        process.env['SPANNER_ENABLE_UUID_AS_UNTYPED'] = 'true';
+        assert.deepStrictEqual(codec.getType(uuid.v4()), {
+          type: 'unspecified',
+        });
+        assert.strictEqual(emitWarningStub.calledOnce, true);
+        assert.strictEqual(
+          emitWarningStub.firstCall.args[0],
+          'SPANNER_ENABLE_UUID_AS_UNTYPED environment variable is deprecated and will be removed in a future release.',
+        );
+      } finally {
+        delete process.env['SPANNER_ENABLE_UUID_AS_UNTYPED'];
+        emitWarningStub.restore();
+      }
+    });
+
+    it('should determine if the uuid value is string when SPANNER_ENABLE_UUID_AS_UNTYPED is false', () => {
+      try {
+        process.env['SPANNER_ENABLE_UUID_AS_UNTYPED'] = 'false';
+        assert.deepStrictEqual(codec.getType(uuid.v4()), {
+          type: 'string',
+        });
+      } finally {
+        delete process.env['SPANNER_ENABLE_UUID_AS_UNTYPED'];
+      }
+    });
+
     it('should determine if the value is a float32', () => {
       assert.deepStrictEqual(codec.getType(new codec.Float32(1.1)), {
         type: 'float32',

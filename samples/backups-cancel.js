@@ -20,7 +20,6 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
 
   // Imports the Google Cloud client library and precise date library
   const {Spanner, protos} = require('@google-cloud/spanner');
-  //test
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
