@@ -370,6 +370,7 @@ class Database extends common.GrpcServiceObject {
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
     queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    databaseRole?: string | null,
   ) {
     const methods = {
       /**
@@ -468,12 +469,15 @@ class Database extends common.GrpcServiceObject {
       },
     } as {} as ServiceObjectConfig);
 
-    if (typeof poolOptions === 'object') {
-      this.databaseRole = poolOptions.databaseRole || null;
-      this.labels = poolOptions.labels || null;
-    }
     this.formattedName_ = formattedName_;
     this.instance = instance;
+
+    const poolOpts = typeof poolOptions === 'object' ? poolOptions : null;
+    this.databaseRole =
+      databaseRole || (poolOpts && poolOpts.databaseRole) || null;
+    this.labels =
+      this._getSpanner().sessionLabels || (poolOpts && poolOpts.labels) || null;
+
     this._observabilityOptions = instance._observabilityOptions;
     this._traceConfig = {
       opts: this._observabilityOptions,
@@ -707,7 +711,7 @@ class Database extends common.GrpcServiceObject {
     }
 
     const count = options.count;
-    const labels = options.labels || {};
+    const labels = options.labels || this.labels || null;
     const databaseRole = options.databaseRole || this.databaseRole || null;
 
     const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
