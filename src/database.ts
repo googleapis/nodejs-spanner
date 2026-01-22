@@ -473,10 +473,8 @@ class Database extends common.GrpcServiceObject {
     this.instance = instance;
 
     const poolOpts = typeof poolOptions === 'object' ? poolOptions : null;
-    this.databaseRole =
-      databaseRole || (poolOpts && poolOpts.databaseRole) || null;
-    this.labels =
-      this._getSpanner().sessionLabels || (poolOpts && poolOpts.labels) || null;
+    this.databaseRole = databaseRole || poolOpts?.databaseRole || null;
+    this.labels = this._getSpanner().sessionLabels || poolOpts?.labels || null;
 
     this._observabilityOptions = instance._observabilityOptions;
     this._traceConfig = {
