@@ -38,6 +38,8 @@ import * as uuid from 'uuid';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
 
+let uuidUntypedFlagWarned = false;
+
 export interface Field {
   name: string;
   value: Value;
@@ -1160,8 +1162,17 @@ function getType(value: Value): Type {
     return {type: 'bool'};
   }
 
-  if (uuid.validate(value)) {
-    return {type: 'unspecified'};
+  if (process.env['SPANNER_ENABLE_UUID_AS_UNTYPED'] === 'true') {
+    if (!uuidUntypedFlagWarned) {
+      process.emitWarning(
+        'SPANNER_ENABLE_UUID_AS_UNTYPED environment variable is deprecated and will be removed in a future release.',
+        'DeprecationWarning',
+      );
+      uuidUntypedFlagWarned = true;
+    }
+    if (uuid.validate(value)) {
+      return {type: 'unspecified'};
+    }
   }
 
   if (isString(value)) {
