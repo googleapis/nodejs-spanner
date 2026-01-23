@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.5.0](https://github.com/googleapis/nodejs-spanner/compare/v8.4.0...v8.5.0) (2026-01-22)
+
+
+### Features
+
+* Added OUTPUT_ONLY annotations to create_time and update_time in InternalRange to reflect existing service behavior ([#2505](https://github.com/googleapis/nodejs-spanner/issues/2505)) ([1058683](https://github.com/googleapis/nodejs-spanner/commit/105868339b1d2b7d7701a6b7591b85e3a1ca4098))
+
+
+### Bug Fixes
+
+* UUID type backward compatibility ([#2509](https://github.com/googleapis/nodejs-spanner/issues/2509)) ([7abb33c](https://github.com/googleapis/nodejs-spanner/commit/7abb33ca523b612f171def64c1ceb0cb7d162e82))
+
 ## [8.4.0](https://github.com/googleapis/nodejs-spanner/compare/v8.3.1...v8.4.0) (2026-01-09)
 
 
