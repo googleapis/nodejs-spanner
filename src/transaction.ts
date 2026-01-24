@@ -572,10 +572,7 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
-    if (
-      this.multiplexedSessionPreviousTransactionId &&
-      (this.session.parent as Database).isMuxEnabledForRW_
-    ) {
+    if (this.multiplexedSessionPreviousTransactionId) {
       options.readWrite!.multiplexedSessionPreviousTransactionId =
         this.multiplexedSessionPreviousTransactionId;
     }
@@ -833,11 +830,7 @@ export class Snapshot extends EventEmitter {
       transaction.singleUse = this._options;
     }
 
-    if (
-      !this.id &&
-      this._options.readWrite &&
-      (this.session.parent as Database).isMuxEnabledForRW_
-    ) {
+    if (!this.id && this._options.readWrite) {
       this._setPreviousTransactionId(transaction);
     }
 
@@ -1455,11 +1448,7 @@ export class Snapshot extends EventEmitter {
         transaction.singleUse = this._options;
       }
 
-      if (
-        !this.id &&
-        this._options.readWrite &&
-        (this.session.parent as Database).isMuxEnabledForRW_
-      ) {
+      if (!this.id && this._options.readWrite) {
         this._setPreviousTransactionId(transaction);
       }
       delete query.gaxOptions;
@@ -2181,11 +2170,7 @@ export class Transaction extends Dml {
       transaction.begin = this._options;
     }
 
-    if (
-      !this.id &&
-      this._options.readWrite &&
-      (this.session.parent as Database).isMuxEnabledForRW_
-    ) {
+    if (!this.id && this._options.readWrite) {
       this._setPreviousTransactionId(transaction);
     }
 
@@ -2407,9 +2392,7 @@ export class Transaction extends Dml {
         } else if (!this._useInRunner) {
           reqOpts.singleUseTransaction = this._options;
         } else {
-          if ((this.session.parent as Database).isMuxEnabledForRW_) {
-            this._setMutationKey(mutations);
-          }
+          this._setMutationKey(mutations);
           this.begin().then(
             () => {
               this.commit(options, (err, resp) => {

@@ -15,42 +15,32 @@
  */
 
 import {EventEmitter} from 'events';
-import PQueue from 'p-queue';
-
 import {Database} from './database';
 import {Session} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {GoogleError, grpc, ServiceError} from 'google-gax';
-import trace = require('stack-trace');
-import {
-  ObservabilityOptions,
-  getActiveOrNoopSpan,
-  setSpanErrorAndException,
-  startTrace,
-} from './instrument';
+import {GoogleError, ServiceError} from 'google-gax';
 import {GetSessionCallback} from './session-factory';
-import {
-  isDatabaseNotFoundError,
-  isInstanceNotFoundError,
-  isDefaultCredentialsNotSetError,
-  isProjectIdNotSetInEnvironmentError,
-  isCreateSessionPermissionError,
-  isInfinite,
-} from './helper';
 
 /**
+ * @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling.
  * @callback SessionPoolCloseCallback
  * @param {?Error} error Closing error, if any.
  */
 export interface SessionPoolCloseCallback {
-  (error?: SessionLeakError): void;
+  (error?: Error): void;
 }
 
-/** @deprecated. Use GetSessionCallback instead. */
+/** @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling. */
 export type GetReadSessionCallback = NormalCallback<Session>;
 
-/** @deprecated. Use GetSessionCallback instead. */
+/** * @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling. */
 export interface GetWriteSessionCallback {
   (
     err: Error | null,
@@ -59,7 +49,10 @@ export interface GetWriteSessionCallback {
   ): void;
 }
 
-/**
+/** * @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling.
+
  * Interface for implementing custom session pooling logic, it should extend the
  * {@link https://nodejs.org/api/events.html|EventEmitter} class and emit any
  * asynchronous errors via an error event.
@@ -122,6 +115,10 @@ export interface SessionPoolInterface extends EventEmitter {
 /**
  * Session pool configuration options.
  *
+ * @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling.
+ *
  * @typedef {object} SessionPoolOptions
  * @property {number} [acquireTimeout=Infinity] Time in milliseconds before
  *     giving up trying to acquire a session. If the specified value is
@@ -152,110 +149,26 @@ export interface SessionPoolOptions {
   fail?: boolean;
   idlesAfter?: number;
   keepAlive?: number;
+  /**
+   * @deprecated. Use SpannerOptions to specify the session labels..
+   */
   labels?: {[label: string]: string};
   max?: number;
   maxIdle?: number;
   min?: number;
-  /**
-   * @deprecated. Starting from v6.5.0 the same session can be reused for
-   * different types of transactions.
-   */
   writes?: number;
   incStep?: number;
+  /**
+   * @deprecated. Use Database constructor to specify the database role.
+   */
   databaseRole?: string | null;
 }
 
-const DEFAULTS: SessionPoolOptions = {
-  acquireTimeout: Infinity,
-  concurrency: Infinity,
-  fail: false,
-  idlesAfter: 10,
-  keepAlive: 30,
-  labels: {},
-  max: 100,
-  maxIdle: 1,
-  min: 25,
-  incStep: 25,
-  databaseRole: null,
-};
-
 /**
- * Error to be thrown when attempting to release unknown resources.
- *
- * @private
- */
-export class ReleaseError extends GoogleError {
-  resource: unknown;
-  constructor(resource: unknown) {
-    super('Unable to release unknown resource.');
-    this.resource = resource;
-  }
-}
+ * * @deprecated Session pool is deprecated and will be removed in a future release.
+    Multiplexed sessions are now used for all operations by default, eliminating
+    the need for session pooling.
 
-/**
- * Error to be thrown when session leaks are detected.
- *
- * @private
- */
-export class SessionLeakError extends GoogleError {
-  messages: string[];
-  constructor(leaks: string[]) {
-    super(`${leaks.length} session leak(s) detected.`);
-    // Restore error name that was overwritten by the super constructor call.
-    this.name = SessionLeakError.name;
-    this.messages = leaks;
-  }
-}
-
-/**
- * Error to be thrown when the session pool is exhausted.
- */
-export class SessionPoolExhaustedError extends GoogleError {
-  messages: string[];
-  constructor(leaks: string[]) {
-    super(errors.Exhausted);
-    // Restore error name that was overwritten by the super constructor call.
-    this.name = SessionPoolExhaustedError.name;
-    this.messages = leaks;
-  }
-}
-
-/**
- * Checks whether the given error is a 'Session not found' error.
- * @param error the error to check
- * @return true if the error is a 'Session not found' error, and otherwise false.
- */
-export function isSessionNotFoundError(
-  error: grpc.ServiceError | undefined,
-): boolean {
-  return (
-    error !== undefined &&
-    error.code === grpc.status.NOT_FOUND &&
-    error.message.includes('Session not found')
-  );
-}
-
-/**
- * enum to capture errors that can appear from multiple places
- */
-const enum errors {
-  Closed = 'Database is closed.',
-  Timeout = 'Timeout occurred while acquiring session.',
-  Exhausted = 'No resources available.',
-}
-
-interface SessionInventory {
-  sessions: Session[];
-  borrowed: Set<Session>;
-}
-
-/** @deprecated. */
-export interface CreateSessionsOptions {
-  writes?: number;
-  reads?: number;
-}
-
-/**
  * Class used to manage connections to Spanner.
  *
  * **You don't need to use this class directly, connections will be handled for
@@ -268,42 +181,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   database: Database;
   isOpen: boolean;
   options: SessionPoolOptions;
-  _acquires: PQueue;
-  _evictHandle!: NodeJS.Timer;
-  _inventory: SessionInventory;
-  _onClose!: Promise<void>;
-  _pending = 0;
-  _waiters = 0;
-  _pingHandle!: NodeJS.Timer;
-  _requests: PQueue;
-  _traces: Map<string, trace.StackFrame[]>;
-  _observabilityOptions?: ObservabilityOptions;
 
-  /**
-   * Formats stack trace objects into Node-like stack trace.
-   *
-   * @param {object[]} trace The trace object.
-   * @return {string}
-   */
-  static formatTrace(frames: trace.StackFrame[]): string {
-    const stack = frames.map(frame => {
-      const name = frame.getFunctionName() || frame.getMethodName();
-      const file = frame.getFileName();
-      const lineno = frame.getLineNumber();
-      const columnno = frame.getColumnNumber();
-
-      return `    at ${name} (${file}:${lineno}:${columnno})`;
-    });
-
-    return `Session leak detected!\n${stack.join('\n')}`;
-  }
-
-  /**
-   * Total number of available sessions.
-   * @type {number}
-   */
+  /** @deprecated Use totalWaiters instead. */
   get available(): number {
-    return this._inventory.sessions.length;
+    return 0;
   }
   /** @deprecated Starting from v6.5.0 the same session can be reused for
    * different types of transactions.
@@ -317,7 +198,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get borrowed(): number {
-    return this._inventory.borrowed.size + this._pending;
+    return 0;
   }
 
   /**
@@ -325,7 +206,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {boolean}
    */
   get isFull(): boolean {
-    return this.size >= this.options.max!;
+    return false;
   }
 
   /** @deprecated Use `size()` instead. */
@@ -356,7 +237,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get totalPending(): number {
-    return this._pending;
+    return 0;
   }
 
   /** @deprecated Use totalWaiters instead. */
@@ -366,7 +247,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
   /** @deprecated Use totalWaiters instead. */
   get numWriteWaiters(): number {
-    return this.totalWaiters;
+    return 0;
   }
 
   /**
@@ -374,7 +255,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get totalWaiters(): number {
-    return this._waiters;
+    return 0;
   }
 
   /**
@@ -384,33 +265,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   constructor(database: Database, options?: SessionPoolOptions) {
     super();
-
-    if (options && options.min && options.max && options.min > options.max) {
-      throw new TypeError('Min sessions may not be greater than max sessions.');
-    }
     this.isOpen = false;
     this.database = database;
-    this.options = Object.assign({}, DEFAULTS, options);
-    this.options.min = Math.min(this.options.min!, this.options.max!);
-    this.options.databaseRole = this.options.databaseRole
-      ? this.options.databaseRole
-      : database.databaseRole;
-
-    this._inventory = {
-      sessions: [],
-      borrowed: new Set(),
-    };
-    this._waiters = 0;
-    this._requests = new PQueue({
-      concurrency: this.options.concurrency!,
-    });
-
-    this._acquires = new PQueue({
-      concurrency: 1,
-    });
-
-    this._traces = new Map();
-    this._observabilityOptions = database._observabilityOptions;
+    this.options = options || {};
   }
 
   /**
@@ -419,36 +276,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#close
    * @param {SessionPoolCloseCallback} callback The callback function.
    */
-  close(callback: SessionPoolCloseCallback): void {
-    const sessions: Session[] = [
-      ...this._inventory.sessions,
-      ...this._inventory.borrowed,
-    ];
-
-    this.isOpen = false;
-
-    this._stopHouseKeeping();
-    this.emit('close');
-
-    sessions.forEach(session => this._destroy(session));
-
-    this._requests
-      .onIdle()
-      .then(() => {
-        const leaks = this._getLeaks();
-        let error;
-
-        this._inventory.sessions = [];
-        this._inventory.borrowed.clear();
-
-        if (leaks.length) {
-          error = new SessionLeakError(leaks);
-        }
-
-        callback(error);
-      })
-      .catch(err => callback(err));
-  }
+  close(callback: SessionPoolCloseCallback): void {}
 
   /**
    * Retrieve a read session.
@@ -478,10 +306,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetSessionCallback} callback The callback function.
    */
   getSession(callback: GetSessionCallback): void {
-    this._acquire().then(
-      session => callback(null, session, session.txn!),
-      callback,
-    );
+    callback(null, null, null);
   }
 
   /**
@@ -491,28 +316,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#open
    * @return {Promise}
    */
-  open(): void {
-    this._onClose = new Promise(resolve => this.once('close', resolve));
-    this._startHouseKeeping();
-
-    this.isOpen = true;
-    this.emit('open');
-
-    this._fill().catch(err => {
-      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
-      // for a database that does not yet exist with SessionPoolOptions.min > 0.
-      if (
-        isDatabaseNotFoundError(err) ||
-        isInstanceNotFoundError(err) ||
-        isCreateSessionPermissionError(err) ||
-        isDefaultCredentialsNotSetError(err) ||
-        isProjectIdNotSetInEnvironmentError(err)
-      ) {
-        return;
-      }
-      this.emit('error', err);
-    });
-  }
+  open(): void {}
 
   /**
    * Releases session back into the pool.
@@ -525,556 +329,5 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @fires @deprecated SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
-  release(session: Session): void {
-    if (!this._inventory.borrowed.has(session)) {
-      throw new ReleaseError(session);
-    }
-
-    delete session.txn;
-    session.lastUsed = Date.now();
-
-    if (isSessionNotFoundError(session.lastError)) {
-      // Remove the session from the pool. It is not necessary to call _destroy,
-      // as the session is already removed from the backend.
-      this._inventory.borrowed.delete(session);
-      this._traces.delete(session.id);
-      return;
-    }
-    session.lastError = undefined;
-
-    // Delete the trace associated with this session to mark the session as checked
-    // back into the pool. This will prevent the session to be marked as leaked if
-    // the pool is closed while the session is being prepared.
-    this._traces.delete(session.id);
-    // Release it into the pool as a session if there are more waiters than
-    // there are sessions available. Releasing it will unblock a waiter as soon
-    // as possible.
-    this._release(session);
-  }
-
-  /**
-   * Attempts to borrow a session from the pool.
-   *
-   * @private
-   *
-   * @returns {Promise<Session>}
-   */
-  async _acquire(): Promise<Session> {
-    const span = getActiveOrNoopSpan();
-    if (!this.isOpen) {
-      span.addEvent('SessionPool is closed');
-      throw new GoogleError(errors.Closed);
-    }
-
-    // Get the stacktrace of the caller before we call any async methods, as calling an async method will break the stacktrace.
-    const frames = trace.get();
-    const startTime = Date.now();
-    const timeout = this.options.acquireTimeout;
-
-    // wrapping this logic in a function to call recursively if the session
-    // we end up with is already dead
-    const getSession = async (): Promise<Session> => {
-      span.addEvent('Acquiring session');
-      const elapsed = Date.now() - startTime;
-
-      if (elapsed >= timeout!) {
-        span.addEvent('Could not acquire session due to an exceeded timeout');
-        throw new GoogleError(errors.Timeout);
-      }
-
-      const session = await this._getSession(startTime);
-
-      if (this._isValidSession(session)) {
-        span.addEvent('Acquired session', {
-          'time.elapsed': Date.now() - startTime,
-          'session.id': session.id.toString(),
-        });
-        return session;
-      }
-
-      span.addEvent(
-        'Could not acquire session because it was invalid. Retrying',
-        {
-          'session.id': session.id.toString(),
-        },
-      );
-      this._inventory.borrowed.delete(session);
-      return getSession();
-    };
-
-    const session = await this._acquires.add(getSession);
-    this._prepareTransaction(session);
-    this._traces.set(session.id, frames);
-    return session;
-  }
-
-  /**
-   * Moves a session into the borrowed group.
-   *
-   * @private
-   *
-   * @param {Session} session The session object.
-   */
-  _borrow(session: Session): void {
-    const index = this._inventory.sessions.indexOf(session);
-
-    this._inventory.borrowed.add(session);
-    this._inventory.sessions.splice(index, 1);
-  }
-
-  /**
-   * Borrows the first session from the inventory.
-   *
-   * @private
-   *
-   * @return {Session}
-   */
-  _borrowFrom(): Session {
-    const session = this._inventory.sessions.pop()!;
-    this._inventory.borrowed.add(session);
-    return session;
-  }
-
-  /**
-   * Grabs the next available session.
-   *
-   * @private
-   *
-   * @returns {Promise<Session>}
-   */
-  _borrowNextAvailableSession(): Session {
-    return this._borrowFrom();
-  }
-
-  /**
-   * Attempts to create a single session.
-   *
-   * @private
-   *
-   * @returns {Promise}
-   */
-  _createSession(): Promise<void> {
-    return this._createSessions(1);
-  }
-
-  /**
-   * Batch creates sessions.
-   *
-   * @private
-   *
-   * @param {number} [amount] Config specifying how many sessions to create.
-   * @returns {Promise}
-   * @emits SessionPool#createError
-   */
-  async _createSessions(amount: number): Promise<void> {
-    const labels = this.options.labels!;
-    const databaseRole = this.options.databaseRole!;
-
-    if (amount <= 0) {
-      return;
-    }
-    this._pending += amount;
-
-    let nReturned = 0;
-    const nRequested: number = amount;
-
-    // TODO: Inlining this code for now and later on shall go
-    // extract _traceConfig to the constructor when we have plenty of time.
-    const traceConfig = {
-      opts: this._observabilityOptions,
-      dbName: this.database.formattedName_,
-    };
-    return startTrace('SessionPool.createSessions', traceConfig, async span => {
-      span.addEvent(`Requesting ${amount} sessions`);
-
-      // while we can request as many sessions be created as we want, the backend
-      // will return at most 100 at a time, hence the need for a while loop.
-      while (amount > 0) {
-        let sessions: Session[] | null = null;
-
-        span.addEvent(`Creating ${amount} sessions`);
-
-        try {
-          [sessions] = await this.database.batchCreateSessions({
-            count: amount,
-            labels: labels,
-            databaseRole: databaseRole,
-          });
-
-          amount -= sessions.length;
-          nReturned += sessions.length;
-        } catch (e) {
-          this._pending -= amount;
-          this.emit('createError', e);
-          span.addEvent(
-            `Requested for ${nRequested} sessions returned ${nReturned}`,
-          );
-          setSpanErrorAndException(span, e as Error);
-          span.end();
-          throw e;
-        }
-
-        sessions.forEach((session: Session) => {
-          setImmediate(() => {
-            this._inventory.borrowed.add(session);
-            this._pending -= 1;
-            this.release(session);
-          });
-        });
-      }
-
-      span.addEvent(
-        `Requested for ${nRequested} sessions returned ${nReturned}`,
-      );
-      span.end();
-    });
-  }
-
-  /**
-   * Attempts to delete a session, optionally creating a new one of the same
-   * type if the pool is still open and we're under the configured min value.
-   *
-   * @private
-   *
-   * @fires SessionPool#error
-   * @param {Session} session The session to delete.
-   * @returns {Promise}
-   */
-  async _destroy(session: Session): Promise<void> {
-    try {
-      await this._requests.add(() => session.delete());
-    } catch (e) {
-      this.emit('error', e);
-    }
-  }
-
-  /**
-   * Deletes idle sessions that exceed the maxIdle configuration.
-   *
-   * @private
-   */
-  _evictIdleSessions(): void {
-    const {maxIdle, min} = this.options;
-    const size = this.size;
-    const idle = this._getIdleSessions();
-
-    let count = idle.length;
-    let evicted = 0;
-
-    while (count-- > maxIdle! && size - evicted++ > min!) {
-      const session = idle.pop();
-
-      if (!session) {
-        continue;
-      }
-
-      const index = this._inventory.sessions.indexOf(session);
-
-      this._inventory.sessions.splice(index, 1);
-      void this._destroy(session);
-    }
-  }
-
-  /**
-   * Fills the pool with the minimum number of sessions.
-   *
-   * @return {Promise}
-   */
-  async _fill(): Promise<void> {
-    const needed = this.options.min! - this.size;
-    if (needed <= 0) {
-      return;
-    }
-
-    await this._createSessions(needed);
-  }
-
-  /**
-   * Retrieves a list of all the idle sessions.
-   *
-   * @private
-   *
-   * @returns {Session[]}
-   */
-  _getIdleSessions(): Session[] {
-    const idlesAfter = this.options.idlesAfter! * 60000;
-    const sessions: Session[] = this._inventory.sessions;
-
-    return sessions.filter(session => {
-      return Date.now() - session.lastUsed! >= idlesAfter;
-    });
-  }
-
-  /**
-   * Returns stack traces for sessions that have not been released.
-   *
-   * @return {string[]}
-   */
-  _getLeaks(): string[] {
-    return [...this._traces.values()].map(SessionPool.formatTrace);
-  }
-
-  /**
-   * Returns true if the pool has a usable session.
-   * @private
-   */
-  _hasSessionUsableFor(): boolean {
-    return this._inventory.sessions.length > 0;
-  }
-
-  /**
-   * Attempts to get a session.
-   *
-   * @private
-   *
-   * @param {number} startTime Timestamp to use when determining timeouts.
-   * @returns {Promise<Session>}
-   */
-  async _getSession(startTime: number): Promise<Session> {
-    const span = getActiveOrNoopSpan();
-    if (this._hasSessionUsableFor()) {
-      span.addEvent('Cache hit: has usable session');
-      return this._borrowNextAvailableSession();
-    }
-    if (this.isFull && this.options.fail!) {
-      span.addEvent('Session pool is full and failFast=true');
-      throw new SessionPoolExhaustedError(this._getLeaks());
-    }
-
-    let removeOnceCloseListener: Function;
-    let removeListener: Function;
-
-    // Wait for a session to become available.
-    span.addEvent('Waiting for a session to become available');
-    const availableEvent = 'session-available';
-    const promises = [
-      new Promise((_, reject) => {
-        const onceCloseListener = () => reject(new GoogleError(errors.Closed));
-        this.once('close', onceCloseListener);
-        removeOnceCloseListener = this.removeListener.bind(
-          this,
-          'close',
-          onceCloseListener,
-        );
-      }),
-      new Promise(resolve => {
-        this.once(availableEvent, resolve);
-        removeListener = this.removeListener.bind(
-          this,
-          availableEvent,
-          resolve,
-        );
-      }),
-    ];
-
-    const timeout = this.options.acquireTimeout;
-
-    let removeTimeoutListener = () => {};
-    if (!isInfinite(timeout!)) {
-      const elapsed = Date.now() - startTime!;
-      const remaining = timeout! - elapsed;
-
-      promises.push(
-        new Promise((_, reject) => {
-          const error = new Error(errors.Timeout);
-          const timeoutFunction = setTimeout(
-            reject.bind(null, error),
-            remaining,
-          );
-          removeTimeoutListener = () => clearTimeout(timeoutFunction);
-        }),
-      );
-    }
-
-    // Only create a new session if there are more waiters than sessions already
-    // being created. The current requester will be waiter number _numWaiters+1.
-    if (!this.isFull && this.totalPending <= this.totalWaiters) {
-      let amount = this.options.incStep
-        ? this.options.incStep
-        : DEFAULTS.incStep!;
-      // Create additional sessions if the configured minimum has not been reached.
-      const min = this.options.min ? this.options.min : 0;
-      if (this.size + this.totalPending + amount < min) {
-        amount = min - this.size - this.totalPending;
-      }
-      // Make sure we don't create more sessions than the pool should have.
-      if (amount + this.size > this.options.max!) {
-        amount = this.options.max! - this.size;
-      }
-      if (amount > 0) {
-        this._pending += amount;
-        promises.push(
-          new Promise((_, reject) => {
-            this._pending -= amount;
-            this._createSessions(amount).catch(reject);
-          }),
-        );
-      }
-    }
-
-    let removeErrorListener: Function;
-    promises.push(
-      new Promise((_, reject) => {
-        this.once('createError', reject);
-        removeErrorListener = this.removeListener.bind(
-          this,
-          'createError',
-          reject,
-        );
-      }),
-    );
-
-    try {
-      this._waiters++;
-      await Promise.race(promises);
-    } finally {
-      this._waiters--;
-      removeOnceCloseListener!();
-      removeListener!();
-      removeErrorListener!();
-      removeTimeoutListener();
-    }
-
-    return this._borrowNextAvailableSession();
-  }
-
-  /**
-   * Checks to see whether or not session is expired.
-   *
-   * @param {Session} session The session to check.
-   * @returns {boolean}
-   */
-  _isValidSession(session: Session): boolean {
-    // unpinged sessions only stay good for 1 hour
-    const MAX_DURATION = 60000 * 60;
-
-    return Date.now() - session.lastUsed! < MAX_DURATION;
-  }
-
-  /**
-   * Pings an individual session.
-   *
-   * @private
-   *
-   * @param {Session} session The session to ping.
-   * @returns {Promise}
-   */
-  async _ping(session: Session): Promise<void> {
-    // NOTE: Please do not trace Ping as it gets quite spammy
-    // with many root spans polluting the main span.
-    // Please see https://github.com/googleapis/google-cloud-go/issues/1691
-
-    this._borrow(session);
-
-    if (!this._isValidSession(session)) {
-      this._inventory.borrowed.delete(session);
-      return;
-    }
-
-    try {
-      await session.keepAlive();
-      this.release(session);
-    } catch (e) {
-      this._inventory.borrowed.delete(session);
-      await this._destroy(session);
-    }
-  }
-
-  /**
-   * Makes a keep alive request to all the idle sessions.
-   *
-   * @private
-   *
-   * @returns {Promise}
-   */
-  async _pingIdleSessions(): Promise<void> {
-    const sessions = this._getIdleSessions();
-    const pings = sessions.map(session => this._ping(session));
-
-    await Promise.all(pings);
-    try {
-      await this._fill();
-    } catch (error) {
-      // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
-      // for a database that does not yet exist with SessionPoolOptions.min > 0.
-      const err = error as ServiceError;
-      if (
-        isDatabaseNotFoundError(err) ||
-        isInstanceNotFoundError(err) ||
-        isCreateSessionPermissionError(err) ||
-        isDefaultCredentialsNotSetError(err) ||
-        isProjectIdNotSetInEnvironmentError(err)
-      ) {
-        return;
-      }
-      this.emit('error', err);
-    }
-    return;
-  }
-
-  /**
-   * Creates a transaction for a session.
-   *
-   * @private
-   *
-   * @param {Session} session The session object.
-   * @param {object} options The transaction options.
-   */
-  _prepareTransaction(session: Session): void {
-    const transaction = session.transaction(
-      (session.parent as Database).queryOptions_,
-    );
-    session.txn = transaction;
-  }
-
-  /**
-   * Releases a session back into the pool.
-   *
-   * @private
-   *
-   * @fires SessionPool#available
-   * @fires SessionPool#session-available
-   * @fires @deprecated SessionPool#readonly-available
-   * @fires @deprecated SessionPool#readwrite-available
-   * @param {Session} session The session object.
-   */
-  _release(session: Session): void {
-    this._inventory.sessions.push(session);
-    this._inventory.borrowed.delete(session);
-    this._traces.delete(session.id);
-
-    this.emit('available');
-    this.emit('session-available');
-    this.emit('readonly-available');
-    this.emit('readwrite-available');
-  }
-
-  /**
-   * Starts housekeeping (pinging/evicting) of idle sessions.
-   *
-   * @private
-   */
-  _startHouseKeeping(): void {
-    const evictRate = this.options.idlesAfter! * 60000;
-
-    this._evictHandle = setInterval(() => this._evictIdleSessions(), evictRate);
-    this._evictHandle.unref();
-
-    const pingRate = this.options.keepAlive! * 60000;
-
-    this._pingHandle = setInterval(() => this._pingIdleSessions(), pingRate);
-    this._pingHandle.unref();
-  }
-
-  /**
-   * Stops housekeeping.
-   *
-   * @private
-   */
-  _stopHouseKeeping(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clearInterval(this._pingHandle as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clearInterval(this._evictHandle as any);
-  }
+  release(session: Session): void {}
 }
