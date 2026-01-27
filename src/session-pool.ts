@@ -152,6 +152,9 @@ export interface SessionPoolOptions {
   fail?: boolean;
   idlesAfter?: number;
   keepAlive?: number;
+  /**
+   * @deprecated Use SpannerOptions.sessionLabels instead.
+   */
   labels?: {[label: string]: string};
   max?: number;
   maxIdle?: number;
@@ -162,6 +165,9 @@ export interface SessionPoolOptions {
    */
   writes?: number;
   incStep?: number;
+  /**
+   * @deprecated Use Database constructor to pass databaseRole.
+   */
   databaseRole?: string | null;
 }
 
@@ -171,12 +177,10 @@ const DEFAULTS: SessionPoolOptions = {
   fail: false,
   idlesAfter: 10,
   keepAlive: 30,
-  labels: {},
   max: 100,
   maxIdle: 1,
   min: 25,
   incStep: 25,
-  databaseRole: null,
 };
 
 /**
@@ -667,8 +671,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#createError
    */
   async _createSessions(amount: number): Promise<void> {
-    const labels = this.options.labels!;
-    const databaseRole = this.options.databaseRole!;
+    const labels = this.options.labels;
+    const databaseRole = this.options.databaseRole;
 
     if (amount <= 0) {
       return;

@@ -962,6 +962,7 @@ class Instance extends common.GrpcServiceObject {
     name: string,
     poolOptions?: SessionPoolOptions | SessionPoolConstructor,
     queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    databaseRole?: string | null,
   ): Database {
     if (!name) {
       throw new GoogleError('A name is required to access a Database object.');
@@ -978,7 +979,13 @@ class Instance extends common.GrpcServiceObject {
     }
     const key = name.split('/').pop() + optionsKey;
     if (!this.databases_.has(key!)) {
-      const db = new Database(this, name, poolOptions, queryOptions);
+      const db = new Database(
+        this,
+        name,
+        poolOptions,
+        queryOptions,
+        databaseRole,
+      );
       db._observabilityOptions = this._observabilityOptions;
       const parent = this.parent as Spanner;
       if (parent && parent._nthClientId) {

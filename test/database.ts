@@ -259,6 +259,7 @@ describe('Database', () => {
 
   const SPANNER = {
     routeToLeaderEnabled: true,
+    options: {},
   } as {} as Spanner;
 
   const INSTANCE = {
@@ -405,6 +406,36 @@ describe('Database', () => {
         [AFE_SERVER_TIMING_HEADER]: 'true',
       });
     });
+
+    it('should accept databaseRole in constructor', () => {
+      const databaseRole = 'child_role';
+      const database = new Database(
+        INSTANCE,
+        NAME,
+        POOL_OPTIONS,
+        undefined,
+        databaseRole,
+      );
+      assert.strictEqual(database.databaseRole, databaseRole);
+    });
+
+    it('should use sessionLabels from Spanner options', () => {
+      const sessionLabels = {env: 'test'};
+      const spanner = new Spanner({
+        sessionLabels,
+      });
+      const instanceCtx = {
+        parent: spanner,
+        _observabilityOptions: {},
+        request: util.noop,
+        requestStream: util.noop,
+        formattedName_: 'instance-name',
+        databases_: new Map(),
+      } as {} as Instance;
+
+      const database = new Database(instanceCtx, NAME);
+      assert.deepStrictEqual(database.labels, sessionLabels);
+    });
   });
 
   describe('formatName_', () => {
@@ -468,7 +499,7 @@ describe('Database', () => {
 
       const {reqOpts} = stub.lastCall.args[0];
 
-      assert.strictEqual(reqOpts.sessionTemplate.labels, labels);
+      assert.deepStrictEqual(reqOpts.sessionTemplate.labels, labels);
     });
 
     it('should accept session databaseRole', () => {
@@ -3069,6 +3100,7 @@ describe('Database', () => {
       database.parent.parent = {
         routeToLeaderEnabled: true,
         directedReadOptions: fakeDirectedReadOptions,
+        options: {},
       };
 
       database.runPartitionedUpdate(

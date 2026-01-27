@@ -167,6 +167,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   observabilityOptions?: ObservabilityOptions;
   disableBuiltInMetrics?: boolean;
   interceptors?: any[];
+  sessionLabels?: {[key: string]: string};
   /**
    * The Trusted Cloud Domain (TPC) DNS of the service used to make requests.
    * Defaults to `googleapis.com`.
@@ -321,6 +322,7 @@ class Spanner extends GrpcService {
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   defaultTransactionOptions: RunTransactionOptions;
   _observabilityOptions: ObservabilityOptions | undefined;
+  sessionLabels: {[key: string]: string} | null;
   private _universeDomain: string;
   private _isInSecureCredentials: boolean;
   private static _isAFEServerTimingEnabled: boolean | undefined;
@@ -493,6 +495,7 @@ class Spanner extends GrpcService {
     this.directedReadOptions = directedReadOptions;
     this.defaultTransactionOptions = defaultTransactionOptions;
     this._observabilityOptions = options.observabilityOptions;
+    this.sessionLabels = options.sessionLabels || null;
     this.commonHeaders_ = getCommonHeaders(
       this.projectFormattedName_,
       this._observabilityOptions?.enableEndToEndTracing,
