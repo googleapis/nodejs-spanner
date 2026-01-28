@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.6.0](https://github.com/googleapis/nodejs-spanner/compare/v8.5.0...v8.6.0) (2026-01-28)
+
+
+### Features
+
+* Refactor and deprecate databaseRole and Session Labels SessionPoolOptions ([#2511](https://github.com/googleapis/nodejs-spanner/issues/2511)) ([163534c](https://github.com/googleapis/nodejs-spanner/commit/163534c8545a3f1378b001eb118b12f98b4cc1e5))
+
+
+### Bug Fixes
+
+* Ensure all data is consumed before emitting end event in PartialResultStream ([#2516](https://github.com/googleapis/nodejs-spanner/issues/2516)) ([210ef50](https://github.com/googleapis/nodejs-spanner/commit/210ef506cd80f4604e4a135fdfe937190eab5750))
+
 ## [8.5.0](https://github.com/googleapis/nodejs-spanner/compare/v8.4.0...v8.5.0) (2026-01-22)
 
 
