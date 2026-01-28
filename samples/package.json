@@ -18,7 +18,7 @@
     "@google-cloud/kms": "^5.0.0",
     "@google-cloud/precise-date": "^5.0.0",
     "@google-cloud/spanner": "^8.5.0",
-    "protobufjs": "^7.0.0",
+    "protobufjs": "^8.0.0",
     "yargs": "^17.0.0"
   },
   "devDependencies": {
