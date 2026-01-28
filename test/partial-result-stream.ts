@@ -200,6 +200,48 @@ describe('PartialResultStream', () => {
         });
       });
     });
+
+    it('should not lose data if paused when last chunk is received', done => {
+      const stream = new PartialResultStream({});
+      // Pause the stream initially to force buffering
+      stream.pause();
+
+      const rows: any[] = [];
+      stream.on('data', row => rows.push(row));
+      stream.on('end', () => {
+        try {
+          // We expect 2 rows.
+          assert.strictEqual(rows.length, 2);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+
+      const fields = [{name: NAME, type: {code: 'STRING'}}];
+
+      // Write a normal chunk
+      stream.write({
+        metadata: {rowType: {fields}},
+        values: [convertToIValue('row1')],
+        resumeToken: 't1',
+      });
+
+      // Write the last chunk immediately
+      stream.write({
+        values: [convertToIValue('row2')],
+        resumeToken: 't2',
+        last: true,
+      });
+
+      // Resume after a tick.
+      // If emit('end') was called synchronously during write, the 'end' event might fire
+      // and close the stream before we consume the buffered 'row1' and 'row2'.
+      // With push(null), it waits for buffer to drain.
+      process.nextTick(() => {
+        stream.resume();
+      });
+    });
   });
 
   describe('partialResultStream', () => {
