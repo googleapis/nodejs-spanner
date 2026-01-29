@@ -1862,7 +1862,7 @@ describe('codec', () => {
       assert.deepStrictEqual(codec.getType(new Date()), {type: 'timestamp'});
     });
 
-    it.skip('should determine if the value is a interval', () => {
+    it('should determine if the value is a interval', () => {
       assert.deepStrictEqual(
         codec.getType(new codec.Interval(1, 2, BigInt(3))),
         {

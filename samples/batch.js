@@ -13,6 +13,7 @@
 // limitations under the License.
 
 'use strict';
+//test
 
 async function createAndExecuteQueryPartitions(
   instanceId,
