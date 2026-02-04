@@ -2056,8 +2056,9 @@ export class SpannerClient {
    *   {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|`ExecuteStreamingSql`} with
    *   a `PartitionedDml` transaction for large, partition-friendly DML
    *   operations.
-   * @param {google.protobuf.Struct} request.params
-   *   Parameter names and values that bind to placeholders in the SQL string.
+   * @param {google.protobuf.Struct} [request.params]
+   *   Optional. Parameter names and values that bind to placeholders in the SQL
+   *   string.
    *
    *   A parameter placeholder consists of the `@` character followed by the
    *   parameter name (for example, `@firstName`). Parameter names can contain
@@ -2069,10 +2070,10 @@ export class SpannerClient {
    *   `"WHERE id > @msg_id AND id < @msg_id + 100"`
    *
    *   It's an error to execute a SQL statement with unbound parameters.
-   * @param {number[]} request.paramTypes
-   *   It isn't always possible for Cloud Spanner to infer the right SQL type
-   *   from a JSON value. For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in
+   * @param {number[]} [request.paramTypes]
+   *   Optional. It isn't always possible for Cloud Spanner to infer the right SQL
+   *   type from a JSON value. For example, values of type `BYTES` and values of
+   *   type `STRING` both appear in
    *   {@link protos.google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact

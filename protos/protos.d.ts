@@ -36293,6 +36293,9 @@ export namespace google {
 
                 /** ResultSet precommitToken */
                 precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** ResultSet cacheUpdate */
+                cacheUpdate?: (google.spanner.v1.ICacheUpdate|null);
             }
 
             /** Represents a ResultSet. */
@@ -36315,6 +36318,9 @@ export namespace google {
 
                 /** ResultSet precommitToken. */
                 public precommitToken?: (google.spanner.v1.IMultiplexedSessionPrecommitToken|null);
+
+                /** ResultSet cacheUpdate. */
+                public cacheUpdate?: (google.spanner.v1.ICacheUpdate|null);
 
                 /**
                  * Creates a new ResultSet instance using the specified properties.

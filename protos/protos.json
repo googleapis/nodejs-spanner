@@ -8743,12 +8743,18 @@
                     },
                     "params": {
                       "type": "google.protobuf.Struct",
-                      "id": 4
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     },
                     "paramTypes": {
                       "keyType": "string",
                       "type": "Type",
-                      "id": 5
+                      "id": 5,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     },
                     "partitionOptions": {
                       "type": "PartitionOptions",
@@ -9845,6 +9851,13 @@
                     "precommitToken": {
                       "type": "MultiplexedSessionPrecommitToken",
                       "id": 5,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    },
+                    "cacheUpdate": {
+                      "type": "CacheUpdate",
+                      "id": 6,
                       "options": {
                         "(google.api.field_behavior)": "OPTIONAL"
                       }
