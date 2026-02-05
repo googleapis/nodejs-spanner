@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Performs a read-write transaction with isolation level option
-//  usage: node repeatable-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Performs a read-write transaction with read lock mode option
+//  usage: node read-lock-mode.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,14 +23,15 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id',
 ) {
-  // [START spanner_isolation_level]
+  // [START spanner_read_lock_mode]
   // Imports the Google Cloud Spanner client library
   const {Spanner, protos} = require('@google-cloud/spanner');
-  // The isolation level specified at the client-level will be applied
+  // The read lock mode specified at the client-level will be applied
   // to all RW transactions.
   const defaultTransactionOptions = {
-    isolationLevel:
-      protos.google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE,
+    readLockMode:
+      protos.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+        .OPTIMISTIC,
   };
 
   // Instantiates a client with defaultTransactionOptions
@@ -39,19 +40,20 @@ function main(
     defaultTransactionOptions,
   });
 
-  function runTransactionWithIsolationLevel() {
+  function runTransactionWithReadLockMode() {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
-    // The isolation level specified at the request level takes precedence over the isolation level configured at the client level.
-    const isolationOptionsForTransaction = {
-      isolationLevel:
-        protos.google.spanner.v1.TransactionOptions.IsolationLevel
-          .REPEATABLE_READ,
+    // The read lock mode specified at the request-level takes precedence over
+    // the read lock mode configured at the client-level.
+    const readLockModeOptionsForTransaction = {
+      readLockMode:
+        protos.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+          .PESSIMISTIC,
     };
 
     database.runTransaction(
-      isolationOptionsForTransaction,
+      readLockModeOptionsForTransaction,
       async (err, transaction) => {
         if (err) {
           console.error(err);
@@ -59,7 +61,7 @@ function main(
         }
         try {
           const query =
-            'SELECT AlbumTitle FROM Albums WHERE SingerId = 1 AND AlbumId = 1';
+            'SELECT AlbumTitle FROM Albums WHERE SingerId = 2 AND AlbumId = 1';
           const results = await transaction.run(query);
           // Gets first album's title
           const rows = results[0].map(row => row.toJSON());
@@ -67,14 +69,14 @@ function main(
           console.log(`previous album title ${albumTitle}`);
 
           const update =
-            "UPDATE Albums SET AlbumTitle = 'New Album Title' WHERE SingerId = 1 AND AlbumId = 1";
+            "UPDATE Albums SET AlbumTitle = 'New Album Title' WHERE SingerId = 2 AND AlbumId = 1";
           const [rowCount] = await transaction.runUpdate(update);
           console.log(
             `Successfully updated ${rowCount} record in Albums table.`,
           );
           await transaction.commit();
           console.log(
-            'Successfully executed read-write transaction with isolationLevel option.',
+            'Successfully executed read-write transaction with readLockMode option.',
           );
         } catch (err) {
           console.error('ERROR:', err);
@@ -86,8 +88,8 @@ function main(
       },
     );
   }
-  runTransactionWithIsolationLevel();
-  // [END spanner_isolation_level]
+  runTransactionWithReadLockMode();
+  // [END spanner_read_lock_mode]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

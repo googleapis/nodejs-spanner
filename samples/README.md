@@ -116,6 +116,7 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
+  * [Performs a read-write transaction with read lock mode option](#performs-a-read-write-transaction-with-read-lock-mode-option)
   * [Performs a read-write transaction with isolation level option](#performs-a-read-write-transaction-with-isolation-level-option)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
@@ -1882,6 +1883,23 @@ __Usage:__
 
 
 `node read-data-with-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Performs a read-write transaction with read lock mode option
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-lock-mode.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-lock-mode.js,samples/README.md)
+
+__Usage:__
+
+
+`node read-lock-mode.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
