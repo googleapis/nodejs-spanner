@@ -5739,7 +5739,8 @@
                             "generateDbPartitionsQuery",
                             "executePartition",
                             "executeChangeStreamQuery",
-                            "queryCancellation"
+                            "queryCancellation",
+                            "adaptMessage"
                           ]
                         }
                       },
@@ -5819,6 +5820,10 @@
                         "queryCancellation": {
                           "type": "QueryCancellationAction",
                           "id": 51
+                        },
+                        "adaptMessage": {
+                          "type": "AdaptMessageAction",
+                          "id": 52
                         }
                       }
                     },
@@ -5894,6 +5899,11 @@
                           "oneof": [
                             "autocommitIfSupported"
                           ]
+                        },
+                        "_lastStatement": {
+                          "oneof": [
+                            "lastStatement"
+                          ]
                         }
                       },
                       "fields": {
@@ -5907,15 +5917,36 @@
                           "options": {
                             "proto3_optional": true
                           }
+                        },
+                        "lastStatement": {
+                          "type": "bool",
+                          "id": 3,
+                          "options": {
+                            "proto3_optional": true
+                          }
                         }
                       }
                     },
                     "BatchDmlAction": {
+                      "oneofs": {
+                        "_lastStatements": {
+                          "oneof": [
+                            "lastStatements"
+                          ]
+                        }
+                      },
                       "fields": {
                         "updates": {
                           "rule": "repeated",
                           "type": "QueryAction",
                           "id": 1
+                        },
+                        "lastStatements": {
+                          "type": "bool",
+                          "id": 2,
+                          "options": {
+                            "proto3_optional": true
+                          }
                         }
                       }
                     },
@@ -6325,6 +6356,26 @@
                         "optimistic": {
                           "type": "bool",
                           "id": 1
+                        },
+                        "excludeFromChangeStreams": {
+                          "type": "bool",
+                          "id": 2
+                        },
+                        "serializableOptimistic": {
+                          "type": "bool",
+                          "id": 3
+                        },
+                        "snapshotIsolationOptimistic": {
+                          "type": "bool",
+                          "id": 4
+                        },
+                        "snapshotIsolationPessimistic": {
+                          "type": "bool",
+                          "id": 5
+                        },
+                        "excludeTxnFromChangeStreams": {
+                          "type": "bool",
+                          "id": 6
                         }
                       }
                     },
@@ -6376,7 +6427,8 @@
                             "listCloudBackupOperations",
                             "getOperation",
                             "cancelOperation",
-                            "changeQuorumCloudDatabase"
+                            "changeQuorumCloudDatabase",
+                            "addSplitPoints"
                           ]
                         }
                       },
@@ -6492,6 +6544,10 @@
                         "changeQuorumCloudDatabase": {
                           "type": "ChangeQuorumCloudDatabaseAction",
                           "id": 28
+                        },
+                        "addSplitPoints": {
+                          "type": "AddSplitPointsAction",
+                          "id": 29
                         }
                       }
                     },
@@ -6661,6 +6717,10 @@
                           "keyType": "string",
                           "type": "string",
                           "id": 5
+                        },
+                        "edition": {
+                          "type": "google.spanner.admin.instance.v1.Instance.Edition",
+                          "id": 8
                         }
                       }
                     },
@@ -6728,6 +6788,10 @@
                           "keyType": "string",
                           "type": "string",
                           "id": 6
+                        },
+                        "edition": {
+                          "type": "google.spanner.admin.instance.v1.Instance.Edition",
+                          "id": 8
                         }
                       }
                     },
@@ -6889,6 +6953,35 @@
                           "rule": "repeated",
                           "type": "string",
                           "id": 2
+                        }
+                      }
+                    },
+                    "AdaptMessageAction": {
+                      "fields": {
+                        "databaseUri": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "protocol": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "payload": {
+                          "type": "bytes",
+                          "id": 3
+                        },
+                        "attachments": {
+                          "keyType": "string",
+                          "type": "string",
+                          "id": 4
+                        },
+                        "query": {
+                          "type": "string",
+                          "id": 5
+                        },
+                        "prepareThenExecute": {
+                          "type": "bool",
+                          "id": 6
                         }
                       }
                     },
@@ -7241,6 +7334,27 @@
                         }
                       }
                     },
+                    "AddSplitPointsAction": {
+                      "fields": {
+                        "projectId": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "instanceId": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "databaseId": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "splitPoints": {
+                          "rule": "repeated",
+                          "type": "google.spanner.admin.database.v1.SplitPoints",
+                          "id": 4
+                        }
+                      }
+                    },
                     "StartBatchTransactionAction": {
                       "oneofs": {
                         "param": {
@@ -7495,6 +7609,11 @@
                           "oneof": [
                             "adminResult"
                           ]
+                        },
+                        "_snapshotIsolationTxnReadTimestamp": {
+                          "oneof": [
+                            "snapshotIsolationTxnReadTimestamp"
+                          ]
                         }
                       },
                       "fields": {
@@ -7561,6 +7680,13 @@
                           "rule": "repeated",
                           "type": "ChangeStreamRecord",
                           "id": 10
+                        },
+                        "snapshotIsolationTxnReadTimestamp": {
+                          "type": "int64",
+                          "id": 11,
+                          "options": {
+                            "proto3_optional": true
+                          }
                         }
                       }
                     },
