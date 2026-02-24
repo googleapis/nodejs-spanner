@@ -19997,6 +19997,9 @@ export namespace google {
 
                     /** SpannerAction queryCancellation */
                     queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
+
+                    /** SpannerAction adaptMessage */
+                    adaptMessage?: (google.spanner.executor.v1.IAdaptMessageAction|null);
                 }
 
                 /** Represents a SpannerAction. */
@@ -20065,8 +20068,11 @@ export namespace google {
                     /** SpannerAction queryCancellation. */
                     public queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
 
+                    /** SpannerAction adaptMessage. */
+                    public adaptMessage?: (google.spanner.executor.v1.IAdaptMessageAction|null);
+
                     /** SpannerAction action. */
-                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery"|"queryCancellation");
+                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery"|"queryCancellation"|"adaptMessage");
 
                     /**
                      * Creates a new SpannerAction instance using the specified properties.
@@ -20490,6 +20496,9 @@ export namespace google {
 
                     /** DmlAction autocommitIfSupported */
                     autocommitIfSupported?: (boolean|null);
+
+                    /** DmlAction lastStatement */
+                    lastStatement?: (boolean|null);
                 }
 
                 /** Represents a DmlAction. */
@@ -20506,6 +20515,9 @@ export namespace google {
 
                     /** DmlAction autocommitIfSupported. */
                     public autocommitIfSupported?: (boolean|null);
+
+                    /** DmlAction lastStatement. */
+                    public lastStatement?: (boolean|null);
 
                     /**
                      * Creates a new DmlAction instance using the specified properties.
@@ -20590,6 +20602,9 @@ export namespace google {
 
                     /** BatchDmlAction updates */
                     updates?: (google.spanner.executor.v1.IQueryAction[]|null);
+
+                    /** BatchDmlAction lastStatements */
+                    lastStatements?: (boolean|null);
                 }
 
                 /** Represents a BatchDmlAction. */
@@ -20603,6 +20618,9 @@ export namespace google {
 
                     /** BatchDmlAction updates. */
                     public updates: google.spanner.executor.v1.IQueryAction[];
+
+                    /** BatchDmlAction lastStatements. */
+                    public lastStatements?: (boolean|null);
 
                     /**
                      * Creates a new BatchDmlAction instance using the specified properties.
@@ -22406,6 +22424,21 @@ export namespace google {
 
                     /** TransactionExecutionOptions optimistic */
                     optimistic?: (boolean|null);
+
+                    /** TransactionExecutionOptions excludeFromChangeStreams */
+                    excludeFromChangeStreams?: (boolean|null);
+
+                    /** TransactionExecutionOptions serializableOptimistic */
+                    serializableOptimistic?: (boolean|null);
+
+                    /** TransactionExecutionOptions snapshotIsolationOptimistic */
+                    snapshotIsolationOptimistic?: (boolean|null);
+
+                    /** TransactionExecutionOptions snapshotIsolationPessimistic */
+                    snapshotIsolationPessimistic?: (boolean|null);
+
+                    /** TransactionExecutionOptions excludeTxnFromChangeStreams */
+                    excludeTxnFromChangeStreams?: (boolean|null);
                 }
 
                 /** Represents a TransactionExecutionOptions. */
@@ -22419,6 +22452,21 @@ export namespace google {
 
                     /** TransactionExecutionOptions optimistic. */
                     public optimistic: boolean;
+
+                    /** TransactionExecutionOptions excludeFromChangeStreams. */
+                    public excludeFromChangeStreams: boolean;
+
+                    /** TransactionExecutionOptions serializableOptimistic. */
+                    public serializableOptimistic: boolean;
+
+                    /** TransactionExecutionOptions snapshotIsolationOptimistic. */
+                    public snapshotIsolationOptimistic: boolean;
+
+                    /** TransactionExecutionOptions snapshotIsolationPessimistic. */
+                    public snapshotIsolationPessimistic: boolean;
+
+                    /** TransactionExecutionOptions excludeTxnFromChangeStreams. */
+                    public excludeTxnFromChangeStreams: boolean;
 
                     /**
                      * Creates a new TransactionExecutionOptions instance using the specified properties.
@@ -22691,6 +22739,9 @@ export namespace google {
 
                     /** AdminAction changeQuorumCloudDatabase */
                     changeQuorumCloudDatabase?: (google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction|null);
+
+                    /** AdminAction addSplitPoints */
+                    addSplitPoints?: (google.spanner.executor.v1.IAddSplitPointsAction|null);
                 }
 
                 /** Represents an AdminAction. */
@@ -22786,8 +22837,11 @@ export namespace google {
                     /** AdminAction changeQuorumCloudDatabase. */
                     public changeQuorumCloudDatabase?: (google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction|null);
 
+                    /** AdminAction addSplitPoints. */
+                    public addSplitPoints?: (google.spanner.executor.v1.IAddSplitPointsAction|null);
+
                     /** AdminAction action. */
-                    public action?: ("createUserInstanceConfig"|"updateUserInstanceConfig"|"deleteUserInstanceConfig"|"getCloudInstanceConfig"|"listInstanceConfigs"|"createCloudInstance"|"updateCloudInstance"|"deleteCloudInstance"|"listCloudInstances"|"getCloudInstance"|"createCloudDatabase"|"updateCloudDatabaseDdl"|"updateCloudDatabase"|"dropCloudDatabase"|"listCloudDatabases"|"listCloudDatabaseOperations"|"restoreCloudDatabase"|"getCloudDatabase"|"createCloudBackup"|"copyCloudBackup"|"getCloudBackup"|"updateCloudBackup"|"deleteCloudBackup"|"listCloudBackups"|"listCloudBackupOperations"|"getOperation"|"cancelOperation"|"changeQuorumCloudDatabase");
+                    public action?: ("createUserInstanceConfig"|"updateUserInstanceConfig"|"deleteUserInstanceConfig"|"getCloudInstanceConfig"|"listInstanceConfigs"|"createCloudInstance"|"updateCloudInstance"|"deleteCloudInstance"|"listCloudInstances"|"getCloudInstance"|"createCloudDatabase"|"updateCloudDatabaseDdl"|"updateCloudDatabase"|"dropCloudDatabase"|"listCloudDatabases"|"listCloudDatabaseOperations"|"restoreCloudDatabase"|"getCloudDatabase"|"createCloudBackup"|"copyCloudBackup"|"getCloudBackup"|"updateCloudBackup"|"deleteCloudBackup"|"listCloudBackups"|"listCloudBackupOperations"|"getOperation"|"cancelOperation"|"changeQuorumCloudDatabase"|"addSplitPoints");
 
                     /**
                      * Creates a new AdminAction instance using the specified properties.
@@ -23435,6 +23489,9 @@ export namespace google {
 
                     /** CreateCloudInstanceAction labels */
                     labels?: ({ [k: string]: string }|null);
+
+                    /** CreateCloudInstanceAction edition */
+                    edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
                 }
 
                 /** Represents a CreateCloudInstanceAction. */
@@ -23466,6 +23523,9 @@ export namespace google {
 
                     /** CreateCloudInstanceAction labels. */
                     public labels: { [k: string]: string };
+
+                    /** CreateCloudInstanceAction edition. */
+                    public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
 
                     /**
                      * Creates a new CreateCloudInstanceAction instance using the specified properties.
@@ -23568,6 +23628,9 @@ export namespace google {
 
                     /** UpdateCloudInstanceAction labels */
                     labels?: ({ [k: string]: string }|null);
+
+                    /** UpdateCloudInstanceAction edition */
+                    edition?: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition|null);
                 }
 
                 /** Represents an UpdateCloudInstanceAction. */
@@ -23599,6 +23662,9 @@ export namespace google {
 
                     /** UpdateCloudInstanceAction labels. */
                     public labels: { [k: string]: string };
+
+                    /** UpdateCloudInstanceAction edition. */
+                    public edition: (google.spanner.admin.instance.v1.Instance.Edition|keyof typeof google.spanner.admin.instance.v1.Instance.Edition);
 
                     /**
                      * Creates a new UpdateCloudInstanceAction instance using the specified properties.
@@ -24362,6 +24428,133 @@ export namespace google {
 
                     /**
                      * Gets the default type url for ChangeQuorumCloudDatabaseAction
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of an AdaptMessageAction. */
+                interface IAdaptMessageAction {
+
+                    /** AdaptMessageAction databaseUri */
+                    databaseUri?: (string|null);
+
+                    /** AdaptMessageAction protocol */
+                    protocol?: (string|null);
+
+                    /** AdaptMessageAction payload */
+                    payload?: (Uint8Array|Buffer|string|null);
+
+                    /** AdaptMessageAction attachments */
+                    attachments?: ({ [k: string]: string }|null);
+
+                    /** AdaptMessageAction query */
+                    query?: (string|null);
+
+                    /** AdaptMessageAction prepareThenExecute */
+                    prepareThenExecute?: (boolean|null);
+                }
+
+                /** Represents an AdaptMessageAction. */
+                class AdaptMessageAction implements IAdaptMessageAction {
+
+                    /**
+                     * Constructs a new AdaptMessageAction.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.IAdaptMessageAction);
+
+                    /** AdaptMessageAction databaseUri. */
+                    public databaseUri: string;
+
+                    /** AdaptMessageAction protocol. */
+                    public protocol: string;
+
+                    /** AdaptMessageAction payload. */
+                    public payload: (Uint8Array|Buffer|string);
+
+                    /** AdaptMessageAction attachments. */
+                    public attachments: { [k: string]: string };
+
+                    /** AdaptMessageAction query. */
+                    public query: string;
+
+                    /** AdaptMessageAction prepareThenExecute. */
+                    public prepareThenExecute: boolean;
+
+                    /**
+                     * Creates a new AdaptMessageAction instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns AdaptMessageAction instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.IAdaptMessageAction): google.spanner.executor.v1.AdaptMessageAction;
+
+                    /**
+                     * Encodes the specified AdaptMessageAction message. Does not implicitly {@link google.spanner.executor.v1.AdaptMessageAction.verify|verify} messages.
+                     * @param message AdaptMessageAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.IAdaptMessageAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified AdaptMessageAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.AdaptMessageAction.verify|verify} messages.
+                     * @param message AdaptMessageAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.IAdaptMessageAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an AdaptMessageAction message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns AdaptMessageAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.AdaptMessageAction;
+
+                    /**
+                     * Decodes an AdaptMessageAction message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns AdaptMessageAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.AdaptMessageAction;
+
+                    /**
+                     * Verifies an AdaptMessageAction message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an AdaptMessageAction message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns AdaptMessageAction
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.AdaptMessageAction;
+
+                    /**
+                     * Creates a plain object from an AdaptMessageAction message. Also converts values to other types if specified.
+                     * @param message AdaptMessageAction
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.AdaptMessageAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this AdaptMessageAction to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for AdaptMessageAction
                      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                      * @returns The default type url
                      */
@@ -26184,6 +26377,121 @@ export namespace google {
                     public static getTypeUrl(typeUrlPrefix?: string): string;
                 }
 
+                /** Properties of an AddSplitPointsAction. */
+                interface IAddSplitPointsAction {
+
+                    /** AddSplitPointsAction projectId */
+                    projectId?: (string|null);
+
+                    /** AddSplitPointsAction instanceId */
+                    instanceId?: (string|null);
+
+                    /** AddSplitPointsAction databaseId */
+                    databaseId?: (string|null);
+
+                    /** AddSplitPointsAction splitPoints */
+                    splitPoints?: (google.spanner.admin.database.v1.ISplitPoints[]|null);
+                }
+
+                /** Represents an AddSplitPointsAction. */
+                class AddSplitPointsAction implements IAddSplitPointsAction {
+
+                    /**
+                     * Constructs a new AddSplitPointsAction.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.IAddSplitPointsAction);
+
+                    /** AddSplitPointsAction projectId. */
+                    public projectId: string;
+
+                    /** AddSplitPointsAction instanceId. */
+                    public instanceId: string;
+
+                    /** AddSplitPointsAction databaseId. */
+                    public databaseId: string;
+
+                    /** AddSplitPointsAction splitPoints. */
+                    public splitPoints: google.spanner.admin.database.v1.ISplitPoints[];
+
+                    /**
+                     * Creates a new AddSplitPointsAction instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns AddSplitPointsAction instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.IAddSplitPointsAction): google.spanner.executor.v1.AddSplitPointsAction;
+
+                    /**
+                     * Encodes the specified AddSplitPointsAction message. Does not implicitly {@link google.spanner.executor.v1.AddSplitPointsAction.verify|verify} messages.
+                     * @param message AddSplitPointsAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.IAddSplitPointsAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified AddSplitPointsAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.AddSplitPointsAction.verify|verify} messages.
+                     * @param message AddSplitPointsAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.IAddSplitPointsAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an AddSplitPointsAction message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns AddSplitPointsAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.AddSplitPointsAction;
+
+                    /**
+                     * Decodes an AddSplitPointsAction message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns AddSplitPointsAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.AddSplitPointsAction;
+
+                    /**
+                     * Verifies an AddSplitPointsAction message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an AddSplitPointsAction message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns AddSplitPointsAction
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.AddSplitPointsAction;
+
+                    /**
+                     * Creates a plain object from an AddSplitPointsAction message. Also converts values to other types if specified.
+                     * @param message AddSplitPointsAction
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.AddSplitPointsAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this AddSplitPointsAction to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for AddSplitPointsAction
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
                 /** Properties of a StartBatchTransactionAction. */
                 interface IStartBatchTransactionAction {
 
@@ -26994,6 +27302,9 @@ export namespace google {
 
                     /** SpannerActionOutcome changeStreamRecords */
                     changeStreamRecords?: (google.spanner.executor.v1.IChangeStreamRecord[]|null);
+
+                    /** SpannerActionOutcome snapshotIsolationTxnReadTimestamp */
+                    snapshotIsolationTxnReadTimestamp?: (number|Long|string|null);
                 }
 
                 /** Represents a SpannerActionOutcome. */
@@ -27034,6 +27345,9 @@ export namespace google {
 
                     /** SpannerActionOutcome changeStreamRecords. */
                     public changeStreamRecords: google.spanner.executor.v1.IChangeStreamRecord[];
+
+                    /** SpannerActionOutcome snapshotIsolationTxnReadTimestamp. */
+                    public snapshotIsolationTxnReadTimestamp?: (number|Long|string|null);
 
                     /**
                      * Creates a new SpannerActionOutcome instance using the specified properties.
