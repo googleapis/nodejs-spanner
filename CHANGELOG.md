@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.7.0](https://github.com/googleapis/nodejs-spanner/compare/v8.6.0...v8.7.0) (2026-03-03)
+
+
+### Features
+
+* Add SI, adapt, split point related proto ([#2527](https://github.com/googleapis/nodejs-spanner/issues/2527)) ([0519aa9](https://github.com/googleapis/nodejs-spanner/commit/0519aa9061d5e071ce2b5c5ec754529b572ba5cc))
+* **spanner:** Include cache updates into the ResultSet response ([#2519](https://github.com/googleapis/nodejs-spanner/issues/2519)) ([ca9690a](https://github.com/googleapis/nodejs-spanner/commit/ca9690aa9fbb63e20fc09de53e28b12ba99085e8))
+
 ## [8.6.0](https://github.com/googleapis/nodejs-spanner/compare/v8.5.0...v8.6.0) (2026-01-28)
 
 
