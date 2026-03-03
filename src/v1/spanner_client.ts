@@ -1082,7 +1082,7 @@ export class SpannerClient {
    *   constraints). Given this, successful execution of a DML statement shouldn't
    *   be assumed until a subsequent `Commit` call completes successfully.
    * @param {google.spanner.v1.RoutingHint} [request.routingHint]
-   *   Optional. If present, it makes the Spanner requests location-aware.
+   *   Optional. Makes the Spanner requests location-aware if present.
    *
    *   It gives the server hints that can be used to route the request
    *   to an appropriate server, potentially significantly decreasing latency and
@@ -1461,7 +1461,7 @@ export class SpannerClient {
    *   Optional. Lock Hint for the request, it can only be used with read-write
    *   transactions.
    * @param {google.spanner.v1.RoutingHint} [request.routingHint]
-   *   Optional. If present, it makes the Spanner requests location-aware.
+   *   Optional. Makes the Spanner requests location-aware if present.
    *
    *   It gives the server hints that can be used to route the request
    *   to an appropriate server, potentially significantly decreasing latency and
@@ -1606,6 +1606,13 @@ export class SpannerClient {
    *   that commit mutations but don't perform any reads or queries. You must
    *   randomly select one of the mutations from the mutation set and send it as a
    *   part of this request.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. Makes the Spanner requests location-aware if present.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1774,6 +1781,13 @@ export class SpannerClient {
    *   session, then you must include the precommit token with the highest
    *   sequence number received in this transaction attempt. Failing to do so
    *   results in a `FailedPrecondition` error.
+   * @param {google.spanner.v1.RoutingHint} [request.routingHint]
+   *   Optional. Makes the Spanner requests location-aware if present.
+   *
+   *   It gives the server hints that can be used to route the request
+   *   to an appropriate server, potentially significantly decreasing latency and
+   *   improving throughput. To achieve improved performance, most fields must be
+   *   filled in with accurate values.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2465,7 +2479,7 @@ export class SpannerClient {
    *   constraints). Given this, successful execution of a DML statement shouldn't
    *   be assumed until a subsequent `Commit` call completes successfully.
    * @param {google.spanner.v1.RoutingHint} [request.routingHint]
-   *   Optional. If present, it makes the Spanner requests location-aware.
+   *   Optional. Makes the Spanner requests location-aware if present.
    *
    *   It gives the server hints that can be used to route the request
    *   to an appropriate server, potentially significantly decreasing latency and
@@ -2579,7 +2593,7 @@ export class SpannerClient {
    *   Optional. Lock Hint for the request, it can only be used with read-write
    *   transactions.
    * @param {google.spanner.v1.RoutingHint} [request.routingHint]
-   *   Optional. If present, it makes the Spanner requests location-aware.
+   *   Optional. Makes the Spanner requests location-aware if present.
    *
    *   It gives the server hints that can be used to route the request
    *   to an appropriate server, potentially significantly decreasing latency and
