@@ -1,4 +1,4 @@
--e **_THIS REPOSITORY IS DEPRECATED. ALL OF ITS CONTENT AND HISTORY HAS BEEN MOVED TO [GOOGLE-CLOUD-NODE](https://github.com/googleapis/google-cloud-node/tree/main/packages/handwritten)_**
+**_THIS REPOSITORY IS DEPRECATED. ALL OF ITS CONTENT AND HISTORY HAS BEEN MOVED TO [GOOGLE-CLOUD-NODE](https://github.com/googleapis/google-cloud-node/tree/main/packages/handwritten)_**
 
 [//]: # "This README.md file is auto-generated, all changes to this file will be lost."
 [//]: # "To regenerate it, use `python -m synthtool`."
