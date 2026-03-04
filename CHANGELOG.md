@@ -4,6 +4,49 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [8.6.0](https://github.com/googleapis/nodejs-spanner/compare/v8.5.0...v8.6.0) (2026-01-28)
+
+
+### Features
+
+* Refactor and deprecate databaseRole and Session Labels SessionPoolOptions ([#2511](https://github.com/googleapis/nodejs-spanner/issues/2511)) ([163534c](https://github.com/googleapis/nodejs-spanner/commit/163534c8545a3f1378b001eb118b12f98b4cc1e5))
+
+
+### Bug Fixes
+
+* Ensure all data is consumed before emitting end event in PartialResultStream ([#2516](https://github.com/googleapis/nodejs-spanner/issues/2516)) ([210ef50](https://github.com/googleapis/nodejs-spanner/commit/210ef506cd80f4604e4a135fdfe937190eab5750))
+
+## [8.5.0](https://github.com/googleapis/nodejs-spanner/compare/v8.4.0...v8.5.0) (2026-01-22)
+
+
+### Features
+
+* Added OUTPUT_ONLY annotations to create_time and update_time in InternalRange to reflect existing service behavior ([#2505](https://github.com/googleapis/nodejs-spanner/issues/2505)) ([1058683](https://github.com/googleapis/nodejs-spanner/commit/105868339b1d2b7d7701a6b7591b85e3a1ca4098))
+
+
+### Bug Fixes
+
+* UUID type backward compatibility ([#2509](https://github.com/googleapis/nodejs-spanner/issues/2509)) ([7abb33c](https://github.com/googleapis/nodejs-spanner/commit/7abb33ca523b612f171def64c1ceb0cb7d162e82))
+
+## [8.4.0](https://github.com/googleapis/nodejs-spanner/compare/v8.3.1...v8.4.0) (2026-01-09)
+
+
+### Features
+
+* Add a ClientContext field to Spanner requests ([#2493](https://github.com/googleapis/nodejs-spanner/issues/2493)) ([37504ad](https://github.com/googleapis/nodejs-spanner/commit/37504adcc37a7e95acfb2530313ff783d0c1fe7d))
+* Exposing total CPU related fields in AutoscalingConfig ([#2490](https://github.com/googleapis/nodejs-spanner/issues/2490)) ([508f0ff](https://github.com/googleapis/nodejs-spanner/commit/508f0ff95636b004f4200522018a199263eda8ca))
+* **spanner:** Support for type UUID ([#2482](https://github.com/googleapis/nodejs-spanner/issues/2482)) ([0047e94](https://github.com/googleapis/nodejs-spanner/commit/0047e9407d86521571626c69011b70307f83f8ba))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v5.0.6 ([#2452](https://github.com/googleapis/nodejs-spanner/issues/2452)) ([f9e6b86](https://github.com/googleapis/nodejs-spanner/commit/f9e6b86ff4da03110642c17e5ebc8fac8d903d3a))
+* Flaky metric test ([#2472](https://github.com/googleapis/nodejs-spanner/issues/2472)) ([e169cc5](https://github.com/googleapis/nodejs-spanner/commit/e169cc5344d38812b1ebf20c7a987715a73d6f79))
+* Memory leak and deadlock due to error event in multiplexed session ([#2477](https://github.com/googleapis/nodejs-spanner/issues/2477)) ([c624619](https://github.com/googleapis/nodejs-spanner/commit/c624619a3960892b1d2d412ff79faa5a74de45df))
+* Presubmit failure for samples backups test ([#2492](https://github.com/googleapis/nodejs-spanner/issues/2492)) ([01eb3d5](https://github.com/googleapis/nodejs-spanner/commit/01eb3d5801ddb21517f185b9d585fbce4fa1475c))
+* Type check for key in deleteRows ([#2486](https://github.com/googleapis/nodejs-spanner/issues/2486)) ([7347a16](https://github.com/googleapis/nodejs-spanner/commit/7347a1628ad8635b8f84b36ad1d3850b78862ac7))
+* Type mismatch in Snapshot.run error handler ([#2487](https://github.com/googleapis/nodejs-spanner/issues/2487)) ([4ac0360](https://github.com/googleapis/nodejs-spanner/commit/4ac036047e3a03c073300f288c746389a38d8e42))
+
 ## [8.3.1](https://github.com/googleapis/nodejs-spanner/compare/v8.3.0...v8.3.1) (2025-11-19)
 
 
