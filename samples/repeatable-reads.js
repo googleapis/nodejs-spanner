@@ -28,17 +28,15 @@ function main(
   const {Spanner, protos} = require('@google-cloud/spanner');
   // The isolation level specified at the client-level will be applied
   // to all RW transactions.
-  const isolationOptionsForClient = {
-    defaultTransactionOptions: {
-      isolationLevel:
-        protos.google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE,
-    },
+  const defaultTransactionOptions = {
+    isolationLevel:
+      protos.google.spanner.v1.TransactionOptions.IsolationLevel.SERIALIZABLE,
   };
 
   // Instantiates a client with defaultTransactionOptions
   const spanner = new Spanner({
     projectId: projectId,
-    defaultTransactionOptions: isolationOptionsForClient,
+    defaultTransactionOptions,
   });
 
   function runTransactionWithIsolationLevel() {
@@ -80,8 +78,8 @@ function main(
           );
         } catch (err) {
           console.error('ERROR:', err);
-        } finally {
           transaction.end();
+        } finally {
           // Close the database when finished.
           await database.close();
         }

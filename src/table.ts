@@ -40,8 +40,22 @@ import {
 import {google} from '../protos/protos';
 import IsolationLevel = google.spanner.v1.TransactionOptions.IsolationLevel;
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
+import {Int, SpannerDate, Numeric, Float32, Float} from './codec';
 
-export type Key = string | string[];
+// valid scalar types that Spanner accepts in a Key
+export type KeyScalar =
+  | string
+  | number
+  | boolean
+  | SpannerDate
+  | Buffer
+  | Uint8Array
+  | Int
+  | Numeric
+  | Float32
+  | Float;
+
+export type Key = KeyScalar | KeyScalar[];
 
 export type CreateTableResponse = [
   Table,
