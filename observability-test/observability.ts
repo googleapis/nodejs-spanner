@@ -126,7 +126,10 @@ describe('startTrace', () => {
   });
 
   it('with semantic attributes', () => {
-    const opts = {tableName: 'table', dbName: 'db'};
+    const opts = {
+      tableName: 'table',
+      dbName: 'projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID',
+    };
     startTrace('aSpan', opts, span => {
       assert.equal(
         span.attributes[ATTR_OTEL_SCOPE_NAME],
@@ -159,6 +162,12 @@ describe('startTrace', () => {
       );
 
       assert.equal(
+        span.attributes['gcp.resource.name'],
+        '//spanner.googleapis.com/projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID',
+        'Missing gcp.resource.name attribute',
+      );
+
+      assert.equal(
         span.attributes[SEMATTRS_DB_SQL_TABLE],
         'table',
         'Missing DB_SQL_TABLE attribute',
@@ -166,7 +175,7 @@ describe('startTrace', () => {
 
       assert.equal(
         span.attributes[SEMATTRS_DB_NAME],
-        'db',
+        'projects/PROJECT_ID/instances/INSTANCE_ID/databases/DATABASE_ID',
         'Missing DB_NAME attribute',
       );
     });

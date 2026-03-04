@@ -2,6 +2,7 @@
   "../../protos/google/spanner/v1/change_stream.proto",
   "../../protos/google/spanner/v1/commit_response.proto",
   "../../protos/google/spanner/v1/keys.proto",
+  "../../protos/google/spanner/v1/location.proto",
   "../../protos/google/spanner/v1/mutation.proto",
   "../../protos/google/spanner/v1/query_plan.proto",
   "../../protos/google/spanner/v1/result_set.proto",
